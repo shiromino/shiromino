@@ -1,0 +1,34 @@
+Shiromino Version history
+-------------------------
+
+beta2
+{
+    New Features:
+        + "escape" button is now mappable
+        + New mode: G1 MASTER
+        + New mode: G1 20G
+        + New fonts: font_small.png and font_tiny.png
+        + New tetrion graphics
+        + Full block face palette in the practice tool
+        + New options in the practice tool: infinite floorkicks, lock protection, randomizer seed
+
+    Changes/Removed Features:
+        * MASTER renamed to PENTOMINO
+        * PENTOMINO speed curve is more gentle
+        * PENTOMINO randomizer tweaked to favor more useful pieces
+        * T (pentomino) now floorkicks
+        * G1 randomizer now uses 4 rolls
+        * Main menu now remembers the choice you had selected
+        * Main menu no longer reloads pointlessly if you press escape
+        * Practice tool now saves your work until you close the game completely
+
+    Bug Fixes:
+        * Using hold for the first time at the end of a user-defined sequence no longer crashes the game
+        * Replays no longer influence the randomizer seed of the next game
+        * Grades are correctly displayed
+        * G3 TERROR ends at level 1300 as intended
+        * T4 piece now floorkicks correctly
+        * Garbage (grey) cells are now drawn with an outline
+}
+
+20170416 beta1 - First release.
