@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
+#include "zed_dbg.h"
 
 #include "core.h"
 #include "random.h"
@@ -102,6 +103,7 @@ static qrs_timings g3_terror_curve[G3_TERROR_CURVE_MAX] =
     {1300, 5120, 15, 4, 4, 4, 6}
 };
 
+// TODO
 int g2_advance_garbage[12][24] =
 {
     {QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL,
@@ -144,7 +146,6 @@ int g2_advance_garbage[12][24] =
       QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL,
       QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL, QRS_WALL},
 };
-
 
 const char *get_grade_name(int index)
 {
@@ -254,7 +255,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
 
     q->state_flags = 0;
 
-    q->max_floorkicks = 3;
+    q->max_floorkicks = 2;
     q->lock_on_rotate = 0;
 
     request_fps(cs, 60);
@@ -488,8 +489,10 @@ int qs_game_init(game_t *g)
 
 	qrsdata *q = (qrsdata *)(g->data);
     qrs_player *p = q->p1;
+    struct randomizer *qrand = q->randomizer;
 
     piece_id next1_id, next2_id, next3_id;
+    int rc = 0;
 
     /*SDL_SetRenderTarget(g->origin->screen.renderer, q->field_tex);
     SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
@@ -506,20 +509,20 @@ int qs_game_init(game_t *g)
 	int t = 0;*/
 
     if(q->replay) {
-        *(q->randomizer->seedp) = q->replay->seed;
+        *(qrand->seedp) = q->replay->seed;
         q->randomizer_seed = q->replay->seed;
     } else {
-        q->randomizer_seed = *(q->randomizer->seedp);
+        q->randomizer_seed = *(qrand->seedp);
     }
 
     printf("Random seed: %ld\n", q->randomizer_seed);
 
 	if(q->randomizer)
-        q->randomizer->init(q->randomizer);
+        qrand->init(qrand);
 
-    next1_id = q->randomizer->lookahead(q->randomizer, 1);
-    next2_id = q->randomizer->lookahead(q->randomizer, 2);
-    next3_id = q->randomizer->lookahead(q->randomizer, 3);
+    next1_id = qrand->pull(qrand);
+    next2_id = qrand->pull(qrand);
+    next3_id = qrand->pull(qrand);
 
     if(q->randomizer->num_pieces == 7) {
         next1_id = ars_to_qrs_id(next1_id);
@@ -599,6 +602,8 @@ int qs_game_pracinit(game_t *g, int val)
     qrsdata *q = g->data;
     qrs_player *p = q->p1;
     qrs_counters *c = q->p1counters;
+
+    struct randomizer *qrand = q->randomizer;
     piece_id next1_id, next2_id, next3_id;
 
     cs->menu_input_override = 0;
@@ -634,17 +639,17 @@ int qs_game_pracinit(game_t *g, int val)
         piecedef_destroy(q->previews[2]);
 
     if(q->pracdata->usr_seq_len) {
-        q->pracdata->hist_index = -1;
-
         q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 0));
         q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 1));
         q->previews[2] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 2));
-    } else {
-        q->randomizer->init(q->randomizer);
 
-        next1_id = q->randomizer->lookahead(q->randomizer, 1);
-        next2_id = q->randomizer->lookahead(q->randomizer, 2);
-        next3_id = q->randomizer->lookahead(q->randomizer, 3);
+        q->pracdata->hist_index = 2;
+    } else {
+        qrand->init(qrand);
+
+        next1_id = qrand->pull(qrand);
+        next2_id = qrand->pull(qrand);
+        next3_id = qrand->pull(qrand);
 
         if(q->randomizer->num_pieces == 7) {
             next1_id = ars_to_qrs_id(next1_id);
@@ -732,11 +737,6 @@ int qs_game_frame(game_t *g)
     struct asset *medal = asset_by_name(cs, "medal");
 
     bstring bgname = NULL;
-
-	/*int n = 0;
-    int row = 0;
-    int i = 0;
-    int j = 0;*/
 
     if(q->pracdata) {
         if(q->pracdata->paused)
@@ -851,6 +851,7 @@ int qs_game_frame(game_t *g)
                     break;
 
                 default:
+                    log_warn("qrsdata->mode_type improperly set to %d\n", q->mode_type);
                     break;
             }
 
@@ -859,70 +860,22 @@ int qs_game_frame(game_t *g)
 	}
 
 	if((*s) == PSINACTIVE) {
-        //printf("Currently inactive\n");
 		return 0;
     }
 
-    if(!q->pracdata) {
-        if(q->mode_type == MODE_G2_DEATH) {
-            for(; q->speed_curve_index < G2_DEATH_CURVE_MAX && g2_death_curve[q->speed_curve_index].level <= q->level;) {
-                q->p1->speeds = &g2_death_curve[q->speed_curve_index];
-                q->speed_curve_index++;
-            }
-        } else if(q->mode_type == MODE_G3_TERROR) {
-            for(; q->speed_curve_index < G3_TERROR_CURVE_MAX && g3_terror_curve[q->speed_curve_index].level <= q->level;) {
-                q->p1->speeds = &g3_terror_curve[q->speed_curve_index];
-                q->speed_curve_index++;
-            }
-        } else if(q->mode_type == MODE_G1_MASTER) {
-            for(; q->speed_curve_index < G1_MASTER_CURVE_MAX && g1_master_curve[q->speed_curve_index].level <= q->level;) {
-                q->p1->speeds = &g1_master_curve[q->speed_curve_index];
-                q->speed_curve_index++;
-            }
-        } else if(q->mode_type == MODE_G1_20G) {
-            q->p1->speeds = &g1_master_curve[G1_MASTER_CURVE_MAX - 1];
-        } else {
-            for(; q->speed_curve_index < QS_CURVE_MAX && qs_curve[q->speed_curve_index].level <= q->level;) {
-                q->p1->speeds = &qs_curve[q->speed_curve_index];
-                q->speed_curve_index++;
-            }
-        }
-
-        switch(q->mode_type) {
-            case MODE_UNSPECIFIED:
-                if(q->level > 290 && q->level < 300 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 300 && q->level < 315 && q->mute) {
-                    play_track(cs, track1->data, track1->volume);
-                    q->music = 1;
-                    q->mute = 0;
-                }
-
-                if(q->level > 490 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, track2->data, track2->volume);
-                    q->music = 2;
-                    q->mute = 0;
-                }
-
-                if(q->level > 690 && q->level < 700 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 700 && q->level < 715 && q->mute) {
-                    play_track(cs, track3->data, track3->volume);
-                    q->music = 3;
-                    q->mute = 0;
-                }
-
-                break;
-
+    if(!q->pracdata)
+    {
+        // handle speed curve and music updates (this runs every frame)
+        switch(q->mode_type)
+        {
             case MODE_G2_DEATH:
+                while(q->speed_curve_index < G2_DEATH_CURVE_MAX &&
+                      g2_death_curve[q->speed_curve_index].level <= q->level)
+                {
+                    q->p1->speeds = &g2_death_curve[q->speed_curve_index];
+                    q->speed_curve_index++;
+                }
+
                 if(q->level >= 280 && q->level < 300 && !q->mute) {
                     Mix_HaltMusic();
                     q->mute = 1;
@@ -946,6 +899,13 @@ int qs_game_frame(game_t *g)
                 break;
 
             case MODE_G3_TERROR:
+                while(q->speed_curve_index < G3_TERROR_CURVE_MAX &&
+                      g3_terror_curve[q->speed_curve_index].level <= q->level)
+                {
+                    q->p1->speeds = &g3_terror_curve[q->speed_curve_index];
+                    q->speed_curve_index++;
+                }
+
                 if(q->level >= 480 && q->level < 500 && !q->mute) {
                     Mix_HaltMusic();
                     q->mute = 1;
@@ -979,7 +939,13 @@ int qs_game_frame(game_t *g)
                 break;
 
             case MODE_G1_MASTER:
-            case MODE_G1_20G:
+                while(q->speed_curve_index < G1_MASTER_CURVE_MAX &&
+                      g1_master_curve[q->speed_curve_index].level <= q->level)
+                {
+                    q->p1->speeds = &g1_master_curve[q->speed_curve_index];
+                    q->speed_curve_index++;
+                }
+
                 if(q->level >= 485 && q->level < 500 && !q->mute) {
                     Mix_HaltMusic();
                     q->mute = 1;
@@ -992,10 +958,64 @@ int qs_game_frame(game_t *g)
 
                 break;
 
+            case MODE_G1_20G:
+                q->p1->speeds = &g1_master_curve[G1_MASTER_CURVE_MAX - 1];
+
+                if(q->level >= 485 && q->level < 500 && !q->mute) {
+                    Mix_HaltMusic();
+                    q->mute = 1;
+                }
+                if(q->level >= 500 && q->level < 515 && q->mute) {
+                    play_track(cs, (asset_by_name(cs, "g1/track1"))->data, (asset_by_name(cs, "g1/track1"))->volume);
+                    q->music = 1;
+                    q->mute = 0;
+                }
+
+                break;
+
+            case MODE_UNSPECIFIED:
+                while(q->speed_curve_index < QS_CURVE_MAX &&
+                      qs_curve[q->speed_curve_index].level <= q->level)
+                {
+                    q->p1->speeds = &qs_curve[q->speed_curve_index];
+                    q->speed_curve_index++;
+                }
+
+                if(q->level > 290 && q->level < 300 && !q->mute) {
+                    Mix_HaltMusic();
+                    q->mute = 1;
+                }
+                if(q->level >= 300 && q->level < 315 && q->mute) {
+                    play_track(cs, track1->data, track1->volume);
+                    q->music = 1;
+                    q->mute = 0;
+                }
+
+                if(q->level > 490 && q->level < 500 && !q->mute) {
+                    Mix_HaltMusic();
+                    q->mute = 1;
+                }
+                if(q->level >= 500 && q->level < 515 && q->mute) {
+                    play_track(cs, track2->data, track2->volume);
+                    q->music = 2;
+                    q->mute = 0;
+                }
+
+                if(q->level > 690 && q->level < 700 && !q->mute) {
+                    Mix_HaltMusic();
+                    q->mute = 1;
+                }
+                if(q->level >= 700 && q->level < 715 && q->mute) {
+                    play_track(cs, track3->data, track3->volume);
+                    q->music = 3;
+                    q->mute = 0;
+                }
+
+                break;
+
             default:
                 break;
         }
-
     }
 
     if((*s) & PSSPAWN) {
@@ -1028,24 +1048,12 @@ int qs_game_frame(game_t *g)
         }
     }
 
-/*
-    qs_process_are(g);
-    qs_process_prelockflash(g);
-    qs_process_lock(g);
-    qs_process_fall(g);
-    qs_process_lockflash(g);
-    qs_process_lineclear(g);
-    qs_process_lineare(g);
-    if((*s) & PSSPAWN) {
-        qs_process_fall(g);
-        (*s) &= ~PSSPAWN;
-    }
-*/
+    // player state might have been set to INACTIVE, we want to react right away
     if((*s) == PSINACTIVE)
         return 0;
 
     if(!q->pracdata && q->is_recovering && q->game_type == 0) {
-        if(grid_cells_filled(g->field) <= 70) {
+        if(grid_cells_filled(g->field) <= 85) {
             q->recoveries++;
             q->is_recovering = 0;
             switch(q->recoveries) {
@@ -1069,7 +1077,7 @@ int qs_game_frame(game_t *g)
                     break;
             }
         }
-    } else if(grid_cells_filled(g->field) >= 150)
+    } else if(grid_cells_filled(g->field) >= 170)
         q->is_recovering = 1;
 
     /*for(i = 0; i < QRS_FIELD_W; i++) {
@@ -1329,7 +1337,25 @@ int qs_process_lock(game_t *g)
     unsigned int *s = &q->p1->state;
     qrs_counters *c = q->p1counters;
 
-    if((*s) & PSLOCK && q->lock_delay_enabled) {
+    if(q->lock_on_rotate == 2)
+    {
+        if(q->pracdata) {
+            if(!q->pracdata->infinite_floorkicks) {
+                c->lock = 0;
+                (*s) &= ~PSLOCK;
+                (*s) |= PSPRELOCKED;
+            }
+        } else {
+            c->lock = 0;
+            (*s) &= ~PSLOCK;
+            (*s) |= PSPRELOCKED;
+        }
+
+        q->lock_on_rotate = 0;
+        printf("Locked on rotate\n");
+    }
+    else if((*s) & PSLOCK && q->lock_delay_enabled)
+    {
 		if(qrs_isonground(g, q->p1)) {
             if(YTOROW(q->p1->y) != q->locking_row) {
                 q->locking_row = YTOROW(q->p1->y);
@@ -1355,21 +1381,7 @@ int qs_process_lock(game_t *g)
 			(*s) &= ~PSLOCK;
 			(*s) |= PSFALL;
 		}
-	} else if((*s) & PSLOCK && q->lock_on_rotate == 2) {
-        if(q->pracdata) {
-            if(!q->pracdata->infinite_floorkicks) {
-                c->lock = 0;
-                (*s) &= ~PSLOCK;
-                (*s) |= PSPRELOCKED;
-            }
-        } else {
-            c->lock = 0;
-            (*s) &= ~PSLOCK;
-            (*s) |= PSPRELOCKED;
-        }
-
-        q->lock_on_rotate = 0;
-    }
+	}
 
     return 0;
 }
@@ -1712,7 +1724,7 @@ int qs_update_pracdata(coreState *cs)
             q->randomizer = pento_randomizer_create(0);
 
             q->hold_enabled = 0;
-            q->max_floorkicks = 3;
+            q->max_floorkicks = 2;
             q->lock_protect = 1;
             q->piecepool[QRS_I4]->flags &= ~PDNOWKICK;
             q->tetromino_only = 0;
@@ -2210,7 +2222,7 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
             }
         } else {
             if(index > d->usr_seq_expand_len - 1)
-                val = -1;
+                val = USRSEQ_ELEM_OOB;
             else
                 val = d->usr_seq_expand[index] & 0b11111;
         }
@@ -2220,7 +2232,7 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
 
     if(!d->usr_seq_len) {
         d->usr_seq_expand_len = 0;
-        return -1;
+        return USRSEQ_ELEM_OOB;
     }
 
     for(i = 0; i < index && i < d->usr_seq_len; i++) {
@@ -2250,7 +2262,7 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
                 i++; // next element of the sequence is either a repetition count or beyond the end of the sequence
 
                 if(i != d->usr_seq_len && seq[i] == SEQUENCE_REPEAT_INF) {
-                    // bound check must come first to prevent seq[i] from creating UB
+                    // ^^ bound check must come first to prevent seq[i] from creating UB
                     inf = 1;
                     inf_rpt_len = rpt_len;
                     inf_start = rpt_start;
@@ -2352,6 +2364,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
 	int i = 0;
     piece_id t = 0;
+    int rc = 0;
 
 	struct asset *a = NULL;
 
@@ -2372,10 +2385,15 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
     q->p1counters->floorkicks = 0;
 
-    if(q->pracdata && q->pracdata->usr_seq_len)
+    if(q->pracdata && q->pracdata->usr_seq_len) {
         q->pracdata->hist_index++;
+        rc = qs_get_usrseq_elem(q->pracdata, q->pracdata->hist_index);
 
-    else {
+        if(rc != USRSEQ_ELEM_OOB)
+            t = (piece_id)(rc & 0xff);
+        else
+            t = PIECE_ID_INVALID;
+    } else {
         t = qrand->pull(qrand);
         if(q->randomizer->num_pieces == 7)
             t = ars_to_qrs_id(t);
@@ -2457,407 +2475,3 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
     return 0;
 }
-
-/*
-int qs_init_randomize(game_t *g)
-{
-    qrsdata *q = g->data;
-    int *history = q->history;
-    long double modified_weights[25];
-    int t = 0;
-    int i = 0;
-
-    if(q->randomizer_type == RANDOMIZER_NORMAL && !q->pentomino_only) {
-        t = rand() % 8;
-
-        switch(t) {
-            case 0:
-                history[7] = QRS_I;
-                break;
-            case 1:
-                history[7] = QRS_J;
-                break;
-            case 2:
-                history[7] = QRS_L;
-                break;
-            case 3:
-                history[7] = QRS_Ya;
-                break;
-            case 4:
-                history[7] = QRS_Yb;
-                break;
-            case 5:
-                history[7] = QRS_I4;
-                break;
-            case 6:
-                history[7] = QRS_J4;
-                break;
-            case 7:
-                history[7] = QRS_L4;
-                break;
-            default:
-                history[7] = QRS_I;
-                break;
-        }
-
-        history[8] = QRS_S4;
-        history[9] = QRS_Z4;
-
-        history[8] = qs_normal_randomize(history, piece_weights);
-        history[9] = qs_normal_randomize(history, piece_weights);
-    } else if(q->randomizer_type == RANDOMIZER_NIGHTMARE) {
-        t = rand() % 9;
-        switch(t) {
-            case 0:
-            case 1:
-            case 2:
-                t = QRS_X;
-                break;
-            case 3:
-            case 4:
-                t = QRS_Fa;
-                break;
-            case 5:
-            case 6:
-                t = QRS_Fb;
-                break;
-            case 7:
-                t = QRS_S;
-                break;
-            case 8:
-                t = QRS_Z;
-                break;
-            default:
-                t = QRS_V;
-                break;
-        }
-
-        for(i = 0; i < 10; i++) {
-            history[i] = t;
-        }
-    } else if(q->pentomino_only) {
-        q->history[0] = QRS_Fb;
-    	q->history[1] = QRS_Fa;
-    	q->history[2] = QRS_X;
-    	q->history[3] = QRS_W;
-        q->history[4] = QRS_S;
-        q->history[5] = QRS_Z;
-        q->cur_piece_qrs_id = QRS_X;
-
-        t = rand() % 5;
-
-        switch(t) {
-            case 0:
-                history[7] = QRS_I;
-                break;
-            case 1:
-                history[7] = QRS_J;
-                break;
-            case 2:
-                history[7] = QRS_L;
-                break;
-            case 3:
-                history[7] = QRS_Ya;
-                break;
-            case 4:
-                history[7] = QRS_Yb;
-                break;
-            default:
-                history[7] = QRS_I;
-                break;
-        }
-
-        for(i = 0; i < 18; i++)
-            modified_weights[i] = piece_weights[i];
-
-        for(i = 18; i < 25; i++)
-            modified_weights[i] = 0;
-
-        history[8] = QRS_Fa;
-        history[9] = QRS_Fb;
-
-        history[8] = qs_normal_randomize(history, modified_weights);
-        history[9] = qs_normal_randomize(history, modified_weights);
-    } else if(q->randomizer_type == RANDOMIZER_G2) {
-        t = g2_get_init_piece();
-
-        q->cur_piece_qrs_id = QRS_S4;
-        q->history[7] = QRS_S4;
-        q->history[8] = QRS_Z4;
-        q->history[9] = t;  // first piece
-
-        t = qs_g2_randomize(history);
-
-        q->cur_piece_qrs_id = q->history[7];
-        q->history[7] = q->history[8];
-        q->history[8] = q->history[9];  // first
-        q->history[9] = t;  // second
-
-        t = qs_g2_randomize(history);
-
-        q->cur_piece_qrs_id = q->history[7];  // QRS_Z4 - "dummy" piece, game immediately switches to next when game starts
-        q->history[7] = q->history[8];  // first
-        q->history[8] = q->history[9];  // second
-        q->history[9] = t;  // third
-    } else if(q->randomizer_type == RANDOMIZER_G1) {
-        t = g2_get_init_piece();
-
-        q->cur_piece_qrs_id = QRS_Z4;
-        q->history[7] = QRS_Z4;
-        q->history[8] = QRS_Z4;
-        q->history[9] = t;  // first piece
-
-        t = qs_g1_randomize(history);
-
-        q->cur_piece_qrs_id = q->history[7];
-        q->history[7] = q->history[8];
-        q->history[8] = q->history[9];  // first
-        q->history[9] = t;  // second
-
-        t = qs_g1_randomize(history);
-
-        q->cur_piece_qrs_id = q->history[7];  // QRS_Z4 - "dummy" piece, game immediately switches to next when game starts
-        q->history[7] = q->history[8];  // first
-        q->history[8] = q->history[9];  // second
-        q->history[9] = t;  // third
-    }
-
-    return 0;
-}
-
-int qs_randomize(game_t *g)
-{
-    qrsdata *q = g->data;
-    long double modified_weights[25];
-    int i = 0;
-
-    if(q->randomizer_type == RANDOMIZER_NORMAL && !q->pentomino_only) {
-        return qs_normal_randomize(q->history, piece_weights);
-    } else if(q->randomizer_type == RANDOMIZER_NIGHTMARE) {
-        for(i = 0; i < 25; i++) {
-            modified_weights[i] = 0.01L;
-        }
-
-        modified_weights[QRS_X] = 6.0L;
-        modified_weights[QRS_S] = 1.3L;
-        modified_weights[QRS_Z] = 1.3L;
-        modified_weights[QRS_U] = 1.0L;
-        modified_weights[QRS_Fa] = 1.5L;
-        modified_weights[QRS_Fb] = 1.5L;
-        modified_weights[QRS_W] = 1.0L;
-        modified_weights[QRS_V] = 0.7L;
-
-        return (qs_normal_randomize(q->history, modified_weights));
-    } else if(q->pentomino_only) {
-        for(i = 0; i < 18; i++)
-            modified_weights[i] = piece_weights[i];
-        for(i = 18; i < 25; i++)
-            modified_weights[i] = 0;
-
-        return (qs_normal_randomize(q->history, modified_weights));
-    } else if(q->randomizer_type == RANDOMIZER_G2) {
-        return qs_g2_randomize(q->history);
-    } else if(q->randomizer_type == RANDOMIZER_G1) {
-        return qs_g1_randomize(q->history);
-    }
-
-    return QRS_I;
-}
-
-int qs_normal_randomize(int *history, long double *weights)  // RAND_MAX == 2147483647
-{
-    if(!history)
-		return -1;
-    if(!weights)
-        weights = piece_weights;
-
-	int i = 0;
-	int j = 0;
-	//int k = 0;
-	long double p = (long double)(rand()) / (long double)(RAND_MAX);
-    long double sum = 0;
-    int pieces[25];
-    long double weights_[25];
-
-    for(i = 0; i < 25; i++) {
-        weights_[i] = weights[i];
-        pieces[i] = 1;
-        for(j = 0; j < 10; j++) {
-            if(history[j] == i)
-                pieces[i]++;
-        }
-
-        weights_[i] = weights_[i] / (long double)(pieces[i] * pieces[i] * (i < 18 ? pieces[i] : 1));
-        sum += weights_[i];
-    }
-
-    p = p * sum;
-    sum = 0;
-
-    for(i = 0; i < 25; i++) {
-        if(p >= sum && p < (sum + weights_[i]))
-            return i;
-        else
-            sum += weights_[i];
-    }
-
-    return QRS_T4;
-
-	for(i = 0; i < 8; i++) {
-		t = rand() % 18;
-
-		for(j = 0; j < 4; j++) {
-			if(t != history[j])
-					k++;
-		}
-
-		if(k == 4)
-			return t;
-
-		k = 0;
-	}
-
-	t = rand() % 18;
-	return t;
-}
-
-int qs_g2_randomize(int *history)
-{
-    int t = 0;
-    int i = 0;
-    int j = 0;
-
-    int is_in_history = 0;
-
-    for(i = 0; i < 5; i++) {
-        t = g2_read_rand() % 7;
-        switch(t) {
-            case 1:     // Z
-                t = 6;
-                break;
-            case 2:     // S
-                t = 5;
-                break;
-            case 3:     // J
-                t = 2;
-                break;
-            case 4:     // L
-                t = 3;
-                break;
-            case 5:     // O
-                t = 4;
-                break;
-            case 6:     // T
-                t = 1;
-                break;
-            default:
-                break;
-        }
-        for(j = 6; j < 10; j++) {
-            if(history[j] == t + 18)
-                is_in_history = 1;
-        }
-
-        if(!is_in_history)
-            return t + 18;
-
-        is_in_history = 0;
-        t = g2_read_rand() % 7;
-    }
-
-    switch(t) {
-        case 1:
-            t = 6;
-            break;
-        case 2:
-            t = 5;
-            break;
-        case 3:
-            t = 2;
-            break;
-        case 4:
-            t = 3;
-            break;
-        case 5:
-            t = 4;
-            break;
-        case 6:
-            t = 1;
-            break;
-        default:
-            break;
-    }
-
-    return t + 18;
-}
-
-int qs_g1_randomize(int *history)
-{
-    int t = 0;
-    int i = 0;
-    int j = 0;
-
-    int is_in_history = 0;
-
-    for(i = 0; i < 3; i++) {
-        t = g2_read_rand() % 7;
-        switch(t) {
-            case 1:     // Z
-                t = 6;
-                break;
-            case 2:     // S
-                t = 5;
-                break;
-            case 3:     // J
-                t = 2;
-                break;
-            case 4:     // L
-                t = 3;
-                break;
-            case 5:     // O
-                t = 4;
-                break;
-            case 6:     // T
-                t = 1;
-                break;
-            default:
-                break;
-        }
-        for(j = 6; j < 10; j++) {
-            if(history[j] == t + 18)
-                is_in_history = 1;
-        }
-
-        if(!is_in_history)
-            return t + 18;
-
-        is_in_history = 0;
-        t = g2_read_rand() % 7;
-    }
-
-    switch(t) {
-        case 1:
-            t = 6;
-            break;
-        case 2:
-            t = 5;
-            break;
-        case 3:
-            t = 2;
-            break;
-        case 4:
-            t = 3;
-            break;
-        case 5:
-            t = 4;
-            break;
-        case 6:
-            t = 1;
-            break;
-        default:
-            break;
-    }
-
-    return t + 18;
-}
-*/

@@ -1,5 +1,5 @@
 Shiromino Version history
--------------------------
+=========================
 
 beta2
 {
@@ -10,17 +10,26 @@ beta2
         + New fonts: font_small.png and font_tiny.png
         + New tetrion graphics
         + Full block face palette in the practice tool
-        + New options in the practice tool: infinite floorkicks, lock protection, randomizer seed
+        + New options in the practice tool: infinite floorkicks, lock protection
 
     Changes/Removed Features:
         * MASTER renamed to PENTOMINO
         * PENTOMINO speed curve is more gentle
-        * PENTOMINO randomizer tweaked to favor more useful pieces
+        * PENTOMINO randomizer changed to favor more useful pieces
         * T (pentomino) now floorkicks
-        * G1 randomizer now uses 4 rolls
+        * is_recovering threshold changed from >=150 blocks in playfield to >=170
+        * Recovery medal threshold changed from <=70 blocks to <=85
+        * PENTOMINO maximum floorkicks changed from 3 to 2
+
+        * G1 and G3 randomizers are authentic
+        * Randomizer code modularized (can now implement many new randomizers with ease)
+
         * Main menu now remembers the choice you had selected
         * Main menu no longer reloads pointlessly if you press escape
         * Practice tool now saves your work until you close the game completely
+          ^^ (EXCEPT the piece sequence! It's on the todo list)
+
+        * Lots of minor code refactoring
 
     Bug Fixes:
         * Using hold for the first time at the end of a user-defined sequence no longer crashes the game

@@ -335,7 +335,7 @@ int g1_randomizer_init(struct randomizer *r, uint32_t *seed)
 {
     struct histrand_data *d = r->data;
     int i = 0;
-    piece_id t = PIECE_ID_INVALID;
+    int num_generated = 0;
 
     if(seed) {
         g1_bkp_seed = g1_seed;
@@ -346,20 +346,22 @@ int g1_randomizer_init(struct randomizer *r, uint32_t *seed)
     d->history[1] = ARS_Z;
     d->history[2] = ARS_Z;
     d->history[3] = g123_get_init_piece(&g1_seed);
+    num_generated = 1;
 
     for(i = 0; i < 3; i++) // move init piece to history[0] (first preview/next piece) and fill in 3 pieces ahead
     {
-        t = histrand_get_next(r);
-        history_push(d->history, d->hist_len, t);   // we don't care about the ARS_Z's that get pushed off
+        histrand_pull(r);
+        num_generated++;
     }
 
-    return 0;
+    return num_generated;
 }
 
 int g2_randomizer_init(struct randomizer *r, uint32_t *seed)
 {
     struct histrand_data *d = r->data;
     int i = 0;
+    int num_generated = 0;
 
     if(seed) {
         g2_bkp_seed = g2_seed;
@@ -370,21 +372,24 @@ int g2_randomizer_init(struct randomizer *r, uint32_t *seed)
     d->history[1] = ARS_S;
     d->history[2] = ARS_Z;
     d->history[3] = g123_get_init_piece(NULL);
+    num_generated = 1;
 
     for(i = 0; i < 3; i++)
     {
         // move init piece to history[0] (first preview/next piece) and fill in 3 pieces ahead
         // the S,S,Z get pulled into the void
         histrand_pull(r);
+        num_generated++;
     }
 
-    return 0;
+    return num_generated;
 }
 
 int g3_randomizer_init(struct randomizer *r, uint32_t *seed)
 {
     struct g3rand_data *d = r->data;
     int i = 0;
+    int num_generated = 0;
 
     if(seed) {
         g3_bkp_seed = g3_seed;
@@ -398,15 +403,17 @@ int g3_randomizer_init(struct randomizer *r, uint32_t *seed)
     d->history[1] = ARS_S;
     d->history[2] = ARS_Z;
     d->history[3] = g123_get_init_piece(r->seedp);
+    num_generated = 1;
 
     for(i = 0; i < 3; i++)
     {
         // move init piece to history[0] (first preview/next piece) and fill in 3 pieces ahead
         // the S,S,Z get pulled into the void
         g3rand_pull(r);
+        num_generated++;
     }
 
-    return 0;
+    return num_generated;
 }
 
 int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
@@ -414,6 +421,7 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
     struct histrand_data *d = r->data;
     int t = 0;
     int i = 0;
+    int num_generated = 0;
 
     if(seed) {
         pento_bkp_seed = pento_seed;
@@ -449,11 +457,14 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
             break;
     }
 
+    num_generated = 1;
+
     for(i = 0; i < 5; i++) {
         histrand_pull(r); // Fb, Fa, X, S, Z get pulled into the void
+        num_generated++;
     }
 
-    return 0;
+    return num_generated;
 }
 
 // ----- //
@@ -571,8 +582,10 @@ piece_id histrand_get_next(struct randomizer *r)
 
             temp_weights[i] = temp_weights[i] / (double)(histogram[i] * histogram[i]); // OLD: * (i < 18 ? pieces[i] : 1)
             if(d->drought_protection_coefficients && d->drought_times) {
-                // multiply by coefficient^(t/14) e.g. for coefficient 2 and drought time 14, this piece gets twice the weighting
-                temp_weights[i] *= pow(d->drought_protection_coefficients[i], ((double)(d->drought_times[i]) / 14.0) );
+                // multiply by coefficient^(t/BASELINE)
+                // e.g. for coeff 2 and drought time BASELINE, weight *= 2
+                temp_weights[i] *= pow(d->drought_protection_coefficients[i],
+                                       (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE );
             }
 
             sum += temp_weights[i];

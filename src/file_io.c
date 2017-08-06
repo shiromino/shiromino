@@ -394,11 +394,7 @@ int write_replay_file(struct replay *r)
 	filename = bformat("replay/%s", strbuf);
 
 	f = fopen((char *)(filename->data), "ab");
-	if(!f) {
-		perror("Could not open replay file for writing");
-		bdestroy(filename);
-		return 1;
-	}
+	check(f != NULL, "Could not open replay file for writing");
 
 	fwrite(&r->mode, sizeof(int), 1, f);
 	fwrite(&r->mode_flags, sizeof(int), 1, f);
@@ -415,16 +411,17 @@ int write_replay_file(struct replay *r)
 	fclose(f);
 	bdestroy(filename);
 	return 0;
+
+error:
+	bdestroy(filename);
+	return 1;
 }
 
 struct bstrList *get_replay_list()
 {
 	DIR *replay_dir = opendir("replay");
 
-	if(!replay_dir) {
-		perror("Could not open replay directory for reading");
-		return NULL;
-	}
+	check(replay_dir != NULL, "Could not open replay directory for reading");
 
 	struct dirent *d = NULL;
 	struct bstrList *b = malloc(sizeof(struct bstrList));
@@ -455,4 +452,7 @@ struct bstrList *get_replay_list()
 	b->entry = realloc(b->entry, num*sizeof(bstring));
 
 	return b;
+
+error:
+	return NULL;
 }

@@ -838,20 +838,24 @@ int qrs_input(game_t *g)
     if(p->state & (PSFALL | PSLOCK) && !(p->state & PSPRELOCKED))
     {
         if(k->a == 1 || k->c == 1) {
-            if(qrs_rotate(g, p, CCW) == 0 && q->p1counters->floorkicks == q->max_floorkicks) {
-                if(q->lock_on_rotate == 1) {
-                    q->lock_on_rotate = 2;
-                } else
-                    q->lock_on_rotate = 1;
+            if(qrs_rotate(g, p, CCW) == 0) {
+                if(q->max_floorkicks != 0 && q->p1counters->floorkicks >= q->max_floorkicks) {
+                    if(q->lock_on_rotate == 1) {
+                        q->lock_on_rotate = 2;
+                    } else
+                        q->lock_on_rotate = 1;
+                }
             }
         }
 
         if(k->b == 1) {
-            if(qrs_rotate(g, p, CW) == 0 && q->p1counters->floorkicks == q->max_floorkicks) {
-                if(q->lock_on_rotate == 1) {
-                    q->lock_on_rotate = 2;
-                } else
-                    q->lock_on_rotate = 1;
+            if(qrs_rotate(g, p, CW) == 0) {
+                if(q->max_floorkicks != 0 && q->p1counters->floorkicks >= q->max_floorkicks) {
+                    if(q->lock_on_rotate == 1) {
+                        q->lock_on_rotate = 2;
+                    } else
+                        q->lock_on_rotate = 1;
+                }
             }
         }
 
@@ -1021,7 +1025,6 @@ int qrs_move(game_t *g, qrs_player *p, int offset)
 	p->x += offset;
 
 	if(qrs_chkcollision(g, p)) {
-		// printf("Failed to move, collided with field\n");
 		p->x = bkp_x;
 		return 1;
 	}
@@ -1257,17 +1260,16 @@ int qrs_floorkick(game_t *g, qrs_player *p)
 		return -1;
     if(p->def->flags & PDNOFKICK)
 		return 1;
-    if(!(p->def->flags & PDAIRBORNEFKICKS) && !(p->state & PSLOCK))
+    if(!(p->def->flags & PDAIRBORNEFKICKS) && !qrs_isonground(g, p))
         return 1;
 
     qrsdata *q = g->data;
+    int bkp_y = p->y;
 
     if(!q->max_floorkicks)
     {
         return 1;
     }
-
-	int bkp_y = p->y;
 
     if(p->orient == CW || p->orient == CCW)
     {
@@ -1297,6 +1299,7 @@ int qrs_floorkick(game_t *g, qrs_player *p)
 	}
 
     q->p1counters->floorkicks++;
+    //printf("Number of floorkicks so far: %d\n", q->p1counters->floorkicks);
 
 	return 0;
 }

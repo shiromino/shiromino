@@ -251,7 +251,7 @@ typedef struct {
 	int field_y; // ^^
 	int field_w; // in cells (only player-accessible ones)
 
-	int max_floorkicks;
+	unsigned int max_floorkicks;
 	int num_previews;
 
 	bool lock_delay_enabled;
@@ -278,7 +278,9 @@ typedef struct {
     int section;
 	int grade;
 
-	bool lock_on_rotate;
+	// values: 1 = set to 2 next time a rotate happens.
+	//		   2 = lock during THIS frame ( handled by qs_process_lock() )
+	int lock_on_rotate;
 
 	bool lock_held;
 	int locking_row;

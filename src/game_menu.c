@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 #include "bstrlib.h"
 
@@ -802,7 +803,7 @@ int menu_input(game_t *g)
 
 			if(!d->is_paged) {
 				if(k->a == 1 || k->left == 1 || k->right == 1) {
-					*(d3->param) = *(d3->param) ? 0 : 1;
+					*(d3->param) = *(d3->param) ? false : true;
 					if(d->menu[d->selection]->value_update_callback)
 						d->menu[d->selection]->value_update_callback(cs);
 				}

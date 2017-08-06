@@ -1,6 +1,7 @@
 #ifndef _game_menu_h
 #define _game_menu_h
 
+#include <stdbool.h>
 #include "bstrlib.h"
 #include "core.h"
 
@@ -71,7 +72,7 @@ struct text_opt_data {
 };
 
 struct toggle_opt_data {
-	int *param;
+	bool *param;
 	bstring labels[2];
 };
 
