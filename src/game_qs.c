@@ -2366,7 +2366,6 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     piece_id t = 0;
     int rc = 0;
 
-	struct asset *a = NULL;
 
     if(flags & INITNEXT_DURING_ACTIVE_PLAY)
     {
@@ -2416,11 +2415,10 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
         if(q->previews[2]) q->previews[2]->flags |= PDBRACKETS;
     }
 
-    t = qrand->lookahead(qrand, 1);
-    if(qrand->num_pieces == 7)
-        t = ars_to_qrs_id(t);
+    t = q->previews[0]->qrs_id;
 
     if(t != PIECE_ID_INVALID) {
+        struct asset *a = NULL;
         switch( t >= 18 ? (t - 18) : (t % 7) ) {
     		case 0:
     			a = asset_by_name(cs, "piece0");
@@ -2454,7 +2452,8 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     			break;
     	}
 
-        play_sfx(a->data, a->volume);
+        if (a)
+            play_sfx(a->data, a->volume);
     }
 
     if(q->cur_piece_qrs_id == USRSEQ_ELEM_OOB || !p->def) {
