@@ -42,21 +42,21 @@ static long double pento_drought_coeffs[25] =
     QRS_I_DROUGHT_COEFF,
     QRS_L_DROUGHT_COEFF,
     QRS_J_DROUGHT_COEFF,
-    1.0, // X
-    1.0, // S
-    1.0, // Z
+    QRS_X_DROUGHT_COEFF,
+    QRS_S_DROUGHT_COEFF,
+    QRS_Z_DROUGHT_COEFF,
     QRS_N_DROUGHT_COEFF,
     QRS_G_DROUGHT_COEFF,
     QRS_U_DROUGHT_COEFF,
-    1.0, // T
-    1.0, // Fa
-    1.0, // Fb
+    QRS_T_DROUGHT_COEFF,
+    QRS_Fa_DROUGHT_COEFF,
+    QRS_Fb_DROUGHT_COEFF,
     QRS_P_DROUGHT_COEFF,
     QRS_Q_DROUGHT_COEFF,
-    1.0, // W
-    1.0, // Ya
-    1.0, // Yb
-    1.0, // V
+    QRS_W_DROUGHT_COEFF,
+    QRS_Ya_DROUGHT_COEFF,
+    QRS_Yb_DROUGHT_COEFF,
+    QRS_V_DROUGHT_COEFF,
 
     ARS_I_DROUGHT_COEFF,
     ARS_T_DROUGHT_COEFF,
@@ -253,6 +253,9 @@ struct randomizer *g3_randomizer_create(uint32_t flags)
 
     for(i = 0; i < 35; i++)
         d->bag[i] = PIECE_ID_INVALID;
+
+    for(i = 0; i < 7; i++)
+        d->histogram[0] = 0;
 
     return r;
 }
@@ -618,7 +621,7 @@ piece_id g3rand_get_next(struct randomizer *r)
     struct g3rand_data *d = r->data;
 
     piece_id piece = PIECE_ID_INVALID;
-	unsigned int bagpos = 0;
+    unsigned int bagpos = 0;
     int i = 0;
 
 	for(i = 0; i < 6; i++)
@@ -939,15 +942,6 @@ rngstate g2_state_init_randomize(rngstate s)
     return s;
 }
 
-/*
- *
- *
- * g3 functions
- *
- *
- */
-
-
 piece_id g3_most_droughted_piece(int *histogram)
 {
     unsigned int i = 0;
@@ -965,36 +959,3 @@ piece_id g3_most_droughted_piece(int *histogram)
 
     return (piece_id)(maxi);
 }
-
-/*
-piece_id g3_bag_get()
-{
-    piece_t piece;
-	unsigned int bagpos, i;
-
-	for(i = 0; i < 6; i++)
-	{
-		bagpos = piece_rand(&r->seed) % 35;
-		piece = r->bag[bagpos];
-
-		// Piece is not in the history, this is fine
-		if(!piece_in_history(r, piece))
-			break;
-
-		// Piece is already in the history, churn the bag a little and reroll
-		r->bag[bagpos] = most_droughted_piece(r);
-
-		// We might be about to fall out of the loop, pick something at random
-		bagpos = piece_rand(&r->seed) % 35;
-		piece = r->bag[bagpos];
-	}
-
-	// Make the pieces we didn't pick more likely in future, and this piece less
-	histogram_update(r, piece);
-
-	// Piece has finally be chosen, histogram is up to date, put the rarest piece back into the bag and return.
-	r->bag[bagpos] = most_droughted_piece(r);
-
-	return piece;
-}
-*/
