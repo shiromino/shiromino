@@ -142,15 +142,25 @@ struct bindings *bindings_copy(struct bindings *src)
 	return b;
 }
 
+static bstring make_path(const char *base, const char *subdir, const char *name, const char *ext)
+{
+	bstring path = base ? bfromcstr(base) : bfromcstr(".");
+	bconchar(path, '/');
+	bcatcstr(path, subdir);
+	bconchar(path, '/');
+	bcatcstr(path, name);
+	bcatcstr(path, ext);
+//	printf("asset: %s\n", path->data);
+	return path;
+}
+
 int load_asset(coreState *cs, int type, char *name)
 {
 	if(!cs || !name)
 		return -1;
 
-	bstring filename = bfromcstr(name);
-	bstring extension = NULL;
-	bstring filename_full = bstrcpy(filename);
-	struct bstrList *lines = NULL;
+	bstring filename_full = NULL;
+
 	struct asset *a = NULL;
 	void *data = NULL;
 	SDL_Surface *s = NULL;
@@ -158,61 +168,43 @@ int load_asset(coreState *cs, int type, char *name)
 
 	switch(type) {
 		case ASSET_IMG:
-			chdir("gfx");
-			extension = bfromcstr(".png");
-			bconcat(filename_full, extension);
+			filename_full = make_path(cs->settings->home_path, "gfx", name, ".png");
 			s = IMG_Load((char *)(filename_full->data));
 
 			if(!s) {
-				bdestroy(extension);
 				bdestroy(filename_full);
-				extension = bfromcstr(".jpg");
-				filename_full = bstrcpy(filename);
-				bconcat(filename_full, extension);
+				filename_full = make_path(cs->settings->home_path, "gfx", name, ".jpg");
 				s = IMG_Load((char *)(filename_full->data));
 
 				//printf("Could not find PNG image with this name, trying JPG: %s\n", filename_full->data);
 			}
 
 			data = SDL_CreateTextureFromSurface(cs->screen.renderer, s);
-			if(!data)
-				goto error;
 			break;
 
 		case ASSET_WAV:
-			chdir("audio");
-			extension = bfromcstr(".wav");
-			bconcat(filename, extension);
-			data = Mix_LoadWAV((char *)(filename->data));
-
-			if(!data)
-				goto error;
+			filename_full = make_path(cs->settings->home_path, "audio", name, ".wav");
+			data = Mix_LoadWAV((char *)(filename_full->data));
 			break;
 
 		case ASSET_MUS:
-			chdir("audio");
-			extension = bfromcstr(".ogg");
-			bconcat(filename_full, extension);
+			filename_full = make_path(cs->settings->home_path, "audio", name, ".ogg");
 			data = Mix_LoadMUS((char *)(filename_full->data));
 
 			if(data)
 				break;
 
-			bdestroy(extension);
 			bdestroy(filename_full);
-			extension = bfromcstr(".wav");
-			filename_full = bstrcpy(filename);
-			bconcat(filename_full, extension);
+			filename_full = make_path(cs->settings->home_path, "audio", name, ".wav");
 			data = Mix_LoadMUS((char *)(filename_full->data));
-
-			if(!data)
-				goto error;
-
 			break;
 
 		default:
 			goto error;
 	}
+
+	if(!data)
+		goto error;
 
 	a = malloc(sizeof(struct asset));
 	a->type = type;
@@ -220,8 +212,11 @@ int load_asset(coreState *cs, int type, char *name)
 	a->data = data;
 
 	if(type == ASSET_MUS || type == ASSET_WAV) {
+		struct bstrList *lines = NULL;
 		lines = split_file("volume.cfg");
+		bstring filename = bfromcstr(name);
 		a->volume = get_asset_volume(lines, filename);
+		bdestroy(filename);
 		if(lines)
 			bstrListDestroy(lines);
 	}
@@ -255,9 +250,6 @@ int load_asset(coreState *cs, int type, char *name)
 	cs->assets->num++;
 
 end:
-	chdir(cs->settings->home_path);
-	bdestroy(filename);
-	bdestroy(extension);
 	bdestroy(filename_full);
 
 	if(s)
@@ -266,9 +258,7 @@ end:
 	return i;
 
 error:
-	chdir(cs->settings->home_path);
-	bdestroy(filename);
-	bdestroy(extension);
+	bdestroy(filename_full);
 
 	if(s)
 		SDL_FreeSurface(s);
@@ -295,7 +285,7 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
 	struct stat s;
 	chdir("gfx");
 	int err = stat(directory, &s);
-	chdir(cs->settings->home_path);
+	chdir("..");
 
 	if(-1 == err) {
 		if(ENOENT == errno) {
