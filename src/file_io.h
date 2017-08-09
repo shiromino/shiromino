@@ -7,7 +7,7 @@
 
 #define OPTION_INVALID -255
 
-#define MINIMUM_REPLAY_SIZE (REPLAY_HEADER_SIZE + sizeof(struct keyflags))
+#define MINIMUM_REPLAY_SIZE (long)(REPLAY_HEADER_SIZE + sizeof(struct keyflags))
 #define REPLAY_HEADER_SIZE (6*sizeof(int) + 3*sizeof(long))
 
 struct settings *parse_cfg(char *filename);

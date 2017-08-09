@@ -132,7 +132,7 @@ void g123_seeds_init()
 
 int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
 {
-    int i = 0;
+    unsigned int i = 0;
     uint32_t s1_tmp_forward = s1;
     uint32_t s1_tmp_backward = s1;
 
@@ -151,7 +151,7 @@ int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
 
 int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
 {
-    int i = 0;
+    unsigned int i = 0;
     for(i = 0; i < max_gap; i++) {
         a = g2_rand(a);
         if(a == b)
@@ -163,7 +163,7 @@ int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
 
 char *sprintf_rngstate(char *strbuf, rngstate s)
 {
-    sprintf(strbuf, "%d%d%d%d,%x", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), s & 0xffffffff);
+    sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), s & 0xffffffff);
     return strbuf;
 }
 
@@ -264,7 +264,7 @@ struct randomizer *pento_randomizer_create(uint32_t flags)
 {
     struct randomizer *r = malloc(sizeof(struct randomizer));
     struct histrand_data *d = NULL;
-    int i = 0;
+    unsigned int i = 0;
 
     r->num_pieces = 25;
     r->seedp = &pento_seed;
@@ -474,7 +474,7 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
 
 void history_push(piece_id *history, unsigned int hist_len, piece_id t)
 {
-    int i = 0;
+    unsigned int i = 0;
 
     for(i = 0; i < hist_len - 1; i++) {
         history[i] = history[i+1];
@@ -493,7 +493,7 @@ piece_id history_pop(piece_id *history)
 
 bool in_history(piece_id *history, unsigned int hist_len, piece_id t)
 {
-    int i = 0;
+    unsigned int i = 0;
 
     for(i = 0; i < hist_len; i++) {
         if(history[i] == t)
@@ -508,7 +508,7 @@ piece_id histrand_pull(struct randomizer *r)
     struct histrand_data *d = r->data;
     piece_id t = histrand_get_next(r);
     piece_id result = history_pop(d->history);
-    int i = 0;
+    unsigned int i = 0;
 
     history_push(d->history, d->hist_len, t);
 
@@ -537,8 +537,8 @@ piece_id histrand_get_next(struct randomizer *r)
 {
     struct histrand_data *d = r->data;
     uint32_t *seedp = r->seedp;
-    int i = 0;
-    int j = 0;
+    unsigned int i = 0;
+    unsigned int j = 0;
     int in_hist = 0;
     piece_id t = PIECE_ID_INVALID;
 

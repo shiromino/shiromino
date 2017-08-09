@@ -159,7 +159,7 @@ typedef struct {
 	int are;
 	int lineare;
 	int lineclear;
-	int floorkicks;
+	unsigned int floorkicks;
 	int hold_flash;
 } qrs_counters;
 
@@ -209,7 +209,7 @@ struct pracdata {
 
 	int hist_index;
 	int lock_protect;
-	int infinite_floorkicks;
+	bool infinite_floorkicks;
 	int piece_subset;
 
 	long randomizer_seed;

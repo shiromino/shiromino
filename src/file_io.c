@@ -319,7 +319,7 @@ struct replay *read_replay_file(char *filename, int get_inputs)
 
 	FILE *f = fopen(filename, "rb");
 	struct replay *r = NULL;
-	int flen = 0;
+	long flen = 0;
 
 	if(!f)
 		return NULL;

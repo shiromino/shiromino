@@ -201,9 +201,9 @@ piecedef **qrspool_create()
 
         for(j = 0; j < 4; j++) {
             if(n == 5)
-                arr = qrspent_yx_rotation_tables[i][j];
+                arr = (int *)(qrspent_yx_rotation_tables[i][j]);
             else
-                arr = qrstet_yx_rotation_tables[i - 18][j];
+                arr = (int *)(qrstet_yx_rotation_tables[i - 18][j]);
 
             pool[i]->rotation_tables[j] = grid_from_1d_int_array(arr, n, n);
         }

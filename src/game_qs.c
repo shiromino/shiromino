@@ -460,6 +460,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
                 q->pracdata->piece_subset = SUBSET_PENTS;
             else
                 q->pracdata->piece_subset = SUBSET_ALL;
+
         	q->pracdata->randomizer_seed = 0;
 
             cs->pracdata_mirror = q->pracdata;
@@ -2443,7 +2444,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
         }
     }
 
-    if(q->cur_piece_qrs_id == USRSEQ_ELEM_OOB || !p->def) {
+    if(q->cur_piece_qrs_id == PIECE_ID_INVALID || !p->def) {
         // pause the game if we can't deal a new piece
         return QSGAME_SHOULD_TERMINATE;
     }
