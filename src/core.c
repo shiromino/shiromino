@@ -1001,13 +1001,13 @@ int procevents(coreState *cs)
 					{
 						if(event.jaxis.value < -JOYSTICK_DEAD_ZONE)
 						{
-							k->down = 1;
-							k->up = 0;
+							k->up = 1;
+							k->down = 0;
 						}
 						else if(event.jaxis.value > JOYSTICK_DEAD_ZONE)
 						{
-							k->up = 1;
-							k->down = 0;
+							k->down = 1;
+							k->up = 0;
 						}
 						else
 						{
