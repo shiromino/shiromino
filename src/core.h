@@ -17,6 +17,7 @@
 #define FRAMEDELAY_ERR 0
 
 #define BUTTON_PRESSED_THIS_FRAME 2
+#define JOYSTICK_DEAD_ZONE 8000
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
@@ -206,6 +207,7 @@ struct coreState_ {
 	int gfx_buttons_max;
 
 	struct keyflags *keys[2];
+	SDL_Joystick *joystick;
 	int mouse_x;
 	int mouse_y;
 	int mouse_left_down;

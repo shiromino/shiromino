@@ -448,6 +448,7 @@ coreState *coreState_create()
 	cs->assets->entry = NULL;
 	cs->assets->num = 0;
 
+	cs->joystick = NULL;
 	cs->keys[0] = malloc(sizeof(struct keyflags));
 	cs->keys[1] = malloc(sizeof(struct keyflags));
 	keyflags_init(cs->keys[0]);
@@ -711,12 +712,27 @@ int init(coreState *cs, struct settings *s)
 		cs->settings = &defaultsettings;
 
 	check(SDL_Init(SDL_INIT_EVENTS|SDL_INIT_TIMER|SDL_INIT_VIDEO|SDL_INIT_AUDIO) == 0, "SDL_Init: Error: %s\n", SDL_GetError());
+	check(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem: Error: %s\n", SDL_GetError());
 	check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG, "IMG_Init: Failed to initialize PNG support: %s\n", IMG_GetError());		// IMG_GetError() not necessarily reliable here
 	check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG, "Mix_Init: Failed to initialize OGG support: %s\n", Mix_GetError());		// ^ same applies here
 	check(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != -1, "Mix_OpenAudio: Error\n");
 	check(gfx_init(cs) == 0, "gfx_init returned failure\n");
 	Mix_AllocateChannels(16);
 	Mix_Volume(-1, (cs->sfx_volume * cs->master_volume)/100);
+
+	if(SDL_NumJoysticks() > 0) {
+	    cs->joystick = SDL_JoystickOpen(0);
+
+	    if(cs->joystick) {
+	        printf("Opened Joystick 0\n");
+	        printf("Name: %s\n", SDL_JoystickNameForIndex(0));
+	        printf("Number of Axes: %d\n", SDL_JoystickNumAxes(cs->joystick));
+	        printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(cs->joystick));
+	        printf("Number of Balls: %d\n", SDL_JoystickNumBalls(cs->joystick));
+	    } else {
+	        printf("Couldn't open Joystick 0\n");
+	    }
+	}
 
 	cs->screen.w = cs->settings->video_scale * 640;
 	cs->screen.h = cs->settings->video_scale * 480;
@@ -778,6 +794,10 @@ void quit(coreState *cs)
 
 	cs->screen.window = NULL;
 	cs->screen.renderer = NULL;
+
+	if(cs->joystick && SDL_JoystickGetAttached(cs->joystick)) {
+		SDL_JoystickClose(cs->joystick);
+	}
 
 	if(cs->p1game) {
 		printf("quit(): Found leftover game struct, attempting ->quit\n");
@@ -939,9 +959,12 @@ int procevents(coreState *cs)
 
 	struct bindings *kb = NULL;
 	struct keyflags *k = NULL;
+	SDL_Joystick *joy = cs->joystick;
 
 	SDL_Event event;
 	SDL_Keycode kc;
+
+	Uint8 rc = 0;
 
 	if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
 		cs->mouse_left_down = 1;
@@ -960,6 +983,52 @@ int procevents(coreState *cs)
 			case SDL_QUIT:
 				cs->running = 0;
 				return 1;
+
+			case SDL_JOYAXISMOTION:
+				k = cs->keys[0];
+
+				if(event.jaxis.which == 0)
+				{
+					if(event.jaxis.axis == 0) // x axis
+					{
+						if(event.jaxis.value < -JOYSTICK_DEAD_ZONE)
+						{
+							k->left = 1;
+							k->right = 0;
+						}
+						else if(event.jaxis.value > JOYSTICK_DEAD_ZONE)
+						{
+							k->right = 1;
+							k->left = 0;
+						}
+						else
+						{
+							k->right = 0;
+							k->left = 0;
+						}
+					}
+					else if(event.jaxis.axis == 1) // y axis
+					{
+						if(event.jaxis.value < -JOYSTICK_DEAD_ZONE)
+						{
+							k->down = 1;
+							k->up = 0;
+						}
+						else if(event.jaxis.value > JOYSTICK_DEAD_ZONE)
+						{
+							k->up = 1;
+							k->down = 0;
+						}
+						else
+						{
+							k->up = 0;
+							k->down = 0;
+						}
+					}
+
+				}
+
+				break;
 
 			case SDL_KEYDOWN:
 				if(event.key.repeat)
@@ -1258,6 +1327,35 @@ int procevents(coreState *cs)
 			default:
 				break;
 		}
+	}
+
+	k = cs->keys[0];
+
+	if(joy)
+	{
+		rc = SDL_JoystickGetButton(joy, 0);
+		if(!rc)
+			k->a = 0;
+		if(rc && k->a == 0)
+			k->a = 1;
+
+		rc = SDL_JoystickGetButton(joy, 1);
+		if(!rc)
+			k->b = 0;
+		if(rc && k->b == 0)
+			k->b = 1;
+
+		rc = SDL_JoystickGetButton(joy, 2);
+		if(!rc)
+			k->c = 0;
+		if(rc && k->c == 0)
+			k->c = 1;
+
+		rc = SDL_JoystickGetButton(joy, 3);
+		if(!rc)
+			k->d = 0;
+		if(rc && k->d == 0)
+			k->d = 1;
 	}
 
 	if(cs->left_arrow_das) {
