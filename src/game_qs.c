@@ -517,29 +517,26 @@ int qs_game_init(game_t *g)
 
     printf("Random seed: %ld\n", q->randomizer_seed);
 
-	if(q->randomizer)
-        qrand->init(qrand);
+	if(qrand) {
+        qrand->init(qrand, NULL);
 
-    next1_id = qrand->pull(qrand);
-    next2_id = qrand->pull(qrand);
-    next3_id = qrand->pull(qrand);
+        next1_id = qrand->pull(qrand);
+        next2_id = qrand->pull(qrand);
+        next3_id = qrand->pull(qrand);
 
-    if(q->randomizer->num_pieces == 7) {
-        next1_id = ars_to_qrs_id(next1_id);
-        next2_id = ars_to_qrs_id(next2_id);
-        next3_id = ars_to_qrs_id(next3_id);
+        if(qrand->num_pieces == 7) {
+            next1_id = ars_to_qrs_id(next1_id);
+            next2_id = ars_to_qrs_id(next2_id);
+            next3_id = ars_to_qrs_id(next3_id);
+        }
     }
 
-    if(q->pracdata) {
-        if(q->pracdata->usr_seq_len) {
-            q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 0));
-            q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 1));
-            q->previews[2] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 2));
-        } else {
-            q->previews[0] = qrspiece_cpy(q->piecepool, next1_id);
-            q->previews[1] = qrspiece_cpy(q->piecepool, next2_id);
-            q->previews[2] = qrspiece_cpy(q->piecepool, next3_id);
-        }
+    if(q->pracdata && q->pracdata->usr_seq_len) {
+        q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 0));
+        q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 1));
+        q->previews[2] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 2));
+
+        q->pracdata->hist_index = 2;
     } else {
         q->previews[0] = qrspiece_cpy(q->piecepool, next1_id);
         q->previews[1] = qrspiece_cpy(q->piecepool, next2_id);
@@ -608,6 +605,8 @@ int qs_game_pracinit(game_t *g, int val)
 
     cs->menu_input_override = 0;
 
+    q->randomizer_seed = *(qrand->seedp);
+
     gridcpy(q->pracdata->usr_field, g->field);
 
     c->init = 0;
@@ -638,6 +637,18 @@ int qs_game_pracinit(game_t *g, int val)
     if(q->previews[2])
         piecedef_destroy(q->previews[2]);
 
+    qrand->init(qrand, NULL);
+
+    next1_id = qrand->pull(qrand);
+    next2_id = qrand->pull(qrand);
+    next3_id = qrand->pull(qrand);
+
+    if(qrand->num_pieces == 7) {
+        next1_id = ars_to_qrs_id(next1_id);
+        next2_id = ars_to_qrs_id(next2_id);
+        next3_id = ars_to_qrs_id(next3_id);
+    }
+
     if(q->pracdata->usr_seq_len) {
         q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 0));
         q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 1));
@@ -645,18 +656,6 @@ int qs_game_pracinit(game_t *g, int val)
 
         q->pracdata->hist_index = 2;
     } else {
-        qrand->init(qrand);
-
-        next1_id = qrand->pull(qrand);
-        next2_id = qrand->pull(qrand);
-        next3_id = qrand->pull(qrand);
-
-        if(q->randomizer->num_pieces == 7) {
-            next1_id = ars_to_qrs_id(next1_id);
-            next2_id = ars_to_qrs_id(next2_id);
-            next3_id = ars_to_qrs_id(next3_id);
-        }
-
         q->previews[0] = qrspiece_cpy(q->piecepool, next1_id);
         q->previews[1] = qrspiece_cpy(q->piecepool, next2_id);
         q->previews[2] = qrspiece_cpy(q->piecepool, next3_id);
@@ -2088,26 +2087,10 @@ end_sequence_proc:
         d->usr_sequence[i] = piece_seq[i];
 
     d->usr_seq_len = num;
-
     d->usr_seq_expand_len = 0;
-/*
-    switch(d->piece_subset) {
-        case SUBSET_ALL:
-            q->tetromino_only = 0;
-            q->pentomino_only = 0;
-            break;
-        case SUBSET_TETS:
-            q->tetromino_only = 1;
-            q->pentomino_only = 0;
-            break;
-        case SUBSET_PENTS:
-            q->tetromino_only = 0;
-            q->pentomino_only = 1;
-            break;
-        default:
-            break;
-    }
-*/
+
+    /**/
+
     qrsfield_set_w(cs->p1game->field, q->field_w);
     qrsfield_set_w(q->pracdata->usr_field, q->field_w);
 
@@ -2415,45 +2398,49 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
         if(q->previews[2]) q->previews[2]->flags |= PDBRACKETS;
     }
 
-    t = q->previews[0]->qrs_id;
+    if(q->previews[0])
+    {
+        t = q->previews[0]->qrs_id;
 
-    if(t != PIECE_ID_INVALID) {
-        struct asset *a = NULL;
-        switch( t >= 18 ? (t - 18) : (t % 7) ) {
-    		case 0:
-    			a = asset_by_name(cs, "piece0");
-    			break;
+        if(t != PIECE_ID_INVALID)
+        {
+            struct asset *a = NULL;
+            switch( t >= 18 ? (t - 18) : (t % 7) )
+            {
+        		case 0:
+        			a = asset_by_name(cs, "piece0");
+        			break;
 
-    		case 1:
-    			a = asset_by_name(cs, "piece1");
-    			break;
+        		case 1:
+        			a = asset_by_name(cs, "piece1");
+        			break;
 
-    		case 2:
-    			a = asset_by_name(cs, "piece2");
-    			break;
+        		case 2:
+        			a = asset_by_name(cs, "piece2");
+        			break;
 
-    		case 3:
-    			a = asset_by_name(cs, "piece3");
-    			break;
+        		case 3:
+        			a = asset_by_name(cs, "piece3");
+        			break;
 
-    		case 4:
-    			a = asset_by_name(cs, "piece4");
-    			break;
+        		case 4:
+        			a = asset_by_name(cs, "piece4");
+        			break;
 
-    		case 5:
-    			a = asset_by_name(cs, "piece5");
-    			break;
+        		case 5:
+        			a = asset_by_name(cs, "piece5");
+        			break;
 
-    		case 6:
-    			a = asset_by_name(cs, "piece6");
-    			break;
+        		case 6:
+        			a = asset_by_name(cs, "piece6");
+        			break;
 
-    		default:
-    			break;
-    	}
+        		default:
+        			break;
+        	}
 
-        if (a)
-            play_sfx(a->data, a->volume);
+            if(a) play_sfx(a->data, a->volume);
+        }
     }
 
     if(q->cur_piece_qrs_id == USRSEQ_ELEM_OOB || !p->def) {

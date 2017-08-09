@@ -90,7 +90,7 @@ struct randomizer {
     // this way we don't need to read r->type (to determine which read_rand() to use)
 
     // uint32_t (*read_rand)(uint32_t *seedp);
-    int (*init)(struct randomizer *);
+    int (*init)(struct randomizer *, uint32_t *);
     piece_id (*pull)(struct randomizer *); // pop + push
     piece_id (*lookahead)(struct randomizer *, unsigned int);
 

@@ -374,7 +374,7 @@ int g2_randomizer_init(struct randomizer *r, uint32_t *seed)
     d->history[0] = ARS_S;
     d->history[1] = ARS_S;
     d->history[2] = ARS_Z;
-    d->history[3] = g123_get_init_piece(NULL);
+    d->history[3] = g123_get_init_piece(&g2_seed);
     num_generated = 1;
 
     for(i = 0; i < 3; i++)
@@ -525,12 +525,9 @@ piece_id histrand_pull(struct randomizer *r)
 piece_id g3rand_pull(struct randomizer *r)
 {
     struct g3rand_data *d = r->data;
-    piece_id piece;
-    piece_id t;
+    piece_id t = g3rand_get_next(r);
+    piece_id piece = history_pop(d->history);
 
-	piece = d->history[0];
-
-	t = g3rand_get_next(r);
 	history_push(d->history, 4, t);
 
 	return piece;
@@ -643,7 +640,10 @@ piece_id g3rand_get_next(struct randomizer *r)
 
 	// make the pieces we didn't pick more likely in future, and this piece less
     for(i = 0; i < 7; i++) {
-        if((piece_id)i != piece) d->histogram[i]++;
+        if(i == (int)(piece))
+            d->histogram[i] = 0;
+        else
+            d->histogram[i]++;
     }
 
 	// piece has finally be chosen, histogram is up to date, put the rarest piece back into the bag and return.

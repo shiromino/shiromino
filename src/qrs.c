@@ -790,6 +790,7 @@ int qrs_input(game_t *g)
         return 0;
     }
 
+    // hacky way to go back to the practice menu if a game is running from that menu
 	if(cs->keys[0]->escape || cs->keys[1]->escape) {
         if(menu_is_practice(cs->menu)) {
             cs->menu_input_override = 1;
@@ -808,8 +809,8 @@ int qrs_input(game_t *g)
             cs->keys[1]->escape = 0;
 
             return 0;
-        } else return 1;
-
+        } else
+            return 1;
     }
 
 	if(init < 120)
