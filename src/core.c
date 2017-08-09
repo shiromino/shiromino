@@ -1020,6 +1020,76 @@ int procevents(coreState *cs)
 
 				break;
 
+			case SDL_JOYHATMOTION:
+				k = cs->keys[0];
+
+				if(event.jhat.which == 0)
+				{
+					if(event.jhat.hat == 0)
+					{
+						if(event.jhat.value == SDL_HAT_LEFT)
+						{
+							k->left = 1;
+							k->right = 0;
+						}
+						else if(event.jhat.value == SDL_HAT_RIGHT)
+						{
+							k->right = 1;
+							k->left = 0;
+						}
+						else if(event.jhat.value == SDL_HAT_UP)
+						{
+							k->up = 1;
+							k->down = 0;
+						}
+						else if(event.jhat.value == SDL_HAT_DOWN)
+						{
+							k->down = 1;
+							k->up = 0;
+						}
+						else
+						{
+							k->right = 0;
+							k->left = 0;
+							k->up = 0;
+							k->down = 0;
+						}
+					}
+				}
+
+				break;
+
+			case SDL_JOYBUTTONDOWN:
+			case SDL_JOYBUTTONUP:
+				k = cs->keys[0];
+				if(joy) {
+					rc = SDL_JoystickGetButton(joy, 0);
+					if(!rc)
+						k->a = 0;
+					if(rc && k->a == 0)
+						k->a = 1;
+
+					rc = SDL_JoystickGetButton(joy, 1);
+					if(!rc)
+						k->b = 0;
+					if(rc && k->b == 0)
+						k->b = 1;
+
+					rc = SDL_JoystickGetButton(joy, 2);
+					if(!rc)
+						k->c = 0;
+					if(rc && k->c == 0)
+						k->c = 1;
+
+					rc = SDL_JoystickGetButton(joy, 3);
+					if(!rc)
+						k->d = 0;
+					if(rc && k->d == 0)
+						k->d = 1;
+				}
+
+				break;
+
 			case SDL_KEYDOWN:
 				if(event.key.repeat)
 					break;
@@ -1317,35 +1387,6 @@ int procevents(coreState *cs)
 			default:
 				break;
 		}
-	}
-
-	k = cs->keys[0];
-
-	if(joy)
-	{
-		rc = SDL_JoystickGetButton(joy, 0);
-		if(!rc)
-			k->a = 0;
-		if(rc && k->a == 0)
-			k->a = 1;
-
-		rc = SDL_JoystickGetButton(joy, 1);
-		if(!rc)
-			k->b = 0;
-		if(rc && k->b == 0)
-			k->b = 1;
-
-		rc = SDL_JoystickGetButton(joy, 2);
-		if(!rc)
-			k->c = 0;
-		if(rc && k->c == 0)
-			k->c = 1;
-
-		rc = SDL_JoystickGetButton(joy, 3);
-		if(!rc)
-			k->d = 0;
-		if(rc && k->d == 0)
-			k->d = 1;
 	}
 
 	if(cs->left_arrow_das) {
