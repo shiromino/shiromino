@@ -198,10 +198,9 @@ int load_asset(coreState *cs, int type, char *name)
 			filename_full = make_path(cs->settings->home_path, "audio", name, ".wav");
 			data = Mix_LoadMUS((char *)(filename_full->data));
 			break;
-
-		default:
-			goto error;
 	}
+
+	bdestroy(filename_full);
 
 	if(!data)
 		goto error;
@@ -212,11 +211,12 @@ int load_asset(coreState *cs, int type, char *name)
 	a->data = data;
 
 	if(type == ASSET_MUS || type == ASSET_WAV) {
-		struct bstrList *lines = NULL;
-		lines = split_file("volume.cfg");
+		filename_full = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
+		struct bstrList *lines = split_file((char*) filename_full->data);
 		bstring filename = bfromcstr(name);
 		a->volume = get_asset_volume(lines, filename);
 		bdestroy(filename);
+		bdestroy(filename_full);
 		if(lines)
 			bstrListDestroy(lines);
 	}
@@ -250,16 +250,12 @@ int load_asset(coreState *cs, int type, char *name)
 	cs->assets->num++;
 
 end:
-	bdestroy(filename_full);
-
 	if(s)
 		SDL_FreeSurface(s);
 
 	return i;
 
 error:
-	bdestroy(filename_full);
-
 	if(s)
 		SDL_FreeSurface(s);
 
