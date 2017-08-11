@@ -14,7 +14,7 @@ beta2
 
     Changes/Removed Features:
         * MASTER renamed to PENTOMINO
-        * PENTOMINO speed curve is more gentle
+        * PENTOMINO speed curve is more difficult
         * PENTOMINO randomizer heavily re-balanced
         * T (pentomino) now floorkicks
         * is_recovering threshold changed from >=150 blocks in playfield to >=170

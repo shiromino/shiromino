@@ -4,7 +4,7 @@
 #include "core.h"
 #include "qrs.h"
 
-#define QS_CURVE_MAX 15
+#define QS_CURVE_MAX 17
 #define G1_MASTER_CURVE_MAX 30
 #define G2_DEATH_CURVE_MAX 9
 #define G3_TERROR_CURVE_MAX 9
