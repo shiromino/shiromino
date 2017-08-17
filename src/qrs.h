@@ -8,31 +8,31 @@
 #include "grid.h"
 #include "timer.h"
 
-#define PSINACTIVE 		0x0000
+#define PSINACTIVE         0x0000
 
-#define PSARE 			0x0001
-#define PSLINEARE 		0x0002
-#define PSFALL 			0x0004
-#define PSDASLEFT		0x0008
-#define PSDASRIGHT		0x0010
-#define PSLOCK	 		0x0020
-#define PSLINECLEAR		0x0040
-#define PSFKICKED		0x0080
-#define PSLOCKED		0x0100
-#define PSPRELOCKED		0x0200
-#define PSLOCKFLASH1	0x0400
-#define PSLOCKFLASH2	0x0800
-#define PSLOCKPROTECT	0x1000
-#define PSLOCKFLASH3	0x2000
-#define PSLOCKFLASH4	0x4000
+#define PSARE             0x0001
+#define PSLINEARE         0x0002
+#define PSFALL             0x0004
+#define PSDASLEFT        0x0008
+#define PSDASRIGHT        0x0010
+#define PSLOCK             0x0020
+#define PSLINECLEAR        0x0040
+#define PSFKICKED        0x0080
+#define PSLOCKED        0x0100
+#define PSPRELOCKED        0x0200
+#define PSLOCKFLASH1    0x0400
+#define PSLOCKFLASH2    0x0800
+#define PSLOCKPROTECT    0x1000
+#define PSLOCKFLASH3    0x2000
+#define PSLOCKFLASH4    0x4000
 #define PSPRELOCKFLASH1 0x8000
-#define PSSPAWN			0x10000
-#define PSLOCKPRESSED	0x20000
-#define PSUSEDHOLD		0x40000
-#define PSHOLDFLASH		0x80000
+#define PSSPAWN            0x10000
+#define PSLOCKPRESSED    0x20000
+#define PSUSEDHOLD        0x40000
+#define PSHOLDFLASH        0x80000
 
-#define MOVE_LEFT		-1
-#define MOVE_RIGHT		1
+#define MOVE_LEFT        -1
+#define MOVE_RIGHT        1
 
 #define QRS_FIELD_EDIT  2
 
@@ -100,35 +100,35 @@
 #define QRS_WALL QRS_FIELD_W_LIMITER
 
 #define SEQUENCE_REPEAT_START 2048
-#define SEQUENCE_REPEAT_END	4096
+#define SEQUENCE_REPEAT_END    4096
 #define SEQUENCE_REPEAT_INF 8192
 
 #define QRS_FIELD_W 12
 #define QRS_FIELD_H 22
 
-#define GAMESTATE_INACTIVE 		0x80000000
-#define GAMESTATE_INVISIBLE 		0x0001
-#define GAMESTATE_BRACKETS 			0x0002
-#define GAMESTATE_RISING_GARBAGE 	0x0004
-#define GAMESTATE_CREDITS			0x0008
-#define GAMESTATE_FADING			0x0010
-#define GAMESTATE_TOPOUT_ANIM		0x0020
-#define GAMESTATE_FADE_TO_CREDITS	0x0040
-#define GAMESTATE_READYGO			0x0080
-#define GAMESTATE_GAMEOVER			0x0100
-#define GAMESTATE_PRESS_START		0x0200
-#define GAMESTATE_FIREWORKS_GM		0x0400
-#define GAMESTATE_FIREWORKS			0x0800
-#define GAMESTATE_BETTER_NEXT_TIME	0x1000
-#define GAMESTATE_RESULTS_SCREEN	0x2000
-#define GAMESTATE_CREDITS_TOPOUT	0x4000
-#define GAMESTATE_PRE_PROMO_EXAM	0x8000
-#define GAMESTATE_PROMO_RESULTS	0x00010000
+#define GAMESTATE_INACTIVE         0x80000000
+#define GAMESTATE_INVISIBLE         0x0001
+#define GAMESTATE_BRACKETS             0x0002
+#define GAMESTATE_RISING_GARBAGE     0x0004
+#define GAMESTATE_CREDITS            0x0008
+#define GAMESTATE_FADING            0x0010
+#define GAMESTATE_TOPOUT_ANIM        0x0020
+#define GAMESTATE_FADE_TO_CREDITS    0x0040
+#define GAMESTATE_READYGO            0x0080
+#define GAMESTATE_GAMEOVER            0x0100
+#define GAMESTATE_PRESS_START        0x0200
+#define GAMESTATE_FIREWORKS_GM        0x0400
+#define GAMESTATE_FIREWORKS            0x0800
+#define GAMESTATE_BETTER_NEXT_TIME    0x1000
+#define GAMESTATE_RESULTS_SCREEN    0x2000
+#define GAMESTATE_CREDITS_TOPOUT    0x4000
+#define GAMESTATE_PRE_PROMO_EXAM    0x8000
+#define GAMESTATE_PROMO_RESULTS    0x00010000
 
-//#define GAMESTATE_REWIND			0x4000
-//#define GAMESTATE_FAST_FORWARD		0x8000
+//#define GAMESTATE_REWIND            0x4000
+//#define GAMESTATE_FAST_FORWARD        0x8000
 
-#define GARBAGE_COPY_BOTTOM_ROW		0x0001
+#define GARBAGE_COPY_BOTTOM_ROW        0x0001
 
 #define LOCKPIECE_BRACKETS 0x0001
 #define LOCKPIECE_RAINBOW 0x0002
@@ -136,10 +136,10 @@
 #define SPAWNX_QRS 5
 #define SPAWNY_QRS 1
 
-#define ANCHORX_QRS		1
-#define ANCHORY_QRS		1
-#define SPAWNX_ARS		4
-#define SPAWNY_ARS		2
+#define ANCHORX_QRS        1
+#define ANCHORY_QRS        1
+#define SPAWNX_ARS        4
+#define SPAWNY_ARS        2
 
 #define TAP_ARS 0
 #define TI_ARS 1
@@ -151,7 +151,7 @@
 
 #define YTOROW(n)   (n/256)
 #define ROWTOY(n)   (n*256)
-#define IS_STACK(n)	((!n || n == -2 || n == GRID_OOB || n == QRS_FIELD_W_LIMITER) ? 0 : 1)
+#define IS_STACK(n)    ((!n || n == -2 || n == GRID_OOB || n == QRS_FIELD_W_LIMITER) ? 0 : 1)
 #define IS_INBOUNDS(n) (IS_STACK(n) || !n || n == -2)
 #define IS_QRS_PIECE(n) (n >= 0 && n < 25)
 #define GET_PIECE_FADE_COUNTER(n) ((n >> 8) & 0xffff)
@@ -162,186 +162,186 @@ extern const char *qrs_piece_names[25];
 typedef uint8_t piece_id;
 
 typedef struct {
-	int level;
+    int level;
 
-	int grav;
-	int lock;
-	int das;
-	int are;
-	int lineare;
-	int lineclear;
+    int grav;
+    int lock;
+    int das;
+    int are;
+    int lineare;
+    int lineclear;
 } qrs_timings;
 
 typedef struct {
-	int init;
+    int init;
 
-	int lock;
-	int are;
-	int lineare;
-	int lineclear;
-	unsigned int floorkicks;
-	int hold_flash;
+    int lock;
+    int are;
+    int lineare;
+    int lineclear;
+    unsigned int floorkicks;
+    int hold_flash;
 } qrs_counters;
 
 typedef struct {
-	piecedef *def;
-	qrs_timings *speeds;
-	unsigned int state;		// rename?
+    piecedef *def;
+    qrs_timings *speeds;
+    unsigned int state;        // rename?
 
-	int x;
-	int y;
-	int orient;
+    int x;
+    int y;
+    int orient;
 } qrs_player;
 
 struct pracdata {
-	int game_type;	// mirrors of values in qrsdata; these are just here so that..
-	int field_w;	// ..backed up pracdata structs can be used to restore their values
+    int game_type;    // mirrors of values in qrsdata; these are just here so that..
+    int field_w;    // ..backed up pracdata structs can be used to restore their values
 
-	//int *long_history;		// old idea, just history of all pieces placed,
-								// going to re-add long_history but with placement locations included,
-								// as well as game time/level, to allow piece-by-piece rewinds
+    //int *long_history;        // old idea, just history of all pieces placed,
+                                // going to re-add long_history but with placement locations included,
+                                // as well as game time/level, to allow piece-by-piece rewinds
 
-	int usr_sequence[2000];
-	int usr_seq_expand[4000];
-	int usr_seq_len;
-	int usr_seq_expand_len;
+    int usr_sequence[2000];
+    int usr_seq_expand[4000];
+    int usr_seq_len;
+    int usr_seq_expand_len;
 
-	grid_t **usr_field_undo;
-	grid_t **usr_field_redo;
-	int usr_field_undo_len;
-	int usr_field_redo_len;
-	bool field_edit_in_progress;
+    grid_t **usr_field_undo;
+    grid_t **usr_field_redo;
+    int usr_field_undo_len;
+    int usr_field_redo_len;
+    bool field_edit_in_progress;
 
-	grid_t *usr_field;
-	int palette_selection;
-	int field_selection;
-	int field_selection_vertex1_x;
-	int field_selection_vertex1_y;
-	int field_selection_vertex2_x;
-	int field_selection_vertex2_y;
+    grid_t *usr_field;
+    int palette_selection;
+    int field_selection;
+    int field_selection_vertex1_x;
+    int field_selection_vertex1_y;
+    int field_selection_vertex2_x;
+    int field_selection_vertex2_y;
 
-	qrs_timings *usr_timings;
+    qrs_timings *usr_timings;
 
-	int paused;
-	bool grid_lines_shown;
-	bool brackets;
-	bool invisible;
+    int paused;
+    bool grid_lines_shown;
+    bool brackets;
+    bool invisible;
 
-	int hist_index;
-	int lock_protect;
-	bool infinite_floorkicks;
-	int piece_subset;
+    int hist_index;
+    int lock_protect;
+    bool infinite_floorkicks;
+    int piece_subset;
 
-	long randomizer_seed;
+    long randomizer_seed;
 };
 
 typedef struct {
     piecedef **piecepool;
-	struct randomizer *randomizer;
-	struct pracdata *pracdata;
-	struct replay *replay;
-	grid_t *garbage;
-	piece_id *piece_seq;
+    struct randomizer *randomizer;
+    struct pracdata *pracdata;
+    struct replay *replay;
+    grid_t *garbage;
+    piece_id *piece_seq;
 
-	nz_timer *timer;
-	qrs_player *p1;
+    nz_timer *timer;
+    qrs_player *p1;
     qrs_counters *p1counters;
-	piecedef *previews[3];
-	piecedef *hold;
+    piecedef *previews[3];
+    piecedef *hold;
 
 // fields which are assumed to be read-only during normal gameplay
 
-	unsigned int piece_seq_len;
-	bool using_piece_seq;
+    unsigned int piece_seq_len;
+    bool using_piece_seq;
 
-	bool is_practice;
-	bool recording;
-	bool playback;
+    bool is_practice;
+    bool recording;
+    bool playback;
 
-	int game_type;
-	int mode_type;
-	unsigned int mode_flags;
-	int randomizer_type;
+    int game_type;
+    int mode_type;
+    unsigned int mode_flags;
+    int randomizer_type;
 
-	long randomizer_seed;
-	bool tetromino_only;
-	bool pentomino_only;
+    long randomizer_seed;
+    bool tetromino_only;
+    bool pentomino_only;
 
-	int field_x; // in pixels (position of top-left of field)
-	int field_y; // ^^
-	int field_w; // in cells (only player-accessible ones)
+    int field_x; // in pixels (position of top-left of field)
+    int field_y; // ^^
+    int field_w; // in cells (only player-accessible ones)
 
-	unsigned int max_floorkicks;
-	int num_previews;
+    unsigned int max_floorkicks;
+    int num_previews;
 
-	bool lock_delay_enabled;
-	bool lock_protect;
-	bool hold_enabled;
-	bool special_irs;
-	bool using_gems;
+    bool lock_delay_enabled;
+    bool lock_protect;
+    bool hold_enabled;
+    bool special_irs;
+    bool using_gems;
 
-	unsigned int piece_fade_rate;
+    unsigned int piece_fade_rate;
 
 // fields which are assumed to be mutated during normal gameplay
 
-	piece_id cur_piece_qrs_id;
+    piece_id cur_piece_qrs_id;
 
-	unsigned int state_flags;	// things like invisible mode, bracket mode, etc. go here
+    unsigned int state_flags;    // things like invisible mode, bracket mode, etc. go here
 
-	int piece_seq_index;
-	int garbage_row_index;	// which row of the garbage grid to spawn next
-	int playback_index;		// equivalent to number of frames that input has been handled in the game so far
+    int piece_seq_index;
+    int garbage_row_index;    // which row of the garbage grid to spawn next
+    int playback_index;        // equivalent to number of frames that input has been handled in the game so far
 
-	// increments for each piece that doesnt clear lines (shirase: for each piece spawned & decrements for each line cleared)
-	int garbage_counter;
-	// = 13 - q->section for TGM+. shirase: 500-599=20, 600-699=18, 700-799=10, 800-899=9, 900-999=8; checks during ARE
-	int garbage_delay;
+    // increments for each piece that doesnt clear lines (shirase: for each piece spawned & decrements for each line cleared)
+    int garbage_counter;
+    // = 13 - q->section for TGM+. shirase: 500-599=20, 600-699=18, 700-799=10, 800-899=9, 900-999=8; checks during ARE
+    int garbage_delay;
 
-	// general purpose frame counter to keep track of top out animation, etc.
-	int stack_anim_counter;
+    // general purpose frame counter to keep track of top out animation, etc.
+    int stack_anim_counter;
 
-	// counts down to 0 (measured in frames)
-	int credit_roll_counter;
-	int credit_roll_lineclears;
+    // counts down to 0 (measured in frames)
+    int credit_roll_counter;
+    int credit_roll_lineclears;
 
     int level;
     int section;
 
-	int score;
-	int soft_drop_counter;
+    int score;
+    int soft_drop_counter;
 
-	int grade;
-	int internal_grade;
-	int grade_points;
-	int grade_decay_counter;
+    int grade;
+    int internal_grade;
+    int grade_points;
+    int grade_decay_counter;
 
-	bool mroll_unlocked;
-	long cur_section_timestamp;
-	int section_times[30];
-	int section_tetrises[30];
+    bool mroll_unlocked;
+    long cur_section_timestamp;
+    int section_times[30];
+    int section_tetrises[30];
 
-	// values: 1 = set to 2 next time a rotate happens.
-	//		   2 = lock during THIS frame ( handled by qs_process_lock() )
-	int lock_on_rotate;
+    // values: 1 = set to 2 next time a rotate happens.
+    //           2 = lock during THIS frame ( handled by qs_process_lock() )
+    int lock_on_rotate;
 
-	bool lock_held;
-	int locking_row;
+    bool lock_held;
+    int locking_row;
     int lvlinc;
     int lastclear;
-	int combo;
-	int combo_simple;
-	int singles;	//
-	int doubles;	//
-	int triples;	//
-	int tetrises;	//
-	int pentrises;
-	int recoveries;
-	bool is_recovering;
+    int combo;
+    int combo_simple;
+    int singles;    //
+    int doubles;    //
+    int triples;    //
+    int tetrises;    //
+    int pentrises;
+    int recoveries;
+    bool is_recovering;
 
-	int medal_re; // medal values range from 0 to BRONZE (1) to PLATINUM (4)
-	int medal_sk;
-	int medal_st;
-	int medal_co;
+    int medal_re; // medal values range from 0 to BRONZE (1) to PLATINUM (4)
+    int medal_sk;
+    int medal_st;
+    int medal_co;
 
     int speed_curve_index;
     int music;

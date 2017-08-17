@@ -400,7 +400,7 @@ int g3_randomizer_init(struct randomizer *r, uint32_t *seed)
     }
 
     for(i = 0; i < 35; i++)
-		d->bag[i] = i/5;
+      d->bag[i] = i/5;
 
     d->history[0] = ARS_S;
     d->history[1] = ARS_S;
@@ -528,9 +528,9 @@ piece_id g3rand_pull(struct randomizer *r)
     piece_id t = g3rand_get_next(r);
     piece_id piece = history_pop(d->history);
 
-	history_push(d->history, 4, t);
+   history_push(d->history, 4, t);
 
-	return piece;
+   return piece;
 }
 
 piece_id histrand_get_next(struct randomizer *r)
@@ -621,24 +621,24 @@ piece_id g3rand_get_next(struct randomizer *r)
     unsigned int bagpos = 0;
     int i = 0;
 
-	for(i = 0; i < 6; i++)
-	{
-		bagpos = g123_read_rand(r->seedp) % 35;
-		piece = d->bag[bagpos];
+   for(i = 0; i < 6; i++)
+   {
+      bagpos = g123_read_rand(r->seedp) % 35;
+      piece = d->bag[bagpos];
 
-		// piece is not in the history, this is fine
-		if(!in_history(d->history, 4, piece))
-			break;
+      // piece is not in the history, this is fine
+      if(!in_history(d->history, 4, piece))
+         break;
 
-		// piece is already in the history, churn the bag a little and reroll
-		d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
+      // piece is already in the history, churn the bag a little and reroll
+      d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
 
-		// We might be about to fall out of the loop, pick something at random
-		bagpos = g123_read_rand(r->seedp) % 35;
-		piece = d->bag[bagpos];
-	}
+      // We might be about to fall out of the loop, pick something at random
+      bagpos = g123_read_rand(r->seedp) % 35;
+      piece = d->bag[bagpos];
+   }
 
-	// make the pieces we didn't pick more likely in future, and this piece less
+   // make the pieces we didn't pick more likely in future, and this piece less
     for(i = 0; i < 7; i++) {
         if(i == (int)(piece))
             d->histogram[i] = 0;
@@ -646,10 +646,10 @@ piece_id g3rand_get_next(struct randomizer *r)
             d->histogram[i]++;
     }
 
-	// piece has finally be chosen, histogram is up to date, put the rarest piece back into the bag and return.
-	d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
+   // piece has finally be chosen, histogram is up to date, put the rarest piece back into the bag and return.
+   d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
 
-	return piece;
+   return piece;
 }
 
 piece_id histrand_lookahead(struct randomizer *r, unsigned int distance)
@@ -948,14 +948,14 @@ piece_id g3_most_droughted_piece(int *histogram)
     unsigned int n = 0;
     unsigned int maxi = 0;
 
-	for(i = 0; i < 7; i++)
-	{
-		if(n < histogram[i])
-		{
-			n = histogram[i];
-			maxi = i;
-		}
-	}
+   for(i = 0; i < 7; i++)
+   {
+      if(n < histogram[i])
+      {
+         n = histogram[i];
+         maxi = i;
+      }
+   }
 
     return (piece_id)(maxi);
 }

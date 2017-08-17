@@ -1,11 +1,11 @@
 #ifndef _timer_h
 #define _timer_h
 
-#define TIMEMAX		0xFFFFFFFFu
+#define TIMEMAX        0xFFFFFFFFu
 
 typedef struct {
-	unsigned long time;
-	int fps;
+    unsigned long time;
+    int fps;
 } nz_timer;
 
 nz_timer *nz_timer_create(int fps);

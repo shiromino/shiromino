@@ -41,8 +41,8 @@ const char *get_qrspiece_name(int n)
 
 void qrsdata_destroy(qrsdata *q)
 {
-	if(!q)
-		return;
+   if(!q)
+      return;
 
     int i;
 
@@ -61,7 +61,7 @@ void qrsdata_destroy(qrsdata *q)
         free(q->replay);
     }
 
-	free(q);
+   free(q);
 }
 
 void pracdata_destroy(struct pracdata *d)
@@ -165,36 +165,36 @@ struct pracdata *pracdata_cpy(struct pracdata *d)
 /*
 piecedef *qrspent_create(int pent)
 {
-	int i = 0;
-	piecedef *pd = malloc(sizeof(piecedef));
+   int i = 0;
+   piecedef *pd = malloc(sizeof(piecedef));
 
-	pd->color = pent;
-	pd->flags = 0;
-	pd->anchorx = ANCHORX_ARS;
-	pd->anchory = ANCHORY_ARS;
+   pd->color = pent;
+   pd->flags = 0;
+   pd->anchorx = ANCHORX_ARS;
+   pd->anchory = ANCHORY_ARS;
 
-	for(i = 0; i < 4; i++)
-		pd->rotation_tables[i] = gridfrommask(qrs_piecemasks[pent][i]);
+   for(i = 0; i < 4; i++)
+      pd->rotation_tables[i] = gridfrommask(qrs_piecemasks[pent][i]);
 
     pd->flags ^= PDNOFKICK;
 
-	return pd;
+   return pd;
 }
 */
 
 piecedef **qrspool_create()
 {
-	piecedef **pool = malloc(25 * sizeof(piecedef *));
-	int i = 0;
+   piecedef **pool = malloc(25 * sizeof(piecedef *));
+   int i = 0;
     int j = 0;
     int n = 5;
 
     int *arr = NULL;
 
-	for(i = 0; i < 25; i++) {
+   for(i = 0; i < 25; i++) {
         if(i >= 18) n = 4;
 
-		pool[i] = malloc(sizeof(piecedef));
+      pool[i] = malloc(sizeof(piecedef));
         pool[i]->qrs_id = i;
         pool[i]->flags = 0;
         pool[i]->anchorx = ANCHORX_QRS;
@@ -209,65 +209,65 @@ piecedef **qrspool_create()
             pool[i]->rotation_tables[j] = grid_from_1d_int_array(arr, n, n);
         }
 
-		if(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L || i == QRS_T || i == QRS_Ya || i == QRS_Yb)
+      if(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L || i == QRS_T || i == QRS_Ya || i == QRS_Yb)
             pool[i]->flags ^= PDNOFKICK;
         if(i == QRS_T)
             pool[i]->flags |= PDFLATFLOORKICKS;
 
         if(i == QRS_I4)
-			pool[i]->flags ^= PDNOWKICK;
+         pool[i]->flags ^= PDNOWKICK;
 
-		if(i == QRS_I4 || i == QRS_T4) {
-			if(i == QRS_T4)
+      if(i == QRS_I4 || i == QRS_T4) {
+         if(i == QRS_T4)
                 pool[i]->flags |= PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
-		} else pool[i]->flags ^= PDNOFKICK;
-	}
+      } else pool[i]->flags ^= PDNOFKICK;
+   }
 
-	return pool;
+   return pool;
 }
 
 /*
 piecedef *arstet_create(int tet)
 {
-	if(tet < 0 || tet > 6)
-		return NULL;
+   if(tet < 0 || tet > 6)
+      return NULL;
 
-	int i = 0;
-	piecedef *pd = malloc(sizeof(piecedef));
+   int i = 0;
+   piecedef *pd = malloc(sizeof(piecedef));
 
-	pd->color = tet + 18;
-	pd->flags = 0;
-	pd->anchorx = ANCHORX_ARS;
-	pd->anchory = ANCHORY_ARS;
+   pd->color = tet + 18;
+   pd->flags = 0;
+   pd->anchorx = ANCHORX_ARS;
+   pd->anchory = ANCHORY_ARS;
 
-	for(i = 0; i < 4; i++)
-		pd->rotation_tables[i] = gridfrommask(ars_piecemasks[tet][i]);
+   for(i = 0; i < 4; i++)
+      pd->rotation_tables[i] = gridfrommask(ars_piecemasks[tet][i]);
 
-	return pd;
+   return pd;
 }
 
 piecedef **arspool_create(piecedef **piecepool, int type)
 {
-	if(type != TAP_ARS && type != TI_ARS)
-		return NULL;
+   if(type != TAP_ARS && type != TI_ARS)
+      return NULL;
 
-	int i = 0;
-	for(i = 18; i < 25; i++) {
-		piecepool[i] = arstet_create(i - 18);
+   int i = 0;
+   for(i = 18; i < 25; i++) {
+      piecepool[i] = arstet_create(i - 18);
 
-		if(i == QRS_I4 && type == TAP_ARS)
-			piecepool[i]->flags ^= PDNOWKICK;
+      if(i == QRS_I4 && type == TAP_ARS)
+         piecepool[i]->flags ^= PDNOWKICK;
 
-		if(i == QRS_I4 || i == QRS_T4) {
-			if(type == TAP_ARS)
-				piecepool[i]->flags ^= PDNOFKICK;
+      if(i == QRS_I4 || i == QRS_T4) {
+         if(type == TAP_ARS)
+            piecepool[i]->flags ^= PDNOFKICK;
             else if(i == QRS_T4)
                 piecepool[i]->flags |= PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
-		} else
-			piecepool[i]->flags ^= PDNOFKICK;
-	}
+      } else
+         piecepool[i]->flags ^= PDNOFKICK;
+   }
 
-	return piecepool;
+   return piecepool;
 }
 */
 
@@ -281,9 +281,9 @@ piecedef *qrspiece_cpy(piecedef **piecepool, int index)
 
 grid_t *qrsfield_create()
 {
-	grid_t *g = grid_create(12, 22);
+   grid_t *g = grid_create(12, 22);
 
-	return g;
+   return g;
 }
 
 int qrsfield_set_w(grid_t *field, int w)
@@ -494,17 +494,17 @@ int usr_field_undo_clear(coreState *cs, void *data)
 
 int qrs_input(game_t *g)
 {
-	coreState *cs = g->origin;
-	struct keyflags *k = NULL;
+   coreState *cs = g->origin;
+   struct keyflags *k = NULL;
 
-	qrsdata *q = g->data;
+   qrsdata *q = g->data;
     struct pracdata *d = q->pracdata;
-	qrs_player *p = q->p1;
+   qrs_player *p = q->p1;
 
-	int i = 0;
+   int i = 0;
     int j = 0;
     int c = 0;
-	int init = 120;
+   int init = 120;
 
     int cell_x = 0;
     int cell_y = 0;
@@ -847,7 +847,7 @@ int qrs_input(game_t *g)
     }
 
     // hacky way to go back to the practice menu if a game is running from that menu
-	if(cs->keys[0]->escape || cs->keys[1]->escape) {
+   if(cs->keys[0]->escape || cs->keys[1]->escape) {
         if(menu_is_practice(cs->menu)) {
             cs->menu_input_override = 1;
             if(d) {
@@ -869,10 +869,10 @@ int qrs_input(game_t *g)
             return 1;
     }
 
-	if(init < 120)
-		return 0;
+   if(init < 120)
+      return 0;
 
-	k = cs->keys[0];
+   k = cs->keys[0];
 
     if(q->playback) {
         if((unsigned int)(q->playback_index) == q->replay->len)
@@ -1004,7 +1004,7 @@ int qrs_input(game_t *g)
         q->replay->inputs[q->replay->len - 1].escape = 0;
     }
 
-	return 0;
+   return 0;
 }
 
 int qrs_start_record(game_t *g)
@@ -1019,13 +1019,13 @@ int qrs_start_record(game_t *g)
     q->replay->mlen = 36000;
     q->replay->mode = q->mode_type;
     q->replay->mode_flags = q->mode_flags;
-	q->replay->seed = q->randomizer_seed;
-	q->replay->grade = NO_GRADE;
-	q->replay->time = 0;
-	q->replay->starting_level = q->level;
-	q->replay->ending_level = 0;
+   q->replay->seed = q->randomizer_seed;
+   q->replay->grade = NO_GRADE;
+   q->replay->time = 0;
+   q->replay->starting_level = q->level;
+   q->replay->ending_level = 0;
 
-	q->replay->date = time(0);
+   q->replay->date = time(0);
 
     q->recording = 1;
     return 0;
@@ -1076,66 +1076,66 @@ int qrs_end_playback(game_t *g)
 
 int qrs_move(game_t *g, qrs_player *p, int offset)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
-	int bkp_x = p->x;
-	p->x += offset;
+   int bkp_x = p->x;
+   p->x += offset;
 
-	if(qrs_chkcollision(g, p)) {
-		p->x = bkp_x;
-		return 1;
-	}
+   if(qrs_chkcollision(g, p)) {
+      p->x = bkp_x;
+      return 1;
+   }
 
-	return 0;
+   return 0;
 }
 
 int qrs_rotate(game_t *g, qrs_player *p, int direction)
 {
-	if(!g || !p)
-		return -1;
-	if(!(p->state & (PSFALL | PSLOCK)))
-		return 1;
+   if(!g || !p)
+      return -1;
+   if(!(p->state & (PSFALL | PSLOCK)))
+      return 1;
 
-	int bkp_o = p->orient;
-	//int c = p->def->color;
+   int bkp_o = p->orient;
+   //int c = p->def->color;
 
-	p->orient = (p->orient + direction) & 3;
+   p->orient = (p->orient + direction) & 3;
 
-	if(qrs_chkcollision(g, p))
-	{
+   if(qrs_chkcollision(g, p))
+   {
         if(p->def->flags & PDPREFERWKICK) {
             if(qrs_wallkick(g, p))
-    		{
-    			if(qrs_floorkick(g, p))
-    			{
-    				p->orient = bkp_o;
-    				return 1;
-    			}
-    		}
+          {
+             if(qrs_floorkick(g, p))
+             {
+                p->orient = bkp_o;
+                return 1;
+             }
+          }
         } else {
             if(qrs_floorkick(g, p))
-    		{
-    			if(qrs_wallkick(g, p))
-    			{
-    				p->orient = bkp_o;
-    				return 1;
-    			}
-    		}
+          {
+             if(qrs_wallkick(g, p))
+             {
+                p->orient = bkp_o;
+                return 1;
+             }
+          }
         }
-	}
+   }
 
-	return 0;
+   return 0;
 }
 
 int qrs_proc_initials(game_t *g)
 {
     if(!g)
-		return -1;
+      return -1;
 
-	qrsdata *q = (qrsdata *)(g->data);
-	struct keyflags *k = g->origin->keys[0];
-	qrs_player *p = q->p1;
+   qrsdata *q = (qrsdata *)(g->data);
+   struct keyflags *k = g->origin->keys[0];
+   qrs_player *p = q->p1;
 
     if(k->down && q->lock_held) {
         if(q->lock_protect) {
@@ -1161,62 +1161,62 @@ int qrs_proc_initials(game_t *g)
         qrs_hold(g, p);
     }
 
-	qrs_irs(g);
+   qrs_irs(g);
 
     if(k->up && (q->game_type != SIMULATE_G1))
     {
         qrs_fall(g, p, 20*256);
     }
 
-	return 0;
+   return 0;
 }
 
 int qrs_irs(game_t *g)
 {
-	if(!g)
-		return -1;
+   if(!g)
+      return -1;
 
-	qrsdata *q = (qrsdata *)(g->data);
-	struct keyflags *k = g->origin->keys[0];
-	qrs_player *p = q->p1;
+   qrsdata *q = (qrsdata *)(g->data);
+   struct keyflags *k = g->origin->keys[0];
+   qrs_player *p = q->p1;
     struct asset *prerotate = asset_by_name(g->origin, "prerotate");
 
-	int direction = 0;
+   int direction = 0;
 
-	if(k->a || k->c)
-		direction = CCW;
+   if(k->a || k->c)
+      direction = CCW;
 
-	if(k->b)
-		direction = CW;
+   if(k->b)
+      direction = CW;
 
     if(k->d && q->special_irs && !q->hold_enabled)
     {
         direction = FLIP;
     }
 
-	p->orient = direction;
-	if(qrs_chkcollision(g, p))
-		p->orient = 0;
+   p->orient = direction;
+   if(qrs_chkcollision(g, p))
+      p->orient = 0;
     else if(direction)
     {
         play_sfx(prerotate->data, prerotate->volume);
     }
 
-	return 0;
+   return 0;
 }
 
 int qrs_wallkick(game_t *g, qrs_player *p)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
-	piece_id c = p->def->qrs_id;
+   piece_id c = p->def->qrs_id;
     int o = p->orient;
-	int x = gridpostox(p->def->rotation_tables[0], qrs_chkcollision(g, p) - 1);
+   int x = gridpostox(p->def->rotation_tables[0], qrs_chkcollision(g, p) - 1);
     //printf("Trying to kick with collision at x = %d\n", x);
 
-	if(p->def->flags & PDNOWKICK)
-		return 1;
+   if(p->def->flags & PDNOWKICK)
+      return 1;
 
     switch(c) {
         case QRS_I:
@@ -1248,26 +1248,26 @@ int qrs_wallkick(game_t *g, qrs_player *p)
             break;
     }
 
-	if(qrs_move(g, p, MOVE_RIGHT))
-	{
-		if(qrs_move(g, p, MOVE_LEFT))
-		{
+   if(qrs_move(g, p, MOVE_RIGHT))
+   {
+      if(qrs_move(g, p, MOVE_LEFT))
+      {
             if(p->def->rotation_tables[0]->w == 4 && c != QRS_I4)
                 return 1;
-			if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
-				return 1;
+         if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
+            return 1;
             if((c == QRS_J || c == QRS_L || c == QRS_Ya || c == QRS_Yb) && (p->orient == CW || p->orient == CCW))
                 return 1;
 
-			if(qrs_move(g, p, 2))
-			{
-				if(qrs_move(g, p, -2))
-					return 1;
-			}
-		}
-	}
+         if(qrs_move(g, p, 2))
+         {
+            if(qrs_move(g, p, -2))
+               return 1;
+         }
+      }
+   }
 
-	return 0;
+   return 0;
 }
 
 int qrs_hold(game_t *g, qrs_player *p)
@@ -1297,15 +1297,15 @@ int qrs_hold(game_t *g, qrs_player *p)
         p->def = temp;
 
         if(p->def->qrs_id >= 18) // tetrominoes spawn where they do in TGM
-        	p->y = ROWTOY(SPAWNY_QRS + 2);
+           p->y = ROWTOY(SPAWNY_QRS + 2);
         else
             p->y = ROWTOY(SPAWNY_QRS);
 
         p->x = SPAWNX_QRS;
-    	p->orient = FLAT;
-    	p->state = PSFALL|PSSPAWN|PSUSEDHOLD;
+       p->orient = FLAT;
+       p->state = PSFALL|PSSPAWN|PSUSEDHOLD;
 
-    	q->p1counters->lock = 0;
+       q->p1counters->lock = 0;
         q->p1counters->hold_flash = 1;
     }
 
@@ -1314,10 +1314,10 @@ int qrs_hold(game_t *g, qrs_player *p)
 
 int qrs_floorkick(game_t *g, qrs_player *p)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
     if(p->def->flags & PDNOFKICK)
-		return 1;
+      return 1;
     if(!(p->def->flags & PDAIRBORNEFKICKS) && !qrs_isonground(g, p))
         return 1;
 
@@ -1341,87 +1341,87 @@ int qrs_floorkick(game_t *g, qrs_player *p)
             return 1;
     }
 
-	p->y -= 256;
+   p->y -= 256;
 
-	if(qrs_chkcollision(g, p)) {
-		if(p->def->flags & PDONECELLFLOORKICKS) {
+   if(qrs_chkcollision(g, p)) {
+      if(p->def->flags & PDONECELLFLOORKICKS) {
             p->y = bkp_y;
             return 1;
         }
 
-		p->y -= 256;
-		if(qrs_chkcollision(g, p)) {
-			p->y = bkp_y;
-			return 1;
-		}
-	}
+      p->y -= 256;
+      if(qrs_chkcollision(g, p)) {
+         p->y = bkp_y;
+         return 1;
+      }
+   }
 
     q->p1counters->floorkicks++;
     //printf("Number of floorkicks so far: %d\n", q->p1counters->floorkicks);
 
-	return 0;
+   return 0;
 }
 
 int qrs_fall(game_t *g, qrs_player *p, int grav)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
-	if(!grav)
-		grav = p->speeds->grav;
+   if(!grav)
+      grav = p->speeds->grav;
 
-	int bkp_y = p->y;
+   int bkp_y = p->y;
     struct asset *land = asset_by_name(g->origin, "land");
 
-	while(p->y < (bkp_y + grav)) {
-		p->y += 256;
-		if(qrs_chkcollision(g, p)) {
-			p->y -= (256 + (p->y & 255));
+   while(p->y < (bkp_y + grav)) {
+      p->y += 256;
+      if(qrs_chkcollision(g, p)) {
+         p->y -= (256 + (p->y & 255));
 
             if(p->state & PSFALL && grav != 28*256) {
                 play_sfx(land->data, land->volume);
             }
-			p->state &= ~PSFALL;
-			p->state |= PSLOCK;
-			return 1;
-		}
-	}
+         p->state &= ~PSFALL;
+         p->state |= PSLOCK;
+         return 1;
+      }
+   }
 
-	if(p->y - bkp_y > grav)
-		p->y = bkp_y + grav;
+   if(p->y - bkp_y > grav)
+      p->y = bkp_y + grav;
 
-	return 0;
+   return 0;
 }
 
 int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
     qrsdata *q = g->data;
-	grid_t *d = p->def->rotation_tables[p->orient];
-	grid_t *f = g->field;
+   grid_t *d = p->def->rotation_tables[p->orient];
+   grid_t *f = g->field;
     struct asset *lock = asset_by_name(g->origin, "lock");
 
-	int i = 0;
-	int from_x = 0;
-	int from_y = 0;
-	int to_x = 0;
-	int to_y = 0;
-	int ax = ANCHORX_QRS;
-	int ay = ANCHORY_QRS;
-	piece_id c = p->def->qrs_id;
-	int s = d->w * d->h;
+   int i = 0;
+   int from_x = 0;
+   int from_y = 0;
+   int to_x = 0;
+   int to_y = 0;
+   int ax = ANCHORX_QRS;
+   int ay = ANCHORY_QRS;
+   piece_id c = p->def->qrs_id;
+   int s = d->w * d->h;
 
     int value = 0;
 
-	for(i = 0; i < s; i++) {
-		from_x = gridpostox(d, i);
-		from_y = gridpostoy(d, i);
-		to_x = (p->x - ax) + from_x;
-		to_y = (YTOROW(p->y) - ay) + from_y;
+   for(i = 0; i < s; i++) {
+      from_x = gridpostox(d, i);
+      from_y = gridpostoy(d, i);
+      to_x = (p->x - ax) + from_x;
+      to_y = (YTOROW(p->y) - ay) + from_y;
 
-		if(gridgetcell(d, from_x, from_y)) {
+      if(gridgetcell(d, from_x, from_y)) {
             value = c + 1;
             if(flags & LOCKPIECE_BRACKETS)
                 value |= QRS_PIECE_BRACKETS;
@@ -1432,147 +1432,147 @@ int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
 
             gridsetcell(f, to_x, to_y, value);
         }
-	}
+   }
 
-	p->state &= ~(PSLOCK | PSFALL);
-	//p->state |= PSPRELOCKFLASH1;
+   p->state &= ~(PSLOCK | PSFALL);
+   //p->state |= PSPRELOCKFLASH1;
     play_sfx(lock->data, lock->volume);
 
-	return 0;
+   return 0;
 }
 
 int qrs_chkcollision(game_t *g, qrs_player *p)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
-	grid_t *d = p->def->rotation_tables[p->orient];
-	grid_t *f = g->field;
-	int d_x = 0;
-	int d_y = 0;
-	int d_val = 0;
-	int f_x = 0;
-	int f_y = 0;
-	int f_val = 0;
-	int i = 0;
-	int s = d->w * d->h;
+   grid_t *d = p->def->rotation_tables[p->orient];
+   grid_t *f = g->field;
+   int d_x = 0;
+   int d_y = 0;
+   int d_val = 0;
+   int f_x = 0;
+   int f_y = 0;
+   int f_val = 0;
+   int i = 0;
+   int s = d->w * d->h;
 
-	for(i = 0; i < s; i++) {
-		d_x = gridpostox(d, i);
-		d_y = gridpostoy(d, i);
-		f_x = p->x - p->def->anchorx + d_x;
-		f_y = YTOROW(p->y) - p->def->anchory + d_y;
+   for(i = 0; i < s; i++) {
+      d_x = gridpostox(d, i);
+      d_y = gridpostoy(d, i);
+      f_x = p->x - p->def->anchorx + d_x;
+      f_y = YTOROW(p->y) - p->def->anchory + d_y;
 
-		d_val = gridgetcell(d, d_x, d_y);
-		f_val = gridgetcell(f, f_x, f_y);
+      d_val = gridgetcell(d, d_x, d_y);
+      f_val = gridgetcell(f, f_x, f_y);
 
-		// printf("Checking piecedef val %d against %d at position %d (field y = %d)\n", d_val, f_val, i, f_y);
+      // printf("Checking piecedef val %d against %d at position %d (field y = %d)\n", d_val, f_val, i, f_y);
 
-		if(d_val && f_val) {
+      if(d_val && f_val) {
             // gridgetcell returns 8128 on out of bounds, so it will default to collision = true
 
             // the +1 slightly confuses things, but is required for cases where the collision is at position = 0
             // this way we don't return 0 (== no collision) when there in fact was a collision
             // TODO put in a macro for QRS_COLLISION_FALSE, set it to some non-zero value
-			return i + 1;
-		}
-	}
+         return i + 1;
+      }
+   }
 
-	return 0;
+   return 0;
 }
 
 int qrs_isonground(game_t *g, qrs_player *p)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
-	p->y += 256;
+   p->y += 256;
 
-	if(qrs_chkcollision(g, p)) {
-		p->y -= 256;
-		return 1;
-	}
+   if(qrs_chkcollision(g, p)) {
+      p->y -= 256;
+      return 1;
+   }
 
-	p->y -= 256;
+   p->y -= 256;
 
-	return 0;
+   return 0;
 }
 
 int qrs_lineclear(game_t *g, qrs_player *p)
 {
-	if(!g || !p)
-		return -1;
+   if(!g || !p)
+      return -1;
 
     qrsdata *q = g->data;
 
-	int i = 0;
-	int j = 0;
-	int k = 0;
-	int n = 0;
+   int i = 0;
+   int j = 0;
+   int k = 0;
+   int n = 0;
     int garbage = 0;
     bool gem = false;
 
-	int row = YTOROW(p->y);
+   int row = YTOROW(p->y);
 
-	for(i = row - 1; (i < row + 4) && (i < QRS_FIELD_H); i++)
-	{
-		k = 0;
+   for(i = row - 1; (i < row + 4) && (i < QRS_FIELD_H); i++)
+   {
+      k = 0;
         garbage = 0;
 
-		for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
-		{
-			if(gridgetcell(g->field, j, i))
-				k++;
+      for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
+      {
+         if(gridgetcell(g->field, j, i))
+            k++;
             if(gridgetcell(g->field, j, i) & QRS_PIECE_GEM)
                 gem = true;
             if(gridgetcell(g->field, j, i) == QRS_PIECE_GARBAGE)
                 garbage++;
-		}
+      }
 
-		if(k == q->field_w && garbage != q->field_w)
-		{
-			n++;
+      if(k == q->field_w && garbage != q->field_w)
+      {
+         n++;
             gfx_qs_lineclear(g, i);
-			for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
-				gridsetcell(g->field, j, i, -2);
+         for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
+            gridsetcell(g->field, j, i, -2);
 
             if(gem)
             {
                 // play_sfx() the gem clear sound effect whenever we get one
             }
-		}
-	}
+      }
+   }
 
-	return n;
+   return n;
 }
 
 int qrs_dropfield(game_t *g)
 {
-	if(!g)
-		return -1;
+   if(!g)
+      return -1;
 
     qrsdata *q = g->data;
     grid_t *field = g->field;
 
-	int i = 0;
-	int j = 0;
-	int n = 0;
+   int i = 0;
+   int j = 0;
+   int n = 0;
 
-	for(i = QRS_FIELD_H - 1; i > 0; i--)
-	{
-		while(gridgetcell(field, 6, i - n) == -2)
-			n++;
+   for(i = QRS_FIELD_H - 1; i > 0; i--)
+   {
+      while(gridgetcell(field, 6, i - n) == -2)
+         n++;
 
-		if(i - n >= 0)
-			gridrowcpy(field, NULL, i - n, i);
-		else {
-			for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++) {
-				gridsetcell(field, j, i, 0);
-			}
-		}
-	}
+      if(i - n >= 0)
+         gridrowcpy(field, NULL, i - n, i);
+      else {
+         for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++) {
+            gridsetcell(field, j, i, 0);
+         }
+      }
+   }
 
-	return 0;
+   return 0;
 }
 
 int qrs_spawn_garbage(game_t *g, unsigned int flags)

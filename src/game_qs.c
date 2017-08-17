@@ -57,69 +57,69 @@ static qrs_timings qs_curve[QS_CURVE_MAX] =
 static qrs_timings g1_master_curve[G1_MASTER_CURVE_MAX] =
 {
     {0, 4, 30, 14, 30, 30, 41},
-	{30, 6, 30, 14, 30, 30, 41},
-	{35, 8, 30, 14, 30, 30, 41},
-	{40, 10, 30, 14, 30, 30, 41},
-	{50, 12, 30, 14, 30, 30, 41},
-	{60, 16, 30, 14, 30, 30, 41},
-	{70, 32, 30, 14, 30, 30, 41},
-	{80, 48, 30, 14, 30, 30, 41},
-	{90, 64, 30, 14, 30, 30, 41},
-	{100, 80, 30, 14, 30, 30, 41},
-	{120, 96, 30, 14, 30, 30, 41},
-	{140, 112, 30, 14, 30, 30, 41},
-	{160, 128, 30, 14, 30, 30, 41},
-	{170, 144, 30, 14, 30, 30, 41},
-	{200, 4, 30, 14, 30, 30, 41},
-	{220, 32, 30, 14, 30, 30, 41},
-	{230, 64, 30, 14, 30, 30, 41},
-	{233, 96, 30, 14, 30, 30, 41},
-	{236, 128, 30, 14, 30, 30, 41},
-	{239, 160, 30, 14, 30, 30, 41},
-	{243, 192, 30, 14, 30, 30, 41},
-	{247, 224, 30, 14, 30, 30, 41},
-	{251, 256, 30, 14, 30, 30, 41},
-	{300, 512, 30, 14, 30, 30, 41},
-	{330, 768, 30, 14, 30, 30, 41},
-	{360, 1024, 30, 14, 30, 30, 41},
-	{400, 1280, 30, 14, 30, 30, 41},
-	{420, 1024, 30, 14, 30, 30, 41},
-	{450, 768, 30, 14, 30, 30, 41},
-	{500, 5120, 30, 14, 30, 30, 41}
+    {30, 6, 30, 14, 30, 30, 41},
+    {35, 8, 30, 14, 30, 30, 41},
+    {40, 10, 30, 14, 30, 30, 41},
+    {50, 12, 30, 14, 30, 30, 41},
+    {60, 16, 30, 14, 30, 30, 41},
+    {70, 32, 30, 14, 30, 30, 41},
+    {80, 48, 30, 14, 30, 30, 41},
+    {90, 64, 30, 14, 30, 30, 41},
+    {100, 80, 30, 14, 30, 30, 41},
+    {120, 96, 30, 14, 30, 30, 41},
+    {140, 112, 30, 14, 30, 30, 41},
+    {160, 128, 30, 14, 30, 30, 41},
+    {170, 144, 30, 14, 30, 30, 41},
+    {200, 4, 30, 14, 30, 30, 41},
+    {220, 32, 30, 14, 30, 30, 41},
+    {230, 64, 30, 14, 30, 30, 41},
+    {233, 96, 30, 14, 30, 30, 41},
+    {236, 128, 30, 14, 30, 30, 41},
+    {239, 160, 30, 14, 30, 30, 41},
+    {243, 192, 30, 14, 30, 30, 41},
+    {247, 224, 30, 14, 30, 30, 41},
+    {251, 256, 30, 14, 30, 30, 41},
+    {300, 512, 30, 14, 30, 30, 41},
+    {330, 768, 30, 14, 30, 30, 41},
+    {360, 1024, 30, 14, 30, 30, 41},
+    {400, 1280, 30, 14, 30, 30, 41},
+    {420, 1024, 30, 14, 30, 30, 41},
+    {450, 768, 30, 14, 30, 30, 41},
+    {500, 5120, 30, 14, 30, 30, 41}
 };
 
 static qrs_timings g2_master_curve[G2_MASTER_CURVE_MAX] =
 {
     {0, 4, 30, 14, 25, 25, 40},
-	{30, 6, 30, 14, 25, 25, 40},
-	{35, 8, 30, 14, 25, 25, 40},
-	{40, 10, 30, 14, 25, 25, 40},
-	{50, 12, 30, 14, 25, 25, 40},
-	{60, 16, 30, 14, 25, 25, 40},
-	{70, 32, 30, 14, 25, 25, 40},
-	{80, 48, 30, 14, 25, 25, 40},
-	{90, 64, 30, 14, 25, 25, 40},
-	{100, 80, 30, 14, 25, 25, 40},
-	{120, 96, 30, 14, 25, 25, 40},
-	{140, 112, 30, 14, 25, 25, 40},
-	{160, 128, 30, 14, 25, 25, 40},
-	{170, 144, 30, 14, 25, 25, 40},
-	{200, 4, 30, 14, 25, 25, 40},
-	{220, 32, 30, 14, 25, 25, 40},
-	{230, 64, 30, 14, 25, 25, 40},
-	{233, 96, 30, 14, 25, 25, 40},
-	{236, 128, 30, 14, 25, 25, 40},
-	{239, 160, 30, 14, 25, 25, 40},
-	{243, 192, 30, 14, 25, 25, 40},
-	{247, 224, 30, 14, 25, 25, 40},
-	{251, 256, 30, 14, 25, 25, 40},
-	{300, 512, 30, 14, 25, 25, 40},
-	{330, 768, 30, 14, 25, 25, 40},
-	{360, 1024, 30, 14, 25, 25, 40},
-	{400, 1280, 30, 14, 25, 25, 40},
-	{420, 1024, 30, 14, 25, 25, 40},
-	{450, 768, 30, 14, 25, 25, 40},
-	{500, 5120, 30, 8, 25, 25, 25},
+    {30, 6, 30, 14, 25, 25, 40},
+    {35, 8, 30, 14, 25, 25, 40},
+    {40, 10, 30, 14, 25, 25, 40},
+    {50, 12, 30, 14, 25, 25, 40},
+    {60, 16, 30, 14, 25, 25, 40},
+    {70, 32, 30, 14, 25, 25, 40},
+    {80, 48, 30, 14, 25, 25, 40},
+    {90, 64, 30, 14, 25, 25, 40},
+    {100, 80, 30, 14, 25, 25, 40},
+    {120, 96, 30, 14, 25, 25, 40},
+    {140, 112, 30, 14, 25, 25, 40},
+    {160, 128, 30, 14, 25, 25, 40},
+    {170, 144, 30, 14, 25, 25, 40},
+    {200, 4, 30, 14, 25, 25, 40},
+    {220, 32, 30, 14, 25, 25, 40},
+    {230, 64, 30, 14, 25, 25, 40},
+    {233, 96, 30, 14, 25, 25, 40},
+    {236, 128, 30, 14, 25, 25, 40},
+    {239, 160, 30, 14, 25, 25, 40},
+    {243, 192, 30, 14, 25, 25, 40},
+    {247, 224, 30, 14, 25, 25, 40},
+    {251, 256, 30, 14, 25, 25, 40},
+    {300, 512, 30, 14, 25, 25, 40},
+    {330, 768, 30, 14, 25, 25, 40},
+    {360, 1024, 30, 14, 25, 25, 40},
+    {400, 1280, 30, 14, 25, 25, 40},
+    {420, 1024, 30, 14, 25, 25, 40},
+    {450, 768, 30, 14, 25, 25, 40},
+    {500, 5120, 30, 8, 25, 25, 25},
     {601, 5120, 30, 8, 25, 16, 16},
     {701, 5120, 30, 8, 16, 12, 12},
     {801, 5120, 30, 8, 12, 6, 6},
@@ -347,43 +347,43 @@ int internal_to_displayed_grade(int internal_grade)
 game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *replay_fname)
 {
     game_t *g = malloc(sizeof(game_t));
-	qrsdata *q = NULL;
-	qrs_player *p = NULL;
+    qrsdata *q = NULL;
+    qrs_player *p = NULL;
 
-	g->origin = cs;
-	g->field = qrsfield_create();
+    g->origin = cs;
+    g->field = qrsfield_create();
 
-	g->init = qs_game_init;
-	g->quit = qs_game_quit;
+    g->init = qs_game_init;
+    g->quit = qs_game_quit;
     g->preframe = qs_game_preframe;
-	g->input = &qrs_input;
-	g->frame = qs_game_frame;
-	g->draw = gfx_drawqs;
+    g->input = &qrs_input;
+    g->frame = qs_game_frame;
+    g->draw = gfx_drawqs;
 
     g->frame_counter = 0;
 
-	g->data = malloc(sizeof(qrsdata));
-	q = (qrsdata *)(g->data);
+    g->data = malloc(sizeof(qrsdata));
+    q = (qrsdata *)(g->data);
 
     q->mode_flags = flags;
 
-	q->piecepool = qrspool_create();
-	q->timer = nz_timer_create(60);
-	q->p1 = malloc(sizeof(qrs_player));
-		p = q->p1;
-		p->def = NULL;
-		p->speeds = NULL;
-		p->state = PSINACTIVE;
-		p->x = 0;
-		p->y = 0;
-		p->orient = FLAT;
+    q->piecepool = qrspool_create();
+    q->timer = nz_timer_create(60);
+    q->p1 = malloc(sizeof(qrs_player));
+        p = q->p1;
+        p->def = NULL;
+        p->speeds = NULL;
+        p->state = PSINACTIVE;
+        p->x = 0;
+        p->y = 0;
+        p->orient = FLAT;
 
-	q->p1counters = malloc(sizeof(qrs_counters));
-		q->p1counters->init = 0;
-		q->p1counters->lock = 0;
-		q->p1counters->are = 0;
-		q->p1counters->lineare = 0;
-		q->p1counters->lineclear = 0;
+    q->p1counters = malloc(sizeof(qrs_counters));
+        q->p1counters->init = 0;
+        q->p1counters->lock = 0;
+        q->p1counters->are = 0;
+        q->p1counters->lineare = 0;
+        q->p1counters->lineclear = 0;
         q->p1counters->floorkicks = 0;
         q->p1counters->hold_flash = 0;
 
@@ -652,7 +652,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
             q->pracdata->usr_field_undo_len = 0;
             q->pracdata->usr_field_redo_len = 0;
             q->pracdata->field_edit_in_progress = 0;
-        	q->pracdata->usr_field = qrsfield_create();
+            q->pracdata->usr_field = qrsfield_create();
             q->pracdata->palette_selection = -5;
             q->pracdata->field_selection = 0;
             q->pracdata->field_selection_vertex1_x = 0;
@@ -672,9 +672,9 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
             q->pracdata->usr_timings->das = 14;
             q->pracdata->usr_timings->lineare = 30;
             q->pracdata->usr_timings->lineclear = 40;
-        	q->pracdata->hist_index = 0;
-        	q->pracdata->paused = QRS_FIELD_EDIT;
-        	q->pracdata->grid_lines_shown = 0;
+            q->pracdata->hist_index = 0;
+            q->pracdata->paused = QRS_FIELD_EDIT;
+            q->pracdata->grid_lines_shown = 0;
             q->pracdata->brackets = 0;
             q->pracdata->invisible = 0;
             q->pracdata->infinite_floorkicks = 0;
@@ -686,7 +686,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
             else
                 q->pracdata->piece_subset = SUBSET_ALL;
 
-        	q->pracdata->randomizer_seed = 0;
+            q->pracdata->randomizer_seed = 0;
 
             cs->pracdata_mirror = q->pracdata;
         } else {
@@ -705,15 +705,15 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
         q->p1->speeds = &qs_curve[8];
     }
 
-	return g;
+    return g;
 }
 
 int qs_game_init(game_t *g)
 {
     if(!g)
-		return -1;
+        return -1;
 
-	qrsdata *q = (qrsdata *)(g->data);
+    qrsdata *q = (qrsdata *)(g->data);
     qrs_player *p = q->p1;
     struct randomizer *qrand = q->randomizer;
 
@@ -730,9 +730,9 @@ int qs_game_init(game_t *g)
 
     //gfx_createbutton(g->origin, "TEST", 31*16 - 6, 16 - 6, 0, toggle_obnoxious_text, NULL, NULL, RGBA_DEFAULT);
 
-	/*int i = 0;
-	int j = 0;
-	int t = 0;*/
+    /*int i = 0;
+    int j = 0;
+    int t = 0;*/
 
     if(q->replay) {
         *(qrand->seedp) = q->replay->seed;
@@ -743,7 +743,7 @@ int qs_game_init(game_t *g)
 
     printf("Random seed: %ld\n", q->randomizer_seed);
 
-	if(qrand) {
+    if(qrand) {
         qrand->init(qrand, NULL);
 
         next1_id = qrand->pull(qrand);
@@ -781,14 +781,14 @@ int qs_game_init(game_t *g)
     }
 
     if(q->cur_piece_qrs_id >= 18)
-    	p->y = ROWTOY(SPAWNY_QRS + 2);
+        p->y = ROWTOY(SPAWNY_QRS + 2);
     else
-   	    p->y = ROWTOY(SPAWNY_QRS);
+           p->y = ROWTOY(SPAWNY_QRS);
 
     p->def = NULL;
     p->x = SPAWNX_QRS;
 
-	q->p1->state = PSFALL;
+    q->p1->state = PSFALL;
 
     if(!g->origin->assets->entry)   // used to check if we are in a testing environment
         return 0;
@@ -815,7 +815,7 @@ int qs_game_init(game_t *g)
         bdestroy(bgname);
     }
 
-	return 0;
+    return 0;
 }
 
 int qs_game_pracinit(game_t *g, int val)
@@ -915,14 +915,14 @@ int qs_game_pracinit(game_t *g, int val)
     }
 
     if(q->cur_piece_qrs_id >= 18)
-    	p->y = ROWTOY(SPAWNY_QRS + 2);
+        p->y = ROWTOY(SPAWNY_QRS + 2);
     else
-   	    p->y = ROWTOY(SPAWNY_QRS);
+           p->y = ROWTOY(SPAWNY_QRS);
 
     p->def = NULL;
     p->x = SPAWNX_QRS;
 
-	q->p1->state = PSFALL;
+    q->p1->state = PSFALL;
     q->level = 0;
     q->pracdata->paused = 0;
 
@@ -932,24 +932,24 @@ int qs_game_pracinit(game_t *g, int val)
 int qs_game_quit(game_t *g)
 {
     if(!g)
-		return -1;
+        return -1;
 
     //qrsdata *q = g->data;
 
     keyflags_init(g->origin->keys[0]);
 
-	if(g->field)
-		grid_destroy(g->field);
+    if(g->field)
+        grid_destroy(g->field);
 
-	if(g->data)
-		qrsdata_destroy(g->data);
+    if(g->data)
+        qrsdata_destroy(g->data);
 
-	Mix_HaltMusic();
+    Mix_HaltMusic();
 
     // mostly a band-aid for quitting practice tool properly, so menu input does not take priority for regular modes
     g->origin->menu_input_override = 0;
 
-	return 0;
+    return 0;
 }
 
 int qs_game_preframe(game_t *g)
@@ -960,13 +960,13 @@ int qs_game_preframe(game_t *g)
 int qs_game_frame(game_t *g)
 {
     if(!g)
-		return -1;
+        return -1;
 
-	coreState *cs = g->origin;
-	qrsdata *q = (qrsdata *)(g->data);
+    coreState *cs = g->origin;
+    qrsdata *q = (qrsdata *)(g->data);
 
-	unsigned int *s = &q->p1->state;
-	qrs_counters *c = q->p1counters;
+    unsigned int *s = &q->p1->state;
+    qrs_counters *c = q->p1counters;
 
     struct asset *ready = asset_by_name(cs, "ready");
     struct asset *go = asset_by_name(cs, "go");
@@ -983,20 +983,20 @@ int qs_game_frame(game_t *g)
             return 0;
     }
 
-	if(c->init < 120) {
-		if(c->init == 0) {
-			gfx_pushmessage(cs, "READY", (6*16 + 8 - QRS_FIELD_X + q->field_x), (15*16 + 8 - QRS_FIELD_Y + q->field_y),
+    if(c->init < 120) {
+        if(c->init == 0) {
+            gfx_pushmessage(cs, "READY", (6*16 + 8 - QRS_FIELD_X + q->field_x), (15*16 + 8 - QRS_FIELD_Y + q->field_y),
                             0, monofont_square, NULL, 60, qrs_game_is_inactive);
 
             play_sfx(ready->data, ready->volume);
-		}
+        }
 
-		if(c->init == 60) {
-			gfx_pushmessage(cs, "GO", (8*16 - QRS_FIELD_X + q->field_x), (15*16 + 8 - QRS_FIELD_Y + q->field_y),
+        if(c->init == 60) {
+            gfx_pushmessage(cs, "GO", (8*16 - QRS_FIELD_X + q->field_x), (15*16 + 8 - QRS_FIELD_Y + q->field_y),
                             0, monofont_square, NULL, 60, qrs_game_is_inactive);
 
             play_sfx(go->data, go->volume);
-		}
+        }
 
         if(c->init == 119 && !q->pracdata) {
             if(q->replay) {
@@ -1006,13 +1006,13 @@ int qs_game_frame(game_t *g)
             }
         }
 
-		(*s) = PSINACTIVE;
-		c->init++;
-		return 0;
-	} else if(c->init == 120) {
-		c->init++;
-		qs_initnext(g, q->p1, 0);
-		qrs_proc_initials(g);
+        (*s) = PSINACTIVE;
+        c->init++;
+        return 0;
+    } else if(c->init == 120) {
+        c->init++;
+        qs_initnext(g, q->p1, 0);
+        qrs_proc_initials(g);
 
         if(qrs_chkcollision(g, q->p1)) {
             if(q->p1->def->flags & PDBRACKETS)
@@ -1114,7 +1114,7 @@ int qs_game_frame(game_t *g)
 
             q->mute = 0;
         }
-	}
+    }
 
     if(!q->pracdata)
     {
@@ -1411,7 +1411,7 @@ int qs_game_frame(game_t *g)
     }
 
     if((*s) == PSINACTIVE) {
-		return 0;
+        return 0;
     }
 
     if((*s) & PSSPAWN) {
@@ -1547,14 +1547,14 @@ int qs_game_frame(game_t *g)
     }
 
     if(!(q->state_flags & GAMESTATE_CREDITS))
-	   timeinc(q->timer);
+       timeinc(q->timer);
 
     if(bgname)
     {
         bdestroy(bgname);
     }
 
-	return 0;
+    return 0;
 }
 
 int qs_process_are(game_t *g)
@@ -1581,8 +1581,8 @@ int qs_process_are(game_t *g)
     }
 
     if((*s) & PSARE) {
-		if(c->are == q->p1->speeds->are) {
-			q->lastclear = 0;
+        if(c->are == q->p1->speeds->are) {
+            q->lastclear = 0;
             if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS)) {
                 switch(q->mode_type) {
                     case MODE_G2_DEATH:
@@ -1605,21 +1605,21 @@ int qs_process_are(game_t *g)
             } else
                 q->lvlinc = 0;
 
-			c->are = 0;
-			c->lock = 0;
-			if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
+            c->are = 0;
+            c->lock = 0;
+            if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
                 return QSGAME_SHOULD_TERMINATE;
             }
 
-			qrs_proc_initials(g);
+            qrs_proc_initials(g);
 
-			if(qrs_chkcollision(g, q->p1)) {
+            if(qrs_chkcollision(g, q->p1)) {
                 if(q->p1->def->flags & PDBRACKETS)
                     qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
                 else
                     qrs_lock(g, q->p1, 0);
-				(*s) = PSINACTIVE;
-				Mix_HaltMusic();
+                (*s) = PSINACTIVE;
+                Mix_HaltMusic();
                 if(q->playback)
                     qrs_end_playback(g);
                 else if(q->recording)
@@ -1638,13 +1638,13 @@ int qs_process_are(game_t *g)
                 } else
                     q->state_flags |= GAMESTATE_TOPOUT_ANIM;
 
-				return 0;
-			}
+                return 0;
+            }
 
             if(q->state_flags & GAMESTATE_RISING_GARBAGE)
                 q->garbage_counter++;
-		} else {
-			c->are++;
+        } else {
+            c->are++;
             if(c->are == 1)
             {
                 if(q->state_flags & GAMESTATE_RISING_GARBAGE)
@@ -1657,7 +1657,7 @@ int qs_process_are(game_t *g)
                 }
             }
         }
-	}
+    }
 
     return 0;
 }
@@ -1670,8 +1670,8 @@ int qs_process_lineare(game_t *g)
     qrs_counters *c = q->p1counters;
 
     if((*s) & PSLINEARE) {
-		if(c->lineare == q->p1->speeds->lineare) {
-			q->lastclear = 0;
+        if(c->lineare == q->p1->speeds->lineare) {
+            q->lastclear = 0;
             if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS)) {
                 switch(q->mode_type) {
                     case MODE_G2_DEATH:
@@ -1694,21 +1694,21 @@ int qs_process_lineare(game_t *g)
             } else
                 q->lvlinc = 0;
 
-			c->lineare = 0;
-			c->lock = 0;
-			if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
+            c->lineare = 0;
+            c->lock = 0;
+            if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
                 return QSGAME_SHOULD_TERMINATE;
             }
 
-			qrs_proc_initials(g);
+            qrs_proc_initials(g);
 
-			if(qrs_chkcollision(g, q->p1)) {
+            if(qrs_chkcollision(g, q->p1)) {
                 if(q->p1->def->flags & PDBRACKETS)
                     qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
                 else
                     qrs_lock(g, q->p1, 0);
-				(*s) = PSINACTIVE;
-				Mix_HaltMusic();
+                (*s) = PSINACTIVE;
+                Mix_HaltMusic();
                 if(q->playback)
                     qrs_end_playback(g);
                 else if(q->recording)
@@ -1719,8 +1719,8 @@ int qs_process_lineare(game_t *g)
                 else
                     q->state_flags |= GAMESTATE_TOPOUT_ANIM;
 
-				return 0;
-			}
+                return 0;
+            }
 
             if(q->state_flags & GAMESTATE_RISING_GARBAGE) {
                 switch(q->mode_type) {
@@ -1732,9 +1732,9 @@ int qs_process_lineare(game_t *g)
                         break;
                 }
             }
-		} else
-			c->lineare++;
-	}
+        } else
+            c->lineare++;
+    }
 
     return 0;
 }
@@ -1749,12 +1749,12 @@ int qs_process_lineclear(game_t *g)
     struct asset *dropfield = asset_by_name(cs, "dropfield");
 
     if((*s) & PSLINECLEAR) {
-		if(c->lineclear == q->p1->speeds->lineclear) {
-			(*s) &= ~PSLINECLEAR;
-			(*s) |= PSLINEARE;
+        if(c->lineclear == q->p1->speeds->lineclear) {
+            (*s) &= ~PSLINECLEAR;
+            (*s) |= PSLINEARE;
 
-			c->lineclear = 0;
-			qrs_dropfield(g);
+            c->lineclear = 0;
+            qrs_dropfield(g);
             play_sfx(dropfield->data, dropfield->volume);
 
             switch(q->mode_type)
@@ -1770,9 +1770,9 @@ int qs_process_lineclear(game_t *g)
                 default:
                     break;
             }
-		} else
-			c->lineclear++;
-	}
+        } else
+            c->lineclear++;
+    }
 
     return 0;
 }
@@ -1802,7 +1802,7 @@ int qs_process_lock(game_t *g)
     }
     else if((*s) & PSLOCK && q->lock_delay_enabled)
     {
-		if(qrs_isonground(g, q->p1)) {
+        if(qrs_isonground(g, q->p1)) {
             if(YTOROW(q->p1->y) != q->locking_row) {
                 q->locking_row = YTOROW(q->p1->y);
                 c->lock = 0;
@@ -1821,13 +1821,13 @@ int qs_process_lock(game_t *g)
                         qrs_lock(g, q->p1, 0);*/
                     (*s) &= ~PSLOCK;
                     (*s) |= PSPRELOCKED;
-    			}
+                }
             }
-		} else {
-			(*s) &= ~PSLOCK;
-			(*s) |= PSFALL;
-		}
-	}
+        } else {
+            (*s) &= ~PSLOCK;
+            (*s) |= PSFALL;
+        }
+    }
 
     return 0;
 }
@@ -1843,11 +1843,11 @@ int qs_process_fall(game_t *g)
 
     if((*s) & PSFALL) {
         row = YTOROW(q->p1->y);
-		qrs_fall(g, q->p1, 0);
+        qrs_fall(g, q->p1, 0);
         if(YTOROW(q->p1->y) < row) {
             c->lock = 0;
         }
-	}
+    }
 
     return 0;
 }
@@ -1860,9 +1860,9 @@ int qs_process_prelockflash(game_t *g)
     //qrs_counters *c = q->p1counters;
 
     if((*s) & PSLOCKFLASH1) {
-		(*s) &= ~PSLOCKFLASH1;
-		(*s) |= PSLOCKFLASH2;
-	}
+        (*s) &= ~PSLOCKFLASH1;
+        (*s) |= PSLOCKFLASH2;
+    }
 
     if((*s) & PSPRELOCKED) {
         (*s) &= ~PSPRELOCKED;
@@ -1903,11 +1903,11 @@ int qs_process_lockflash(game_t *g)
     int n = 0;
 
     if((*s) & PSLOCKFLASH1) {
-		n = qrs_lineclear(g, q->p1);
-		q->lastclear = n;
+        n = qrs_lineclear(g, q->p1);
+        q->lastclear = n;
 
-		if(n) {
-			(*s) |= PSLINECLEAR;
+        if(n) {
+            (*s) |= PSLINECLEAR;
 
             q->combo += 2*n - 2;
             bool bravo = false;
@@ -1947,7 +1947,7 @@ int qs_process_lockflash(game_t *g)
                 else
                     q->lvlinc = n;
 
-    			q->level += q->lvlinc;
+                q->level += q->lvlinc;
 
                 int pts;
                 float combo_mult;
@@ -2051,7 +2051,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-			play_sfx(lineclear->data, lineclear->volume);
+            play_sfx(lineclear->data, lineclear->volume);
 
             if( (((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10) || (q->level == 999 && q->lvlinc) ) {
                 q->section_times[q->section] = q->timer->time - q->cur_section_timestamp;
@@ -2188,11 +2188,11 @@ int qs_process_lockflash(game_t *g)
             }
 
             q->combo_simple += (n > 1);
-    	} else {
+        } else {
             q->combo = 1;
             q->combo_simple = 1;
         }
-	}
+    }
 
     return 0;
 }
@@ -2885,13 +2885,13 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
 int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 {
     if(!g || !p)
-		return -1;
+        return -1;
 
-	coreState *cs = g->origin;
-	qrsdata *q = (qrsdata *)(g->data);
+    coreState *cs = g->origin;
+    qrsdata *q = (qrsdata *)(g->data);
     struct randomizer *qrand = q->randomizer;
 
-	int i = 0;
+    int i = 0;
     int j = 0;
     piece_id t = 0;
     int rc = 0;
@@ -2975,37 +2975,37 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
             struct asset *a = NULL;
             switch( t >= 18 ? (t - 18) : (t % 7) )
             {
-        		case 0:
-        			a = asset_by_name(cs, "piece0");
-        			break;
+                case 0:
+                    a = asset_by_name(cs, "piece0");
+                    break;
 
-        		case 1:
-        			a = asset_by_name(cs, "piece1");
-        			break;
+                case 1:
+                    a = asset_by_name(cs, "piece1");
+                    break;
 
-        		case 2:
-        			a = asset_by_name(cs, "piece2");
-        			break;
+                case 2:
+                    a = asset_by_name(cs, "piece2");
+                    break;
 
-        		case 3:
-        			a = asset_by_name(cs, "piece3");
-        			break;
+                case 3:
+                    a = asset_by_name(cs, "piece3");
+                    break;
 
-        		case 4:
-        			a = asset_by_name(cs, "piece4");
-        			break;
+                case 4:
+                    a = asset_by_name(cs, "piece4");
+                    break;
 
-        		case 5:
-        			a = asset_by_name(cs, "piece5");
-        			break;
+                case 5:
+                    a = asset_by_name(cs, "piece5");
+                    break;
 
-        		case 6:
-        			a = asset_by_name(cs, "piece6");
-        			break;
+                case 6:
+                    a = asset_by_name(cs, "piece6");
+                    break;
 
-        		default:
-        			break;
-        	}
+                default:
+                    break;
+            }
 
             if(a) play_sfx(a->data, a->volume);
         }
@@ -3017,15 +3017,15 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     }
 
     if(q->cur_piece_qrs_id >= 18)
-    	p->y = ROWTOY(SPAWNY_QRS + 2);
+        p->y = ROWTOY(SPAWNY_QRS + 2);
     else
         p->y = ROWTOY(SPAWNY_QRS);
 
     p->x = SPAWNX_QRS;
-	p->orient = FLAT;
-	p->state = PSFALL|PSSPAWN;
+    p->orient = FLAT;
+    p->state = PSFALL|PSSPAWN;
 
-	q->p1counters->lock = 0;
+    q->p1counters->lock = 0;
 
     return 0;
 }

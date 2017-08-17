@@ -37,40 +37,40 @@ struct text_formatting {
 };
 
 typedef struct {
-	bstring text;
-	int x;
-	int y;
+   bstring text;
+   int x;
+   int y;
     unsigned int flags;
-	png_monofont *font;
-	struct text_formatting *fmt;
-	unsigned int counter;
-	int (*delete_check)(coreState *);
+   png_monofont *font;
+   struct text_formatting *fmt;
+   unsigned int counter;
+   int (*delete_check)(coreState *);
 } gfx_message;
 
 typedef struct {
-	bstring name;
-	int x;
-	int y;
-	unsigned int flags;
-	int num_frames;
-	int frame_multiplier;
-	unsigned int counter;
-	Uint32 rgba_mod;
+   bstring name;
+   int x;
+   int y;
+   unsigned int flags;
+   int num_frames;
+   int frame_multiplier;
+   unsigned int counter;
+   Uint32 rgba_mod;
 } gfx_animation;
 
 typedef struct {
-	bstring text;
-	int x;
-	int y;
-	int w;
-	int h;
-	unsigned int flags;
-	int highlighted;
-	int clicked;
-	int (*action)(coreState *, void *);
-	int (*delete_check)(coreState *);
-	void *data;
-	Uint32 text_rgba_mod;
+   bstring text;
+   int x;
+   int y;
+   int w;
+   int h;
+   unsigned int flags;
+   int highlighted;
+   int clicked;
+   int (*action)(coreState *, void *);
+   int (*delete_check)(coreState *);
+   void *data;
+   Uint32 text_rgba_mod;
 } gfx_button;
 
 #endif

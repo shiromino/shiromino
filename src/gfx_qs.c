@@ -42,15 +42,15 @@ int piece_colors[26] =
 
 int gfx_drawqs(game_t *g)
 {
-	if(!g)
-		return -1;
+    if(!g)
+        return -1;
     if(!g->origin)
         return -1;
 
     coreState *cs = g->origin;
-	qrsdata *q = (qrsdata *)(g->data);
+    qrsdata *q = (qrsdata *)(g->data);
 
-	piecedef *pd_current = q->p1->def;
+    piecedef *pd_current = q->p1->def;
 
     unsigned int drawpiece_next1_flags = DRAWPIECE_PREVIEW;
     if(q->previews[0]) {
@@ -77,10 +77,10 @@ int gfx_drawqs(game_t *g)
     Uint32 rgba = (r * 0x1000000) + (r * 0x10000) + (r * 0x100) + 0xFF;
 
     int i = 0;
-	int x = q->field_x;
-	int y = q->field_y;
-	int piece_x = x + (16 * q->p1->x);
-	int piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
+    int x = q->field_x;
+    int y = q->field_y;
+    int piece_x = x + (16 * q->p1->x);
+    int piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
 
     SDL_Rect labg_dest = {.x = 264 - 48 + 4 + x, .y = 312 - 32 + y, .w = 95, .h = 64};
 
@@ -99,8 +99,8 @@ int gfx_drawqs(game_t *g)
     double mspf = 1000.0 * (1.0/cs->fps);
     int cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent) / mspf));
 
-	bstring text_level = bfromcstr("LEVEL");
-	bstring level = bformat("%d", q->level);
+    bstring text_level = bfromcstr("LEVEL");
+    bstring level = bformat("%d", q->level);
     bstring next = bfromcstr("NEXT");
     bstring next_name = NULL;
     if(q->previews[0]) {
@@ -380,8 +380,8 @@ active_game_drawing:
         bdestroy(ctp_overload_bstr);
     }
 
-	bdestroy(text_level);
-	bdestroy(level);
+    bdestroy(text_level);
+    bdestroy(level);
     bdestroy(next);
     bdestroy(next_name);
     bdestroy(grade_text);
@@ -392,7 +392,7 @@ active_game_drawing:
     bdestroy(avg_sleep_ms);
     bdestroy(ctp_bstr);
 
-	return 0;
+    return 0;
 }
 
 int gfx_qs_lineclear(game_t *g, int row)
