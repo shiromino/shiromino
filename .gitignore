@@ -10,25 +10,19 @@ replay/*
 ########
 *.swp
 
-#
-#
-# Below is just copy and pasted from GitHub's example
-#
-#
-
-# Compiled source #
-###################
+# Output files #
+################
+*.log
 *.com
 *.class
 *.dll
 *.exe
 *.o
 *.so
+game
 
 # Packages #
 ############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
 *.7z
 *.dmg
 *.gz
@@ -37,12 +31,6 @@ replay/*
 *.rar
 *.tar
 *.zip
-
-# Logs and databases #
-######################
-*.log
-*.sql
-*.sqlite
 
 # OS generated files #
 ######################
