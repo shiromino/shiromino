@@ -12,6 +12,7 @@
 #include "zed_dbg.h"
 
 #include "gfx.h"
+#include "gfx_structures.h"
 #include "audio.h"
 #include "file_io.h"
 #include "core.h"
@@ -534,11 +535,14 @@ int load_files(coreState *cs)
 	load_asset(cs, ASSET_IMG, "font");
 	load_asset(cs, ASSET_IMG, "font_no_outline");
 	load_asset(cs, ASSET_IMG, "font_outline_only");
+	load_asset(cs, ASSET_IMG, "font_square_no_outline");
+	load_asset(cs, ASSET_IMG, "font_square_outline_only");
 	load_asset(cs, ASSET_IMG, "font_thin");
 	load_asset(cs, ASSET_IMG, "font_thin_no_outline");
 	load_asset(cs, ASSET_IMG, "font_thin_outline_only");
 	load_asset(cs, ASSET_IMG, "font_small");
 	load_asset(cs, ASSET_IMG, "font_tiny");
+	load_asset(cs, ASSET_IMG, "font_fixedsys_excelsior");
 	load_asset(cs, ASSET_IMG, "misc");
 	load_asset(cs, ASSET_IMG, "bg0");
 	load_asset(cs, ASSET_IMG, "bg1");
@@ -582,6 +586,7 @@ int load_files(coreState *cs)
 	load_asset(cs, ASSET_IMG, "g2/tets_bright_g2_small");
 	load_asset(cs, ASSET_IMG, "g2/tets_dark_g2");
 	load_asset(cs, ASSET_IMG, "g2/tetrion_g2_death");
+	load_asset(cs, ASSET_IMG, "g2/tetrion_g2_master");
 
 	load_asset(cs, ASSET_IMG, "g3/tetrion_g3_terror");
 
@@ -702,8 +707,8 @@ int init(coreState *cs, struct settings *s)
 	check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG, "IMG_Init: Failed to initialize PNG support: %s\n", IMG_GetError());		// IMG_GetError() not necessarily reliable here
 	check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG, "Mix_Init: Failed to initialize OGG support: %s\n", Mix_GetError());		// ^ same applies here
 	check(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != -1, "Mix_OpenAudio: Error\n");
-	check(gfx_init(cs) == 0, "gfx_init returned failure\n");
-	Mix_AllocateChannels(16);
+
+	Mix_AllocateChannels(32);
 	Mix_Volume(-1, (cs->sfx_volume * cs->master_volume)/100);
 
 	if(SDL_NumJoysticks() > 0) {
@@ -734,6 +739,8 @@ int init(coreState *cs, struct settings *s)
 	//check(cs->screen.target_tex != NULL, "SDL_CreateTexture: Error: %s\n", SDL_GetError());
 
 	check(load_files(cs) == 0, "load_files() returned failure\n");
+
+	check(gfx_init(cs) == 0, "gfx_init returned failure\n");
 
 	cs->bg = (asset_by_name(cs, "bg-temp"))->data;
 	cs->bg_old = cs->bg;

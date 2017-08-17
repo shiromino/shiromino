@@ -2,6 +2,7 @@
 #define _gfx_h
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include "bstrlib.h"
 #include <SDL2/SDL.h>
 
@@ -9,6 +10,7 @@
 #include "grid.h"
 #include "timer.h"
 #include "piecedef.h"
+#include "gfx_structures.h"
 
 #define QRS_FIELD_X 32
 #define QRS_FIELD_Y 64
@@ -30,23 +32,18 @@
 #define TEN_W_TETRION           0x8000
 #define TETRION_DEATH           0x00010000
 
-#define EMERGENCY_OVERRIDE  1
-
-#define DRAWTEXT_LINEFEED       0x0001
+//#define DRAWTEXT_LINEFEED       0x0001
 #define DRAWTEXT_CENTERED       0x0002
 #define DRAWTEXT_NO_OUTLINE     0x0004
 #define DRAWTEXT_SHADOW         0x0008
 #define DRAWTEXT_THIN_FONT      0x0010
 #define DRAWTEXT_ALIGN_RIGHT    0x0020
 #define DRAWTEXT_VALUE_BAR      0x0040
-#define DRAWTEXT_RAINBOW        0x0080
-#define DRAWTEXT_NEGATIVE_OUTLINE   0x0100
+//#define DRAWTEXT_RAINBOW        0x0080
+//#define DRAWTEXT_NEGATIVE_OUTLINE   0x0100
 #define DRAWTEXT_TINY_FONT      0x0200
 #define DRAWTEXT_SMALL_FONT     0x0400
-
-#define MESSAGE_EMERGENCY       0x1000000
-#define ANIMATION_EMERGENCY     0x1000000
-#define BUTTON_EMERGENCY        0x1000000
+#define DRAWTEXT_FIXEDSYS_FONT  0x0800
 
 #define RGBA_DEFAULT 0xFFFFFFFF
 #define RGBA_OUTLINE_DEFAULT 0x000000FF
@@ -61,6 +58,13 @@
 
 #define BG_FADE_RATE 25
 
+extern png_monofont *monofont_tiny;
+extern png_monofont *monofont_small;
+extern png_monofont *monofont_thin;
+extern png_monofont *monofont_square;
+extern png_monofont *monofont_fixedsys;
+
+struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
 void gfx_message_destroy(gfx_message *m);
 void gfx_animation_destroy(gfx_animation *a);
 void gfx_button_destroy(gfx_button *b);
@@ -74,7 +78,7 @@ int gfx_start_bg_fade_in(coreState *cs);
 int gfx_drawbg(coreState *cs);
 int gfx_draw_emergency_bg_darken(coreState *cs);
 
-int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, unsigned int counter, int (*delete_check)(coreState *), Uint32 rgba);
+int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(coreState *));
 int gfx_drawmessages(coreState *cs, int type);
 
 int gfx_pushanimation(coreState *cs, bstring name, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba);
@@ -86,8 +90,8 @@ int gfx_drawbuttons(coreState *cs, int type);
 int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned int flags, int x, int y);
 int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
 
-int gfx_drawtext(coreState *cs, bstring text, int x, int y, unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
-int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
+int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt);
+int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
 int gfx_drawtime(coreState *cs, long time, int x, int y, Uint32 rgba);
 int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba);

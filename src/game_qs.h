@@ -6,6 +6,7 @@
 
 #define QS_CURVE_MAX 17
 #define G1_MASTER_CURVE_MAX 30
+#define G2_MASTER_CURVE_MAX 35
 #define G2_DEATH_CURVE_MAX 9
 #define G3_TERROR_CURVE_MAX 9
 
@@ -27,6 +28,7 @@
 #define MODE_G3_TERROR 0x0200
 #define MODE_G1_MASTER 0x0400
 #define MODE_G1_20G    0x0800
+#define MODE_G2_MASTER 0x1000
 // should add "variation" codes that change mode behavior (unique code interpretations for each mode maybe)
 
 #define RANDOMIZER_NORMAL 0
@@ -73,8 +75,48 @@
 #define GRADE_MM 35
 #define GRADE_GM 36
 
+#define NO_GRADE 255
+
+#define GREEN_LINE 0x100
+#define ORANGE_LINE 0x200
+
+#define INTERNAL_GRADE_9        0
+#define INTERNAL_GRADE_8        1
+#define INTERNAL_GRADE_7        2
+#define INTERNAL_GRADE_6        3
+#define INTERNAL_GRADE_5        4
+#define INTERNAL_GRADE_4        5
+#define INTERNAL_GRADE_4_PLUS   6
+#define INTERNAL_GRADE_3        7
+#define INTERNAL_GRADE_3_PLUS   8
+#define INTERNAL_GRADE_2_MINUS  9
+#define INTERNAL_GRADE_2        10
+#define INTERNAL_GRADE_2_PLUS   11
+#define INTERNAL_GRADE_1_MINUS  12
+#define INTERNAL_GRADE_1        13
+#define INTERNAL_GRADE_1_PLUS   14
+#define INTERNAL_GRADE_S1_MINUS 15
+#define INTERNAL_GRADE_S1       16
+#define INTERNAL_GRADE_S1_PLUS  17
+#define INTERNAL_GRADE_S2       18
+#define INTERNAL_GRADE_S3       19
+#define INTERNAL_GRADE_S4_MINUS 20
+#define INTERNAL_GRADE_S4       21
+#define INTERNAL_GRADE_S4_PLUS  22
+#define INTERNAL_GRADE_S5       23
+#define INTERNAL_GRADE_S5_PLUS  24
+#define INTERNAL_GRADE_S6       25
+#define INTERNAL_GRADE_S6_PLUS  26
+#define INTERNAL_GRADE_S7       27
+#define INTERNAL_GRADE_S7_PLUS  28
+#define INTERNAL_GRADE_S8       29
+#define INTERNAL_GRADE_S8_PLUS  30
+#define INTERNAL_GRADE_S9       31
+
 #define G2_DEATH_TORIKAN (3*60*60 + 25*60)
 #define G3_TERROR_TORIKAN (2*60*60 + 28*60)
+
+#define AVG_FIRST_FIVE(T) ((T[0] + T[1] + T[2] + T[3] + T[4]) / 5)
 
 #define USRSEQ_ELEM_OOB -1
 #define USRSEQ_RPTCOUNT_MAX 1023
@@ -83,7 +125,9 @@
 
 #define INITNEXT_DURING_ACTIVE_PLAY 0x0001
 
-const char *get_grade_name(int index);
+const char *get_grade_name(int grade);
+const char *get_internal_grade_name(int index);
+int internal_to_displayed_grade(int internal_grade);
 
 game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *replay_fname);
 int qs_game_init(game_t *g);

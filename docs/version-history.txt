@@ -4,13 +4,17 @@ Shiromino Version history
 beta2
 {
     New Features:
+        + Joystick support!
         + "escape" button is now mappable
         + New mode: G1 MASTER
         + New mode: G1 20G
+        + New mode: G2 MASTER
+        + G1 and G2 MASTER grade systems added
         + New fonts: font_small.png and font_tiny.png
         + New tetrion graphics
         + Full block face palette in the practice tool
         + New options in the practice tool: infinite floorkicks, lock protection
+        + Basic support for Sakura gems in the practice tool
 
     Changes/Removed Features:
         * MASTER renamed to PENTOMINO

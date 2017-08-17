@@ -24,8 +24,9 @@
 
 typedef struct coreState_ coreState;
 
-#include "grid.h"
 #include "bstrlib.h"
+#include "grid.h"
+#include "gfx_structures.h"
 
 enum {
 	MODE_INVALID,
@@ -73,42 +74,6 @@ struct assetdb {
 struct text_box {
 	struct bstrList *lines;
 };*/
-
-typedef struct {
-	bstring text;
-	int x;
-	int y;
-	unsigned int flags;
-	unsigned int counter;
-	int (*delete_check)(coreState *);
-	Uint32 rgba_mod;
-} gfx_message;
-
-typedef struct {
-	bstring name;
-	int x;
-	int y;
-	unsigned int flags;
-	int num_frames;
-	int frame_multiplier;
-	unsigned int counter;
-	Uint32 rgba_mod;
-} gfx_animation;
-
-typedef struct {
-	bstring text;
-	int x;
-	int y;
-	int w;
-	int h;
-	unsigned int flags;
-	int highlighted;
-	int clicked;
-	int (*action)(coreState *, void *);
-	int (*delete_check)(coreState *);
-	void *data;
-	Uint32 text_rgba_mod;
-} gfx_button;
 
 struct settings {
 	struct bindings *keybinds;

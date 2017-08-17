@@ -1002,11 +1002,11 @@ int mload_main(game_t *g, int val)
 	cs->bg = (asset_by_name(cs, "bg-temp"))->data;
 	cs->bg_old = cs->bg;
 
-	d->menu = malloc(14 * sizeof(struct menu_opt *));
+	d->menu = malloc(15 * sizeof(struct menu_opt *));
 	d->menu_id = MENU_ID_MAIN;
 	d->use_target_tex = 0;
 	d->selection = d->main_menu_data.selection;
-	d->numopts = 14;
+	d->numopts = 15;
 	d->title = bfromcstr("MAIN MENU");
 	d->x = 4*16;
 	d->y = 3*16;
@@ -1129,7 +1129,7 @@ int mload_main(game_t *g, int val)
 	m->value_y = m->y;
 	m->value_text_rgba = 0xA0A0FFFF;
 
-	d->menu[5] = std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, bfromcstr("G2 DEATH"));
+	d->menu[5] = std_game_multiopt_create(g->origin, MODE_G2_MASTER, 10, bfromcstr("G2 MASTER"));
 	m = d->menu[5];
 	d6 = m->data;
 	if(d->main_menu_data.selection == 5)
@@ -1140,10 +1140,10 @@ int mload_main(game_t *g, int val)
 	m->y = 11*16;
 	m->value_x = m->x + 10*16;
 	m->value_y = m->y;
-	m->label_text_rgba = 0xFF4040FF;
+	m->label_text_rgba = 0xFFFF40FF;
 	m->value_text_rgba = 0xA0A0FFFF;
 
-	d->menu[6] = std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, bfromcstr("G3 TERROR"));
+	d->menu[6] = std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, bfromcstr("G2 DEATH"));
 	m = d->menu[6];
 	d6 = m->data;
 	if(d->main_menu_data.selection == 6)
@@ -1157,29 +1157,43 @@ int mload_main(game_t *g, int val)
 	m->label_text_rgba = 0xFF4040FF;
 	m->value_text_rgba = 0xA0A0FFFF;
 
-	d->menu[7] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("PRACTICE"));
+	d->menu[7] = std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, bfromcstr("G3 TERROR"));
 	m = d->menu[7];
+	d6 = m->data;
+	if(d->main_menu_data.selection == 7)
+		d6->selection = d->main_menu_data.opt_selection;
+	else
+		d6->selection = 0;
+	m->x = 4*16;
+	m->y = 13*16;
+	m->value_x = m->x + 10*16;
+	m->value_y = m->y;
+	m->label_text_rgba = 0xFF4040FF;
+	m->value_text_rgba = 0xA0A0FFFF;
+
+	d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("PRACTICE"));
+	m = d->menu[8];
 	d1 = m->data;
 	d1->action = mload_practice;
 	d1->val = 0;
 	m->x = 4*16;
-	m->y = 14*16;
+	m->y = 15*16;
 
-	d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("REPLAY"));
-	m = d->menu[8];
+	d->menu[9] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("REPLAY"));
+	m = d->menu[9];
 	d1 = m->data;
 	d1->action = mload_replay;
 	d1->val = 0;
 	m->x = 4*16;
-	m->y = 15*16;
+	m->y = 16*16;
 
-	d->menu[9] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("SETTINGS"));
-	m = d->menu[9];
-	m->x = 4*16;
-	m->y = 18*16;
-
-	d->menu[10] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MASTER VOLUME"));
+	d->menu[10] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("SETTINGS"));
 	m = d->menu[10];
+	m->x = 4*16;
+	m->y = 19*16;
+
+	d->menu[11] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MASTER VOLUME"));
+	m = d->menu[11];
 	d2 = m->data;
 	d2->num = 101;
 	d2->param = &g->origin->settings->master_volume;
@@ -1191,13 +1205,13 @@ int mload_main(game_t *g, int val)
 	}
 	d2->selection = g->origin->settings->master_volume;
 	m->x = 4*16;
-	m->y = 20*16;
+	m->y = 21*16;
 	m->value_x = 21*16;
 	m->value_y = m->y;
 	m->value_text_flags = DRAWTEXT_ALIGN_RIGHT|DRAWTEXT_VALUE_BAR;
 
-	d->menu[11] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("SFX VOLUME"));
-	m = d->menu[11];
+	d->menu[12] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("SFX VOLUME"));
+	m = d->menu[12];
 	d2 = m->data;
 	d2->num = 101;
 	d2->param = &g->origin->settings->sfx_volume;
@@ -1209,13 +1223,13 @@ int mload_main(game_t *g, int val)
 	}
 	d2->selection = g->origin->settings->sfx_volume;
 	m->x = 4*16;
-	m->y = 21*16;
+	m->y = 22*16;
 	m->value_x = 21*16;
 	m->value_y = m->y;
 	m->value_text_flags = DRAWTEXT_ALIGN_RIGHT|DRAWTEXT_VALUE_BAR;
 
-	d->menu[12] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MUSIC VOLUME"));
-	m = d->menu[12];
+	d->menu[13] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MUSIC VOLUME"));
+	m = d->menu[13];
 	d2 = m->data;
 	d2->num = 101;
 	d2->param = &g->origin->settings->mus_volume;
@@ -1227,18 +1241,18 @@ int mload_main(game_t *g, int val)
 	}
 	d2->selection = g->origin->settings->mus_volume;
 	m->x = 4*16;
-	m->y = 22*16;
+	m->y = 23*16;
 	m->value_x = 21*16;
 	m->value_y = m->y;
 	m->value_text_flags = DRAWTEXT_ALIGN_RIGHT|DRAWTEXT_VALUE_BAR;
 
-	d->menu[13] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
-	m = d->menu[13];
+	d->menu[14] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
+	m = d->menu[14];
 	d1 = m->data;
 	d1->action = menu_action_quit;
 	d1->val = 0;
 	m->x = 4*16;
-	m->y = 25*16;
+	m->y = 26*16;
 
 	return 0;
 }
@@ -1374,8 +1388,8 @@ int mload_practice(game_t *g, int val)
 	m->y = 8*16 + 2*18;
 	m->value_x = m->x + 13*13;
 	m->value_y = m->y;
-	m->label_text_flags = DRAWTEXT_THIN_FONT;
-	m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+	m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+	m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 	m->label_text_rgba = 0x70FF70FF;
 	m->value_text_rgba = m->label_text_rgba;
 
@@ -1667,7 +1681,7 @@ int mload_practice(game_t *g, int val)
 	m->y = 8*16 + 6*18;
 	m->value_x = m->x + 15*13;
 	m->value_y = m->y + 18;
-	m->label_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_LINEFEED;
+	m->label_text_flags = DRAWTEXT_THIN_FONT;
 	m->label_text_rgba = 0xA0A0FFFF;
 	m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
 
@@ -1882,6 +1896,9 @@ int mload_replay(game_t *g, int val)
 					break;
 				case MODE_G1_MASTER:
 					label = bformat("%s  G1 MASTER  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
+					break;
+				case MODE_G2_MASTER:
+					label = bformat("%s  G2 MASTER  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
 					break;
 				default:
 					break;

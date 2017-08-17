@@ -37,12 +37,6 @@ int gfx_drawmenu(game_t *g)
 	bstring textinput_display = NULL;
 	bstring page_bstr = NULL;
 
-	//double mspf = 1000.0 * (1.0/cs->fps);
-	//int cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent) / mspf));
-	//bstring avg_sleep_ms = bformat("%LF", cs->avg_sleep_ms_recent);
-    //bstring ctp_bstr = bformat("%d%%", cpu_time_percentage);
-    //bstring ctp_overload_bstr = NULL;
-
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -51,15 +45,18 @@ int gfx_drawmenu(game_t *g)
 	int initial_opt = 0;
 	int final_opt = d->numopts - 1;
 
-	unsigned int text_flags = d->use_target_tex ? GFX_TARGET_TEXTURE_OVERWRITE : 0;
-
-	//gfx_rendercopy(cs, d->target_tex, NULL, NULL);
-	//return 0;
+	struct text_formatting *fmt = NULL;
+	png_monofont *monofont = NULL;
 
 	if(d->is_paged) {
 		page_bstr = bformat("PAGE %d/%d", d->page + 1, ((d->numopts - 1) / d->page_length) + 1);
-		gfx_drawtext(cs, page_bstr, d->page_text_x, d->page_text_y, DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+		fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+
+		gfx_drawtext(cs, page_bstr, d->page_text_x, d->page_text_y, monofont_square, fmt);
+
 		bdestroy(page_bstr);
+		free(fmt);
+		fmt = NULL;
 
 		initial_opt = d->page * d->page_length;
 		final_opt = d->page * d->page_length + d->page_length - 1;
@@ -71,13 +68,11 @@ int gfx_drawmenu(game_t *g)
 		return 0;
 
 	if(d->title)
-		gfx_drawtext(cs, d->title, d->x, d->y, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+		gfx_drawtext(cs, d->title, d->x, d->y, monofont_square, NULL);
 
 	if(d->use_target_tex) {
 		SDL_SetRenderTarget(cs->screen.renderer, d->target_tex);
 	}
-
-	//printf("initial_opt = %d, d->selection = %d (label = %s), d->numopts = %d\n", initial_opt, d->selection, d->menu[d->selection]->label->data, d->numopts);
 
 	for(i = initial_opt; i <= final_opt; i++) {
 		if(d->menu[i]) {
@@ -88,18 +83,46 @@ int gfx_drawmenu(game_t *g)
 				SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
 				SDL_RenderClear(g->origin->screen.renderer);
 			}
-			//printf("Drawing menu opt %d with label %s\n", i, m->label->data);
-			if(i == d->selection) {
-				/*if(cs->obnoxious_text)
-					gfx_drawtext(cs, m->label, m->x, m->y, m->label_text_flags|DRAWTEXT_RAINBOW|DRAWTEXT_NO_OUTLINE, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
-				else*/
-					gfx_drawtext(cs, m->label, m->x, m->y, text_flags|m->label_text_flags, RGBA_DEFAULT, RGBA_DEFAULT);
-			} else
-				gfx_drawtext(cs, m->label, m->x, m->y, text_flags|m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
+
+			fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
+			monofont = monofont_square;
+
+			if(m->label_text_flags & DRAWTEXT_THIN_FONT)
+				monofont = monofont_thin;
+			if(m->label_text_flags & DRAWTEXT_SMALL_FONT)
+				monofont = monofont_small;
+			if(m->label_text_flags & DRAWTEXT_TINY_FONT)
+				monofont = monofont_tiny;
+			if(m->label_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+				monofont = monofont_fixedsys;
+
+			if(i == d->selection)
+				fmt->outline_rgba = fmt->rgba;
+
+			gfx_drawtext(cs, m->label, m->x, m->y, monofont, fmt);
+
+			free(fmt);
+			fmt = NULL;
 
 			if(m->type == MENU_MULTIOPT) {
 				d2 = m->data;
-				gfx_drawtext(cs, d2->labels[d2->selection], m->value_x, m->value_y, text_flags|m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+				fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+				monofont = monofont_square;
+
+				if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+					monofont = monofont_thin;
+				if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+					monofont = monofont_small;
+				if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+					monofont = monofont_tiny;
+				if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+					monofont = monofont_fixedsys;
+
+				gfx_drawtext(cs, d2->labels[d2->selection], m->value_x, m->value_y, monofont, fmt);
+
+				free(fmt);
+				fmt = NULL;
+
 				if(m->value_text_flags & DRAWTEXT_VALUE_BAR) {
 					barsrc.x = 14*16;
 					bardest.x = m->value_x;
@@ -137,8 +160,24 @@ int gfx_drawmenu(game_t *g)
 			if(m->type == MENU_GAME_MULTIOPT) {
 				d3 = m->data;
 				if(d3->labels) {
-					if(d3->labels[d3->selection])
-						gfx_drawtext(cs, d3->labels[d3->selection], m->value_x, m->value_y, m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+					if(d3->labels[d3->selection]) {
+						fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+						monofont = monofont_square;
+
+						if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+							monofont = monofont_thin;
+						if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+							monofont = monofont_small;
+						if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+							monofont = monofont_tiny;
+						if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+							monofont = monofont_fixedsys;
+
+						gfx_drawtext(cs, d3->labels[d3->selection], m->value_x, m->value_y, monofont, fmt);
+
+						free(fmt);
+						fmt = NULL;
+					}
 				}
 			}
 
@@ -200,7 +239,22 @@ int gfx_drawmenu(game_t *g)
 							gfx_rendercopy(cs, font, &src, &dest);
 						}
 
-						gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+						fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+						monofont = monofont_square;
+
+						if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+							monofont = monofont_thin;
+						if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+							monofont = monofont_small;
+						if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+							monofont = monofont_tiny;
+						if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+							monofont = monofont_fixedsys;
+
+						gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, fmt);
+
+						free(fmt);
+						fmt = NULL;
 					}
 
 					if(d7->active) {
@@ -241,41 +295,29 @@ int gfx_drawmenu(game_t *g)
 
 			if(m->type == MENU_TOGGLE) {
 				d8 = m->data;
+
+				fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+				monofont = monofont_square;
+
+				if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+					monofont = monofont_thin;
+				if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+					monofont = monofont_small;
+				if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+					monofont = monofont_tiny;
+				if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+					monofont = monofont_fixedsys;
+
 				if(*(d8->param))
-					gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+					gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, monofont, fmt);
 				else
-					gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+					gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, monofont, fmt);
+
+				free(fmt);
+				fmt = NULL;
 			}
-/*
-			if(i == d->selection) {
-				src.x = 16;
-				src.y = 80;
-				dest.x = m->x - 16;
-				dest.y = m->y;
-
-				gfx_rendercopy(cs, font, &src, &dest);
-
-				src.x = 0;
-				dest.x = m->x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16)*(m->label->slen);
-				dest.y = m->y + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 1 : 0);
-
-				if(m->type != MENU_MULTIOPT && m->type != MENU_GAME_MULTIOPT)
-					gfx_rendercopy(cs, font, &src, &dest);
-			}
-*/
 		}
 	}
-
-	/*gfx_drawtext(cs, ctp_bstr, 640 - 16 + 16 * (1 - ctp_bstr->slen), 2 + 32, DRAWTEXT_SHADOW|DRAWTEXT_NO_OUTLINE, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-
-	if(cs->recent_frame_overload >= 0) {
-		cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent_array[cs->recent_frame_overload]) / mspf));
-		ctp_overload_bstr = bformat("%d%%", cpu_time_percentage);
-
-		gfx_drawtext(cs, ctp_overload_bstr, 640 - 16 + 16 * (1 - ctp_overload_bstr->slen), 18 + 32, DRAWTEXT_SHADOW|DRAWTEXT_NO_OUTLINE, 0xB00000FF, RGBA_OUTLINE_DEFAULT);
-
-		bdestroy(ctp_overload_bstr);
-	}*/
 
 	SDL_SetRenderTarget(cs->screen.renderer, NULL);
 	SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 255);
@@ -284,6 +326,7 @@ int gfx_drawmenu(game_t *g)
 		for(i = 0; i < d->numopts; i++) {
 			d->menu[i]->render_update = 0;
 		}
+
 		gfx_rendercopy(cs, d->target_tex, NULL, NULL);
 	}
 

@@ -93,8 +93,9 @@
 #define SUBSET_PENTS 2
 
 #define QRS_PIECE_GARBAGE -5
-#define QRS_PIECE_RAINBOW 512
-#define QRS_PIECE_BRACKETS 1024
+//#define QRS_PIECE_RAINBOW 512
+#define QRS_PIECE_BRACKETS (1 << 24)
+#define QRS_PIECE_GEM (1 << 25)
 #define QRS_FIELD_W_LIMITER -30
 #define QRS_WALL QRS_FIELD_W_LIMITER
 
@@ -105,10 +106,27 @@
 #define QRS_FIELD_W 12
 #define QRS_FIELD_H 22
 
+#define GAMESTATE_INACTIVE 		0x80000000
 #define GAMESTATE_INVISIBLE 		0x0001
 #define GAMESTATE_BRACKETS 			0x0002
 #define GAMESTATE_RISING_GARBAGE 	0x0004
 #define GAMESTATE_CREDITS			0x0008
+#define GAMESTATE_FADING			0x0010
+#define GAMESTATE_TOPOUT_ANIM		0x0020
+#define GAMESTATE_FADE_TO_CREDITS	0x0040
+#define GAMESTATE_READYGO			0x0080
+#define GAMESTATE_GAMEOVER			0x0100
+#define GAMESTATE_PRESS_START		0x0200
+#define GAMESTATE_FIREWORKS_GM		0x0400
+#define GAMESTATE_FIREWORKS			0x0800
+#define GAMESTATE_BETTER_NEXT_TIME	0x1000
+#define GAMESTATE_RESULTS_SCREEN	0x2000
+#define GAMESTATE_CREDITS_TOPOUT	0x4000
+#define GAMESTATE_PRE_PROMO_EXAM	0x8000
+#define GAMESTATE_PROMO_RESULTS	0x00010000
+
+//#define GAMESTATE_REWIND			0x4000
+//#define GAMESTATE_FAST_FORWARD		0x8000
 
 #define GARBAGE_COPY_BOTTOM_ROW		0x0001
 
@@ -136,6 +154,8 @@
 #define IS_STACK(n)	((!n || n == -2 || n == GRID_OOB || n == QRS_FIELD_W_LIMITER) ? 0 : 1)
 #define IS_INBOUNDS(n) (IS_STACK(n) || !n || n == -2)
 #define IS_QRS_PIECE(n) (n >= 0 && n < 25)
+#define GET_PIECE_FADE_COUNTER(n) ((n >> 8) & 0xffff)
+#define SET_PIECE_FADE_COUNTER(n, f) n = ((n & 0xff0000ff) | ((f & 0xffff) << 8))
 
 extern const char *qrs_piece_names[25];
 
@@ -258,6 +278,9 @@ typedef struct {
 	bool lock_protect;
 	bool hold_enabled;
 	bool special_irs;
+	bool using_gems;
+
+	unsigned int piece_fade_rate;
 
 // fields which are assumed to be mutated during normal gameplay
 
@@ -274,9 +297,28 @@ typedef struct {
 	// = 13 - q->section for TGM+. shirase: 500-599=20, 600-699=18, 700-799=10, 800-899=9, 900-999=8; checks during ARE
 	int garbage_delay;
 
+	// general purpose frame counter to keep track of top out animation, etc.
+	int stack_anim_counter;
+
+	// counts down to 0 (measured in frames)
+	int credit_roll_counter;
+	int credit_roll_lineclears;
+
     int level;
     int section;
+
+	int score;
+	int soft_drop_counter;
+
 	int grade;
+	int internal_grade;
+	int grade_points;
+	int grade_decay_counter;
+
+	bool mroll_unlocked;
+	long cur_section_timestamp;
+	int section_times[30];
+	int section_tetrises[30];
 
 	// values: 1 = set to 2 next time a rotate happens.
 	//		   2 = lock during THIS frame ( handled by qs_process_lock() )

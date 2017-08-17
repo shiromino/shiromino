@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 #include "bstrlib.h"
 #include <SDL2/SDL.h>
@@ -10,6 +11,7 @@
 #include "grid.h"
 #include "timer.h"
 #include "gfx.h"
+#include "gfx_structures.h"
 
 /*
 int gfx_piece_colors[25] =
@@ -42,6 +44,34 @@ int gfx_piece_colors[25] =
     0x808080
 };
 */
+
+png_monofont *monofont_tiny = NULL;
+png_monofont *monofont_small = NULL;
+png_monofont *monofont_thin = NULL;
+png_monofont *monofont_square = NULL;
+png_monofont *monofont_fixedsys = NULL;
+
+struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba)
+{
+	struct text_formatting *fmt = malloc(sizeof(struct text_formatting));
+
+	fmt->rgba = rgba;
+	fmt->outline_rgba = outline_rgba;
+
+	fmt->outlined = !(flags & DRAWTEXT_NO_OUTLINE);
+	fmt->shadow = flags & DRAWTEXT_SHADOW;
+
+	fmt->line_spacing = 1.0;
+	fmt->align = ALIGN_LEFT;
+	fmt->wrap_length = 0;
+
+	if(flags & DRAWTEXT_CENTERED)
+		fmt->align = ALIGN_CENTER;
+	if(flags & DRAWTEXT_ALIGN_RIGHT)
+		fmt->align = ALIGN_RIGHT;
+
+	return fmt;
+}
 
 void gfx_message_destroy(gfx_message *m)
 {
@@ -78,6 +108,37 @@ void gfx_button_destroy(gfx_button *b)
 
 int gfx_init(coreState *cs)
 {
+	monofont_tiny = malloc(sizeof(png_monofont));
+	monofont_small = malloc(sizeof(png_monofont));
+	monofont_thin = malloc(sizeof(png_monofont));
+	monofont_square = malloc(sizeof(png_monofont));
+	monofont_fixedsys = malloc(sizeof(png_monofont));
+
+	monofont_tiny->sheet = (asset_by_name(cs, "font_tiny"))->data;
+	monofont_tiny->outline_sheet = NULL;
+	monofont_tiny->char_w = 6;
+	monofont_tiny->char_h = 5;
+
+	monofont_small->sheet = (asset_by_name(cs, "font_small"))->data;
+	monofont_small->outline_sheet = NULL;
+	monofont_small->char_w = 12;
+	monofont_small->char_h = 10;
+
+	monofont_thin->sheet = (asset_by_name(cs, "font_thin_no_outline"))->data;
+	monofont_thin->outline_sheet = (asset_by_name(cs, "font_thin_outline_only"))->data;
+	monofont_thin->char_w = 13;
+	monofont_thin->char_h = 18;
+
+	monofont_square->sheet = (asset_by_name(cs, "font_square_no_outline"))->data;
+	monofont_square->outline_sheet = (asset_by_name(cs, "font_square_outline_only"))->data;
+	monofont_square->char_w = 16;
+	monofont_square->char_h = 16;
+
+	monofont_fixedsys->sheet = (asset_by_name(cs, "font_fixedsys_excelsior"))->data;
+	monofont_fixedsys->outline_sheet = NULL;
+	monofont_fixedsys->char_w = 8;
+	monofont_fixedsys->char_h = 16;
+
 	return 0;
 }
 
@@ -118,6 +179,12 @@ void gfx_quit(coreState *cs)
 	cs->gfx_messages_max = 0;
 	cs->gfx_animations_max = 0;
     cs->gfx_buttons_max = 0;
+
+	free(monofont_tiny);
+	free(monofont_small);
+	free(monofont_thin);
+	free(monofont_square);
+	free(monofont_fixedsys);
 }
 
 int gfx_rendercopy(coreState *cs, SDL_Texture *t, SDL_Rect *src, SDL_Rect *dest_)
@@ -258,7 +325,7 @@ int gfx_draw_emergency_bg_darken(coreState *cs)
     return 0;
 }
 
-int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, unsigned int counter, int (*delete_check)(coreState *), Uint32 rgba)
+int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(coreState *))
 {
 	if(!text)
 		return -1;
@@ -267,10 +334,11 @@ int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int 
 	m->text = bfromcstr(text);
 	m->x = x;
 	m->y = y;
-    m->flags = flags;
+	m->flags = flags;
+    m->font = font;
+	m->fmt = fmt;
 	m->counter = counter;
     m->delete_check = delete_check;
-	m->rgba_mod = rgba;
 
 	cs->gfx_messages_max++;
 	cs->gfx_messages = realloc(cs->gfx_messages, cs->gfx_messages_max * sizeof(gfx_message *));
@@ -319,7 +387,7 @@ int gfx_drawmessages(coreState *cs, int type)
             }
         }
 
-		gfx_drawtext(cs, m->text, m->x, m->y, m->flags, m->rgba_mod, RGBA_OUTLINE_DEFAULT);
+		gfx_drawtext(cs, m->text, m->x, m->y, m->font, m->fmt);
         if(m->counter > 0)
             m->counter--;
 	}
@@ -478,6 +546,16 @@ int gfx_drawbuttons(coreState *cs, int type)
     SDL_Rect src = {.x = 0, .y = 0, .w = 6, .h = 28};
     SDL_Rect dest = {.x = 0, .y = 0, .w = 6, .h = 28};
 
+	struct text_formatting fmt = {
+		.rgba = RGBA_DEFAULT,
+        .outline_rgba = RGBA_OUTLINE_DEFAULT,
+        .outlined = true,
+        .shadow = false,
+        .line_spacing = 1.0,
+        .align = ALIGN_LEFT,
+        .wrap_length = 0
+	};
+
 	for(i = 0; i < cs->gfx_buttons_max; i++) {
 		if(!cs->gfx_buttons[i]) {
 			n++;
@@ -538,10 +616,17 @@ int gfx_drawbuttons(coreState *cs, int type)
         SDL_SetTextureColorMod(font, 255, 255, 255);
         SDL_SetTextureAlphaMod(font, 255);
 
-        if(b->highlighted || b->clicked)
-            gfx_drawtext(cs, b->text, b->x + 6, b->y + 6, DRAWTEXT_NO_OUTLINE|DRAWTEXT_SHADOW|DRAWTEXT_LINEFEED, 0x000000FF, RGBA_OUTLINE_DEFAULT);
-        else
-            gfx_drawtext(cs, b->text, b->x + 6, b->y + 6, DRAWTEXT_LINEFEED, b->text_rgba_mod, RGBA_OUTLINE_DEFAULT);
+        if(b->highlighted || b->clicked) {
+			fmt.outlined = false;
+			fmt.shadow = true;
+			fmt.rgba = 0x000000FF;
+        } else {
+			fmt.outlined = true;
+			fmt.shadow = false;
+			fmt.rgba = b->text_rgba_mod;
+		}
+
+		gfx_drawtext(cs, b->text, b->x + 6, b->y + 6, monofont_square, &fmt);
 	}
 
 	if(n == cs->gfx_buttons_max) {
@@ -569,7 +654,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
 	//SDL_Rect field_dest = {.x = x+16, .y = y+32, .w = 16*12, .h = 16*20};
 
-	//qrsdata *q = cs->p1game->data;
+	qrsdata *q = cs->p1game->data;
 	int use_deltas = 0;
 
 	int i = 0;
@@ -605,6 +690,11 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 		case MODE_G1_20G:
 			tetrion_qs = (asset_by_name(cs, "g1/tetrion_g1"))->data;
 			break;
+
+		case MODE_G2_MASTER:
+			tetrion_qs = (asset_by_name(cs, "g2/tetrion_g2_master"))->data;
+			break;
+
 		case MODE_G2_DEATH:
 			tetrion_qs = (asset_by_name(cs, "g2/tetrion_g2_death"))->data;
 			break;
@@ -667,44 +757,39 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                         src.x = 28 * 16;
                     else if(!(IS_INBOUNDS(gridgetcell(field, i - 1, j))) && (IS_INBOUNDS(gridgetcell(field, i + 1, j))))
                         src.x = 29 * 16;
-                } else if(c & QRS_PIECE_RAINBOW) {
-                    src.x = 26 * 16;
-                    c &= ~QRS_PIECE_RAINBOW;
-                    r = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z + 53*c) % 300) / 300.0) ));
-                    g = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z - 100 + 53*c) % 300) / 300.0) ));
-                    b = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z - 200 + 53*c) % 300) / 300.0) ));
-                    SDL_SetTextureColorMod(tets, (Uint8)g, (Uint8)b, (Uint8)r);
                 } else if(c & QRS_PIECE_BRACKETS) {
                     src.x = 30*16;
+				} else if(c & QRS_PIECE_GEM) {
+					src.x = ((c & 0xff) - 1) * 16;
+					src.y = 0;
+					dest.x = x + 16 + (i * 16);
+					dest.y = y + (j * 16);
+
+					gfx_rendercopy(cs, tets, &src, &dest);
+					src.x = 32*16;
                 } else {
-                    src.x = (c - 1) * 16;
-                    /*if(z % 91 > 59) {
-                        for(k = 0; k < 20; k++) {
-                            if(i == ((z % 91) - 79 + k) && j == (2 + k))
-                                src.x = 26*16;
-                        }
-                    }*/
+                    src.x = ((c & 0xff) - 1) * 16;
                 }
 
 				src.y = 0;
-
-				if(!use_deltas) {
-					dest.x = x + 16 + (i * 16);
-					dest.y = y + (j * 16);
-				}/* else {
-					dest.x = i*16;
-					dest.y = j*16;
-				}*/
+				dest.x = x + 16 + (i * 16);
+				dest.y = y + (j * 16);
 
 				//piece_bstr->data[0] = c + 'A' - 1;
 
 				//gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[c-1] * 0x100) + 0xFF); //gfx_rendercopy(cs, tets, &src, &dest);
                 if(!(flags & DRAWFIELD_INVISIBLE) || (c == QRS_FIELD_W_LIMITER)) {
-					if(!use_deltas)
-                    	gfx_rendercopy(cs, tets, &src, &dest);
-					/*else {
-						SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
-					}*/
+					// this stuff should be handled more elegantly, without needing access to the qrsdata
+					if(q->state_flags & GAMESTATE_FADING) {
+						if(GET_PIECE_FADE_COUNTER(c) > 10)
+							gfx_rendercopy(cs, tets, &src, &dest);
+						else if(GET_PIECE_FADE_COUNTER(c) > 0) {
+							SDL_SetTextureAlphaMod(tets, GET_PIECE_FADE_COUNTER(c) * 25);
+							gfx_rendercopy(cs, tets, &src, &dest);
+							SDL_SetTextureAlphaMod(tets, 255);
+						}
+					} else
+						gfx_rendercopy(cs, tets, &src, &dest);
 
 					if((!(c & QRS_PIECE_BRACKETS) || c < 0) && !(flags & DRAWFIELD_NO_OUTLINE)) {
 						c = gridgetcell(field, i, j - 1);	//above, left, right, below
@@ -758,62 +843,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 				}
 
                 SDL_SetTextureColorMod(tets, 255, 255, 255);
-			} /*else if(!c && !(flags & DRAWFIELD_NO_OUTLINE) && !(flags & DRAWFIELD_INVISIBLE) && !(flags & DRAWFIELD_BRACKETS)) {        // i corresponds to x, j to y
-				outline = 0;         // 8 above, 4 left, 2 right, 1 below
-                                     // second pass: 8 left and above, 4 right and above, 2 left and below, 1 right and below
-                // none = 0, below = 1, right = 2, right & below = 3, left = 4, left & below = 5, left & right = 6, left & right & below = 7,
-                // above = 8, above & below = 9, above & right = 10, above & right & below = 11, above & left = 12, above & left & below = 13, above & left & right = 14, all = 15
-
-                // none = 0, BR = 1, BL = 2, BL & BR = 3, TR = 4, TR & BR = 5, TR & BL = 6, TR & BL & BR = 7,
-                // TL = 8, TL & BR = 9, TL & BL = 10, TL & BL & BR = 11, TL & TR = 12, TL & TR & BR = 13, TL & TR & BL = 14, TL & TR & BL & BR = 15
-
-				c = gridgetcell(field, i, j - 1);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 8;
-
-				c = gridgetcell(field, i - 1, j);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 4;
-
-				c = gridgetcell(field, i + 1, j);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 2;
-
-				c = gridgetcell(field, i, j + 1);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 1;
-
-				src.x = outline * 16;
-				src.y = 0;
-
-				dest.x = x + 16 + (i * 16);
-				dest.y = 64 + (j * 16);
-
-				gfx_rendercopy(cs, misc, &src, &dest);
-
-				outline = 0;
-
-				c = gridgetcell(field, i - 1, j - 1);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 8;
-
-				c = gridgetcell(field, i + 1, j - 1);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 4;
-
-				c = gridgetcell(field, i - 1, j + 1);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 2;
-
-				c = gridgetcell(field, i + 1, j + 1);
-				if(IS_STACK(c) && !(c & QRS_PIECE_BRACKETS))
-					outline |= 1;
-
-				src.x = outline * 16;
-				src.y = 16;
-
-				gfx_rendercopy(cs, misc, &src, &dest);
-			}/*/
+			}
 		}
 	}
 
@@ -847,6 +877,16 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 	bstring text_b = bfromcstr("B");
 	bstring text_c = bfromcstr("C");
 	bstring text_d = bfromcstr("D");
+
+	struct text_formatting fmt = {
+        .rgba = RGBA_DEFAULT,
+        .outline_rgba = RGBA_OUTLINE_DEFAULT,
+        .outlined = true,
+        .shadow = false,
+        .line_spacing = 1.0,
+        .align = ALIGN_LEFT,
+        .wrap_length = 0
+    };
 
 	if(k->left) {
 		SDL_SetTextureColorMod(font, 255, 255, 255);
@@ -891,24 +931,32 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 	SDL_SetTextureColorMod(font, 255, 255, 255);
 
 	if(k->a)
-		gfx_drawtext(cs, text_a, x + 64, y, 0, rgba, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = rgba;
 	else
-		gfx_drawtext(cs, text_a, x + 64, y, 0, 0x282828FF, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = 0x282828FF;
+
+	gfx_drawtext(cs, text_a, x + 64, y, monofont_square, &fmt);
 
 	if(k->b)
-		gfx_drawtext(cs, text_b, x + 80, y, 0, rgba, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = rgba;
 	else
-		gfx_drawtext(cs, text_b, x + 80, y, 0, 0x282828FF, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = 0x282828FF;
+
+	gfx_drawtext(cs, text_b, x + 80, y, monofont_square, &fmt);
 
 	if(k->c)
-		gfx_drawtext(cs, text_c, x + 96, y, 0, rgba, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = rgba;
 	else
-		gfx_drawtext(cs, text_c, x + 96, y, 0, 0x282828FF, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = 0x282828FF;
+
+	gfx_drawtext(cs, text_c, x + 96, y, monofont_square, &fmt);
 
 	if(k->d)
-		gfx_drawtext(cs, text_d, x + 112, y, 0, rgba, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = rgba;
 	else
-		gfx_drawtext(cs, text_d, x + 112, y, 0, 0x282828FF, RGBA_OUTLINE_DEFAULT);
+		fmt.rgba = 0x282828FF;
+
+	gfx_drawtext(cs, text_d, x + 112, y, monofont_square, &fmt);
 
 	bdestroy(text_a);
 	bdestroy(text_b);
@@ -921,256 +969,173 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 	return 0;
 }
 
-int gfx_drawtext(coreState *cs, bstring text, int x, int y, unsigned int flags, Uint32 rgba, Uint32 outline_rgba)
+int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
-    if(!cs || !text)
-        return -1;
+	if(!text)
+		return -1;
 
-    return gfx_drawtext_partial(cs, text, 0, text->slen, x, y, flags, rgba, outline_rgba);
+    return gfx_drawtext_partial(cs, text, 0, text->slen, x, y, font, fmt);
 }
 
-int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, unsigned int flags, Uint32 rgba, Uint32 outline_rgba)
+int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
 	if(!cs || !text)
 		return -1;
 
-	SDL_Texture *font = (asset_by_name(cs, "font_no_outline"))->data;
-    SDL_Texture *font_outline_only = (asset_by_name(cs, "font_outline_only"))->data;
-    int font_h = 16;
-    int font_w = 16;
+	if(!font)
+		font = monofont_fixedsys;
 
-    int z = cs->frames;
+	struct text_formatting fmt_ = {
+		.rgba = RGBA_DEFAULT,
+		.outline_rgba = RGBA_OUTLINE_DEFAULT,
+		.outlined = true,
+		.shadow = false,
+		.line_spacing = 1.0,
+		.align = ALIGN_LEFT,
+		.wrap_length = 0
+	};
 
-    int r = RAINBOW(z, 210, 0);
-    int g = RAINBOW(z, 210, 70);
-    int b = RAINBOW(z, 210, 140);
+	if(!fmt)
+		fmt = &fmt_;
 
-    Uint32 rgba_negative = RGBA_NEGATIVE(rgba);
+	SDL_SetTextureColorMod(font->sheet, R(fmt->rgba), G(fmt->rgba), B(fmt->rgba));
+	SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba));
 
-    int x_delta = ((cs->frames-20)/33) % 8;
-    if(x_delta == 0) {
-        x_delta = -2;
-    } else if(x_delta == 1) {
-        x_delta = -1;
-    } else if(x_delta == 2) {
-        x_delta = 0;
-    } else if(x_delta == 3) {
-        x_delta = 1;
-    } else if(x_delta == 4) {
-        x_delta = 2;
-    } else if(x_delta == 5) {
-        x_delta = 1;
-    } else if(x_delta == 6) {
-        x_delta = 0;
-    } else if(x_delta == 7) {
-        x_delta = -1;
-    }
-
-    int y_delta = ((cs->frames-20)/33) % 8;
-    if(y_delta == 0) {
-        y_delta = 0;
-    } else if(y_delta == 1) {
-        y_delta = -1;
-    } else if(y_delta == 2) {
-        y_delta = -2;
-    } else if(y_delta == 3) {
-        y_delta = -1;
-    } else if(y_delta == 4) {
-        y_delta = 0;
-    } else if(y_delta == 5) {
-        y_delta = 1;
-    } else if(y_delta == 6) {
-        y_delta = 2;
-    } else if(y_delta == 7) {
-        y_delta = 1;
-    }
-
-    int num_shadows = (cs->frames % 33); //8 frames for 4, 6 for 3, 4 for 2, 2 for 1, 1 for 0. 8 + 6 + 4 + 2 + 1 + 2 + 4 + 6 = 33
-    if(num_shadows < 8) {
-        num_shadows = 4;
-    } else if(num_shadows < 14) {
-        num_shadows = 3;
-    } else if(num_shadows < 18) {
-        num_shadows = 2;
-    } else if(num_shadows < 20) {
-        num_shadows = 1;
-    } else if(num_shadows == 20) {
-        num_shadows = 0;
-    } else if(num_shadows < 23) {
-        num_shadows = 1;
-    } else if(num_shadows < 27) {
-        num_shadows = 2;
-    } else if(num_shadows < 33) {
-        num_shadows = 3;
-    } else {
-        num_shadows = 0;
-    }
-
-    if(!cs->obnoxious_text)
-        num_shadows = 0;
-
-    if(flags & DRAWTEXT_THIN_FONT) {
-        font = (asset_by_name(cs, "font_thin_no_outline"))->data;
-        font_outline_only = (asset_by_name(cs, "font_thin_outline_only"))->data;
-        font_w = 13;
-        font_h = 18;
-    } else if(flags & DRAWTEXT_TINY_FONT) {
-		font = (asset_by_name(cs, "font_tiny"))->data;
-		font_outline_only = NULL;
-		font_w = 6;
-		font_h = 5;
-	} else if(flags & DRAWTEXT_SMALL_FONT) {
-		font = (asset_by_name(cs, "font_small"))->data;
-		font_outline_only = NULL;
-		font_w = 12;
-		font_h = 10;
+	if(font->outline_sheet) {
+		SDL_SetTextureColorMod(font->outline_sheet, R(fmt->outline_rgba), G(fmt->outline_rgba), B(fmt->outline_rgba));
+		SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->outline_rgba));
 	}
 
-    if(flags & DRAWTEXT_RAINBOW) {
-        SDL_SetTextureColorMod(font, r, g, b);
-    	SDL_SetTextureAlphaMod(font, 255);
-
-        rgba_negative = (RGBA_NEGATIVE((r*0x1000000) + (g*0x10000) + (b*0x100))) + A(rgba);
-    } else {
-        SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
-    	SDL_SetTextureAlphaMod(font, A(rgba));
-        num_shadows = 0;
-    }
-
-    if(flags & DRAWTEXT_NEGATIVE_OUTLINE) {
-        SDL_SetTextureColorMod(font_outline_only, R(rgba_negative), G(rgba_negative), B(rgba_negative));
-        SDL_SetTextureAlphaMod(font_outline_only, A(rgba_negative));
-    } else {
-        SDL_SetTextureColorMod(font_outline_only, R(outline_rgba), G(outline_rgba), B(outline_rgba));
-        SDL_SetTextureAlphaMod(font_outline_only, A(outline_rgba));
-    }
-
-	SDL_Rect src = {.x = 0, .y = 0, .w = font_w, .h = font_h};
-	SDL_Rect dest = {.x = x, .y = y, .w = font_w, .h = font_h};
+	SDL_Rect src = {.x = 0, .y = 0, .w = font->char_w, .h = font->char_h};
+	SDL_Rect dest = {.x = x, .y = y, .w = font->char_w, .h = font->char_h};
 
 	int i = 0;
-    int j = 0;
-    int k = 0;
-    int x_orig = x;
-    int y_orig = y;
+
     int linefeeds = 0;
-    int message_char_width = 0;
+	int last_wrap_line_pos = 0;
+	int last_wrap_pos = 0;
 
     struct bstrList *lines = bsplit(text, '\n');
 
-    if(flags & DRAWTEXT_ALIGN_RIGHT) {
-        dest.x = x - (font_w)*(lines->entry[0]->slen);
-    }
+	bool using_target_tex = false;
 
-    for(k = 0; k < (cs->obnoxious_text ? 2 : 1)*num_shadows + 1; k++) {
-        if(flags & DRAWTEXT_RAINBOW) {
-            x = x_orig - num_shadows * (cs->obnoxious_text ? x_delta : 4);
-            y = y_orig + num_shadows * (cs->obnoxious_text ? y_delta : 4);
-            x += (cs->obnoxious_text ? x_delta : 4) * k;
-            y -= (cs->obnoxious_text ? y_delta : 4) * k;
-            dest.x = x;
-            dest.y = y;
-            SDL_SetTextureAlphaMod(font, 255 - 50*(abs(num_shadows - k)));
-        }
+	if(SDL_GetRenderTarget(cs->screen.renderer) != NULL)
+		using_target_tex = true;
 
-        if(flags & DRAWTEXT_RAINBOW && !cs->obnoxious_text)
-            SDL_SetTextureAlphaMod(font, 255 - 160*(abs(num_shadows - k)));
+	for(i = pos; i < text->slen && i < len; i++) {
+		if(i == 0) {
+			switch(fmt->align) {
+				default:
+				case ALIGN_LEFT:
+					dest.x = x;
+					break;
 
-        for(i = pos; i < text->slen && i < len; i++) {
-    		if(text->data[i] >= 'A' && text->data[i] <= 'P') {		// const char is really just a number, so this is legal but awkward
-    			src.y = 0;
-    			src.x = (text->data[i] - 'A') * font_w;
-    		} else if(text->data[i] >= 'Q' && text->data[i] <= 'Z') {
-    			src.y = 1*font_h;
-    			src.x = (text->data[i] - 'Q') * font_w;
-    		} else if(text->data[i] >= '0' && text->data[i] <= '9') {
-    			src.y = 2*font_h;
-    			src.x = (text->data[i] - '0') * font_w;
-    		} else if(text->data[i] >= ' ' && text->data[i] <= '/') {
-    			src.y = 3*font_h;
-    			src.x = (text->data[i] - ' ') * font_w;
-    		} else if(text->data[i] >= ':' && text->data[i] <= '?') {
-    			src.y = 4*font_h;
-    			src.x = (text->data[i] - ':') * font_w;
-    		} else if(text->data[i] == 'a') {
-    			src.y = 1*font_h;
-    			src.x = 10*font_w;
-    		} else if(text->data[i] == 'b') {
-    			src.y = 1*font_h;
-    			src.x = 11*font_w;
-    		} else if(text->data[i] == 'm') {
-    			src.y = 1*font_h;
-    			src.x = 12*font_w;
-    		} else if(text->data[i] == '\n' && flags & DRAWTEXT_LINEFEED) {
-                linefeeds++;
-                dest.y = y + font_h;
+				case ALIGN_RIGHT:
+					dest.x = x - (font->char_w) * (lines->entry[0]->slen);
+					break;
 
-                if(flags & DRAWTEXT_CENTERED) {
-                    for(j = 0; j < lines->qty; j++) {
-                        if(lines->entry[j]->slen > message_char_width)
-                            message_char_width = lines->entry[j]->slen;
-                    }
+				case ALIGN_CENTER:
+					if(fmt->wrap_length < lines->entry[0]->slen - last_wrap_line_pos)
+						dest.x = x;
+					else
+						dest.x = x + (font->char_w / 2) * (fmt->wrap_length - (lines->entry[0]->slen - last_wrap_line_pos));
 
-                    dest.x = x + (font_w/2)*(message_char_width - lines->entry[linefeeds]->slen);
-                } else if(flags & DRAWTEXT_ALIGN_RIGHT) {
-                    dest.x = x - (font_w)*(lines->entry[linefeeds]->slen);
-                } else
-                    dest.x = x;
+					break;
+			}
+		}
 
-                continue;
-            } else {
-                src.y = 1*font_h;
-                src.x = 15*font_w;
-            }
-
-            if(flags & DRAWTEXT_SHADOW && !(flags & GFX_TARGET_TEXTURE_OVERWRITE)) {
-                dest.x -= 2;
-                dest.y += 2;
-
-                SDL_SetTextureAlphaMod(font, A(rgba) / 4);
-                SDL_SetTextureAlphaMod(font_outline_only, A(rgba) / 4);
-
-				gfx_rendercopy(cs, font, &src, &dest);
-
-                if(!(flags & DRAWTEXT_NO_OUTLINE)) {
-                    gfx_rendercopy(cs, font_outline_only, &src, &dest);
-				}
-
-                dest.x += 2;
-                dest.y -= 2;
-
-                SDL_SetTextureAlphaMod(font, A(rgba));
-                SDL_SetTextureAlphaMod(font_outline_only, A(rgba));
-            }
-
-			if(flags & GFX_TARGET_TEXTURE_OVERWRITE) {
-				SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0);
-				SDL_RenderFillRect(cs->screen.renderer, &dest);
-				SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
-			} else
-				gfx_rendercopy(cs, font, &src, &dest);
-
-            if(!(flags & DRAWTEXT_NO_OUTLINE)) {
-				if(flags & GFX_TARGET_TEXTURE_OVERWRITE) {
-					SDL_RenderCopy(cs->screen.renderer, font_outline_only, &src, &dest);
-				} else
-                	gfx_rendercopy(cs, font_outline_only, &src, &dest);
+		if((fmt->wrap_length && i != 0 && (i - last_wrap_pos) % fmt->wrap_length == 0) || text->data[i] == '\n')
+		{
+			if(text->data[i] == '\n') {
+				linefeeds++;
+				last_wrap_line_pos = i - last_wrap_pos + last_wrap_line_pos;
+				last_wrap_pos = i;
+			} else if(i != 0 && i % fmt->wrap_length == 0) {
+				last_wrap_line_pos = i - last_wrap_pos + last_wrap_line_pos;
+				last_wrap_pos = i;
 			}
 
-            dest.x += font_w;
-    	}
-    }
+			dest.y += fmt->line_spacing * (float)font->char_h;
+
+			switch(fmt->align) {
+				default:
+				case ALIGN_LEFT:
+					dest.x = x;
+					break;
+
+				case ALIGN_RIGHT:
+					dest.x = x - (font->char_w) * (lines->entry[linefeeds]->slen);
+					break;
+
+				case ALIGN_CENTER:
+					if(fmt->wrap_length < lines->entry[linefeeds]->slen - last_wrap_line_pos)
+						dest.x = x;
+					else
+						dest.x = x + (font->char_w / 2) * (fmt->wrap_length - (lines->entry[linefeeds]->slen - last_wrap_line_pos));
+
+					break;
+			}
+
+			if(text->data[i] == '\n')
+				continue;
+		}
+
+		src.x = font->char_w * (text->data[i] % 32);
+		src.y = font->char_h * ((int)(text->data[i] / 32) - 1);
+		if(src.y < 0) {
+			src.x = 31 * font->char_w;
+			src.y = 2 * font->char_h;
+		}
+
+		if(fmt->shadow && !using_target_tex) {
+			dest.x -= 2;
+			dest.y += 2;
+
+			SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba) / 4);
+			if(font->outline_sheet)
+				SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->rgba) / 4);
+
+			gfx_rendercopy(cs, font->sheet, &src, &dest);
+
+			if(fmt->outlined && font->outline_sheet) {
+				gfx_rendercopy(cs, font->outline_sheet, &src, &dest);
+			}
+
+			dest.x += 2;
+			dest.y -= 2;
+
+			SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba));
+			if(font->outline_sheet)
+				SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->rgba));
+		}
+
+		if(using_target_tex) {
+			SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0);
+			SDL_RenderFillRect(cs->screen.renderer, &dest);
+			SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
+
+			if(fmt->outlined && font->outline_sheet)
+				SDL_RenderCopy(cs->screen.renderer, font->outline_sheet, &src, &dest);
+		} else {
+			gfx_rendercopy(cs, font->sheet, &src, &dest);
+
+			if(fmt->outlined && font->outline_sheet)
+				gfx_rendercopy(cs, font->outline_sheet, &src, &dest);
+		}
+
+		dest.x += font->char_w;
+	}
 
 	if(lines)
 		bstrListDestroy(lines);
 
-	// printf("Successfully drew text\n");
+	SDL_SetTextureColorMod(font->sheet, 255, 255, 255);
+	SDL_SetTextureAlphaMod(font->sheet, 255);
 
-	SDL_SetTextureColorMod(font, 255, 255, 255);
-	SDL_SetTextureAlphaMod(font, 255);
-
-    SDL_SetTextureColorMod(font_outline_only, 255, 255, 255);
-	SDL_SetTextureAlphaMod(font_outline_only, 255);
+	if(font->outline_sheet) {
+		SDL_SetTextureColorMod(font->outline_sheet, 255, 255, 255);
+		SDL_SetTextureAlphaMod(font->outline_sheet, 255);
+	}
 
 	return 0;
 }

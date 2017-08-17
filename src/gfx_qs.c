@@ -82,7 +82,7 @@ int gfx_drawqs(game_t *g)
 	int piece_x = x + (16 * q->p1->x);
 	int piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
 
-    SDL_Rect labg_dest = {.x = 264 - 32 + x, .y = 312 - 64 + y, .w = 95, .h = 64};
+    SDL_Rect labg_dest = {.x = 264 - 48 + 4 + x, .y = 312 - 32 + y, .w = 95, .h = 64};
 
     int preview1_x = x + 5*16;
     int preview2_x = q->tetromino_only ? x + 20*8 : x + 21*8;
@@ -108,6 +108,7 @@ int gfx_drawqs(game_t *g)
     }
 
     bstring grade_text = bfromcstr(get_grade_name(q->grade));
+    bstring score_text = bformat("%d", q->score);
 
     bstring undo = bfromcstr("UNDO");
     bstring redo = bfromcstr("REDO");
@@ -120,8 +121,24 @@ int gfx_drawqs(game_t *g)
     bstring undo_len = NULL;
     bstring redo_len = NULL;
 
+    struct text_formatting fmt = {
+        .rgba = RGBA_DEFAULT,
+        .outline_rgba = RGBA_OUTLINE_DEFAULT,
+        .outlined = true,
+        .shadow = false,
+        .line_spacing = 1.0,
+        .align = ALIGN_LEFT,
+        .wrap_length = 0
+    };
+
     //columns_adj->data = columns->data + (QRS_FIELD_W - q->field_w)/2;
     //columns_adj->slen = q->field_w;
+
+    if(q->state_flags & GAMESTATE_FADING)
+        drawqrsfield_flags |= DRAWFIELD_NO_OUTLINE;
+
+    if(q->state_flags & GAMESTATE_INVISIBLE)
+        drawqrsfield_flags |= DRAWFIELD_INVISIBLE;
 
     if(q->pracdata) {
         if(q->pracdata->paused == QRS_FIELD_EDIT) {
@@ -132,8 +149,8 @@ int gfx_drawqs(game_t *g)
             if(q->pracdata->usr_field_undo_len) {
                 undo_len = bformat("%d", q->pracdata->usr_field_undo_len);
 
-                gfx_drawtext(cs, undo, QRS_FIELD_X + 16, QRS_FIELD_Y + 23*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-                gfx_drawtext(cs, undo_len, QRS_FIELD_X + 16, QRS_FIELD_Y + 24*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+                gfx_drawtext(cs, undo, QRS_FIELD_X + 16, QRS_FIELD_Y + 23*16, monofont_square, NULL);
+                gfx_drawtext(cs, undo_len, QRS_FIELD_X + 16, QRS_FIELD_Y + 24*16, monofont_square, NULL);
 
                 src.x = 14*16;
                 src.y = 64;
@@ -148,8 +165,8 @@ int gfx_drawqs(game_t *g)
             if(q->pracdata->usr_field_redo_len) {
                 redo_len = bformat("%d", q->pracdata->usr_field_redo_len);
 
-                gfx_drawtext(cs, redo, QRS_FIELD_X + 9*16, QRS_FIELD_Y + 23*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13*16 - 16*(redo_len->slen), QRS_FIELD_Y + 24*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+                gfx_drawtext(cs, redo, QRS_FIELD_X + 9*16, QRS_FIELD_Y + 23*16, monofont_square, NULL);
+                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13*16 - 16*(redo_len->slen), QRS_FIELD_Y + 24*16, monofont_square, NULL);
 
                 src.x = 16*16;
                 src.y = 64;
@@ -214,6 +231,16 @@ int gfx_drawqs(game_t *g)
                 gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
                 SDL_SetTextureAlphaMod(tets_dark_qs, 255);
             }
+
+            palettedest.y += 16;
+            palettesrc.x = 32*16;
+            gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+            if(q->pracdata->palette_selection == QRS_PIECE_GEM) {
+                palettesrc.x = 31*16;
+                SDL_SetTextureAlphaMod(tets_dark_qs, 140);
+                gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                SDL_SetTextureAlphaMod(tets_dark_qs, 255);
+            }
         } else {
             if(q->pracdata->invisible)
                 drawqrsfield_flags |= DRAWFIELD_INVISIBLE;
@@ -226,9 +253,9 @@ int gfx_drawqs(game_t *g)
         }
     } else {
         if(q->mode_type != MODE_UNSPECIFIED)
-            gfx_drawqrsfield(cs, g->field, q->mode_type, TEN_W_TETRION, x, y);
+            gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags|TEN_W_TETRION, x, y);
         else
-            gfx_drawqrsfield(cs, g->field, q->mode_type, 0, x, y);
+            gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags, x, y);
 
         if(q->p1->speeds->grav >= 20*256) {
             if(cs->frames % 4 < 2)
@@ -239,34 +266,44 @@ int gfx_drawqs(game_t *g)
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
 
         gfx_drawkeys(cs, cs->keys[0], 22*16, 27*16, RGBA_DEFAULT);
-        /*if(q->playback) {
+
+        // uncomment this for DDR-esque input display :3
+        if(q->playback) {
             for(i = 1; i < 24 && i < (q->replay->len - q->playback_index)/3; i++) {
                 gfx_drawkeys(cs, &q->replay->inputs[3*i+q->playback_index], 22*16, (25-i)*16, RGBA_DEFAULT);
             }
-        }*/
+        }
 
         gfx_rendercopy(cs, labg, NULL, &labg_dest);
+        labg_dest.y -= 5*16;
+        gfx_rendercopy(cs, labg, NULL, &labg_dest);
+
         if(q->p1->speeds->grav >= 20*256) {
             if(cs->frames % 4 < 2) {
-                gfx_drawtext(cs, text_level, x + 15*16, y + 16*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-                gfx_drawtext(cs, level, x + 15*16, y + 18*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+                gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, NULL);
+                gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, NULL);
             } else {
-                gfx_drawtext(cs, text_level, x + 15*16, y + 16*16, 0, 0xEFEF50FF, RGBA_OUTLINE_DEFAULT);
-                gfx_drawtext(cs, level, x + 15*16, y + 18*16, 0, 0xEFEF50FF, RGBA_OUTLINE_DEFAULT);
+                fmt.rgba = 0xEFEF50FF;
+                gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, &fmt);
+                gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, &fmt);
             }
         } else {
-            gfx_drawtext(cs, text_level, x + 15*16, y + 16*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-            gfx_drawtext(cs, level, x + 15*16, y + 18*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+            gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, NULL);
+            gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, NULL);
         }
 
-        if(q->grade >= 0) {
-            gfx_drawtext(cs, grade_text, x + 15*16, y + 4*16, 0, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+        if((q->grade & 0xff) != NO_GRADE) {
+            gfx_drawtext(cs, grade_text, x + 15*16, y + 4*16, monofont_square, NULL);
         }
+
+        fmt.rgba = 0xFFFF40FF;
+        gfx_drawtext(cs, bfromcstr("SCORE"), x + 14*16+ 4, y + 13*16, monofont_square, &fmt);
+        gfx_drawtext(cs, score_text, x + 14*16 + 4, y + 15*16, monofont_square, &fmt);
 
 active_game_drawing:
         if(q->mode_type == MODE_UNSPECIFIED) {
-            gfx_drawtext(cs, next, 50 - 32 + QRS_FIELD_X, 28, DRAWTEXT_SMALL_FONT, RGBA_DEFAULT, 0);
-            gfx_drawtext(cs, next_name, 50 - 32 + QRS_FIELD_X, 40, DRAWTEXT_SMALL_FONT, RGBA_DEFAULT, 0);
+            gfx_drawtext(cs, next, 50 - 32 + QRS_FIELD_X, 28, monofont_small, NULL);
+            gfx_drawtext(cs, next_name, 50 - 32 + QRS_FIELD_X, 40, monofont_small, NULL);
         }
 
         if(q->num_previews > 0)
@@ -327,13 +364,18 @@ active_game_drawing:
     }*/
 
     gfx_drawqsmedals(g);
-    gfx_drawtext(cs, ctp_bstr, 640 - 16 + 16 * (1 - ctp_bstr->slen), 2, DRAWTEXT_SHADOW|DRAWTEXT_NO_OUTLINE, 0x7070D0FF, RGBA_OUTLINE_DEFAULT);
+
+    fmt.shadow = true;
+    fmt.outlined = false;
+    fmt.rgba = 0x7070D0FF;
+    gfx_drawtext(cs, ctp_bstr, 640 - 16 + 16 * (1 - ctp_bstr->slen), 2, monofont_square, &fmt);
 
     if(cs->recent_frame_overload >= 0) {
         cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent_array[cs->recent_frame_overload]) / mspf));
         ctp_overload_bstr = bformat("%d%%", cpu_time_percentage);
 
-        gfx_drawtext(cs, ctp_overload_bstr, 640 - 16 + 16 * (1 - ctp_overload_bstr->slen), 18, DRAWTEXT_SHADOW|DRAWTEXT_NO_OUTLINE, 0xB00000FF, RGBA_OUTLINE_DEFAULT);
+        fmt.rgba = 0xB00000FF;
+        gfx_drawtext(cs, ctp_overload_bstr, 640 - 16 + 16 * (1 - ctp_overload_bstr->slen), 18, monofont_square, &fmt);
 
         bdestroy(ctp_overload_bstr);
     }

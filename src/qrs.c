@@ -16,6 +16,7 @@
 #include "game_qs.h" // questionable dependency
 #include "gfx.h" // questionable dependency
 #include "gfx_qs.h" // very questionable dependency
+#include "gfx_structures.h"
 
 #include "rotation_tables.h"
 
@@ -317,7 +318,13 @@ int qrsfield_clear(grid_t *field)
 
 int ufu_not_exists(coreState *cs)
 {
+    if(!cs->p1game)
+        return 1;
+
     qrsdata *q = cs->p1game->data;
+    if(!q)
+        return 1;
+
     if((q->pracdata->usr_field_undo_len || q->pracdata->usr_field_redo_len) && q->pracdata->paused == QRS_FIELD_EDIT)
         return 0;
     else
@@ -422,14 +429,19 @@ int usr_field_redo(coreState *cs, struct pracdata *d)
 
 int push_undo_clear_confirm(coreState *cs, void *data)
 {
+    struct text_formatting *fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+
     cs->button_emergency_override = 1;
+
     gfx_pushmessage(cs, "CONFIRM DELETE\nUNDO HISTORY?", 640/2 - 7*16, 480/2 - 16,
-                    MESSAGE_EMERGENCY|DRAWTEXT_CENTERED|DRAWTEXT_LINEFEED, -1, button_emergency_inactive, RGBA_DEFAULT);
+                    MESSAGE_EMERGENCY, monofont_square, fmt, -1, button_emergency_inactive);
+
     gfx_createbutton(cs, "YES", 640/2 - 6*16 - 6, 480/2 + 3*16 - 6,
                      BUTTON_EMERGENCY, undo_clear_confirm_yes, button_emergency_inactive, NULL, 0xB0FFB0FF);
     gfx_createbutton(cs, "NO", 640/2 + 4*16 - 6, 480/2 + 3*16 - 6,
                      BUTTON_EMERGENCY, undo_clear_confirm_no, button_emergency_inactive, NULL, 0xFFA0A0FF);
 
+    free(fmt);
     return 0;
 }
 
@@ -598,6 +610,9 @@ int qrs_input(game_t *g)
                             case 15:
                                 d->palette_selection = QRS_PIECE_BRACKETS;
                                 break;
+                            case 16:
+                                d->palette_selection = QRS_PIECE_GEM;
+                                break;
                             default:
                                 break;
                         }
@@ -608,11 +623,20 @@ int qrs_input(game_t *g)
                         }
                     } else if(cs->mouse_left_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20) {
                         if(gridgetcell(d->usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER) {
-                            if(!d->field_edit_in_progress)
-                                usr_field_bkp(cs, d);
-                            d->field_edit_in_progress = 1;
-                            edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 2, d->palette_selection);
+                            if(d->palette_selection != QRS_PIECE_GEM) {
+                                if(!d->field_edit_in_progress)
+                                    usr_field_bkp(cs, d);
+                                d->field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                gridsetcell(d->usr_field, cell_x, cell_y + 2, d->palette_selection);
+                            } else if(gridgetcell(d->usr_field, cell_x, cell_y + 2) > 0) {
+                                if(!d->field_edit_in_progress)
+                                    usr_field_bkp(cs, d);
+                                d->field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                gridsetcell(d->usr_field, cell_x, cell_y + 2,
+                                            gridgetcell(d->usr_field, cell_x, cell_y + 2) | QRS_PIECE_GEM);
+                            }
                         }
                     }
                 } else if(cs->mouse_right_down) {
@@ -736,7 +760,7 @@ int qrs_input(game_t *g)
                 for(i = lesser_x; i <= greater_x; i++) {
                     for(j = lesser_y; j <= greater_y; j++) {
                         if(i >= 0 && i < 12 && j >= 0 && j < 20) {
-                            if(gridgetcell(d->usr_field, i, j + 2) != QRS_FIELD_W_LIMITER) {
+                            if(gridgetcell(d->usr_field, i, j + 2) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM) {
                                 if(SDL_GetModState() & KMOD_SHIFT) {
                                     if(IS_STACK(gridgetcell(d->usr_field, i, j + 2))) {
                                         if(!d->field_edit_in_progress)
@@ -752,6 +776,22 @@ int qrs_input(game_t *g)
                                     edit_action_occurred = 1;
                                     gridsetcell(d->usr_field, i, j + 2, c);
                                 }
+                            } else if(gridgetcell(d->usr_field, i, j + 2) > 0 && c == QRS_PIECE_GEM) {
+                                if(SDL_GetModState() & KMOD_SHIFT) {
+                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 2))) {
+                                        if(!d->field_edit_in_progress)
+                                            usr_field_bkp(cs, d);
+                                        d->field_edit_in_progress = 1;
+                                        edit_action_occurred = 1;
+                                        gridsetcell(d->usr_field, i, j + 2, gridgetcell(d->usr_field, i, j + 2) | c);
+                                    }
+                                } else {
+                                    if(!d->field_edit_in_progress)
+                                        usr_field_bkp(cs, d);
+                                    d->field_edit_in_progress = 1;
+                                    edit_action_occurred = 1;
+                                    gridsetcell(d->usr_field, i, j + 2, gridgetcell(d->usr_field, i, j + 2) | c);
+                                }
                             }
                         }
                     }
@@ -760,7 +800,7 @@ int qrs_input(game_t *g)
                 d->field_selection = 0;
             } else if(c) {
                 if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20) {
-                    if(gridgetcell(d->usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER) {
+                    if(gridgetcell(d->usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM) {
                         if(SDL_GetModState() & KMOD_SHIFT) {
                             if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 2))) {
                                 if(!d->field_edit_in_progress)
@@ -775,6 +815,22 @@ int qrs_input(game_t *g)
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
                             gridsetcell(d->usr_field, cell_x, cell_y + 2, c);
+                        }
+                    } else if(gridgetcell(d->usr_field, cell_x, cell_y + 2) > 0 && c == QRS_PIECE_GEM) {
+                        if(SDL_GetModState() & KMOD_SHIFT) {
+                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 2))) {
+                                if(!d->field_edit_in_progress)
+                                    usr_field_bkp(cs, d);
+                                d->field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                gridsetcell(d->usr_field, cell_x, cell_y + 2, gridgetcell(d->usr_field, cell_x, cell_y + 2) | c);
+                            }
+                        } else {
+                            if(!d->field_edit_in_progress)
+                                usr_field_bkp(cs, d);
+                            d->field_edit_in_progress = 1;
+                            edit_action_occurred = 1;
+                            gridsetcell(d->usr_field, cell_x, cell_y + 2, gridgetcell(d->usr_field, cell_x, cell_y + 2) | c);
                         }
                     }
                 }
@@ -889,6 +945,7 @@ int qrs_input(game_t *g)
 
         if(k->down)
         {
+            q->soft_drop_counter++;
             if(p->state & PSFALL) {
                 qrs_fall(g, p, 256);
                 if(qrs_isonground(g, p)) {
@@ -963,7 +1020,7 @@ int qrs_start_record(game_t *g)
     q->replay->mode = q->mode_type;
     q->replay->mode_flags = q->mode_flags;
 	q->replay->seed = q->randomizer_seed;
-	q->replay->grade = -1;
+	q->replay->grade = NO_GRADE;
 	q->replay->time = 0;
 	q->replay->starting_level = q->level;
 	q->replay->ending_level = 0;
@@ -1341,12 +1398,7 @@ int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
 	if(!g || !p)
 		return -1;
 
-	/*if(!qrs_isonground(g, p)) {
-		p->state &= ~(PSLOCK);
-		p->state |= PSFALL;
-		return 1;
-	}*/
-
+    qrsdata *q = g->data;
 	grid_t *d = p->def->rotation_tables[p->orient];
 	grid_t *f = g->field;
     struct asset *lock = asset_by_name(g->origin, "lock");
@@ -1361,6 +1413,8 @@ int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
 	piece_id c = p->def->qrs_id;
 	int s = d->w * d->h;
 
+    int value = 0;
+
 	for(i = 0; i < s; i++) {
 		from_x = gridpostox(d, i);
 		from_y = gridpostoy(d, i);
@@ -1368,10 +1422,15 @@ int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
 		to_y = (YTOROW(p->y) - ay) + from_y;
 
 		if(gridgetcell(d, from_x, from_y)) {
+            value = c + 1;
             if(flags & LOCKPIECE_BRACKETS)
-                gridsetcell(f, to_x, to_y, QRS_PIECE_BRACKETS | (c + 1));
-            else
-                gridsetcell(f, to_x, to_y, c + 1);
+                value |= QRS_PIECE_BRACKETS;
+
+            if(q->state_flags & GAMESTATE_FADING) {
+                SET_PIECE_FADE_COUNTER(value, q->piece_fade_rate);
+            }
+
+            gridsetcell(f, to_x, to_y, value);
         }
 	}
 
@@ -1451,6 +1510,7 @@ int qrs_lineclear(game_t *g, qrs_player *p)
 	int k = 0;
 	int n = 0;
     int garbage = 0;
+    bool gem = false;
 
 	int row = YTOROW(p->y);
 
@@ -1463,16 +1523,23 @@ int qrs_lineclear(game_t *g, qrs_player *p)
 		{
 			if(gridgetcell(g->field, j, i))
 				k++;
+            if(gridgetcell(g->field, j, i) & QRS_PIECE_GEM)
+                gem = true;
             if(gridgetcell(g->field, j, i) == QRS_PIECE_GARBAGE)
                 garbage++;
 		}
 
-		if(k == q->field_w && !(garbage == q->field_w))
+		if(k == q->field_w && garbage != q->field_w)
 		{
 			n++;
             gfx_qs_lineclear(g, i);
 			for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
 				gridsetcell(g->field, j, i, -2);
+
+            if(gem)
+            {
+                // play_sfx() the gem clear sound effect whenever we get one
+            }
 		}
 	}
 

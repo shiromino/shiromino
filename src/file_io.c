@@ -342,7 +342,7 @@ struct replay *read_replay_file(char *filename, int get_inputs)
 	r->mode = 0;
 	r->mode_flags = 0;
 	r->seed = 0;
-	r->grade = -1;
+	r->grade = 255;
 	r->time = 0;
 	r->starting_level = 0;
 	r->ending_level = 0;
