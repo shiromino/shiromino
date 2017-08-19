@@ -386,11 +386,13 @@ int write_replay_file(struct replay *r)
 
     char strbuf[80];
     bstring filename = NULL;
-    struct tm ts;
+    time_t t;
+    struct tm* ts;
     FILE *f = NULL;
 
-    ts = *localtime(&r->date);
-    strftime(strbuf, sizeof(strbuf), "%Y-%m-%d_%H-%M-%S.rep", &ts);
+    t = time(NULL);
+    ts = localtime(&t);
+    strftime(strbuf, sizeof(strbuf), "%Y-%m-%d_%H-%M-%S.rep", ts);
     filename = bformat("replay/%s", strbuf);
 
     f = fopen((char *)(filename->data), "ab");
@@ -436,8 +438,8 @@ struct bstrList *get_replay_list()
         if(!d)
             break;
 
-        if(d->d_type != DT_REG)
-            continue;
+        /* if(d->d_type != DT_REG) */
+        /*     continue; */
 
         num++;
         if(num > b->qty) {

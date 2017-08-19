@@ -20,6 +20,8 @@ replay/*
 *.o
 *.so
 game
+obj/
+bin/
 
 # Packages #
 ############

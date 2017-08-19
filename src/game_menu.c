@@ -1783,7 +1783,7 @@ int mload_replay(game_t *g, int val)
     bstring label = NULL;
     nz_timer *t = nz_timer_create(60);
 
-    struct tm ts;
+    struct tm* ts;
     char strbuf[80];
 
     menu_clear(g);        // data->menu guaranteed to be NULL upon return
@@ -1878,7 +1878,7 @@ int mload_replay(game_t *g, int val)
             d->menu[i] = menu_opt_create(MENU_GAME, NULL, NULL);
             r = replaylist[i-1];
             t->time = r->time;
-            ts = *localtime(&r->date);
+            ts = localtime(&r->date);
             strftime(strbuf, sizeof(strbuf), "%Y.%m.%d", &ts);
 
             switch(replaylist[i-1]->mode) {

@@ -101,7 +101,7 @@ struct replay {
     int starting_level;
     int ending_level;
 
-    long date;
+    time_t date;
 };
 
 typedef struct game game_t;
