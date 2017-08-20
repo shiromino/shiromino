@@ -1879,7 +1879,7 @@ int mload_replay(game_t *g, int val)
             r = replaylist[i-1];
             t->time = r->time;
             ts = localtime(&r->date);
-            strftime(strbuf, sizeof(strbuf), "%Y.%m.%d", &ts);
+            strftime(strbuf, sizeof(strbuf), "%Y.%m.%d", ts);
 
             switch(replaylist[i-1]->mode) {
                 case MODE_UNSPECIFIED:
