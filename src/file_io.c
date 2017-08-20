@@ -12,6 +12,11 @@
 #include "core.h"
 #include "file_io.h"
 
+#if defined(_WIN32)
+#include <windows.h>
+#define mkdir(dir, mode) _mkdir(dir)
+#endif
+
 struct settings *parse_cfg(char *filename)
 {
     if(!filename)
@@ -390,6 +395,8 @@ int write_replay_file(struct replay *r)
     struct tm* ts;
     FILE *f = NULL;
 
+    mkdir("replay", 0777);
+
     t = time(NULL);
     ts = localtime(&t);
     strftime(strbuf, sizeof(strbuf), "%Y-%m-%d_%H-%M-%S.rep", ts);
@@ -421,6 +428,7 @@ error:
 
 struct bstrList *get_replay_list()
 {
+    mkdir("replay", 0777);
     DIR *replay_dir = opendir("replay");
 
     check(replay_dir != NULL, "Could not open replay directory for reading");
