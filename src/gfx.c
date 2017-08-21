@@ -1108,7 +1108,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
               SDL_RenderFillRect(cs->screen.renderer, &dest);
               SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
           } else {
-              SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
+              gfx_rendercopy(cs, font->sheet, &src, &dest);
           }
 
           SDL_SetTextureColorMod(font->sheet, R(fmt->rgba), G(fmt->rgba), B(fmt->rgba));

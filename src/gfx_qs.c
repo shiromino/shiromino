@@ -426,7 +426,7 @@ int gfx_drawqs(game_t *g)
 
                 case GRADE_M:
                     grade_src.x += 64;
-                    grade_dest.x += 3;
+                    grade_dest.x += 4;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     break;
 
