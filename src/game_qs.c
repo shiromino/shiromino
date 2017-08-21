@@ -32,6 +32,28 @@ const char *internal_grade_names[31] =
     "S2 ", "S3 ", "S4-", "S4 ", "S5 ", "S5+", "S6 ", "S6+", "S7 ", "S7+", "S8 ", "S8+", "S9 "
 };
 
+static int g1_grade_score_reqs[17] =
+{
+    400,
+    800,
+    1400,
+    2000,
+    3500,
+    5500,
+    8000,
+    12000,
+
+    16000, // S1
+    22000,
+    30000,
+    40000,
+    52000,
+    66000,
+    82000,
+    100000,
+    120000 // S9
+};
+
 static qrs_timings qs_curve[QS_CURVE_MAX] =
 {
     {0, 4, 40, 12, 25, 25, 12},
@@ -1972,7 +1994,17 @@ int qs_process_lockflash(game_t *g)
                 {
                     case MODE_G1_MASTER:
                     case MODE_G1_20G:
-                        q->score += ( ceil(q->level/4) + q->soft_drop_counter ) * n * q->combo * (bravo?4:1);
+                        pts = ( ceil(q->level/4) + q->soft_drop_counter ) * n * q->combo * (bravo?4:1);
+                        q->score += pts;
+                        for(int i = 0; i < 17; i++) {
+                            if(q->score - pts < g1_grade_score_reqs[i] && q->score >= g1_grade_score_reqs[i]) {
+                                q->grade = GRADE_8 + i;
+                                q->last_gradeup_timestamp = g->frame_counter;
+                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                break;
+                            }
+                        }
+
                         break;
 
                     case MODE_G2_DEATH:
@@ -2216,11 +2248,24 @@ int qs_process_lockflash(game_t *g)
 
                         case MODE_G1_20G:
                         case MODE_G1_MASTER:
+                            // checking "mroll" requirements (actually just GM reqs)
+                            if(q->section == 3 && (q->timer->time > (4*60*60 + 15*60) || q->score < 12000))
+                                q->mroll_unlocked = false;
+
+                            if(q->section == 5 && (q->timer->time > (7*60*60 + 30*60) || q->score < 40000))
+                                q->mroll_unlocked = false;
+
                             if(q->level >= 999) {
                                 q->level = 999;
-                                q->grade = GRADE_GM;
-                                q->last_gradeup_timestamp = g->frame_counter;
-                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                if(q->timer->time >= (13*60*60 + 30*60) || q->score < 126000)
+                                    q->mroll_unlocked = false;
+
+                                if(q->mroll_unlocked) {
+                                    q->grade = GRADE_GM;
+                                    q->last_gradeup_timestamp = g->frame_counter;
+                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                }
+
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)
