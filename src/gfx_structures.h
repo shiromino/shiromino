@@ -31,6 +31,7 @@ struct text_formatting {
     bool outlined;
     bool shadow;
 
+    float size_multiplier;
     float line_spacing;
     enum text_alignment align;
     unsigned int wrap_length;

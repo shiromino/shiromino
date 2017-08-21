@@ -1171,7 +1171,7 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0xFF4040FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("PRACTICE"));
+    d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("MULTI-EDITOR"));
     m = d->menu[8];
     d1 = m->data;
     d1->action = mload_practice;
@@ -1317,7 +1317,8 @@ int mload_practice(game_t *g, int val)
     d1->action = mload_main;
     d1->val = 0;
     m->x = 16*16;
-    m->y = 6*16 + 6;
+    m->y = 6*16;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
     /* */
@@ -1329,7 +1330,8 @@ int mload_practice(game_t *g, int val)
     d1->action = qs_game_pracinit;
     d1->val = 0;
     m->x = 16*16;
-    m->y = 7*16 + 6;
+    m->y = 7*16;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
     /* */
@@ -1385,8 +1387,8 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = 16*16;
-    m->y = 8*16 + 2*18;
-    m->value_x = m->x + 13*13;
+    m->y = 8*16 + 1*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
@@ -1420,11 +1422,11 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = 16*16;
-    m->y = 8*16 + 3*18;
-    m->value_x = m->x + 13*13;
+    m->y = 8*16 + 2*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
     m->label_text_rgba = 0xFF5050FF;
     m->value_text_rgba = m->label_text_rgba;
 
@@ -1453,11 +1455,11 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = 16*16;
-    m->y = 8*16 + 4*18;
-    m->value_x = m->x + 13*13;
+    m->y = 8*16 + 3*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
     m->label_text_rgba = 0xFFA030FF;
     m->value_text_rgba = m->label_text_rgba;
 
@@ -1486,11 +1488,11 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = 16*16;
-    m->y = 8*16 + 5*18;
-    m->value_x = m->x + 13*13;
+    m->y = 8*16 + 4*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
     m->label_text_rgba = 0xFFFF20FF;
     m->value_text_rgba = m->label_text_rgba;
 
@@ -1519,11 +1521,11 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = 16*16;
-    m->y = 8*16 + 6*18;
-    m->value_x = m->x + 13*13;
+    m->y = 8*16 + 5*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
     m->label_text_rgba = 0x8080FFFF;
     m->value_text_rgba = m->label_text_rgba;
 
@@ -1552,11 +1554,11 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = 16*16;
-    m->y = 8*16 + 7*18;
-    m->value_x = m->x + 13*13;
+    m->y = 8*16 + 6*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
     m->label_text_rgba = 0xFF00FFFF;
     m->value_text_rgba = m->label_text_rgba;
 
@@ -1583,12 +1585,12 @@ int mload_practice(game_t *g, int val)
         d2->selection = 3;
     }
 
-    m->x = 438;
-    m->y = 8*16 + 2*18;
-    m->value_x = m->x + 15*13;
+    m->x = 16*16;
+    m->y = 8*16 + 7*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 
     //
     /* */
@@ -1626,12 +1628,12 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 438;
-    m->y = 8*16 + 3*18;
-    m->value_x = m->x + 15*13;
+    m->x = 16*16;
+    m->y = 8*16 + 8*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 
     //
     /* */
@@ -1643,12 +1645,12 @@ int mload_practice(game_t *g, int val)
     d8->param = &q->pracdata->invisible;
     d8->labels[0] = bfromcstr("OFF");
     d8->labels[1] = bfromcstr("ON");
-    m->x = 438;
-    m->y = 8*16 + 4*18;
-    m->value_x = m->x + 15*13;
+    m->x = 16*16;
+    m->y = 8*16 + 9*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 
     //
     /* */
@@ -1660,12 +1662,12 @@ int mload_practice(game_t *g, int val)
     d8->param = &q->pracdata->brackets;
     d8->labels[0] = bfromcstr("OFF");
     d8->labels[1] = bfromcstr("ON");
-    m->x = 438;
-    m->y = 8*16 + 5*18;
-    m->value_x = m->x + 15*13;
+    m->x = 16*16;
+    m->y = 8*16 + 10*16;
+    m->value_x = m->x + 15*8;
     m->value_y = m->y;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 
     //
     /* */
@@ -1677,13 +1679,13 @@ int mload_practice(game_t *g, int val)
     d8->param = &q->pracdata->infinite_floorkicks;
     d8->labels[0] = bfromcstr("OFF");
     d8->labels[1] = bfromcstr("ON");
-    m->x = 438;
-    m->y = 8*16 + 6*18;
-    m->value_x = m->x + 15*13;
-    m->value_y = m->y + 18;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
+    m->x = 16*16;
+    m->y = 8*16 + 11*16;
+    m->value_x = m->x + 15*8;
+    m->value_y = m->y + 16;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->label_text_rgba = 0xA0A0FFFF;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 
     //
     /* */
@@ -1711,13 +1713,13 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 438;
-    m->y = 8*16 + 8*18;
-    m->value_x = m->x + 15*13;
-    m->value_y = m->y + 18;
-    m->label_text_flags = DRAWTEXT_THIN_FONT;
+    m->x = 16*16;
+    m->y = 8*16 + 13*16;
+    m->value_x = m->x + 15*8;
+    m->value_y = m->y + 16;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->label_text_rgba = 0xC0C020FF;
-    m->value_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT|DRAWTEXT_ALIGN_RIGHT;
 
     //
     /* */
@@ -1727,12 +1729,12 @@ int mload_practice(game_t *g, int val)
     m = d->menu[MENU_PRACTICE_NUMOPTS - 1];
     d7 = m->data;
     d7->visible_chars = 16;
-    m->x = 16*16 + 28*13;
-    m->y = 8*16 + 14*18;
-    m->value_x = m->x - 16*13;
-    m->value_y = m->y + 18;
-    m->label_text_flags = DRAWTEXT_THIN_FONT|DRAWTEXT_ALIGN_RIGHT;
-    m->value_text_flags = DRAWTEXT_THIN_FONT;//|DRAWTEXT_ALIGN_RIGHT;
+    m->x = 16*16;
+    m->y = 8*16 + 15*16;
+    m->value_x = m->x + 16;
+    m->value_y = m->y + 16;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT;//|DRAWTEXT_ALIGN_RIGHT;
 
     qs_update_pracdata(cs);
 

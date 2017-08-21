@@ -36,9 +36,6 @@
 
 #define QRS_FIELD_EDIT  2
 
-#define FIELD_EDITOR_PALETTE_X 6
-#define FIELD_EDITOR_PALETTE_Y 96
-
 // IJLXSZNGUTFaFbPQWYaYbV I4T4J4L4OS4Z4 - felicity's arbitrary pentomino+tetromino ordering
 #define QRS_I 0
 #define QRS_J 1
@@ -269,7 +266,7 @@ typedef struct {
 
     int field_x; // in pixels (position of top-left of field)
     int field_y; // ^^
-    int field_w; // in cells (only player-accessible ones)
+    int field_w; // in cells (only player-accessible ones counted here)
 
     unsigned int max_floorkicks;
     int num_previews;
@@ -310,6 +307,7 @@ typedef struct {
     int score;
     int soft_drop_counter;
 
+    unsigned long last_gradeup_timestamp;
     int grade;
     int internal_grade;
     int grade_points;
@@ -337,6 +335,11 @@ typedef struct {
     int pentrises;
     int recoveries;
     bool is_recovering;
+
+    unsigned long last_medal_re_timestamp;
+    unsigned long last_medal_sk_timestamp;
+    unsigned long last_medal_st_timestamp;
+    unsigned long last_medal_co_timestamp;
 
     int medal_re; // medal values range from 0 to BRONZE (1) to PLATINUM (4)
     int medal_sk;

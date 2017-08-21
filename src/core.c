@@ -556,8 +556,10 @@ int load_files(coreState *cs)
    load_asset(cs, ASSET_IMG, "bg9");
    load_asset(cs, ASSET_IMG, "bg-temp");
    load_asset(cs, ASSET_IMG, "bg_darken");
-   load_asset(cs, ASSET_IMG, "level_alphabg");
    //load_asset(cs, ASSET_IMG, "blank");
+   load_asset(cs, ASSET_IMG, "medals");
+
+   /*
    load_asset(cs, ASSET_IMG, "medals/bronzeRE");
    load_asset(cs, ASSET_IMG, "medals/silverRE");
    load_asset(cs, ASSET_IMG, "medals/goldRE");
@@ -574,6 +576,8 @@ int load_files(coreState *cs)
    load_asset(cs, ASSET_IMG, "medals/silverST");
    load_asset(cs, ASSET_IMG, "medals/goldST");
    load_asset(cs, ASSET_IMG, "medals/platinumST");
+   */
+
    load_asset(cs, ASSET_IMG, "animation/lineclear0");
    load_asset(cs, ASSET_IMG, "animation/lineclear1");
    load_asset(cs, ASSET_IMG, "animation/lineclear2");
@@ -627,6 +631,7 @@ int load_files(coreState *cs)
    load_asset(cs, ASSET_WAV, "prerotate");
    load_asset(cs, ASSET_WAV, "newsection");
    load_asset(cs, ASSET_WAV, "medal");
+   load_asset(cs, ASSET_WAV, "gradeup");
    //load_asset(cs, ASSET_WAV, "irs");
    //load_asset(cs, ASSET_WAV, "lock");
    //load_asset(cs, ASSET_WAV, "hit_ground");

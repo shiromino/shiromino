@@ -12,8 +12,11 @@
 #include "piecedef.h"
 #include "gfx_structures.h"
 
-#define QRS_FIELD_X 32
-#define QRS_FIELD_Y 64
+#define QRS_FIELD_X 4
+#define QRS_FIELD_Y 50
+
+#define FIELD_EDITOR_PALETTE_X (16*14 + 4 + QRS_FIELD_X)
+#define FIELD_EDITOR_PALETTE_Y 96
 
 #define GFX_G2 0x10000000
 #define GFX_TARGET_TEXTURE_OVERWRITE 0x80000000
@@ -77,6 +80,12 @@ int gfx_rendercopy(coreState *cs, SDL_Texture *t, SDL_Rect *src, SDL_Rect *dest_
 int gfx_start_bg_fade_in(coreState *cs);
 int gfx_drawbg(coreState *cs);
 int gfx_draw_emergency_bg_darken(coreState *cs);
+
+// these are a little bit hacky... just add to each RGB value of the pixels
+// mostly would use these for animations
+
+//int gfx_brighten_texture(SDL_Texture *tex, Uint8 amt);
+// int gfx_darken_texture(SDL_Texture *tex, Uint8 amt);
 
 int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(coreState *));
 int gfx_drawmessages(coreState *cs, int type);

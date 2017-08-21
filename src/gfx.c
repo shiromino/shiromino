@@ -61,6 +61,7 @@ struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 
    fmt->outlined = !(flags & DRAWTEXT_NO_OUTLINE);
    fmt->shadow = flags & DRAWTEXT_SHADOW;
 
+   fmt->size_multiplier = 1.0;
    fmt->line_spacing = 1.0;
    fmt->align = ALIGN_LEFT;
    fmt->wrap_length = 0;
@@ -325,6 +326,18 @@ int gfx_draw_emergency_bg_darken(coreState *cs)
     return 0;
 }
 
+/*
+int gfx_brighten_texture(SDL_Texture *tex, Uint8 amt)
+{
+
+}
+
+int gfx_darken_texture(SDL_Texture *tex, Uint8 amt)
+{
+
+}
+*/
+
 int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(coreState *))
 {
    if(!text)
@@ -551,6 +564,7 @@ int gfx_drawbuttons(coreState *cs, int type)
         .outline_rgba = RGBA_OUTLINE_DEFAULT,
         .outlined = true,
         .shadow = false,
+        .size_multiplier = 1.0,
         .line_spacing = 1.0,
         .align = ALIGN_LEFT,
         .wrap_length = 0
@@ -883,6 +897,7 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
         .outline_rgba = RGBA_OUTLINE_DEFAULT,
         .outlined = true,
         .shadow = false,
+        .size_multiplier = 1.0,
         .line_spacing = 1.0,
         .align = ALIGN_LEFT,
         .wrap_length = 0
@@ -990,6 +1005,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
       .outline_rgba = RGBA_OUTLINE_DEFAULT,
       .outlined = true,
       .shadow = false,
+      .size_multiplier = 1.0,
       .line_spacing = 1.0,
       .align = ALIGN_LEFT,
       .wrap_length = 0
@@ -1007,7 +1023,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
    }
 
    SDL_Rect src = {.x = 0, .y = 0, .w = font->char_w, .h = font->char_h};
-   SDL_Rect dest = {.x = x, .y = y, .w = font->char_w, .h = font->char_h};
+   SDL_Rect dest = {.x = x, .y = y, .w = fmt->size_multiplier * (float)font->char_w, .h = fmt->size_multiplier * (float)font->char_h};
 
    int i = 0;
 
@@ -1031,14 +1047,14 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
                break;
 
             case ALIGN_RIGHT:
-               dest.x = x - (font->char_w) * (lines->entry[0]->slen);
+               dest.x = x - (fmt->size_multiplier * (float)font->char_w) * (lines->entry[0]->slen);
                break;
 
             case ALIGN_CENTER:
                if(fmt->wrap_length < lines->entry[0]->slen - last_wrap_line_pos)
                   dest.x = x;
                else
-                  dest.x = x + (font->char_w / 2) * (fmt->wrap_length - (lines->entry[0]->slen - last_wrap_line_pos));
+                  dest.x = x + (fmt->size_multiplier * (float)font->char_w / 2.0) * (fmt->wrap_length - (lines->entry[0]->slen - last_wrap_line_pos));
 
                break;
          }
@@ -1055,7 +1071,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             last_wrap_pos = i;
          }
 
-         dest.y += fmt->line_spacing * (float)font->char_h;
+         dest.y += fmt->line_spacing * fmt->size_multiplier * (float)font->char_h;
 
          switch(fmt->align) {
             default:
@@ -1080,6 +1096,25 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             continue;
       }
 
+      // we draw a square behind each character if we have no outlines to use
+      if(fmt->outlined && !font->outline_sheet) {
+          src.x = 31*font->char_w;
+          src.y = 3*font->char_h;
+          SDL_SetTextureColorMod(font->sheet, R(fmt->outline_rgba), G(fmt->outline_rgba), B(fmt->outline_rgba));
+          SDL_SetTextureAlphaMod(font->sheet, A(fmt->outline_rgba));
+
+          if(using_target_tex) {
+              SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0);
+              SDL_RenderFillRect(cs->screen.renderer, &dest);
+              SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
+          } else {
+              SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
+          }
+
+          SDL_SetTextureColorMod(font->sheet, R(fmt->rgba), G(fmt->rgba), B(fmt->rgba));
+          SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba));
+      }
+
       src.x = font->char_w * (text->data[i] % 32);
       src.y = font->char_h * ((int)(text->data[i] / 32) - 1);
       if(src.y < 0) {
@@ -1088,8 +1123,8 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
       }
 
       if(fmt->shadow && !using_target_tex) {
-         dest.x -= 2;
-         dest.y += 2;
+         dest.x -= 2.0 * fmt->size_multiplier;
+         dest.y += 2.0 * fmt->size_multiplier;
 
          SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba) / 4);
          if(font->outline_sheet)
@@ -1101,8 +1136,8 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             gfx_rendercopy(cs, font->outline_sheet, &src, &dest);
          }
 
-         dest.x += 2;
-         dest.y -= 2;
+         dest.x += 2.0 * fmt->size_multiplier;
+         dest.y -= 2.0 * fmt->size_multiplier;
 
          SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba));
          if(font->outline_sheet)
@@ -1123,7 +1158,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             gfx_rendercopy(cs, font->outline_sheet, &src, &dest);
       }
 
-      dest.x += font->char_w;
+      dest.x += fmt->size_multiplier * (float)font->char_w;
    }
 
    if(lines)
@@ -1269,7 +1304,7 @@ int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba)
    int y = q->field_y;
 
    SDL_Rect src = {.x = 0, .y = 96, .w = 20, .h = 32};
-   SDL_Rect dest = {.x = x, .y = 27 * 16 + 4 - QRS_FIELD_Y + y, .w = 20, .h = 32};
+   SDL_Rect dest = {.x = x, .y = 26 * 16 + 8 - QRS_FIELD_Y + y, .w = 20, .h = 32};
 
    int min = timegetmin(t);
    int sec = timegetsec(t) % 60;

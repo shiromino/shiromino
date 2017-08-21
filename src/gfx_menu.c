@@ -96,8 +96,10 @@ int gfx_drawmenu(game_t *g)
             if(m->label_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                 monofont = monofont_fixedsys;
 
-            if(i == d->selection)
-                fmt->outline_rgba = fmt->rgba;
+            if(i == d->selection) {
+                fmt->rgba = 0x000000FF;
+                fmt->outline_rgba = 0x9F9F9FFF;
+            }
 
             gfx_drawtext(cs, m->label, m->x, m->y, monofont, fmt);
 

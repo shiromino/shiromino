@@ -458,6 +458,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
     q->game_type = 0;
     q->mode_type = MODE_UNSPECIFIED;
 
+    q->last_gradeup_timestamp = 0xFFFFFFFF;
     q->grade = NO_GRADE;
     q->internal_grade = 0;
     q->grade_points = 0;
@@ -573,6 +574,9 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
         q->hold_enabled = 1;
     }
 
+    if(q->game_type == 0)
+        q->field_x = QRS_FIELD_X + 4;
+
     uint32_t randomizer_flags = 0;
 
     switch(q->randomizer_type) {
@@ -627,6 +631,11 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
 
     q->recoveries = 0;
     q->is_recovering = 0;
+
+    q->last_medal_re_timestamp = 0xFFFFFFFF;
+    q->last_medal_sk_timestamp = 0xFFFFFFFF;
+    q->last_medal_st_timestamp = 0xFFFFFFFF;
+    q->last_medal_co_timestamp = 0xFFFFFFFF;
     q->medal_re = 0;
     q->medal_sk = 0;
     q->medal_st = 0;
@@ -984,21 +993,26 @@ int qs_game_frame(game_t *g)
     }
 
     if(c->init < 120) {
+        struct text_formatting *fmt = text_fmt_create(0, 0x00FF00FF, 0);
+        fmt->size_multiplier = 2.0;
+        fmt->outlined = false;
+
         if(c->init == 0) {
-            gfx_pushmessage(cs, "READY", (6*16 + 8 - QRS_FIELD_X + q->field_x), (15*16 + 8 - QRS_FIELD_Y + q->field_y),
-                            0, monofont_square, NULL, 60, qrs_game_is_inactive);
+            gfx_pushmessage(cs, "READY", (4*16 + 8 + q->field_x), (11*16 + q->field_y),
+                            0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
             play_sfx(ready->data, ready->volume);
         }
 
-        if(c->init == 60) {
-            gfx_pushmessage(cs, "GO", (8*16 - QRS_FIELD_X + q->field_x), (15*16 + 8 - QRS_FIELD_Y + q->field_y),
-                            0, monofont_square, NULL, 60, qrs_game_is_inactive);
+        else if(c->init == 60) {
+            fmt->rgba = 0xFF0000FF;
+            gfx_pushmessage(cs, "GO", (6*16 + q->field_x), (11*16 + q->field_y),
+                            0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
             play_sfx(go->data, go->volume);
         }
 
-        if(c->init == 119 && !q->pracdata) {
+        else if(c->init == 119 && !q->pracdata) {
             if(q->replay) {
                 qrs_start_playback(g);
             } else {
@@ -1490,6 +1504,7 @@ int qs_game_frame(game_t *g)
     if(!q->pracdata && q->is_recovering && q->game_type == 0) {
         if(grid_cells_filled(g->field) <= 85) {
             q->recoveries++;
+            q->last_medal_re_timestamp = g->frame_counter;
             q->is_recovering = 0;
             switch(q->recoveries) {
                 case 1:
@@ -1961,6 +1976,8 @@ int qs_process_lockflash(game_t *g)
                         break;
 
                     case MODE_G2_DEATH:
+                        break;
+
                     case MODE_G3_TERROR:
                         break;
 
@@ -1974,10 +1991,15 @@ int qs_process_lockflash(game_t *g)
                         q->grade_points += (int)ceil(pts * combo_mult) * (1 + q->level / 250);
 
                         if(q->grade_points >= 100) {
+                            int old_grade = q->grade;
                             q->grade_points = 0;
                             q->internal_grade++;
                             if(q->internal_grade > 31) q->internal_grade = 31;
                             q->grade = internal_to_displayed_grade(q->internal_grade);
+                            if(old_grade != q->grade) {
+                                q->last_gradeup_timestamp = g->frame_counter;
+                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                            }
                         }
 
                         break;
@@ -2000,24 +2022,36 @@ int qs_process_lockflash(game_t *g)
             if(!q->pracdata && q->game_type == 0) {
                 switch(q->combo_simple) {
                     case 3:
-                        if(q->medal_co <= BRONZE)
+                        if(q->medal_co <= BRONZE) {
                             q->medal_co = BRONZE;
-                        play_sfx(medal->data, medal->volume);
+                            q->last_medal_co_timestamp = g->frame_counter;
+                            play_sfx(medal->data, medal->volume);
+                        }
+
                         break;
                     case 4:
-                        if(q->medal_co <= SILVER)
+                        if(q->medal_co <= SILVER) {
                             q->medal_co = SILVER;
-                        play_sfx(medal->data, medal->volume);
+                            q->last_medal_co_timestamp = g->frame_counter;
+                            play_sfx(medal->data, medal->volume);
+                        }
+
                         break;
                     case 5:
-                        if(q->medal_co <= GOLD)
+                        if(q->medal_co <= GOLD) {
                             q->medal_co = GOLD;
-                        play_sfx(medal->data, medal->volume);
+                            q->last_medal_co_timestamp = g->frame_counter;
+                            play_sfx(medal->data, medal->volume);
+                        }
+
                         break;
                     case 6:
-                        if(q->medal_co <= PLATINUM)
+                        if(q->medal_co <= PLATINUM) {
                             q->medal_co = PLATINUM;
-                        play_sfx(medal->data, medal->volume);
+                            q->last_medal_co_timestamp = g->frame_counter;
+                            play_sfx(medal->data, medal->volume);
+                        }
+
                         break;
                     default:
                         break;
@@ -2026,24 +2060,36 @@ int qs_process_lockflash(game_t *g)
                 if(n == 5 && q->mode_type == MODE_UNSPECIFIED) {
                     switch(q->pentrises) {
                         case 2:
-                            if(q->medal_sk <= BRONZE)
+                            if(q->medal_sk <= BRONZE) {
                                 q->medal_sk = BRONZE;
-                            play_sfx(medal->data, medal->volume);
+                                q->last_medal_sk_timestamp = g->frame_counter;
+                                play_sfx(medal->data, medal->volume);
+                            }
+
                             break;
                         case 4:
-                            if(q->medal_sk <= SILVER)
+                            if(q->medal_sk <= SILVER) {
                                 q->medal_sk = SILVER;
-                            play_sfx(medal->data, medal->volume);
+                                q->last_medal_sk_timestamp = g->frame_counter;
+                                play_sfx(medal->data, medal->volume);
+                            }
+
                             break;
                         case 7:
-                            if(q->medal_sk <= GOLD)
+                            if(q->medal_sk <= GOLD) {
                                 q->medal_sk = GOLD;
-                            play_sfx(medal->data, medal->volume);
+                                q->last_medal_sk_timestamp = g->frame_counter;
+                                play_sfx(medal->data, medal->volume);
+                            }
+
                             break;
-                        case 9:
-                            if(q->medal_sk <= PLATINUM)
+                        case 10:
+                            if(q->medal_sk <= PLATINUM) {
                                 q->medal_sk = PLATINUM;
-                            play_sfx(medal->data, medal->volume);
+                                q->last_medal_sk_timestamp = g->frame_counter;
+                                play_sfx(medal->data, medal->volume);
+                            }
+
                             break;
                         default:
                             break;
@@ -2121,10 +2167,14 @@ int qs_process_lockflash(game_t *g)
                                     q->p1->state = PSINACTIVE;
                                 } else {
                                     q->grade = GRADE_M;
+                                    q->last_gradeup_timestamp = g->frame_counter;
+                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
                                 }
                             } else if(q->level >= 999) {
                                 q->level = 999;
                                 q->grade = GRADE_GM;
+                                q->last_gradeup_timestamp = g->frame_counter;
+                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)
@@ -2135,9 +2185,12 @@ int qs_process_lockflash(game_t *g)
                             break;
 
                         case MODE_G3_TERROR:
+                            q->last_gradeup_timestamp = g->frame_counter;
+                            play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+
                             if(q->section == 5) {
                                 if(q->timer->time > G3_TERROR_TORIKAN) {
-                                    q->section--;
+                                    q->grade = GRADE_S5;
                                     q->p1->state = PSINACTIVE;
                                 } else {
                                     q->grade = GRADE_S5;
@@ -2166,6 +2219,8 @@ int qs_process_lockflash(game_t *g)
                             if(q->level >= 999) {
                                 q->level = 999;
                                 q->grade = GRADE_GM;
+                                q->last_gradeup_timestamp = g->frame_counter;
+                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)

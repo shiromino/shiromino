@@ -4,22 +4,26 @@ Shiromino Version history
 beta2
 {
     New Features:
-        + Joystick support!
+        + Joystick support (kind of... still very much recommend Joy2Key)
         + "escape" button is now mappable
         + New mode: G1 MASTER
         + New mode: G1 20G
         + New mode: G2 MASTER
         + G1 and G2 MASTER grade systems added
-        + New fonts: font_small.png and font_tiny.png
+        + Grade sprites up to S9 added (GM etc. is todo)
+        + Grade and medal animations and grade-up sounds
+        + New fonts: font_small.png, font_tiny.png, font_fixedsys_excelsior.png
         + New tetrion graphics
         + Full block face palette in the practice tool
         + New options in the practice tool: infinite floorkicks, lock protection
+        + Practice tool UI moved around a bit
         + Basic support for Sakura gems in the practice tool
 
     Changes/Removed Features:
         * MASTER renamed to PENTOMINO
         * PENTOMINO speed curve is more difficult
         * PENTOMINO randomizer heavily re-balanced
+        * New piece colors for several pentominoes
         * T (pentomino) now floorkicks
         * is_recovering threshold changed from >=150 blocks in playfield to >=170
         * Recovery medal threshold changed from <=70 blocks to <=85
