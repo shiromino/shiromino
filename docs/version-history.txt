@@ -1,7 +1,16 @@
 Shiromino Version history
 =========================
 
-beta2
+beta3
+{
+    New Features:
+
+    Changes/Removed Features:
+
+    Bug Fixes:
+}
+
+20170823 beta2
 {
     New Features:
         + Joystick support (kind of... still very much recommend Joy2Key)
