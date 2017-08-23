@@ -98,7 +98,7 @@ int gfx_drawmenu(game_t *g)
 
             if(i == d->selection) {
                 fmt->rgba = 0x000000FF;
-                fmt->outline_rgba = 0x9F9F9FFF;
+                fmt->outline_rgba = 0x5F5F5FFF;
             }
 
             gfx_drawtext(cs, m->label, m->x, m->y, monofont, fmt);

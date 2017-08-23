@@ -9,8 +9,10 @@ beta2
         + New mode: G1 MASTER
         + New mode: G1 20G
         + New mode: G2 MASTER
+        + 3 new backgrounds past level 1000
         + G1 and G2 MASTER grade systems added
-        + Grade sprites up to S9 added (GM etc. is todo)
+        + PENTOMINO grade system added (based on G1 grade system)
+        + All grade sprites added
         + Grade and medal animations and grade-up sounds
         + New fonts: font_small.png, font_tiny.png, font_fixedsys_excelsior.png
         + New tetrion graphics
@@ -20,6 +22,9 @@ beta2
         + Basic support for Sakura gems in the practice tool
 
     Changes/Removed Features:
+        * Darkened a few backgrounds
+
+        - Removed PENTOMINO 20G and NIGHTMARE MODE
         * MASTER renamed to PENTOMINO
         * PENTOMINO speed curve is more difficult
         * PENTOMINO randomizer heavily re-balanced
@@ -46,6 +51,7 @@ beta2
         * G3 TERROR ends at level 1300 as intended
         * T4 piece now floorkicks correctly
         * Garbage (grey) cells are now drawn with an outline
+        * HOME_PATH setting can work with different system path formats
 }
 
 20170416 beta1 - First release.

@@ -104,6 +104,9 @@ struct histrand_data {
     // if hist_len is 0 this is NULL
     piece_id *history;
 
+    // range from 0.0 to 100.0 (100 makes the randomizer a uniform distribution)
+    double difficulty;
+
     // these three are not guaranteed to be filled in (set to NULL if not used)
     double *piece_weights;
     double *drought_protection_coefficients;
@@ -154,6 +157,8 @@ piece_id g3_most_droughted_piece(int *histogram);
 piece_id histrand_pull(struct randomizer *r);
 piece_id histrand_get_next(struct randomizer *r);
 piece_id histrand_lookahead(struct randomizer *r, unsigned int distance);
+double histrand_get_difficulty(struct randomizer *r);
+int histrand_set_difficulty(struct randomizer *r, double difficulty);
 
 piece_id g3rand_pull(struct randomizer *r);
 piece_id g3rand_get_next(struct randomizer *r);

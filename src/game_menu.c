@@ -1002,111 +1002,62 @@ int mload_main(game_t *g, int val)
     cs->bg = (asset_by_name(cs, "bg-temp"))->data;
     cs->bg_old = cs->bg;
 
-    d->menu = malloc(15 * sizeof(struct menu_opt *));
+    d->menu = malloc(13 * sizeof(struct menu_opt *));
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 15;
+    d->numopts = 13;
     d->title = bfromcstr("MAIN MENU");
     d->x = 4*16;
     d->y = 3*16;
 
-    d->menu[0] = menu_opt_create(MENU_GAME_MULTIOPT, NULL, bfromcstr("PENTOMINO"));
+    d->menu[0] = std_game_multiopt_create(g->origin, MODE_PENTOMINO, 12, bfromcstr("PENTOMINO"));
     m = d->menu[0];
     d6 = m->data;
-    d6->mode = QUINTESSE;
-    d6->num = 4;    // normal, no lock delay, pentomino only, pentomino only & no lock delay
+
+    d6->num++;
+    d6->labels = realloc(d6->labels, d6->num * sizeof(bstring));
+    d6->labels[d6->num - 1] = bfromcstr("ACID RAIN");
+    d6->args = realloc(d6->args, d6->num * sizeof(struct game_args));
+
+    d6->args[d6->num - 1].num = 4;
+    d6->args[d6->num - 1].ptrs = malloc(4 * sizeof(void *));
+    d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(coreState *));
+    d6->args[d6->num - 1].ptrs[1] = malloc(sizeof(int));
+    d6->args[d6->num - 1].ptrs[2] = malloc(sizeof(unsigned int));
+    d6->args[d6->num - 1].ptrs[3] = malloc(sizeof(char *));
+    *(coreState **)(d6->args[d6->num - 1].ptrs[0]) = cs;
+    *(int *)(d6->args[d6->num - 1].ptrs[1]) = 1500;
+    *(unsigned int *)(d6->args[d6->num - 1].ptrs[2]) = MODE_PENTOMINO;
+    *(char **)(d6->args[d6->num - 1].ptrs[3]) = NULL;
+
     if(d->main_menu_data.selection == 0)
         d6->selection = d->main_menu_data.opt_selection;
     else
         d6->selection = 0;
-    d6->labels = malloc(4 * sizeof(bstring));
-    d6->labels[0] = NULL;
-    d6->labels[1] = bfromcstr("NO LOCK");
-    d6->labels[2] = bfromcstr("PENTO ONLY");
-    d6->labels[3] = bfromcstr("NO LOCK, PENTO ONLY");
-    d6->args = malloc(4 * sizeof(struct game_args));
-    for(i = 0; i < 4; i++) {
-        d6->args[i].num = 4;
-        d6->args[i].ptrs = malloc(4 * sizeof(void *));
-        d6->args[i].ptrs[0] = malloc(sizeof(coreState *));
-        d6->args[i].ptrs[1] = malloc(sizeof(int));
-        d6->args[i].ptrs[2] = malloc(sizeof(unsigned int));
-        d6->args[i].ptrs[3] = malloc(sizeof(char *));
-
-        *(coreState **)(d6->args[i].ptrs[0]) = g->origin;
-        *(int *)(d6->args[i].ptrs[1]) = 0;
-        *(char **)(d6->args[i].ptrs[3]) = NULL;
-    }
-    *(unsigned int *)(d6->args[0].ptrs[2]) = 0;    // default: 0
-    *(unsigned int *)(d6->args[1].ptrs[2]) = NO_LOCK_DELAY;
-    *(unsigned int *)(d6->args[2].ptrs[2]) = PENTOMINO_ONLY;
-    *(unsigned int *)(d6->args[3].ptrs[2]) = NO_LOCK_DELAY | PENTOMINO_ONLY;
     m->x = 4*16;
-    m->y = 6*16;
+    m->y = 7*16;
     m->value_x = m->x + 10*16;
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[1] = menu_opt_create(MENU_GAME_MULTIOPT, NULL, bfromcstr("PENTOMINO 20G"));
+    d->menu[1] = std_game_multiopt_create(g->origin, MODE_G1_MASTER, 10, bfromcstr("G1 MASTER"));
     m = d->menu[1];
     d6 = m->data;
-    d6->mode = QUINTESSE;
-    d6->num = 4;    // normal, no lock delay, pentomino only, pentomino only & no lock delay
     if(d->main_menu_data.selection == 1)
         d6->selection = d->main_menu_data.opt_selection;
     else
         d6->selection = 0;
-    d6->labels = malloc(4 * sizeof(bstring));
-    d6->labels[0] = NULL;
-    d6->labels[1] = bfromcstr("NO LOCK");
-    d6->labels[2] = bfromcstr("PENTO ONLY");
-    d6->labels[3] = bfromcstr("NO LOCK, PENTO ONLY");
-    d6->args = malloc(4 * sizeof(struct game_args));
-    for(i = 0; i < 4; i++) {
-        d6->args[i].num = 4;
-        d6->args[i].ptrs = malloc(4 * sizeof(void *));
-        d6->args[i].ptrs[0] = malloc(sizeof(coreState *));
-        d6->args[i].ptrs[1] = malloc(sizeof(int));
-        d6->args[i].ptrs[2] = malloc(sizeof(unsigned int));
-        d6->args[i].ptrs[3] = malloc(sizeof(char *));
-
-        *(coreState **)(d6->args[i].ptrs[0]) = g->origin;
-        *(int *)(d6->args[i].ptrs[1]) = 700;
-        *(char **)(d6->args[i].ptrs[3]) = NULL;
-    }
-    *(unsigned int *)(d6->args[0].ptrs[2]) = 0;
-    *(unsigned int *)(d6->args[1].ptrs[2]) = NO_LOCK_DELAY;
-    *(unsigned int *)(d6->args[2].ptrs[2]) = PENTOMINO_ONLY;
-    *(unsigned int *)(d6->args[3].ptrs[2]) = NO_LOCK_DELAY | PENTOMINO_ONLY;
     m->x = 4*16;
-    m->y = 7*16;
-    m->value_x = m->x + 14*16;
+    m->y = 8*16;
+    m->value_x = m->x + 10*16;
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[2] = menu_opt_create(MENU_GAME, NULL, bfromcstr("NIGHTMARE MODE"));
+    d->menu[2] = std_game_multiopt_create(g->origin, MODE_G1_20G, 10, bfromcstr("G1 20G"));
     m = d->menu[2];
-    d4 = m->data;
-    d4->mode = QUINTESSE;
-    d4->args.num = 4;
-    d4->args.ptrs = malloc(4 * sizeof(void *));
-    d4->args.ptrs[0] = malloc(sizeof(coreState *));
-    d4->args.ptrs[1] = malloc(sizeof(int));
-    d4->args.ptrs[2] = malloc(sizeof(unsigned int));
-    d4->args.ptrs[3] = malloc(sizeof(char *));
-    *(coreState **)(d4->args.ptrs[0]) = g->origin;
-    *(int *)(d4->args.ptrs[1]) = 0;
-    *(unsigned int *)(d4->args.ptrs[2]) = NIGHTMARE_MODE;
-    *(char **)(d4->args.ptrs[3]) = NULL;
-    m->x = 4*16;
-    m->y = 8*16;
-    m->label_text_rgba = 0xFFA0A0FF;
-
-    d->menu[3] = std_game_multiopt_create(g->origin, MODE_G1_MASTER, 10, bfromcstr("G1 MASTER"));
-    m = d->menu[3];
     d6 = m->data;
-    if(d->main_menu_data.selection == 3)
+    if(d->main_menu_data.selection == 2)
         d6->selection = d->main_menu_data.opt_selection;
     else
         d6->selection = 0;
@@ -1116,10 +1067,10 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[4] = std_game_multiopt_create(g->origin, MODE_G1_20G, 10, bfromcstr("G1 20G"));
-    m = d->menu[4];
+    d->menu[3] = std_game_multiopt_create(g->origin, MODE_G2_MASTER, 10, bfromcstr("G2 MASTER"));
+    m = d->menu[3];
     d6 = m->data;
-    if(d->main_menu_data.selection == 4)
+    if(d->main_menu_data.selection == 3)
         d6->selection = d->main_menu_data.opt_selection;
     else
         d6->selection = 0;
@@ -1127,12 +1078,13 @@ int mload_main(game_t *g, int val)
     m->y = 10*16;
     m->value_x = m->x + 10*16;
     m->value_y = m->y;
+    m->label_text_rgba = 0xFFFF40FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[5] = std_game_multiopt_create(g->origin, MODE_G2_MASTER, 10, bfromcstr("G2 MASTER"));
-    m = d->menu[5];
+    d->menu[4] = std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, bfromcstr("G2 DEATH"));
+    m = d->menu[4];
     d6 = m->data;
-    if(d->main_menu_data.selection == 5)
+    if(d->main_menu_data.selection == 4)
         d6->selection = d->main_menu_data.opt_selection;
     else
         d6->selection = 0;
@@ -1140,13 +1092,13 @@ int mload_main(game_t *g, int val)
     m->y = 11*16;
     m->value_x = m->x + 10*16;
     m->value_y = m->y;
-    m->label_text_rgba = 0xFFFF40FF;
+    m->label_text_rgba = 0xFF4040FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[6] = std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, bfromcstr("G2 DEATH"));
-    m = d->menu[6];
+    d->menu[5] = std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, bfromcstr("G3 TERROR"));
+    m = d->menu[5];
     d6 = m->data;
-    if(d->main_menu_data.selection == 6)
+    if(d->main_menu_data.selection == 5)
         d6->selection = d->main_menu_data.opt_selection;
     else
         d6->selection = 0;
@@ -1157,43 +1109,29 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0xFF4040FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[7] = std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, bfromcstr("G3 TERROR"));
-    m = d->menu[7];
-    d6 = m->data;
-    if(d->main_menu_data.selection == 7)
-        d6->selection = d->main_menu_data.opt_selection;
-    else
-        d6->selection = 0;
-    m->x = 4*16;
-    m->y = 13*16;
-    m->value_x = m->x + 10*16;
-    m->value_y = m->y;
-    m->label_text_rgba = 0xFF4040FF;
-    m->value_text_rgba = 0xA0A0FFFF;
-
-    d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("MULTI-EDITOR"));
-    m = d->menu[8];
+    d->menu[6] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("MULTI-EDITOR"));
+    m = d->menu[6];
     d1 = m->data;
     d1->action = mload_practice;
     d1->val = 0;
     m->x = 4*16;
     m->y = 15*16;
 
-    d->menu[9] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("REPLAY"));
-    m = d->menu[9];
+    d->menu[7] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("REPLAY"));
+    m = d->menu[7];
     d1 = m->data;
     d1->action = mload_replay;
     d1->val = 0;
     m->x = 4*16;
     m->y = 16*16;
 
-    d->menu[10] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("SETTINGS"));
-    m = d->menu[10];
+    d->menu[8] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("SETTINGS"));
+    m = d->menu[8];
     m->x = 4*16;
     m->y = 19*16;
 
-    d->menu[11] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MASTER VOLUME"));
-    m = d->menu[11];
+    d->menu[9] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MASTER VOLUME"));
+    m = d->menu[9];
     d2 = m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->master_volume;
@@ -1210,8 +1148,8 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT|DRAWTEXT_VALUE_BAR;
 
-    d->menu[12] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("SFX VOLUME"));
-    m = d->menu[12];
+    d->menu[10] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("SFX VOLUME"));
+    m = d->menu[10];
     d2 = m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->sfx_volume;
@@ -1228,8 +1166,8 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT|DRAWTEXT_VALUE_BAR;
 
-    d->menu[13] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MUSIC VOLUME"));
-    m = d->menu[13];
+    d->menu[11] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MUSIC VOLUME"));
+    m = d->menu[11];
     d2 = m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->mus_volume;
@@ -1246,8 +1184,8 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT|DRAWTEXT_VALUE_BAR;
 
-    d->menu[14] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
-    m = d->menu[14];
+    d->menu[12] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
+    m = d->menu[12];
     d1 = m->data;
     d1->action = menu_action_quit;
     d1->val = 0;
@@ -1884,7 +1822,7 @@ int mload_replay(game_t *g, int val)
             strftime(strbuf, sizeof(strbuf), "%Y.%m.%d", ts);
 
             switch(replaylist[i-1]->mode) {
-                case MODE_UNSPECIFIED:
+                case MODE_PENTOMINO:
                     label = bformat("%s  PENTOMINO  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
                     break;
                 case MODE_G2_DEATH:

@@ -921,6 +921,7 @@ int qrs_input(game_t *g)
 
     if(p->state & (PSFALL | PSLOCK) && !(p->state & PSPRELOCKED))
     {
+        q->active_piece_time++;
         if(k->left == 1 || k->left > (1 + p->speeds->das)) {
             qrs_move(g, p, MOVE_LEFT);
             moved_left = 1;
@@ -971,8 +972,11 @@ int qrs_input(game_t *g)
         }
 
         if(k->up == 1) {
-            if(!(q->game_type == SIMULATE_G1))
-                qrs_fall(g, p, 20 * 256);
+            if(!(q->game_type == SIMULATE_G1)) {
+                int num_rows = qrs_fall(g, p, 20 * 256);
+                if(num_rows > q->sonic_drop_height)
+                    q->sonic_drop_height = num_rows;
+            }
         }
 
         if(k->d == 1 && q->hold_enabled) {
@@ -1383,14 +1387,14 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
             }
          p->state &= ~PSFALL;
          p->state |= PSLOCK;
-         return 1;
+         return -1;
       }
    }
 
    if(p->y - bkp_y > grav)
       p->y = bkp_y + grav;
 
-   return 0;
+   return (YTOROW(p->y) - YTOROW(bkp_y));
 }
 
 int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)

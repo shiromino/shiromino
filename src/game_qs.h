@@ -4,13 +4,13 @@
 #include "core.h"
 #include "qrs.h"
 
-#define QS_CURVE_MAX 17
+#define QS_CURVE_MAX 19
 #define G1_MASTER_CURVE_MAX 30
 #define G2_MASTER_CURVE_MAX 35
 #define G2_DEATH_CURVE_MAX 9
 #define G3_TERROR_CURVE_MAX 9
 
-#define MODE_UNSPECIFIED 0
+#define MODE_PENTOMINO 0
 
 #define NIGHTMARE_MODE 0x0001
 #define PENTOMINO_ONLY 0x0002

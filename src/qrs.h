@@ -306,6 +306,10 @@ typedef struct {
 
     int score;
     int soft_drop_counter;
+    int sonic_drop_height;
+    int active_piece_time;
+    int placement_speed;
+    int levelstop_time;
 
     unsigned long last_gradeup_timestamp;
     int grade;

@@ -5,7 +5,7 @@
 
 #include "core.h"
 #include "qrs.h"
-#include "qrs.h"
+#include "random.h"
 #include "timer.h"
 #include "gfx.h"
 #include "game_qs.h"
@@ -144,7 +144,7 @@ int gfx_drawqs(game_t *g)
 
     if(q->pracdata) {
         if(q->pracdata->paused == QRS_FIELD_EDIT) {
-            gfx_drawqrsfield(cs, q->pracdata->usr_field, MODE_UNSPECIFIED, DRAWFIELD_GRID | DRAWFIELD_NO_OUTLINE, x, y);
+            gfx_drawqrsfield(cs, q->pracdata->usr_field, MODE_PENTOMINO, DRAWFIELD_GRID | DRAWFIELD_NO_OUTLINE, x, y);
             if(q->pracdata->field_selection)
                 gfx_drawfield_selection(g, q->pracdata);
 
@@ -247,34 +247,34 @@ int gfx_drawqs(game_t *g)
             if(q->pracdata->invisible)
                 drawqrsfield_flags |= DRAWFIELD_INVISIBLE;
 
-            gfx_drawqrsfield(cs, g->field, MODE_UNSPECIFIED, drawqrsfield_flags, x, y);
+            gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
             gfx_drawkeys(cs, cs->keys[0], 22*16, 27*16, RGBA_DEFAULT);
 
             goto active_game_drawing;
         }
     } else {
-        if(q->mode_type != MODE_UNSPECIFIED)
+        if(q->mode_type != MODE_PENTOMINO)
             gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags|TEN_W_TETRION, x, y);
         else
             gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags, x, y);
 
         if(q->p1->speeds->grav >= 20*256) {
-            if(cs->frames % 4 < 2)
+            if(cs->frames % 4 >= 2)
                 gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
             else
-                gfx_drawtimer(cs, q->timer, x + 32, 0xE0E040FF);
+                gfx_drawtimer(cs, q->timer, x + 32, 0xE0E030FF);
         } else
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
 
         gfx_drawkeys(cs, cs->keys[0], 22*16, 27*16, RGBA_DEFAULT);
 
         // uncomment this for DDR-esque input display :3
-        if(q->playback) {
+        /*if(q->playback) {
             for(i = 1; i < 24 && i < (q->replay->len - q->playback_index)/3; i++) {
                 gfx_drawkeys(cs, &q->replay->inputs[3*i+q->playback_index], 22*16, (25-i)*16, RGBA_DEFAULT);
             }
-        }
+        }*/
 
         gfx_rendercopy(cs, font, &labg_src, &labg_dest);
         labg_src.x = 512 - 16;
@@ -282,6 +282,7 @@ int gfx_drawqs(game_t *g)
         labg_dest.w = 16;
         labg_dest.x += (111 - 32);
         gfx_rendercopy(cs, font, &labg_src, &labg_dest);
+
         labg_dest.y -= 5*16;
         labg_src.w = 111;
         labg_src.x = 401;
@@ -290,37 +291,50 @@ int gfx_drawqs(game_t *g)
         gfx_rendercopy(cs, font, &labg_src, &labg_dest);
 
         if(q->p1->speeds->grav >= 20*256) {
-            if(cs->frames % 4 < 2) {
+            if(cs->frames % 4 >= 2) {
                 gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, NULL);
-                gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, NULL);
             } else {
-                fmt.rgba = 0xE0E040FF;
+                fmt.rgba = 0xE0E030FF;
                 gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, &fmt);
-                gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, &fmt);
             }
+
+            fmt.rgba = 0xFFC020FF;
+            gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, &fmt);
         } else {
             gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, NULL);
-            gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, NULL);
+            fmt.rgba = 0xFF7070FF;
+            gfx_drawtext(cs, level, x + 14*16 + 4, y + 20*16, monofont_square, &fmt);
         }
 
         if((q->grade & 0xff) != NO_GRADE)
         {
-            SDL_Rect grade_src = {.x = 0, .y = 390, .w = 70, .h = 70};
-            SDL_Rect grade_dest = {.x = x + 14*16, .y = y + 32, .w = 70, .h = 70};
+            SDL_Rect grade_src = {.x = 0, .y = 390, .w = 64, .h = 64};
+            SDL_Rect grade_dest = {.x = x + 14*16, .y = y + 32, .w = 64, .h = 64};
             float size_multiplier = 1.0;
 
-            gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+            // draw a shadowy square behind the grade
+            // gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+
             grade_src.w = 64;
             grade_src.h = 64;
 
-            if(g->frame_counter - q->last_gradeup_timestamp < 20) {
-                size_multiplier = 1.8 - 0.04*(g->frame_counter - q->last_gradeup_timestamp);
-                grade_dest.x -= ((size_multiplier - 1.0)/2)*64;
-                grade_dest.y -= ((size_multiplier - 1.0)/2)*64;
+            if(q->grade < GRADE_S1) {
+                grade_src.w = 32;
+                grade_src.h = 32;
+                grade_dest.w = 32;
+                grade_dest.h = 32;
+                grade_dest.x += 16;
+                grade_dest.y += 16;
             }
 
-            grade_dest.w = 64*size_multiplier;
-            grade_dest.h = 64*size_multiplier;
+            if(g->frame_counter - q->last_gradeup_timestamp < 20) {
+                size_multiplier = 1.8 - 0.04*(g->frame_counter - q->last_gradeup_timestamp);
+                grade_dest.x -= ((size_multiplier - 1.0)/2) * grade_dest.w;
+                grade_dest.y -= ((size_multiplier - 1.0)/2) * grade_dest.h;
+
+                grade_dest.w *= size_multiplier;
+                grade_dest.h *= size_multiplier;
+            }
 
             grade_src.y = 127;
 
@@ -328,17 +342,12 @@ int gfx_drawqs(game_t *g)
             grade_dest.y += 3;
 
             if(q->p1->speeds->grav >= 20*256) {
-                if(cs->frames % 4 >= 2) {
-                    SDL_SetTextureColorMod(font, 0xE0, 0xE0, 0x40);
+                if(cs->frames % 4 < 2) {
+                    SDL_SetTextureColorMod(font, 0xE0, 0xE0, 0x30);
                 }
             }
 
-            switch(q->grade) {
-                case GRADE_9:
-                    grade_src.y += 2*64;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
-                    break;
-
+            switch(q->grade & 0xff) {
                 case GRADE_1:
                 case GRADE_2:
                 case GRADE_3:
@@ -347,13 +356,15 @@ int gfx_drawqs(game_t *g)
                 case GRADE_6:
                 case GRADE_7:
                 case GRADE_8:
-                    grade_src.y += 64;
-                    grade_src.x = 64 * (GRADE_1 - q->grade);
+                case GRADE_9:
+                    grade_src.x += 2*64 + 32*(GRADE_1 - q->grade);
+                    grade_src.w = 32;
+                    grade_src.h = 32;
 
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     break;
 
-                case GRADE_S9:
+                /*case GRADE_S9:
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x += 128 + 8*32;
@@ -365,7 +376,7 @@ int gfx_drawqs(game_t *g)
                     grade_dest.w = 32*size_multiplier;
                     grade_dest.h = 32*size_multiplier;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
-                    break;
+                    break;*/
 
                 case GRADE_S1:
                 case GRADE_S2:
@@ -375,6 +386,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_S6:
                 case GRADE_S7:
                 case GRADE_S8:
+                case GRADE_S9:
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128 + 32*(q->grade - GRADE_S1);
@@ -397,11 +409,11 @@ int gfx_drawqs(game_t *g)
                     grade_dest.y += 30*size_multiplier;
                     grade_src.w = 32;
                     grade_src.h = 32;
-                    grade_dest.w = 32;
-                    grade_dest.h = 32;
+                    grade_dest.w = 32*size_multiplier;
+                    grade_dest.h = 32*size_multiplier;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     grade_src.x = 128 + 9*32;
-                    grade_dest.x += 20;
+                    grade_dest.x += 20*size_multiplier;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     break;
 
@@ -412,22 +424,74 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 32;
                     grade_src.x = 128;
 
-                    grade_dest.x += 47;
-                    grade_dest.y += 30;
+                    grade_dest.x += 47*size_multiplier;
+                    grade_dest.y += 30*size_multiplier;
                     grade_src.w = 32;
                     grade_src.h = 32;
-                    grade_dest.w = 32;
-                    grade_dest.h = 32;
+                    grade_dest.w = 32*size_multiplier;
+                    grade_dest.h = 32*size_multiplier;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     grade_src.x += 32*(q->grade - GRADE_S11);
-                    grade_dest.x += 20;
+                    grade_dest.x += 20*size_multiplier;
+                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    break;
+
+                case GRADE_M1:
+                case GRADE_M2:
+                case GRADE_M3:
+                case GRADE_M4:
+                case GRADE_M5:
+                case GRADE_M6:
+                case GRADE_M7:
+                case GRADE_M8:
+                case GRADE_M9:
+                    grade_src.x += 64;
+                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    grade_src.y += 32;
+                    grade_src.x = 128 + 32*(q->grade - GRADE_M1);
+
+                    grade_dest.x += 42*size_multiplier;
+                    grade_dest.y += 30*size_multiplier;
+                    grade_src.w = 32;
+                    grade_src.h = 32;
+                    grade_dest.w = 32*size_multiplier;
+                    grade_dest.h = 32*size_multiplier;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_M:
-                    grade_src.x += 64;
-                    grade_dest.x += 4;
+                    grade_src.x = 192;
+                    grade_src.y += 64;
                     gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    break;
+
+                case GRADE_MK:
+                case GRADE_MV:
+                case GRADE_MO:
+                case GRADE_MM:
+                    grade_src.x = 192;
+                    grade_src.y += 64;
+
+                    grade_dest.x -= 14*size_multiplier;
+                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+
+                    grade_src.x = 64*(q->grade - GRADE_MK);
+                    grade_dest.x += 38*size_multiplier;
+                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+
+                    break;
+
+                case GRADE_GM:
+                    grade_src.x = 256;
+                    grade_src.y += 64;
+
+                    grade_dest.x -= 14*size_multiplier;
+                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+
+                    grade_src.x = 192;
+                    grade_dest.x += 38*size_multiplier;
+                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+
                     break;
 
                 default:
@@ -437,17 +501,49 @@ int gfx_drawqs(game_t *g)
             SDL_SetTextureColorMod(font, 255, 255, 255);
         }
 
-        fmt.rgba = 0xFFFF40FF;
-        gfx_drawtext(cs, bfromcstr("SCORE"), x + 14*16+ 4, y + 13*16, monofont_square, &fmt);
-        gfx_drawtext(cs, score_text, x + 14*16 + 4, y + 15*16, monofont_square, &fmt);
+        if(q->p1->speeds->grav >= 20*256) {
+            if(cs->frames % 4 < 2) {
+                fmt.rgba = 0xE0E030FF;
+            } else
+                fmt.rgba = RGBA_DEFAULT;
+
+            gfx_drawtext(cs, bfromcstr("SCORE"), x + 14*16 + 4, y + 13*16, monofont_square, &fmt);
+            fmt.rgba = 0x6060FFFF;
+            gfx_drawtext(cs, score_text, x + 14*16 + 4, y + 15*16, monofont_square, &fmt);
+        } else {
+            fmt.rgba = RGBA_DEFAULT;
+            gfx_drawtext(cs, bfromcstr("SCORE"), x + 14*16 + 4, y + 13*16, monofont_square, &fmt);
+            fmt.rgba = 0x20FF20FF;
+            gfx_drawtext(cs, score_text, x + 14*16 + 4, y + 15*16, monofont_square, &fmt);
+        }
 
 active_game_drawing:
-        if(q->mode_type == MODE_UNSPECIFIED) {
+        if(q->mode_type == MODE_PENTOMINO) {
             fmt.rgba = RGBA_DEFAULT;
             fmt.outlined = false;
 
             gfx_drawtext(cs, next, 12 + QRS_FIELD_X, 13, monofont_small, &fmt);
             gfx_drawtext(cs, next_name, 12 + QRS_FIELD_X, 25, monofont_small, &fmt);
+
+            if(histrand_get_difficulty(q->randomizer) > 0.0) {
+                labg_src.x = 432;
+                labg_src.y = 64;
+                labg_src.w = 80;
+                labg_src.h = 16;
+
+                labg_dest.x = x + 14*16 - 3;
+                labg_dest.y = y + 22*16;
+                labg_dest.w = 80;
+                labg_dest.h = 16;
+                gfx_rendercopy(cs, font, &labg_src, &labg_dest);
+
+                gfx_drawtext(cs, bfromcstr("RANK"), x + 14*16 + 1, y + 22*16, monofont_fixedsys, &fmt);
+
+                fmt.rgba = 0xFFA0A0FF;
+                fmt.align = ALIGN_RIGHT;
+                gfx_drawtext(cs, bformat("%.1f", histrand_get_difficulty(q->randomizer)), x + 19*16 - 6, y + 22*16, monofont_fixedsys, &fmt);
+                fmt.align = ALIGN_LEFT;
+            }
         }
 
         if(q->num_previews > 0)
@@ -468,8 +564,8 @@ active_game_drawing:
                 piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
 
                 switch(q->mode_type) {
-                    case MODE_UNSPECIFIED:
-                        if(q->level < 400)
+                    case MODE_PENTOMINO:
+                        if(q->level < 300)
                             gfx_drawpiece(cs, g->field, x, y, pd_current, 0, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
 
                         break;
@@ -576,7 +672,7 @@ int gfx_drawqsmedals(game_t *g)
         return -1;
 
     qrsdata *q = g->data;
-    SDL_Rect dest = {.x = 270 - 32 + q->field_x, .y = 158, .w = 40, .h = 20};
+    SDL_Rect dest = {.x = 228 + q->field_x, .y = 150, .w = 40, .h = 20};
     SDL_Rect src = {.x = 20, .y = 0, .w = 20, .h = 10};
     SDL_Texture *medals = (asset_by_name(g->origin, "medals"))->data;
     bool medal = true;

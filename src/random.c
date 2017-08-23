@@ -193,6 +193,8 @@ struct randomizer *g1_randomizer_create(uint32_t flags)
     d->history[2] = PIECE_ID_INVALID;
     d->history[3] = PIECE_ID_INVALID;
 
+    d->difficulty = 0.0;
+
     d->piece_weights = NULL;
     d->drought_protection_coefficients = NULL;
     d->drought_times = NULL;
@@ -223,6 +225,8 @@ struct randomizer *g2_randomizer_create(uint32_t flags)
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
     d->history[3] = PIECE_ID_INVALID;
+
+    d->difficulty = 0.0;
 
     d->piece_weights = NULL;
     d->drought_protection_coefficients = NULL;
@@ -286,6 +290,8 @@ struct randomizer *pento_randomizer_create(uint32_t flags)
     d->history[3] = PIECE_ID_INVALID;
     d->history[4] = PIECE_ID_INVALID;
     d->history[5] = PIECE_ID_INVALID;
+
+    d->difficulty = 0.0;
 
     d->piece_weights = malloc(r->num_pieces * sizeof(double));
     d->drought_protection_coefficients = malloc(r->num_pieces * sizeof(double));
@@ -543,6 +549,7 @@ piece_id histrand_get_next(struct randomizer *r)
     piece_id t = PIECE_ID_INVALID;
 
     long double p = 0.0;
+    double old_sum = 0.0;
     double sum = 0.0;
     unsigned int histogram[r->num_pieces];
     double temp_weights[r->num_pieces];
@@ -591,6 +598,21 @@ piece_id histrand_get_next(struct randomizer *r)
             sum += temp_weights[i];
         }
 
+        if(d->difficulty > 0.0)
+        {
+            old_sum = sum;
+            sum = 0.0;
+
+            for(i = 0; i < r->num_pieces; i++) {
+                // final factor: difficulty, which brings weights closer to being equal to each other
+                // takes the difference from the average and multiplies by difficulty/100, then adds that to the weight
+                // note that if the weight was above average, a negative value is added
+                temp_weights[i] += (d->difficulty / 100.0) * ((old_sum / r->num_pieces) - temp_weights[i]);
+
+                sum += temp_weights[i];
+            }
+        }
+
         p = (long double)(pento_read_rand(seedp)) / (long double)(PENTO_READ_RAND_MAX);
         // produce value between 0 and the sum of weights
         // each weight is like an segment of this interval, and p is a point in the interval,
@@ -610,6 +632,24 @@ piece_id histrand_get_next(struct randomizer *r)
     }
 
     // fallback piece_id return value, just to be safe
+    return 0;
+}
+
+double histrand_get_difficulty(struct randomizer *r)
+{
+    struct histrand_data *d = r->data;
+
+    return d->difficulty;
+}
+
+int histrand_set_difficulty(struct randomizer *r, double difficulty)
+{
+    if(difficulty < 0.0 || difficulty > 100.0)
+        return 1;
+
+    struct histrand_data *d = r->data;
+    d->difficulty = difficulty;
+
     return 0;
 }
 

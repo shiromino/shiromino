@@ -554,6 +554,9 @@ int load_files(coreState *cs)
    load_asset(cs, ASSET_IMG, "bg7");
    load_asset(cs, ASSET_IMG, "bg8");
    load_asset(cs, ASSET_IMG, "bg9");
+   load_asset(cs, ASSET_IMG, "bg10");
+   load_asset(cs, ASSET_IMG, "bg11");
+   load_asset(cs, ASSET_IMG, "bg12");
    load_asset(cs, ASSET_IMG, "bg-temp");
    load_asset(cs, ASSET_IMG, "bg_darken");
    //load_asset(cs, ASSET_IMG, "blank");

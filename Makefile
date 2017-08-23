@@ -10,7 +10,7 @@ OBJ_PATH = obj
 # Do it Do it
 
 INCLUDES = 
-COMPILER_FLAGS = -Wall -g
+COMPILER_FLAGS = -Wall -Werror -Wno-comment -Wno-misleading-indentation -Wno-unused-variable -Wno-unused-parameter -g
 LINK_FLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer -lm
 
 CFLAGS = $(COMPILER_FLAGS)
