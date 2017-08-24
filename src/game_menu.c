@@ -496,7 +496,7 @@ game_t *menu_create(coreState *cs)
     g->data = malloc(sizeof(menudata));
     menudata *d = (menudata *)(g->data);
 
-    d->target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 640, 480);
+    d->target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 640, 480);
     d->menu = NULL;
     d->menu_id = -1;
     d->main_menu_data.selection = 0;
