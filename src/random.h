@@ -77,7 +77,7 @@ enum {
     G3RAND
 };
 
-typedef uint64_t rngstate;
+// typedef uint64_t rngstate;
 typedef uint32_t seed32_t;
 typedef uint64_t seed64_t;
 
@@ -124,7 +124,7 @@ piece_id ars_to_qrs_id(piece_id t);
 
 int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap);
 int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap);
-char *sprintf_rngstate(char *strbuf, rngstate s);
+// char *sprintf_rngstate(char *strbuf, rngstate s);
 
 /* */
 
@@ -166,11 +166,13 @@ piece_id g3rand_lookahead(struct randomizer *r, unsigned int distance);
 
 /* */
 
+/*
 uint32_t g2_state_read_rand(rngstate s);
 rngstate g2_state_rand(rngstate s);
 uint8_t state_hN(rngstate s, uint8_t n);
 rngstate state_set_hN(rngstate s, uint8_t n, uint8_t piece);
 rngstate from_hist_seed(char *history, uint32_t seed);
+*/
 
 uint32_t g2_get_seed();
 uint32_t g2_seed_rand(uint32_t seed);
@@ -186,8 +188,10 @@ uint32_t g123_read_rand(uint32_t *seedp);
 uint32_t pento_read_rand(uint32_t *seedp);
 piece_id g123_get_init_piece(uint32_t *seedp);
 
+/*
 piece_id g2_std_randomize(piece_id *history);
 rngstate g2_state_randomize(rngstate s);
 rngstate g2_state_init_randomize(rngstate s);
+*/
 
 #endif

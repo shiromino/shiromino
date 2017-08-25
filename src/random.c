@@ -160,12 +160,13 @@ int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
 
     return 0;
 }
-
+/*
 char *sprintf_rngstate(char *strbuf, rngstate s)
 {
     sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), s & 0xffffffff);
     return strbuf;
 }
+*/
 
 /* */
 
@@ -716,6 +717,7 @@ piece_id g3rand_lookahead(struct randomizer *r, unsigned int distance)
 /* */
 //
 
+/*
 uint32_t g2_state_read_rand(rngstate s)
 {
     uint32_t seed = s;
@@ -806,6 +808,7 @@ rngstate from_hist_seed(char *history_str, uint32_t seed)
 
     return result;
 }
+*/
 
 uint32_t g2_get_seed()
 {
@@ -898,6 +901,7 @@ piece_id g123_get_init_piece(uint32_t *seedp)
     return t;
 }
 
+/*
 uint8_t g2_std_randomize(uint8_t *history)
 {
     uint8_t t = 0;
@@ -981,6 +985,7 @@ rngstate g2_state_init_randomize(rngstate s)
 
     return s;
 }
+*/
 
 piece_id g3_most_droughted_piece(int *histogram)
 {
