@@ -2,6 +2,9 @@
 BIN_PATH = bin
 BIN_NAME = game
 
+ifdef MINGW
+    CC = i686-w64-mingw32-gcc
+endif
 CC ?= gcc
 
 SRC_PATH = src
@@ -9,15 +12,20 @@ OBJ_PATH = obj
 
 # Do it Do it
 
-INCLUDES = 
-COMPILER_FLAGS = -Wall -Werror -Wno-comment -Wno-unused-variable -Wno-unused-parameter -g
-LINK_FLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer -lm
+INCLUDES =
+
+ifdef MINGW
+    PKG_CONFIG ?= i686-w64-mingw32-pkg-config
+endif
+PKG_CONFIG ?= pkg-config
+
+COMPILER_FLAGS = `${PKG_CONFIG} --cflags sdl2` -Wall -Werror -Wno-comment -Wno-unused-variable -Wno-unused-parameter -g
+LINK_FLAGS = `${PKG_CONFIG} --libs sdl2` -lSDL2_image -lSDL2_mixer -lm
 
 CFLAGS = $(COMPILER_FLAGS)
 ifeq ($(OS), Windows_NT)
 	CFLAGS += -lmingw32 -lSDL2main
 endif
-#CFLAGS += $(LINK_FLAGS)
 
 SRC = $(wildcard $(SRC_PATH)/*.c)
 # SRC = $(shell find $(SRC_PATH) -name '*.c' -printf '%T@\t%p\n' | sort -k 1nr | cut -f2-)
@@ -32,6 +40,9 @@ all: dirs game
 
 game : $(OBJ)
 	$(CC) $(OBJ) $(CFLAGS) $(LINK_FLAGS) -o $(BIN_PATH)/$(BIN_NAME)
+ifdef MINGW
+	cp /usr/i686-w64-mingw32/bin/*.dll .
+endif
 
 -include $(DEPS)
 
@@ -47,4 +58,4 @@ dirs:
 .PHONY: clean
 clean:
 	@$(RM) -r $(OBJ_PATH)
-	@$(RM) -f $(BIN_PATH)/$(BIN_NAME)
+	@$(RM) -f $(BIN_PATH)/$(BIN_NAME) *.dll

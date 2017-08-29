@@ -163,7 +163,7 @@ int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
 /*
 char *sprintf_rngstate(char *strbuf, rngstate s)
 {
-    sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), s & 0xffffffff);
+    sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), (long unsigned int)(s & 0xffffffff));
     return strbuf;
 }
 */

@@ -14,7 +14,9 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-#define mkdir(dir, mode) _mkdir(dir)
+#define _mkdir(dir, mode) mkdir(dir)
+#else
+#define _mkdir(dir, mode) mkdir(dir, mode)
 #endif
 
 struct settings *parse_cfg(char *filename)
@@ -395,7 +397,7 @@ int write_replay_file(struct replay *r)
     struct tm* ts;
     FILE *f = NULL;
 
-    mkdir("replay", 0777);
+    _mkdir("replay", 0777);
 
     t = time(NULL);
     ts = localtime(&t);
@@ -428,7 +430,7 @@ error:
 
 struct bstrList *get_replay_list()
 {
-    mkdir("replay", 0777);
+    _mkdir("replay", 0777);
     DIR *replay_dir = opendir("replay");
 
     check(replay_dir != NULL, "Could not open replay directory for reading");
