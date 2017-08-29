@@ -579,21 +579,34 @@ piece_id histrand_get_next(struct randomizer *r)
 
     else
     {
+        // starts at 1 and counts up, bad pieces' weights are divided by this
+        int below_threshold = 1;
+
         for(i = 0; i < r->num_pieces; i++) {
             temp_weights[i] = d->piece_weights[i];
-            histogram[i] = 1;   // histogram values are all offset by one from how many times the piece is actually in the history
+            // histogram values are all offset by one from how many times the piece is actually in the history
+            histogram[i] = 1;
 
             for(j = 0; j < d->hist_len; j++) {
-                if(d->history[j] == i)
+                if(d->history[j] == i) {
                     histogram[i]++;
+                    if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD)
+                        below_threshold++;
+                }
             }
 
-            temp_weights[i] = temp_weights[i] / (double)(histogram[i] * histogram[i]); // OLD: * (i < 18 ? pieces[i] : 1)
+            temp_weights[i] /= (double)(histogram[i] * histogram[i]); // OLD: * (i < 18 ? pieces[i] : 1)
             if(d->drought_protection_coefficients && d->drought_times) {
                 // multiply by coefficient^(t/BASELINE)
                 // e.g. for coeff 2 and drought time BASELINE, weight *= 2
                 temp_weights[i] *= pow(d->drought_protection_coefficients[i],
                                        (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE );
+            }
+        }
+
+        for(i = 0; i < r->num_pieces; i++) {
+            if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD) {
+                temp_weights[i] /= (double)(below_threshold);
             }
 
             sum += temp_weights[i];

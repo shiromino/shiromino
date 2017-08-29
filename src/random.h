@@ -2,6 +2,7 @@
 #define _random_h
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "qrs.h"
 
 #define RNGSTATE(STR, SEED) ((uint64_t)(STR[0]) << 56
@@ -15,35 +16,37 @@
 #define PENTO_RAND_NIGHTMARE 0x02
 #define PENTO_RAND_RANKED    0x04
 
-#define QRS_I_WEIGHT 1.2L
-#define QRS_J_WEIGHT 0.8L
-#define QRS_L_WEIGHT 0.8L
-#define QRS_X_WEIGHT 0.2L
-#define QRS_S_WEIGHT 0.38L
-#define QRS_Z_WEIGHT 0.38L
-#define QRS_N_WEIGHT 0.9L
-#define QRS_G_WEIGHT 0.9L
-#define QRS_U_WEIGHT 0.75L
-#define QRS_T_WEIGHT 0.6L
-#define QRS_Fa_WEIGHT 0.25L
-#define QRS_Fb_WEIGHT 0.25L
-#define QRS_P_WEIGHT 1.3L
-#define QRS_Q_WEIGHT 1.3L
-#define QRS_W_WEIGHT 0.35L
-#define QRS_Ya_WEIGHT 0.75L
-#define QRS_Yb_WEIGHT 0.75L
-#define QRS_V_WEIGHT 0.35L
+#define QRS_I_WEIGHT  1.2
+#define QRS_J_WEIGHT  0.8
+#define QRS_L_WEIGHT  0.8
+#define QRS_X_WEIGHT  0.18
+#define QRS_S_WEIGHT  0.4
+#define QRS_Z_WEIGHT  0.4
+#define QRS_N_WEIGHT  0.9
+#define QRS_G_WEIGHT  0.9
+#define QRS_U_WEIGHT  0.8
+#define QRS_T_WEIGHT  0.55
+#define QRS_Fa_WEIGHT 0.26
+#define QRS_Fb_WEIGHT 0.26
+#define QRS_P_WEIGHT  1.3
+#define QRS_Q_WEIGHT  1.3
+#define QRS_W_WEIGHT  0.45
+#define QRS_Ya_WEIGHT 0.75
+#define QRS_Yb_WEIGHT 0.75
+#define QRS_V_WEIGHT  0.4
 
-#define ARS_I_WEIGHT 1.7L
-#define ARS_T_WEIGHT 1.9L
-#define ARS_J_WEIGHT 1.7L
-#define ARS_L_WEIGHT 1.7L
-#define ARS_O_WEIGHT 1.6L
-#define ARS_S_WEIGHT 1.7L
-#define ARS_Z_WEIGHT 1.7L
+#define ARS_I_WEIGHT  1.7
+#define ARS_T_WEIGHT  1.9
+#define ARS_J_WEIGHT  1.7
+#define ARS_L_WEIGHT  1.7
+#define ARS_O_WEIGHT  1.6
+#define ARS_S_WEIGHT  1.7
+#define ARS_Z_WEIGHT  1.7
 
 #define QRS_DROUGHT_BASELINE 16.0
-#define QRS_DROUGHT_COEFF_DEFAULT 1.07
+#define QRS_DROUGHT_COEFF_DEFAULT 1.1
+// threshold: weights below this value are considered "bad" pieces and have collective flood protection
+#define QRS_WEIGHT_TIER_THRESHOLD 0.45
 
 #define QRS_I_DROUGHT_COEFF 3.0
 #define QRS_L_DROUGHT_COEFF 1.3

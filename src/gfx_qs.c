@@ -260,7 +260,7 @@ int gfx_drawqs(game_t *g)
             gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags, x, y);
 
         if(q->p1->speeds->grav >= 20*256) {
-            if(cs->frames % 4 >= 2)
+            if(cs->frames % 4 == 3)
                 gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
             else
                 gfx_drawtimer(cs, q->timer, x + 32, 0xE0E030FF);
@@ -291,7 +291,7 @@ int gfx_drawqs(game_t *g)
         gfx_rendercopy(cs, font, &labg_src, &labg_dest);
 
         if(q->p1->speeds->grav >= 20*256) {
-            if(cs->frames % 4 >= 2) {
+            if(cs->frames % 4 == 3) {
                 gfx_drawtext(cs, text_level, x + 14*16 + 4, y + 18*16, monofont_square, NULL);
             } else {
                 fmt.rgba = 0xE0E030FF;
@@ -342,7 +342,7 @@ int gfx_drawqs(game_t *g)
             grade_dest.y += 3;
 
             if(q->p1->speeds->grav >= 20*256) {
-                if(cs->frames % 4 < 2) {
+                if(cs->frames % 4 != 3) {
                     SDL_SetTextureColorMod(font, 0xE0, 0xE0, 0x30);
                 }
             }
@@ -502,7 +502,7 @@ int gfx_drawqs(game_t *g)
         }
 
         if(q->p1->speeds->grav >= 20*256) {
-            if(cs->frames % 4 < 2) {
+            if(cs->frames % 4 != 3) {
                 fmt.rgba = 0xE0E030FF;
             } else
                 fmt.rgba = RGBA_DEFAULT;

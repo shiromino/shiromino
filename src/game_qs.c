@@ -639,6 +639,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
 
     q->level = 0;
     q->section = 0;
+    q->rank = 0.0;
     q->score = 0;
     q->soft_drop_counter = 0;
     q->sonic_drop_height = 0;

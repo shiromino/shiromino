@@ -303,6 +303,7 @@ typedef struct {
 
     int level;
     int section;
+    double rank;
 
     int score;
     int soft_drop_counter;
