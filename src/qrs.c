@@ -1256,18 +1256,18 @@ int qrs_wallkick(game_t *g, qrs_player *p)
    {
       if(qrs_move(g, p, MOVE_LEFT))
       {
-            if(p->def->rotation_tables[0]->w == 4 && c != QRS_I4)
-                return 1;
-         if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
-            return 1;
-            if((c == QRS_J || c == QRS_L || c == QRS_Ya || c == QRS_Yb) && (p->orient == CW || p->orient == CCW))
-                return 1;
+          if(p->def->rotation_tables[0]->w == 4 && c != QRS_I4)
+              return 1;
+          if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
+              return 1;
+          if((c == QRS_J || c == QRS_L || c == QRS_Ya || c == QRS_Yb) && (p->orient == CW || p->orient == CCW))
+              return 1;
 
-         if(qrs_move(g, p, 2))
-         {
-            if(qrs_move(g, p, -2))
-               return 1;
-         }
+          if(qrs_move(g, p, 2))
+          {
+              if(qrs_move(g, p, -2))
+                  return 1;
+          }
       }
    }
 
@@ -1520,31 +1520,31 @@ int qrs_lineclear(game_t *g, qrs_player *p)
 
    for(i = row - 1; (i < row + 4) && (i < QRS_FIELD_H); i++)
    {
-      k = 0;
-        garbage = 0;
+       k = 0;
+       garbage = 0;
 
-      for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
-      {
-         if(gridgetcell(g->field, j, i))
-            k++;
-            if(gridgetcell(g->field, j, i) & QRS_PIECE_GEM)
-                gem = true;
-            if(gridgetcell(g->field, j, i) == QRS_PIECE_GARBAGE)
-                garbage++;
-      }
+       for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
+       {
+           if(gridgetcell(g->field, j, i))
+               k++;
+           if(gridgetcell(g->field, j, i) & QRS_PIECE_GEM)
+               gem = true;
+           if(gridgetcell(g->field, j, i) == QRS_PIECE_GARBAGE)
+               garbage++;
+       }
 
-      if(k == q->field_w && garbage != q->field_w)
-      {
-         n++;
-            gfx_qs_lineclear(g, i);
-         for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
-            gridsetcell(g->field, j, i, -2);
+       if(k == q->field_w && garbage != q->field_w)
+       {
+           n++;
+           gfx_qs_lineclear(g, i);
+           for(j = (QRS_FIELD_W - q->field_w)/2; j < (QRS_FIELD_W/2 + q->field_w/2); j++)
+               gridsetcell(g->field, j, i, -2);
 
-            if(gem)
-            {
-                // play_sfx() the gem clear sound effect whenever we get one
-            }
-      }
+           if(gem)
+           {
+               // play_sfx() the gem clear sound effect whenever we get one
+           }
+       }
    }
 
    return n;
