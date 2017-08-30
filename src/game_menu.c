@@ -17,7 +17,6 @@
 #include "game_qs.h"
 #include "game_menu.h"
 #include "gfx_menu.h"
-#include "audio.h"
 
 struct menu_opt *std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, bstring label)
 {
@@ -534,7 +533,7 @@ int menu_init(game_t *g)
     SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 255);
     SDL_SetRenderTarget(g->origin->screen.renderer, NULL);
 
-    g->origin->bg = (asset_by_name(g->origin, "bg-temp"))->data;
+    g->origin->bg = g->origin->assets->bg_temp.tex;
     g->origin->bg_old = g->origin->bg;
 
     return 0;
@@ -585,8 +584,6 @@ int menu_input(game_t *g)
     struct metagame_opt_data *d5 = NULL;
     struct game_multiopt_data *d6 = NULL;
 
-    struct asset *menu_choose = asset_by_name(cs, "menu_choose");
-
     int i = 0;
     int update = 0;
 
@@ -633,7 +630,7 @@ int menu_input(game_t *g)
                 i = d->numopts - 1;
             if(d->menu[i]->type != MENU_LABEL) {
                 d->selection = i;
-                if(k->up == 1) play_sfx(menu_choose->data, menu_choose->volume);
+                if(k->up == 1) sfx_play(&cs->assets->menu_choose);
                 if(d->menu[d->selection]->type == MENU_TEXTINPUT) {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -680,7 +677,7 @@ int menu_input(game_t *g)
                 i = 0;
             if(d->menu[i]->type != MENU_LABEL) {
                 d->selection = i;
-                if(k->down == 1) play_sfx(menu_choose->data, menu_choose->volume);
+                if(k->down == 1) sfx_play(&cs->assets->menu_choose);
                 if(d->menu[d->selection]->type == MENU_TEXTINPUT) {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -999,7 +996,7 @@ int mload_main(game_t *g, int val)
         cs->p1game = NULL;
     }
 
-    cs->bg = (asset_by_name(cs, "bg-temp"))->data;
+    cs->bg = cs->assets->bg_temp.tex;
     cs->bg_old = cs->bg;
 
     d->menu = malloc(13 * sizeof(struct menu_opt *));

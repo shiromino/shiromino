@@ -90,7 +90,7 @@ int gfx_draw_emergency_bg_darken(coreState *cs);
 int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(coreState *));
 int gfx_drawmessages(coreState *cs, int type);
 
-int gfx_pushanimation(coreState *cs, bstring name, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba);
+int gfx_pushanimation(coreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba);
 int gfx_drawanimations(coreState *cs, int type);
 
 int gfx_createbutton(coreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(coreState *, void *), int (*delete_check)(coreState *), void *data, Uint32 rgba);

@@ -18,8 +18,8 @@ int gfx_drawmenu(game_t *g)
 
     coreState *cs = g->origin;
 
-    SDL_Texture *font = (asset_by_name(cs, "font"))->data;
-    SDL_Texture *font_thin = (asset_by_name(cs, "font_thin"))->data;
+    SDL_Texture *font = cs->assets->font.tex;
+    SDL_Texture *font_thin = cs->assets->font_thin.tex;
     SDL_Rect src = {.x = 0, .y = 80, .w = 16, .h = 16};
     SDL_Rect dest = {.x = 0, .y = 0, .w = 16, .h = 16};
     SDL_Rect barsrc = {.x = 12*16, .y = 17, .w = 2, .h = 14};

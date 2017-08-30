@@ -9,7 +9,6 @@
 #include "qrs.h"
 #include "grid.h"
 #include "timer.h"
-#include "audio.h"
 #include "piecedef.h"
 
 #include "game_menu.h" // questionable dependency - TODO look into these
@@ -1183,7 +1182,6 @@ int qrs_irs(game_t *g)
    qrsdata *q = (qrsdata *)(g->data);
    struct keyflags *k = g->origin->keys[0];
    qrs_player *p = q->p1;
-    struct asset *prerotate = asset_by_name(g->origin, "prerotate");
 
    int direction = 0;
 
@@ -1203,7 +1201,7 @@ int qrs_irs(game_t *g)
       p->orient = 0;
     else if(direction)
     {
-        play_sfx(prerotate->data, prerotate->volume);
+        sfx_play(&g->origin->assets->prerotate);
     }
 
    return 0;
@@ -1375,7 +1373,6 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
       grav = p->speeds->grav;
 
    int bkp_y = p->y;
-    struct asset *land = asset_by_name(g->origin, "land");
 
    while(p->y < (bkp_y + grav)) {
       p->y += 256;
@@ -1383,7 +1380,7 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
          p->y -= (256 + (p->y & 255));
 
             if(p->state & PSFALL && grav != 28*256) {
-                play_sfx(land->data, land->volume);
+                sfx_play(&g->origin->assets->land);
             }
          p->state &= ~PSFALL;
          p->state |= PSLOCK;
@@ -1405,7 +1402,6 @@ int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
     qrsdata *q = g->data;
    grid_t *d = p->def->rotation_tables[p->orient];
    grid_t *f = g->field;
-    struct asset *lock = asset_by_name(g->origin, "lock");
 
    int i = 0;
    int from_x = 0;
@@ -1440,7 +1436,7 @@ int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
 
    p->state &= ~(PSLOCK | PSFALL);
    //p->state |= PSPRELOCKFLASH1;
-    play_sfx(lock->data, lock->volume);
+   sfx_play(&g->origin->assets->lock);
 
    return 0;
 }
@@ -1542,7 +1538,7 @@ int qrs_lineclear(game_t *g, qrs_player *p)
 
            if(gem)
            {
-               // play_sfx() the gem clear sound effect whenever we get one
+               // sfx_play(&g->origin->assets->gem) the gem clear sound effect whenever we get one
            }
        }
    }

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "bstrlib.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "core.h"
 #include "piecedef.h"
@@ -44,6 +45,38 @@ int gfx_piece_colors[25] =
     0x808080
 };
 */
+
+bool img_load(gfx_image *img, const char *path_without_ext, coreState *cs)
+{
+    img->tex = NULL;
+
+    SDL_Surface *s = NULL;
+
+    bstring path = bfromcstr(path_without_ext);
+    bcatcstr(path, ".png");
+    s = IMG_Load((const char *)(path->data));
+    bdestroy(path);
+
+    if(!s) {
+        path = bfromcstr(path_without_ext);
+        bcatcstr(path, ".jpg");
+        s = IMG_Load((const char *)(path->data));
+        bdestroy(path);
+    }
+
+    if(s) {
+        img->tex = SDL_CreateTextureFromSurface(cs->screen.renderer, s);
+        SDL_FreeSurface(s);
+    }
+
+    return img->tex != NULL;
+}
+
+void img_destroy(gfx_image *img)
+{
+    if(img->tex)
+        SDL_DestroyTexture(img->tex);
+}
 
 png_monofont *monofont_tiny = NULL;
 png_monofont *monofont_small = NULL;
@@ -90,9 +123,6 @@ void gfx_animation_destroy(gfx_animation *a)
    if(!a)
       return;
 
-   if(a->name)
-      bdestroy(a->name);
-
    free(a);
 }
 
@@ -115,27 +145,27 @@ int gfx_init(coreState *cs)
    monofont_square = malloc(sizeof(png_monofont));
    monofont_fixedsys = malloc(sizeof(png_monofont));
 
-   monofont_tiny->sheet = (asset_by_name(cs, "font_tiny"))->data;
+   monofont_tiny->sheet = cs->assets->font_tiny.tex;
    monofont_tiny->outline_sheet = NULL;
    monofont_tiny->char_w = 6;
    monofont_tiny->char_h = 5;
 
-   monofont_small->sheet = (asset_by_name(cs, "font_small"))->data;
+   monofont_small->sheet = cs->assets->font_small.tex;
    monofont_small->outline_sheet = NULL;
    monofont_small->char_w = 12;
    monofont_small->char_h = 10;
 
-   monofont_thin->sheet = (asset_by_name(cs, "font_thin_no_outline"))->data;
-   monofont_thin->outline_sheet = (asset_by_name(cs, "font_thin_outline_only"))->data;
+   monofont_thin->sheet = cs->assets->font_thin_no_outline.tex;
+   monofont_thin->outline_sheet = cs->assets->font_thin_outline_only.tex;
    monofont_thin->char_w = 13;
    monofont_thin->char_h = 18;
 
-   monofont_square->sheet = (asset_by_name(cs, "font_square_no_outline"))->data;
-   monofont_square->outline_sheet = (asset_by_name(cs, "font_square_outline_only"))->data;
+   monofont_square->sheet = cs->assets->font_square_no_outline.tex;
+   monofont_square->outline_sheet = cs->assets->font_square_outline_only.tex;
    monofont_square->char_w = 16;
    monofont_square->char_h = 16;
 
-   monofont_fixedsys->sheet = (asset_by_name(cs, "font_fixedsys_excelsior"))->data;
+   monofont_fixedsys->sheet = cs->assets->font_fixedsys_excelsior.tex;
    monofont_fixedsys->outline_sheet = NULL;
    monofont_fixedsys->char_w = 8;
    monofont_fixedsys->char_h = 16;
@@ -316,7 +346,7 @@ int gfx_drawbg(coreState *cs)
 
 int gfx_draw_emergency_bg_darken(coreState *cs)
 {
-    SDL_Texture *bg_darken = (asset_by_name(cs, "bg_darken"))->data;
+    SDL_Texture *bg_darken = cs->assets->bg_darken.tex;
     SDL_SetTextureColorMod(bg_darken, 0, 0, 0);
     SDL_SetTextureAlphaMod(bg_darken, 210);
     gfx_rendercopy(cs, bg_darken, NULL, NULL);
@@ -414,10 +444,10 @@ int gfx_drawmessages(coreState *cs, int type)
    return 0;
 }
 
-int gfx_pushanimation(coreState *cs, bstring name, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba)
+int gfx_pushanimation(coreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba)
 {
    gfx_animation *a = malloc(sizeof(gfx_animation));
-   a->name = bstrcpy(name);
+   a->first_frame = first_frame;
    a->x = x;
    a->y = y;
     a->flags = 0;
@@ -455,8 +485,6 @@ int gfx_drawanimations(coreState *cs, int type)
    gfx_animation *a = NULL;
    SDL_Rect dest = {.x = 0, .y = 0, .w = 0, .h = 0};
    SDL_Texture *t = NULL;
-   bstring bnum = NULL;
-   bstring asset_name = NULL;
 
    for(i = 0; i < cs->gfx_animations_max; i++) {
       if(!cs->gfx_animations[i]) {
@@ -477,12 +505,10 @@ int gfx_drawanimations(coreState *cs, int type)
          continue;
       }
 
-      asset_name = bstrcpy(a->name);
-      bnum = bformat("%d", a->counter / a->frame_multiplier);
-      bconcat(asset_name, bnum);
-      t = (asset_by_name(cs, (char *)(asset_name->data)))->data;
+      int framenum = a->counter / a->frame_multiplier;
+      t = (a->first_frame + framenum)->tex;
       if(!t)
-         printf("NULL texture on frame %d (name string: %s)\n", a->counter / a->frame_multiplier, asset_name->data);
+         printf("NULL texture on frame %d\n", framenum);
 
       dest.x = a->x;
       dest.y = a->y;
@@ -494,8 +520,6 @@ int gfx_drawanimations(coreState *cs, int type)
       SDL_SetTextureAlphaMod(t, 255);
       SDL_SetTextureColorMod(t, 255, 255, 255);
 
-      bdestroy(asset_name);
-      bdestroy(bnum);
       a->counter++;
    }
 
@@ -554,8 +578,8 @@ int gfx_drawbuttons(coreState *cs, int type)
     int j = 0;
    int n = 0;
    gfx_button *b = NULL;
-    SDL_Texture *font = (asset_by_name(cs, "font"))->data;
-    //SDL_Texture *font_no_outline = (asset_by_name(cs, "font_no_outline"))->data;
+    SDL_Texture *font = cs->assets->font.tex;
+    //SDL_Texture *font_no_outline = cs->assets->font_no_outline.tex;
     SDL_Rect src = {.x = 0, .y = 0, .w = 6, .h = 28};
     SDL_Rect dest = {.x = 0, .y = 0, .w = 6, .h = 28};
 
@@ -657,10 +681,10 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
    if(!cs || !field)
       return -1;
 
-   SDL_Texture *tetrion_qs = (asset_by_name(cs, "tetrion_qs_white"))->data;
-   SDL_Texture *playfield_grid = (asset_by_name(cs, "playfield_grid_alt"))->data;
-   SDL_Texture *tets = (asset_by_name(cs, "tets_dark_qs"))->data;
-   SDL_Texture *misc = (asset_by_name(cs, "misc"))->data;
+   SDL_Texture *tetrion_qs = cs->assets->tetrion_qs_white.tex;
+   SDL_Texture *playfield_grid = cs->assets->playfield_grid_alt.tex;
+   SDL_Texture *tets = cs->assets->tets_dark_qs.tex;
+   SDL_Texture *misc = cs->assets->misc.tex;
 
    SDL_Rect tdest = {.x = x, .y = y - 48, .w = 274, .h = 416};
    SDL_Rect src = {.x = 0, .y = 0, .w = 16, .h = 16};
@@ -695,26 +719,26 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
       gfx_rendercopy(cs, tetrion_qs, NULL, &tdest);
    }*/
 
-   if(flags & GFX_G2) {
-      tets = (asset_by_name(cs, "g2/tets_dark_g2"))->data;
-   }
+//   if(flags & GFX_G2) {
+//      tets = cs->assets->g2_tets_dark_g2.tex;
+//   }
 
    switch(mode) {
       case MODE_G1_MASTER:
       case MODE_G1_20G:
-         tetrion_qs = (asset_by_name(cs, "g1/tetrion_g1"))->data;
+         tetrion_qs = cs->assets->g1_tetrion_g1.tex;
          break;
 
       case MODE_G2_MASTER:
-         tetrion_qs = (asset_by_name(cs, "g2/tetrion_g2_master"))->data;
+         tetrion_qs = cs->assets->g2_tetrion_g2_master.tex;
          break;
 
       case MODE_G2_DEATH:
-         tetrion_qs = (asset_by_name(cs, "g2/tetrion_g2_death"))->data;
+         tetrion_qs = cs->assets->g2_tetrion_g2_death.tex;
          break;
 
       case MODE_G3_TERROR:
-         tetrion_qs = (asset_by_name(cs, "g3/tetrion_g3_terror"))->data;
+         tetrion_qs = cs->assets->g3_tetrion_g3_terror.tex;
          break;
 
       default:
@@ -880,7 +904,7 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
    if(!cs)
       return -1;
 
-   SDL_Texture *font = (asset_by_name(cs, "font"))->data;
+   SDL_Texture *font = cs->assets->font.tex;
    SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
    SDL_SetTextureAlphaMod(font, A(rgba));
 
@@ -1184,19 +1208,19 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
       return 0;
 
    SDL_Texture *tets;
-   SDL_Texture *misc = (asset_by_name(cs, "misc"))->data;
+   SDL_Texture *misc = cs->assets->misc.tex;
 
-   if(flags & GFX_G2) {
+//   if(flags & GFX_G2) {
+//      if(flags & DRAWPIECE_SMALL)
+//         tets = cs->assets->g2_tets_bright_g2_small.tex;
+//      else
+//         tets = cs->assets->g2_tets_bright_g2.tex;
+//   } else {
       if(flags & DRAWPIECE_SMALL)
-         tets = (asset_by_name(cs, "g2/tets_bright_g2_small"))->data;
+         tets = cs->assets->tets_bright_qs_small.tex;
       else
-         tets = (asset_by_name(cs, "g2/tets_bright_g2"))->data;
-   } else {
-      if(flags & DRAWPIECE_SMALL)
-         tets = (asset_by_name(cs, "tets_bright_qs_small"))->data;
-      else
-         tets = (asset_by_name(cs, "tets_bright_qs"))->data;
-   }
+         tets = cs->assets->tets_bright_qs.tex;
+//   }
 
    int size = (flags & DRAWPIECE_SMALL) ? 8 : 16;
    SDL_Rect src = {.x = 0, .y = 0, .w = size, .h = size};
@@ -1299,7 +1323,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
 
 int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba)
 {
-   SDL_Texture *font = (asset_by_name(cs, "font"))->data;
+   SDL_Texture *font = cs->assets->font.tex;
    qrsdata *q = cs->p1game->data;
    int y = q->field_y;
 
@@ -1348,7 +1372,7 @@ int gfx_drawtime(coreState *cs, long time, int x, int y, Uint32 rgba)
    if(!cs)
       return -1;
 
-   SDL_Texture *font = (asset_by_name(cs, "font"))->data;
+   SDL_Texture *font = cs->assets->font.tex;
    SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
    SDL_SetTextureAlphaMod(font, A(rgba));
 

@@ -10,6 +10,14 @@
 #define ANIMATION_EMERGENCY     0x1000000
 #define BUTTON_EMERGENCY        0x1000000
 
+// class Image
+typedef struct {
+    SDL_Texture *tex;
+} gfx_image;
+
+bool img_load(gfx_image *img, const char *path_without_ext, coreState *cs);
+void img_destroy(gfx_image *img);
+
 enum text_alignment {
     ALIGN_LEFT,
     ALIGN_RIGHT,
@@ -49,7 +57,7 @@ typedef struct {
 } gfx_message;
 
 typedef struct {
-   bstring name;
+   gfx_image* first_frame;
    int x;
    int y;
    unsigned int flags;

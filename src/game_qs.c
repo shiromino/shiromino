@@ -15,7 +15,6 @@
 #include "gfx.h"
 #include "qrs.h"
 #include "timer.h"
-#include "audio.h"
 
 const char *grade_names[37] =
 {
@@ -838,17 +837,15 @@ int qs_game_init(game_t *g)
 
     q->p1->state = PSFALL;
 
-    if(!g->origin->assets->entry)   // used to check if we are in a testing environment
+    if(!g->origin->assets->bg0.tex)   // used to check if we are in a testing environment
         return 0;
 
-    bstring bgname = NULL;
-    if(q->section < 13)
-        bgname = bformat("bg%d", q->section);
-    else
-        bgname = bfromcstr("bg12");
+    int bgnumber = q->section;
+    if(bgnumber > 12)
+        bgnumber = 12;
 
     if(!q->pracdata) {
-        g->origin->bg = (asset_by_name(g->origin, (char *)(bgname->data)))->data;
+        g->origin->bg = (&g->origin->assets->bg0 + bgnumber)->tex;
         gfx_start_bg_fade_in(g->origin);
 
         if(q->mode_type == MODE_G2_DEATH) {
@@ -857,10 +854,6 @@ int qs_game_init(game_t *g)
         }
     } else {
         q->p1->state = PSINACTIVE;
-    }
-
-    if(bgname) {
-        bdestroy(bgname);
     }
 
     return 0;
@@ -1016,16 +1009,6 @@ int qs_game_frame(game_t *g)
     unsigned int *s = &q->p1->state;
     qrs_counters *c = q->p1counters;
 
-    struct asset *ready = asset_by_name(cs, "ready");
-    struct asset *go = asset_by_name(cs, "go");
-    struct asset *track0 = asset_by_name(cs, "track0");
-    struct asset *track1 = asset_by_name(cs, "track1");
-    struct asset *track2 = asset_by_name(cs, "track2");
-    struct asset *track3 = asset_by_name(cs, "track3");
-    struct asset *medal = asset_by_name(cs, "medal");
-
-    bstring bgname = NULL;
-
     if(q->pracdata) {
         if(q->pracdata->paused)
             return 0;
@@ -1044,7 +1027,7 @@ int qs_game_frame(game_t *g)
             gfx_pushmessage(cs, "READY", (4*16 + 8 + q->field_x), (11*16 + q->field_y),
                             0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-            play_sfx(ready->data, ready->volume);
+            sfx_play(&cs->assets->ready);
         }
 
         else if(c->init == 60) {
@@ -1052,7 +1035,7 @@ int qs_game_frame(game_t *g)
             gfx_pushmessage(cs, "GO", (6*16 + q->field_x), (11*16 + q->field_y),
                             0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-            play_sfx(go->data, go->volume);
+            sfx_play(&cs->assets->go);
         }
 
         else if(c->init == 119 && !q->pracdata) {
@@ -1089,16 +1072,16 @@ int qs_game_frame(game_t *g)
             switch(q->mode_type) {
                 case MODE_PENTOMINO:
                     if(q->level < 500) {
-                        play_track(cs, track0->data, track0->volume);
+                        music_play(&cs->assets->track0, cs);
                         q->music = 0;
                     } else if(q->level < 700) {
-                        play_track(cs, track1->data, track1->volume);
+                        music_play(&cs->assets->track1, cs);
                         q->music = 1;
                     } else if(q->level < 1000) {
-                        play_track(cs, track2->data, track2->volume);
+                        music_play(&cs->assets->track2, cs);
                         q->music = 2;
                     } else {
-                        play_track(cs, track3->data, track3->volume);
+                        music_play(&cs->assets->track3, cs);
                         q->music = 3;
                     }
 
@@ -1106,16 +1089,16 @@ int qs_game_frame(game_t *g)
 
                 case MODE_G2_MASTER:
                     if(q->level < 500) {
-                        play_track(cs, (asset_by_name(cs, "g2/track0"))->data, (asset_by_name(cs, "g2/track1"))->volume);
+                        music_play(&cs->assets->g2_track0, cs);
                         q->music = 1;
                     } else if(q->level < 700) {
-                        play_track(cs, (asset_by_name(cs, "g2/track1"))->data, (asset_by_name(cs, "g2/track2"))->volume);
+                        music_play(&cs->assets->g2_track1, cs);
                         q->music = 2;
                     } else if(q->level < 900) {
-                        play_track(cs, (asset_by_name(cs, "g2/track2"))->data, (asset_by_name(cs, "g2/track3"))->volume);
+                        music_play(&cs->assets->g2_track2, cs);
                         q->music = 3;
                     } else {
-                        play_track(cs, (asset_by_name(cs, "g2/track3"))->data, (asset_by_name(cs, "g2/track3"))->volume);
+                        music_play(&cs->assets->g2_track3, cs);
                         q->music = 3;
                     }
 
@@ -1123,13 +1106,13 @@ int qs_game_frame(game_t *g)
 
                 case MODE_G2_DEATH:
                     if(q->level < 300) {
-                        play_track(cs, (asset_by_name(cs, "g2/track1"))->data, (asset_by_name(cs, "g2/track1"))->volume);
+                        music_play(&cs->assets->g2_track1, cs);
                         q->music = 1;
                     } else if(q->level < 500) {
-                        play_track(cs, (asset_by_name(cs, "g2/track2"))->data, (asset_by_name(cs, "g2/track2"))->volume);
+                        music_play(&cs->assets->g2_track2, cs);
                         q->music = 2;
                     } else {
-                        play_track(cs, (asset_by_name(cs, "g2/track3"))->data, (asset_by_name(cs, "g2/track3"))->volume);
+                        music_play(&cs->assets->g2_track3, cs);
                         q->music = 3;
                     }
 
@@ -1137,16 +1120,16 @@ int qs_game_frame(game_t *g)
 
                 case MODE_G3_TERROR:
                     if(q->level < 500) {
-                        play_track(cs, (asset_by_name(cs, "g3/track2"))->data, (asset_by_name(cs, "g3/track2"))->volume);
+                        music_play(&cs->assets->g3_track2, cs);
                         q->music = 1;
                     } else if(q->level < 700) {
-                        play_track(cs, (asset_by_name(cs, "g3/track3"))->data, (asset_by_name(cs, "g3/track3"))->volume);
+                        music_play(&cs->assets->g3_track3, cs);
                         q->music = 2;
                     } else if(q->level < 1000) {
-                        play_track(cs, (asset_by_name(cs, "g3/track4"))->data, (asset_by_name(cs, "g3/track4"))->volume);
+                        music_play(&cs->assets->g3_track4, cs);
                         q->music = 3;
                     } else {
-                        play_track(cs, (asset_by_name(cs, "g3/track5"))->data, (asset_by_name(cs, "g3/track5"))->volume);
+                        music_play(&cs->assets->g3_track5, cs);
                         q->music = 3;
                     }
 
@@ -1155,10 +1138,10 @@ int qs_game_frame(game_t *g)
                 case MODE_G1_MASTER:
                 case MODE_G1_20G:
                     if(q->level < 500) {
-                        play_track(cs, (asset_by_name(cs, "g1/track0"))->data, (asset_by_name(cs, "g1/track0"))->volume);
+                        music_play(&cs->assets->g1_track0, cs);
                         q->music = 0;
                     } else {
-                        play_track(cs, (asset_by_name(cs, "g1/track1"))->data, (asset_by_name(cs, "g2/track1"))->volume);
+                        music_play(&cs->assets->g1_track1, cs);
                         q->music = 1;
                     }
 
@@ -1191,7 +1174,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g2/track1"))->data, (asset_by_name(cs, "g2/track1"))->volume);
+                    music_play(&cs->assets->g2_track1, cs);
                     q->music = 1;
                     q->mute = 0;
                 }
@@ -1201,7 +1184,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 700 && q->level < 715 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g2/track2"))->data, (asset_by_name(cs, "g2/track2"))->volume);
+                    music_play(&cs->assets->g2_track2, cs);
                     q->music = 2;
                     q->mute = 0;
                 }
@@ -1211,7 +1194,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 900 && q->level < 915 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g2/track3"))->data, (asset_by_name(cs, "g2/track3"))->volume);
+                    music_play(&cs->assets->g2_track3, cs);
                     q->music = 3;
                     q->mute = 0;
                 }
@@ -1231,7 +1214,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 300 && q->level < 315 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g2/track2"))->data, (asset_by_name(cs, "g2/track2"))->volume);
+                    music_play(&cs->assets->g2_track2, cs);
                     q->music = 2;
                     q->mute = 0;
                 }
@@ -1241,7 +1224,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g2/track3"))->data, (asset_by_name(cs, "g2/track3"))->volume);
+                    music_play(&cs->assets->g2_track3, cs);
                     q->music = 3;
                     q->mute = 0;
                 }
@@ -1261,7 +1244,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g3/track3"))->data, (asset_by_name(cs, "g3/track3"))->volume);
+                    music_play(&cs->assets->g3_track3, cs);
                     q->music = 3;
                     q->mute = 0;
                 }
@@ -1271,7 +1254,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 700 && q->level < 715 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g3/track4"))->data, (asset_by_name(cs, "g3/track4"))->volume);
+                    music_play(&cs->assets->g3_track4, cs);
                     q->music = 4;
                     q->mute = 0;
                 }
@@ -1281,7 +1264,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 1000 && q->level < 1015 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g3/track5"))->data, (asset_by_name(cs, "g3/track5"))->volume);
+                    music_play(&cs->assets->g3_track5, cs);
                     q->music = 5;
                     q->mute = 0;
                 }
@@ -1301,7 +1284,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g1/track1"))->data, (asset_by_name(cs, "g1/track1"))->volume);
+                    music_play(&cs->assets->g1_track1, cs);
                     q->music = 1;
                     q->mute = 0;
                 }
@@ -1316,7 +1299,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, (asset_by_name(cs, "g1/track1"))->data, (asset_by_name(cs, "g1/track1"))->volume);
+                    music_play(&cs->assets->g1_track1, cs);
                     q->music = 1;
                     q->mute = 0;
                 }
@@ -1336,7 +1319,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 500 && q->level < 515 && q->mute) {
-                    play_track(cs, track1->data, track1->volume);
+                    music_play(&cs->assets->track1, cs);
                     q->music = 1;
                     q->mute = 0;
                 }
@@ -1346,7 +1329,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 700 && q->level < 715 && q->mute) {
-                    play_track(cs, track2->data, track2->volume);
+                    music_play(&cs->assets->track2, cs);
                     q->music = 2;
                     q->mute = 0;
                 }
@@ -1356,7 +1339,7 @@ int qs_game_frame(game_t *g)
                     q->mute = 1;
                 }
                 if(q->level >= 1000 && q->level < 1015 && q->mute) {
-                    play_track(cs, track3->data, track3->volume);
+                    music_play(&cs->assets->track3, cs);
                     q->music = 3;
                     q->mute = 0;
                 }
@@ -1552,19 +1535,19 @@ int qs_game_frame(game_t *g)
             switch(q->recoveries) {
                 case 1:
                     q->medal_re = BRONZE;
-                    play_sfx(medal->data, medal->volume);
+                    sfx_play(&cs->assets->medal);
                     break;
                 case 2:
                     q->medal_re = SILVER;
-                    play_sfx(medal->data, medal->volume);
+                    sfx_play(&cs->assets->medal);
                     break;
                 case 3:
                     q->medal_re = GOLD;
-                    play_sfx(medal->data, medal->volume);
+                    sfx_play(&cs->assets->medal);
                     break;
                 case 5:
                     q->medal_re = PLATINUM;
-                    play_sfx(medal->data, medal->volume);
+                    sfx_play(&cs->assets->medal);
                     break;
                 default:
                     break;
@@ -1617,11 +1600,6 @@ int qs_game_frame(game_t *g)
 
     if(!(q->state_flags & GAMESTATE_CREDITS))
        timeinc(q->timer);
-
-    if(bgname)
-    {
-        bdestroy(bgname);
-    }
 
     return 0;
 }
@@ -1825,8 +1803,6 @@ int qs_process_lineclear(game_t *g)
     unsigned int *s = &q->p1->state;
     qrs_counters *c = q->p1counters;
 
-    struct asset *dropfield = asset_by_name(cs, "dropfield");
-
     if((*s) & PSLINECLEAR) {
         if(c->lineclear == q->p1->speeds->lineclear) {
             (*s) &= ~PSLINECLEAR;
@@ -1834,7 +1810,7 @@ int qs_process_lineclear(game_t *g)
 
             c->lineclear = 0;
             qrs_dropfield(g);
-            play_sfx(dropfield->data, dropfield->volume);
+            sfx_play(&cs->assets->dropfield);
 
             switch(q->mode_type)
             {
@@ -1974,11 +1950,6 @@ int qs_process_lockflash(game_t *g)
     unsigned int *s = &q->p1->state;
     //qrs_counters *c = q->p1counters;
 
-    struct asset *lineclear = asset_by_name(cs, "lineclear");
-    struct asset *newsection = asset_by_name(cs, "newsection");
-    struct asset *medal = asset_by_name(cs, "medal");
-
-    bstring bgname = NULL;
     int n = 0;
 
     if((*s) & PSLOCKFLASH1) {
@@ -2050,7 +2021,7 @@ int qs_process_lockflash(game_t *g)
                                 q->grade = GRADE_8 + i;
                                 if(!gradeup) {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                    sfx_play(&cs->assets->gradeup);
                                     gradeup = true;
                                 }
                             }
@@ -2084,7 +2055,7 @@ int qs_process_lockflash(game_t *g)
                                 q->grade = GRADE_8 + i;
                                 if(!gradeup) {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                    sfx_play(&cs->assets->gradeup);
                                     gradeup = true;
                                 }
                             }
@@ -2106,7 +2077,7 @@ int qs_process_lockflash(game_t *g)
                             q->grade = internal_to_displayed_grade(q->internal_grade);
                             if(old_grade != q->grade) {
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                sfx_play(&cs->assets->gradeup);
                             }
                         }
 
@@ -2137,7 +2108,7 @@ int qs_process_lockflash(game_t *g)
                         if(q->medal_co <= BRONZE) {
                             q->medal_co = BRONZE;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            play_sfx(medal->data, medal->volume);
+                            sfx_play(&cs->assets->medal);
                         }
 
                         break;
@@ -2145,7 +2116,7 @@ int qs_process_lockflash(game_t *g)
                         if(q->medal_co <= SILVER) {
                             q->medal_co = SILVER;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            play_sfx(medal->data, medal->volume);
+                            sfx_play(&cs->assets->medal);
                         }
 
                         break;
@@ -2153,7 +2124,7 @@ int qs_process_lockflash(game_t *g)
                         if(q->medal_co <= GOLD) {
                             q->medal_co = GOLD;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            play_sfx(medal->data, medal->volume);
+                            sfx_play(&cs->assets->medal);
                         }
 
                         break;
@@ -2161,7 +2132,7 @@ int qs_process_lockflash(game_t *g)
                         if(q->medal_co <= PLATINUM) {
                             q->medal_co = PLATINUM;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            play_sfx(medal->data, medal->volume);
+                            sfx_play(&cs->assets->medal);
                         }
 
                         break;
@@ -2175,7 +2146,7 @@ int qs_process_lockflash(game_t *g)
                             if(q->medal_sk <= BRONZE) {
                                 q->medal_sk = BRONZE;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                play_sfx(medal->data, medal->volume);
+                                sfx_play(&cs->assets->medal);
                             }
 
                             break;
@@ -2183,7 +2154,7 @@ int qs_process_lockflash(game_t *g)
                             if(q->medal_sk <= SILVER) {
                                 q->medal_sk = SILVER;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                play_sfx(medal->data, medal->volume);
+                                sfx_play(&cs->assets->medal);
                             }
 
                             break;
@@ -2191,7 +2162,7 @@ int qs_process_lockflash(game_t *g)
                             if(q->medal_sk <= GOLD) {
                                 q->medal_sk = GOLD;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                play_sfx(medal->data, medal->volume);
+                                sfx_play(&cs->assets->medal);
                             }
 
                             break;
@@ -2199,7 +2170,7 @@ int qs_process_lockflash(game_t *g)
                             if(q->medal_sk <= PLATINUM) {
                                 q->medal_sk = PLATINUM;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                play_sfx(medal->data, medal->volume);
+                                sfx_play(&cs->assets->medal);
                             }
 
                             break;
@@ -2209,7 +2180,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-            play_sfx(lineclear->data, lineclear->volume);
+            sfx_play(&cs->assets->lineclear);
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10) {
                 q->section_times[q->section] = q->timer->time - q->cur_section_timestamp;
@@ -2241,7 +2212,7 @@ int qs_process_lockflash(game_t *g)
                                     if(q->mroll_unlocked) {
                                         q->grade = GRADE_M;
                                         q->last_gradeup_timestamp = g->frame_counter;
-                                        play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                        sfx_play(&cs->assets->gradeup);
                                     }
                                 }
                             } else if(q->level >= 1200 && q->level < 1300) {
@@ -2253,7 +2224,7 @@ int qs_process_lockflash(game_t *g)
                                 if(q->mroll_unlocked) {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                    sfx_play(&cs->assets->gradeup);
                                 }
 
                                 if(q->playback)
@@ -2332,13 +2303,13 @@ int qs_process_lockflash(game_t *g)
                                 } else {
                                     q->grade = GRADE_M;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                    sfx_play(&cs->assets->gradeup);
                                 }
                             } else if(q->level >= 999) {
                                 q->level = 999;
                                 q->grade = GRADE_GM;
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                sfx_play(&cs->assets->gradeup);
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)
@@ -2355,7 +2326,7 @@ int qs_process_lockflash(game_t *g)
                                 q->grade++;
 
                             q->last_gradeup_timestamp = g->frame_counter;
-                            play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                            sfx_play(&cs->assets->gradeup);
 
                             if(q->section == 5) {
                                 if(q->timer->time > G3_TERROR_TORIKAN) {
@@ -2410,7 +2381,7 @@ int qs_process_lockflash(game_t *g)
                                 if(q->mroll_unlocked) {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                                    sfx_play(&cs->assets->gradeup);
                                 }
 
                                 if(q->playback)
@@ -2426,10 +2397,9 @@ int qs_process_lockflash(game_t *g)
                             break;
                     }
 
-                    play_sfx(newsection->data, newsection->volume);
+                    sfx_play(&cs->assets->newsection);
                     if(q->section < 13) {
-                        bgname = bformat("bg%d", q->section);
-                        cs->bg = (asset_by_name(cs, (char *)(bgname->data)))->data;
+                        cs->bg = (&cs->assets->bg0 + q->section)->tex;
                     }
                 }
             } else if(q->level == 999 && q->lvlinc) {
@@ -2446,7 +2416,7 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G2_DEATH:
                         q->grade = GRADE_GM;
                         q->last_gradeup_timestamp = g->frame_counter;
-                        play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                        sfx_play(&cs->assets->gradeup);
                         if(q->playback)
                             qrs_end_playback(g);
                         else if(q->recording)
@@ -2466,7 +2436,7 @@ int qs_process_lockflash(game_t *g)
                         if(q->mroll_unlocked) {
                             q->grade = GRADE_GM;
                             q->last_gradeup_timestamp = g->frame_counter;
-                            play_sfx((asset_by_name(cs, "gradeup"))->data, (asset_by_name(cs, "gradeup"))->volume);
+                            sfx_play(&cs->assets->gradeup);
                         }
 
                         if(q->playback)
@@ -3290,42 +3260,11 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
         if(t != PIECE_ID_INVALID)
         {
-            struct asset *a = NULL;
-            switch( t >= 18 ? (t - 18) : (t % 7) )
-            {
-                case 0:
-                    a = asset_by_name(cs, "piece0");
-                    break;
-
-                case 1:
-                    a = asset_by_name(cs, "piece1");
-                    break;
-
-                case 2:
-                    a = asset_by_name(cs, "piece2");
-                    break;
-
-                case 3:
-                    a = asset_by_name(cs, "piece3");
-                    break;
-
-                case 4:
-                    a = asset_by_name(cs, "piece4");
-                    break;
-
-                case 5:
-                    a = asset_by_name(cs, "piece5");
-                    break;
-
-                case 6:
-                    a = asset_by_name(cs, "piece6");
-                    break;
-
-                default:
-                    break;
-            }
-
-            if(a) play_sfx(a->data, a->volume);
+            int ts = t;
+            if(ts >= 18)
+                ts -= 18;
+            struct sfx *sfx = &cs->assets->piece0 + (ts % 7);
+            sfx_play(sfx);
         }
     }
 

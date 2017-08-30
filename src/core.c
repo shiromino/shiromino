@@ -13,7 +13,6 @@
 
 #include "gfx.h"
 #include "gfx_structures.h"
-#include "audio.h"
 #include "file_io.h"
 #include "core.h"
 
@@ -155,114 +154,6 @@ static bstring make_path(const char *base, const char *subdir, const char *name,
    return path;
 }
 
-int load_asset(coreState *cs, int type, char *name)
-{
-   if(!cs || !name)
-      return -1;
-
-   bstring filename_full = NULL;
-
-   struct asset *a = NULL;
-   void *data = NULL;
-   SDL_Surface *s = NULL;
-   int i = 0;
-
-   switch(type) {
-      case ASSET_IMG:
-         filename_full = make_path(cs->settings->home_path, "gfx", name, ".png");
-         s = IMG_Load((char *)(filename_full->data));
-
-         if(!s) {
-            bdestroy(filename_full);
-            filename_full = make_path(cs->settings->home_path, "gfx", name, ".jpg");
-            s = IMG_Load((char *)(filename_full->data));
-
-            //printf("Could not find PNG image with this name, trying JPG: %s\n", filename_full->data);
-         }
-
-         data = SDL_CreateTextureFromSurface(cs->screen.renderer, s);
-         break;
-
-      case ASSET_WAV:
-         filename_full = make_path(cs->settings->home_path, "audio", name, ".wav");
-         data = Mix_LoadWAV((char *)(filename_full->data));
-         break;
-
-      case ASSET_MUS:
-         filename_full = make_path(cs->settings->home_path, "audio", name, ".ogg");
-         data = Mix_LoadMUS((char *)(filename_full->data));
-
-         if(data)
-            break;
-
-         bdestroy(filename_full);
-         filename_full = make_path(cs->settings->home_path, "audio", name, ".wav");
-         data = Mix_LoadMUS((char *)(filename_full->data));
-         break;
-   }
-
-   bdestroy(filename_full);
-
-   if(!data)
-      goto error;
-
-   a = malloc(sizeof(struct asset));
-   a->type = type;
-   a->name = strdup(name);
-   a->data = data;
-
-   if(type == ASSET_MUS || type == ASSET_WAV) {
-      filename_full = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
-      struct bstrList *lines = split_file((char*) filename_full->data);
-      bstring filename = bfromcstr(name);
-      a->volume = get_asset_volume(lines, filename);
-      bdestroy(filename);
-      bdestroy(filename_full);
-      if(lines)
-         bstrListDestroy(lines);
-   }
-
-   if(!cs->assets) {
-      i = 0;
-      cs->assets = malloc(sizeof(struct assetdb));
-      cs->assets->num = 0;
-      cs->assets->entry = NULL;
-   }
-
-   if(!cs->assets->num || !cs->assets->entry) {
-      cs->assets->num = 2;
-      cs->assets->entry = realloc(cs->assets->entry, 2 * sizeof(struct asset *));
-      cs->assets->entry[1] = a;
-      cs->assets->entry[0] = malloc(sizeof(struct asset));
-      cs->assets->entry[0]->type = -1;
-      cs->assets->entry[0]->volume = 128;
-      cs->assets->entry[0]->name = NULL;
-      cs->assets->entry[0]->data = NULL;
-      goto end;
-   } else for(i = 0; i < cs->assets->num; i++) {
-      if(!cs->assets->entry[i]) {
-         cs->assets->entry[i] = a;
-         goto end;
-      }
-   }
-
-   cs->assets->entry = realloc(cs->assets->entry, (i + 1) * sizeof(struct asset *));
-   cs->assets->entry[i] = a;
-   cs->assets->num++;
-
-end:
-   if(s)
-      SDL_FreeSurface(s);
-
-   return i;
-
-error:
-   if(s)
-      SDL_FreeSurface(s);
-
-   return -1;
-}
-
 gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier)
 {
    if(!directory)
@@ -272,7 +163,6 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
 
    gfx_animation *a = malloc(sizeof(gfx_animation));
    a->frame_multiplier = frame_multiplier;
-   a->name = bfromcstr(directory);
    a->x = 0;
    a->y = 0;
    a->flags = 0;
@@ -296,6 +186,8 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
 
    bstring full_path = NULL;
 
+   // TODO: convert to new asset system - create an animation asset
+   /*
    for(i = 0; i < 1000; i++) {
       full_path = bformat("%s/%05d", directory, i);
       if(load_asset(cs, ASSET_IMG, (char *)(full_path->data)) < 0) {
@@ -307,90 +199,9 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
 
       bdestroy(full_path);
    }
+   */
 
    return a;
-}
-
-int unload_asset(coreState *cs, int index)
-{
-   if(!cs)
-      return -1;
-   if(index < 0 || index >= cs->assets->num || !cs->assets->entry)
-      return 1;
-
-   struct asset *a = cs->assets->entry[index];
-   if(!a)
-      return -1;
-
-   printf("Unloading asset %s (type: %d, index: %d)\n", a->name, a->type, index);
-
-   switch(a->type) {
-      case ASSET_IMG:
-         if(a->data) {
-            SDL_DestroyTexture(a->data);
-         }
-         break;
-
-      case ASSET_WAV:
-         if(a->data) {
-            Mix_FreeChunk(a->data);
-         }
-         break;
-
-      case ASSET_MUS:
-         if(a->data) {
-            Mix_FreeMusic((Mix_Music *)(a->data));
-         }
-         break;
-
-      case -1:
-         break;
-
-      default:
-         log_warn("Invalid asset type, attempting to free anyway");
-         if(a->data)
-            free(a->data);
-
-         break;
-   }
-
-   free(a);
-   cs->assets->entry[index] = NULL;
-
-   return 0;
-}
-
-struct asset *asset(coreState *cs, int index)
-{
-   if(!cs || index < 0)
-      return NULL;
-   if(index >= cs->assets->num)
-      return NULL;
-
-   return cs->assets->entry[index];
-}
-
-struct asset *asset_by_name(coreState *cs, char *name)
-{
-   if(!cs || !name)
-      return NULL;
-   if(!cs->assets)
-      return NULL;
-   if(!cs->assets->num)
-      return NULL;
-
-   int i = 0;
-
-   for(; i < cs->assets->num; i++) {
-      if(cs->assets->entry[i]) {
-         if(cs->assets->entry[i]->name) {
-            if(strcmp(cs->assets->entry[i]->name, name) == 0)
-               return cs->assets->entry[i];
-         }
-      }
-   }
-
-   return cs->assets->entry[0];
 }
 
 coreState *coreState_create()
@@ -432,8 +243,6 @@ coreState *coreState_create()
    cs->nine_pressed = 0;
 
    cs->assets = malloc(sizeof(struct assetdb));
-   cs->assets->entry = NULL;
-   cs->assets->num = 0;
 
    cs->joystick = NULL;
    cs->keys[0] = malloc(sizeof(struct keyflags));
@@ -516,135 +325,63 @@ void coreState_destroy(coreState *cs)
    free(cs);
 }
 
+static void load_image(coreState *cs, gfx_image *img, const char *filename)
+{
+    bstring path = make_path(cs->settings->home_path, "gfx", filename, "");
+    if(!img_load(img, (const char*)path->data, cs))
+        log_warn("Failed to load image '%s'", filename);
+    bdestroy(path);
+}
+
+static int load_asset_volume(coreState *cs, const char *filename)
+{
+    bstring path = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
+    struct bstrList *lines = split_file((char*) path->data);
+    bdestroy(path);
+    bstring bfilename = bfromcstr(filename);
+    int volume = get_asset_volume(lines, bfilename);
+    bdestroy(bfilename);
+    if(lines)
+        bstrListDestroy(lines);
+    return volume;
+}
+
+static void load_sfx(coreState *cs, struct sfx *s, const char *filename)
+{
+    bstring path = make_path(cs->settings->home_path, "audio", filename, "");
+    if(!sfx_load(s, (const char*)path->data))
+        log_warn("Failed to load sfx '%s'", filename);
+    bdestroy(path);
+    s->volume = load_asset_volume(cs, filename);
+}
+
+static void load_music(coreState *cs, struct music *m, const char *filename)
+{
+    bstring path = make_path(cs->settings->home_path, "audio", filename, "");
+    if(!music_load(m, (const char*)path->data))
+        log_warn("Failed to load music '%s'", filename);
+    bdestroy(path);
+    m->volume = load_asset_volume(cs, filename);
+}
+
 int load_files(coreState *cs)
 {
    if(!cs)
       return -1;
 
-   load_asset(cs, ASSET_IMG, "tetrion_qs_white");
-   //load_asset(cs, ASSET_IMG, "tetrion");
-   //load_asset(cs, ASSET_IMG, "tetrion/tetrion_death");
-   load_asset(cs, ASSET_IMG, "tets_bright");
-   load_asset(cs, ASSET_IMG, "tets_bright_small");
-   load_asset(cs, ASSET_IMG, "tets_dark");
-   load_asset(cs, ASSET_IMG, "tets_bright_qs");
-   load_asset(cs, ASSET_IMG, "tets_bright_qs_small");
-   load_asset(cs, ASSET_IMG, "tets_dark_qs");
-   load_asset(cs, ASSET_IMG, "playfield_grid");
-   load_asset(cs, ASSET_IMG, "playfield_grid_alt");
-   load_asset(cs, ASSET_IMG, "font");
-   load_asset(cs, ASSET_IMG, "font_no_outline");
-   load_asset(cs, ASSET_IMG, "font_outline_only");
-   load_asset(cs, ASSET_IMG, "font_square_no_outline");
-   load_asset(cs, ASSET_IMG, "font_square_outline_only");
-   load_asset(cs, ASSET_IMG, "font_thin");
-   load_asset(cs, ASSET_IMG, "font_thin_no_outline");
-   load_asset(cs, ASSET_IMG, "font_thin_outline_only");
-   load_asset(cs, ASSET_IMG, "font_small");
-   load_asset(cs, ASSET_IMG, "font_tiny");
-   load_asset(cs, ASSET_IMG, "font_fixedsys_excelsior");
-   load_asset(cs, ASSET_IMG, "misc");
-   load_asset(cs, ASSET_IMG, "bg0");
-   load_asset(cs, ASSET_IMG, "bg1");
-   load_asset(cs, ASSET_IMG, "bg2");
-   load_asset(cs, ASSET_IMG, "bg3");
-   load_asset(cs, ASSET_IMG, "bg4");
-   load_asset(cs, ASSET_IMG, "bg5");
-   load_asset(cs, ASSET_IMG, "bg6");
-   load_asset(cs, ASSET_IMG, "bg7");
-   load_asset(cs, ASSET_IMG, "bg8");
-   load_asset(cs, ASSET_IMG, "bg9");
-   load_asset(cs, ASSET_IMG, "bg10");
-   load_asset(cs, ASSET_IMG, "bg11");
-   load_asset(cs, ASSET_IMG, "bg12");
-   load_asset(cs, ASSET_IMG, "bg-temp");
-   load_asset(cs, ASSET_IMG, "bg_darken");
-   //load_asset(cs, ASSET_IMG, "blank");
-   load_asset(cs, ASSET_IMG, "medals");
-
-   /*
-   load_asset(cs, ASSET_IMG, "medals/bronzeRE");
-   load_asset(cs, ASSET_IMG, "medals/silverRE");
-   load_asset(cs, ASSET_IMG, "medals/goldRE");
-   load_asset(cs, ASSET_IMG, "medals/platinumRE");
-   load_asset(cs, ASSET_IMG, "medals/bronzeSK");
-   load_asset(cs, ASSET_IMG, "medals/silverSK");
-   load_asset(cs, ASSET_IMG, "medals/goldSK");
-   load_asset(cs, ASSET_IMG, "medals/platinumSK");
-   load_asset(cs, ASSET_IMG, "medals/bronzeCO");
-   load_asset(cs, ASSET_IMG, "medals/silverCO");
-   load_asset(cs, ASSET_IMG, "medals/goldCO");
-   load_asset(cs, ASSET_IMG, "medals/platinumCO");
-   load_asset(cs, ASSET_IMG, "medals/bronzeST");
-   load_asset(cs, ASSET_IMG, "medals/silverST");
-   load_asset(cs, ASSET_IMG, "medals/goldST");
-   load_asset(cs, ASSET_IMG, "medals/platinumST");
-   */
-
-   load_asset(cs, ASSET_IMG, "animation/lineclear0");
-   load_asset(cs, ASSET_IMG, "animation/lineclear1");
-   load_asset(cs, ASSET_IMG, "animation/lineclear2");
-   load_asset(cs, ASSET_IMG, "animation/lineclear3");
-   load_asset(cs, ASSET_IMG, "animation/lineclear4");
-
-   load_asset(cs, ASSET_IMG, "g1/tetrion_g1");
-
-   load_asset(cs, ASSET_IMG, "g2/tets_bright_g2");
-   load_asset(cs, ASSET_IMG, "g2/tets_bright_g2_small");
-   load_asset(cs, ASSET_IMG, "g2/tets_dark_g2");
-   load_asset(cs, ASSET_IMG, "g2/tetrion_g2_death");
-   load_asset(cs, ASSET_IMG, "g2/tetrion_g2_master");
-
-   load_asset(cs, ASSET_IMG, "g3/tetrion_g3_terror");
+#define IMG(name, filename) load_image(cs, &cs->assets->name, filename);
+#include "images.h"
+#undef IMG
 
    // audio assets
 
-   load_asset(cs, ASSET_MUS, "track0");
-   load_asset(cs, ASSET_MUS, "track1");
-   load_asset(cs, ASSET_MUS, "track2");
-   load_asset(cs, ASSET_MUS, "track3");
+#define MUS(name, filename) load_music(cs, &cs->assets->name, filename);
+#include "music.h"
+#undef MUS
 
-   load_asset(cs, ASSET_MUS, "g2/track0");
-   load_asset(cs, ASSET_MUS, "g2/track1");
-   load_asset(cs, ASSET_MUS, "g2/track2");
-   load_asset(cs, ASSET_MUS, "g2/track3");
-
-   load_asset(cs, ASSET_MUS, "g3/track0");
-   load_asset(cs, ASSET_MUS, "g3/track1");
-   load_asset(cs, ASSET_MUS, "g3/track2");
-   load_asset(cs, ASSET_MUS, "g3/track3");
-   load_asset(cs, ASSET_MUS, "g3/track4");
-   load_asset(cs, ASSET_MUS, "g3/track5");
-
-   load_asset(cs, ASSET_WAV, "piece0");
-   load_asset(cs, ASSET_WAV, "piece1");
-   load_asset(cs, ASSET_WAV, "piece2");
-   load_asset(cs, ASSET_WAV, "piece3");
-   load_asset(cs, ASSET_WAV, "piece4");
-   load_asset(cs, ASSET_WAV, "piece5");
-   load_asset(cs, ASSET_WAV, "piece6");
-
-   load_asset(cs, ASSET_WAV, "ready");
-   load_asset(cs, ASSET_WAV, "go");
-   load_asset(cs, ASSET_WAV, "lineclear");
-   load_asset(cs, ASSET_WAV, "dropfield");
-   load_asset(cs, ASSET_WAV, "menu_choose");
-   load_asset(cs, ASSET_WAV, "lock");
-   load_asset(cs, ASSET_WAV, "land");
-   load_asset(cs, ASSET_WAV, "prerotate");
-   load_asset(cs, ASSET_WAV, "newsection");
-   load_asset(cs, ASSET_WAV, "medal");
-   load_asset(cs, ASSET_WAV, "gradeup");
-   //load_asset(cs, ASSET_WAV, "irs");
-   //load_asset(cs, ASSET_WAV, "lock");
-   //load_asset(cs, ASSET_WAV, "hit_ground");
-   //load_asset(cs, ASSET_WAV, "clear_single");
-   //load_asset(cs, ASSET_WAV, "clear_double");
-   //load_asset(cs, ASSET_WAV, "clear_triple");
-   //load_asset(cs, ASSET_WAV, "clear_tetris");
-
-   //load_asset(cs, ASSET_WAV, "grade_minor");
-   //load_asset(cs, ASSET_WAV, "grade_major");
+#define SFX(name) load_sfx(cs, &cs->assets->name, #name);
+#include "sfx.h"
+#undef SFX
 
 /*
 #ifdef ENABLE_ANIM_BG
@@ -750,9 +487,9 @@ int init(coreState *cs, struct settings *s)
 
    check(gfx_init(cs) == 0, "gfx_init returned failure\n");
 
-   cs->bg = (asset_by_name(cs, "bg-temp"))->data;
+   cs->bg = cs->assets->bg_temp.tex;
    cs->bg_old = cs->bg;
-   //blank = (asset_by_name(cs, "blank"))->data;
+   //blank = cs->assets->blank.tex;
 
    //check(gfx_rendercopy(cs, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
@@ -773,14 +510,18 @@ void quit(coreState *cs)
    int i = 0;
 
    if(cs->assets) {
-      if(cs->assets->entry) {
-         for(i = 0; i < cs->assets->num; i++) {
-            if(cs->assets->entry[i])
-               unload_asset(cs, i);
-         }
 
-         free(cs->assets->entry);
-      }
+#define IMG(name, filename) img_destroy(&cs->assets->name);
+#include "images.h"
+#undef IMG
+
+#define MUS(name, filename) music_destroy(&cs->assets->name);
+#include "music.h"
+#undef MUS
+
+#define SFX(name) sfx_destroy(&cs->assets->name);
+#include "sfx.h"
+#undef SFX
 
       free(cs->assets);
    }
@@ -861,7 +602,7 @@ int run(coreState *cs)
             free(cs->p1game);
             cs->p1game = NULL;
 
-            cs->bg = (asset_by_name(cs, "bg-temp"))->data;
+            cs->bg = cs->assets->bg_temp.tex;
          }
       }
 

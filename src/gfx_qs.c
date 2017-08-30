@@ -62,8 +62,8 @@ int gfx_drawqs(game_t *g)
     unsigned int drawqrsfield_flags = 0;
     unsigned int drawpiece_flags = /*q->mode_type == MODE_G2_DEATH ? GFX_G2 : */0;
 
-    SDL_Texture *font = (asset_by_name(cs, "font"))->data;
-    SDL_Texture *tets_dark_qs = (asset_by_name(cs, "tets_dark_qs"))->data;
+    SDL_Texture *font = cs->assets->font.tex;
+    SDL_Texture *tets_dark_qs = cs->assets->tets_dark_qs.tex;
 
     SDL_Rect palettesrc = {.x = 0, .y = 0, .w = 16, .h = 16};
     SDL_Rect palettedest = {.x = FIELD_EDITOR_PALETTE_X, .y = FIELD_EDITOR_PALETTE_Y, .w = 16, .h = 16};
@@ -646,7 +646,7 @@ int gfx_qs_lineclear(game_t *g, int row)
     int i = 0;
     int mod = 0;
     int c = 0;
-    bstring name = bfromcstr("animation/lineclear");
+    gfx_image *first_frame = &g->origin->assets->animation_lineclear0;
 
     for(i = (QRS_FIELD_W - q->field_w)/2; i < (QRS_FIELD_W + q->field_w)/2; i+=2) {
         c = gridgetcell(g->field, i, row);
@@ -658,9 +658,9 @@ int gfx_qs_lineclear(game_t *g, int row)
             mod = piece_colors[25] * 0x100 + 0xFF;
 
         if(row % 2)
-            gfx_pushanimation(g->origin, name, q->field_x + (i * 16), 16*(row - 1) + q->field_y, 5, 3, mod);
+            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16), 16*(row - 1) + q->field_y, 5, 3, mod);
         else
-            gfx_pushanimation(g->origin, name, q->field_x + (i * 16) + 16, 16*(row - 1) + q->field_y, 5, 3, mod);
+            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16) + 16, 16*(row - 1) + q->field_y, 5, 3, mod);
     }
 
     return 0;
@@ -674,7 +674,7 @@ int gfx_drawqsmedals(game_t *g)
     qrsdata *q = g->data;
     SDL_Rect dest = {.x = 228 + q->field_x, .y = 150, .w = 40, .h = 20};
     SDL_Rect src = {.x = 20, .y = 0, .w = 20, .h = 10};
-    SDL_Texture *medals = (asset_by_name(g->origin, "medals"))->data;
+    SDL_Texture *medals = g->origin->assets->medals.tex;
     bool medal = true;
 
     float size_multiplier = 1.0;
@@ -834,7 +834,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
 {
     qrsdata *q = g->data;
 
-    SDL_Texture *tets = (asset_by_name(g->origin, "tets_bright_qs"))->data;
+    SDL_Texture *tets = g->origin->assets->tets_bright_qs.tex;
     SDL_Rect src = {.x = 31 * 16, .y = 0, .w = 16, .h = 16};
     SDL_Rect dest = {.x = 0, .y = 0, .w = 16, .h = 16};
 

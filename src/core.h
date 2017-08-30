@@ -9,10 +9,6 @@
 #define FPS            60.0
 #define G2_FPS         61.68
 
-#define ASSET_IMG    0
-#define ASSET_WAV    1
-#define ASSET_MUS    2
-
 #define RECENT_FRAMES 60
 #define FRAMEDELAY_ERR 0
 
@@ -27,6 +23,7 @@ typedef struct coreState_ coreState;
 #include "bstrlib.h"
 #include "grid.h"
 #include "gfx_structures.h"
+#include "audio.h"
 
 enum {
     MODE_INVALID,
@@ -59,16 +56,18 @@ struct keyflags {
     Uint8 escape;
 };
 
-struct asset {
-    int type;
-    int volume;
-    char *name;
-    void *data;
-};
-
 struct assetdb {
-    struct asset **entry;
-    int num;
+#define IMG(name, filename) gfx_image name;
+#include "images.h"
+#undef IMG
+
+#define MUS(name, filename) struct music name;
+#include "music.h"
+#undef MUS
+
+#define SFX(name) struct sfx name;
+#include "sfx.h"
+#undef SFX
 };
 /*
 struct text_box {
@@ -220,11 +219,6 @@ extern struct settings defaultsettings;
 void keyflags_init(struct keyflags *k);
 void keyflags_update(coreState *cs);
 struct bindings *bindings_copy(struct bindings *src);
-
-int load_asset(coreState *cs, int type, char *name);
-int unload_asset(coreState *cs, int index);
-struct asset *asset(coreState *cs, int index);
-struct asset *asset_by_name(coreState *cs, char *name);
 
 coreState *coreState_create();
 void coreState_destroy(coreState *cs);
