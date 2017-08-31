@@ -367,6 +367,112 @@ int internal_to_displayed_grade(int internal_grade)
     return -1;
 }
 
+struct levelmusic
+{
+    int fromlevel;
+    int musicindex; // -1 for mute
+};
+
+static const struct levelmusic pentomino_music[] = {
+    { 0, 0 },
+    { 490, -1 },
+    { 500, 1 },
+    { 690, -1 },
+    { 700, 2 },
+    { 980, -1 },
+    { 1000, 3 },
+    { 9999, -1 }
+};
+
+static const struct levelmusic g2_master_music[] = {
+    { 0, 0 },
+    { 495, -1 },
+    { 500, 1 },
+    { 695, -1 },
+    { 700, 2 },
+    { 880, -1 },
+    { 900, 3 },
+    { 9999, -1 }
+};
+
+static const struct levelmusic g2_death_music[] = {
+    { 0, 1 },
+    { 280, -1 },
+    { 300, 2 },
+    { 480, -1 },
+    { 500, 3 },
+    { 9999, -1 }
+};
+
+static const struct levelmusic g3_terror_music[] = {
+    { 0, 2 },
+    { 480, -1 },
+    { 500, 3 },
+    { 680, -1 },
+    { 700, 4 },
+    { 980, -1 },
+    { 1000, 5 },
+    { 9999, -1 }
+};
+
+static const struct levelmusic g1_music[] = {
+    { 0, 0 },
+    { 485, -1 },
+    { 500, 1 },
+    { 9999, -1 }
+};
+
+static int find_music(int level, const struct levelmusic *table)
+{
+    int music = -1;
+    for (int i = 0; table[i].fromlevel <= level; ++i)
+        music = table[i].musicindex;
+    return music;
+}
+
+static void play_or_halt_music(qrsdata *q, coreState *cs, struct music *first_music, int desired_music)
+{
+    if (q->music == desired_music)
+        return;
+
+    q->music = desired_music;
+    printf("music: %d\n", q->music);
+    if (desired_music == -1)
+        Mix_HaltMusic();
+    else
+        music_play(first_music + desired_music, cs);
+}
+
+static void update_music(qrsdata *q, coreState *cs)
+{
+    switch(q->mode_type) {
+        case MODE_PENTOMINO:
+            play_or_halt_music(q, cs, &cs->assets->track0, find_music(q->level, pentomino_music));
+            break;
+
+        case MODE_G2_MASTER:
+            play_or_halt_music(q, cs, &cs->assets->g2_track0, find_music(q->level, g2_master_music));
+            break;
+
+        case MODE_G2_DEATH:
+            play_or_halt_music(q, cs, &cs->assets->g2_track0, find_music(q->level, g2_death_music));
+            break;
+
+        case MODE_G3_TERROR:
+            play_or_halt_music(q, cs, &cs->assets->g3_track0, find_music(q->level, g3_terror_music));
+            break;
+
+        case MODE_G1_MASTER:
+        case MODE_G1_20G:
+            play_or_halt_music(q, cs, &cs->assets->g1_track0, find_music(q->level, g1_music));
+            break;
+
+        default:
+            log_warn("qrsdata->mode_type improperly set to %d\n", q->mode_type);
+            break;
+    }
+}
+
 game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *replay_fname)
 {
     game_t *g = malloc(sizeof(game_t));
@@ -672,8 +778,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, char *repla
     q->medal_co = 0;
 
     q->speed_curve_index = 0;
-    q->music = 0;
-    q->mute = 1;
+    q->music = -1;
 
     if(flags & QRS_PRACTICE) {
         q->is_practice = 1;
@@ -1069,96 +1174,15 @@ int qs_game_frame(game_t *g)
         }
 
         if(!q->pracdata) {
-            switch(q->mode_type) {
-                case MODE_PENTOMINO:
-                    if(q->level < 500) {
-                        music_play(&cs->assets->track0, cs);
-                        q->music = 0;
-                    } else if(q->level < 700) {
-                        music_play(&cs->assets->track1, cs);
-                        q->music = 1;
-                    } else if(q->level < 1000) {
-                        music_play(&cs->assets->track2, cs);
-                        q->music = 2;
-                    } else {
-                        music_play(&cs->assets->track3, cs);
-                        q->music = 3;
-                    }
-
-                    break;
-
-                case MODE_G2_MASTER:
-                    if(q->level < 500) {
-                        music_play(&cs->assets->g2_track0, cs);
-                        q->music = 1;
-                    } else if(q->level < 700) {
-                        music_play(&cs->assets->g2_track1, cs);
-                        q->music = 2;
-                    } else if(q->level < 900) {
-                        music_play(&cs->assets->g2_track2, cs);
-                        q->music = 3;
-                    } else {
-                        music_play(&cs->assets->g2_track3, cs);
-                        q->music = 3;
-                    }
-
-                    break;
-
-                case MODE_G2_DEATH:
-                    if(q->level < 300) {
-                        music_play(&cs->assets->g2_track1, cs);
-                        q->music = 1;
-                    } else if(q->level < 500) {
-                        music_play(&cs->assets->g2_track2, cs);
-                        q->music = 2;
-                    } else {
-                        music_play(&cs->assets->g2_track3, cs);
-                        q->music = 3;
-                    }
-
-                    break;
-
-                case MODE_G3_TERROR:
-                    if(q->level < 500) {
-                        music_play(&cs->assets->g3_track2, cs);
-                        q->music = 1;
-                    } else if(q->level < 700) {
-                        music_play(&cs->assets->g3_track3, cs);
-                        q->music = 2;
-                    } else if(q->level < 1000) {
-                        music_play(&cs->assets->g3_track4, cs);
-                        q->music = 3;
-                    } else {
-                        music_play(&cs->assets->g3_track5, cs);
-                        q->music = 3;
-                    }
-
-                    break;
-
-                case MODE_G1_MASTER:
-                case MODE_G1_20G:
-                    if(q->level < 500) {
-                        music_play(&cs->assets->g1_track0, cs);
-                        q->music = 0;
-                    } else {
-                        music_play(&cs->assets->g1_track1, cs);
-                        q->music = 1;
-                    }
-
-                    break;
-
-                default:
-                    log_warn("qrsdata->mode_type improperly set to %d\n", q->mode_type);
-                    break;
-            }
-
-            q->mute = 0;
+            update_music(q, cs);
         }
     }
 
     if(!q->pracdata)
     {
         // handle speed curve and music updates (this runs every frame)
+        // TODO: why does this need to run every frame and not only on level updates?
+        update_music(q, cs);
         switch(q->mode_type)
         {
             case MODE_G2_MASTER:
@@ -1168,37 +1192,6 @@ int qs_game_frame(game_t *g)
                     q->p1->speeds = &g2_master_curve[q->speed_curve_index];
                     q->speed_curve_index++;
                 }
-
-                if(q->level >= 495 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    music_play(&cs->assets->g2_track1, cs);
-                    q->music = 1;
-                    q->mute = 0;
-                }
-
-                if(q->level >= 695 && q->level < 700 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 700 && q->level < 715 && q->mute) {
-                    music_play(&cs->assets->g2_track2, cs);
-                    q->music = 2;
-                    q->mute = 0;
-                }
-
-                if(q->level >= 880 && q->level < 900 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 900 && q->level < 915 && q->mute) {
-                    music_play(&cs->assets->g2_track3, cs);
-                    q->music = 3;
-                    q->mute = 0;
-                }
-
                 break;
 
             case MODE_G2_DEATH:
@@ -1208,27 +1201,6 @@ int qs_game_frame(game_t *g)
                     q->p1->speeds = &g2_death_curve[q->speed_curve_index];
                     q->speed_curve_index++;
                 }
-
-                if(q->level >= 280 && q->level < 300 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 300 && q->level < 315 && q->mute) {
-                    music_play(&cs->assets->g2_track2, cs);
-                    q->music = 2;
-                    q->mute = 0;
-                }
-
-                if(q->level >= 480 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    music_play(&cs->assets->g2_track3, cs);
-                    q->music = 3;
-                    q->mute = 0;
-                }
-
                 break;
 
             case MODE_G3_TERROR:
@@ -1238,37 +1210,6 @@ int qs_game_frame(game_t *g)
                     q->p1->speeds = &g3_terror_curve[q->speed_curve_index];
                     q->speed_curve_index++;
                 }
-
-                if(q->level >= 480 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    music_play(&cs->assets->g3_track3, cs);
-                    q->music = 3;
-                    q->mute = 0;
-                }
-
-                if(q->level >= 680 && q->level < 700 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 700 && q->level < 715 && q->mute) {
-                    music_play(&cs->assets->g3_track4, cs);
-                    q->music = 4;
-                    q->mute = 0;
-                }
-
-                if(q->level >= 980 && q->level < 1000 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 1000 && q->level < 1015 && q->mute) {
-                    music_play(&cs->assets->g3_track5, cs);
-                    q->music = 5;
-                    q->mute = 0;
-                }
-
                 break;
 
             case MODE_G1_MASTER:
@@ -1278,32 +1219,10 @@ int qs_game_frame(game_t *g)
                     q->p1->speeds = &g1_master_curve[q->speed_curve_index];
                     q->speed_curve_index++;
                 }
-
-                if(q->level >= 485 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    music_play(&cs->assets->g1_track1, cs);
-                    q->music = 1;
-                    q->mute = 0;
-                }
-
                 break;
 
             case MODE_G1_20G:
                 q->p1->speeds = &g1_master_curve[G1_MASTER_CURVE_MAX - 1];
-
-                if(q->level >= 485 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    music_play(&cs->assets->g1_track1, cs);
-                    q->music = 1;
-                    q->mute = 0;
-                }
-
                 break;
 
             case MODE_PENTOMINO:
@@ -1313,37 +1232,6 @@ int qs_game_frame(game_t *g)
                     q->p1->speeds = &qs_curve[q->speed_curve_index];
                     q->speed_curve_index++;
                 }
-
-                if(q->level > 490 && q->level < 500 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 500 && q->level < 515 && q->mute) {
-                    music_play(&cs->assets->track1, cs);
-                    q->music = 1;
-                    q->mute = 0;
-                }
-
-                if(q->level > 690 && q->level < 700 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 700 && q->level < 715 && q->mute) {
-                    music_play(&cs->assets->track2, cs);
-                    q->music = 2;
-                    q->mute = 0;
-                }
-
-                if(q->level > 980 && q->level < 1000 && !q->mute) {
-                    Mix_HaltMusic();
-                    q->mute = 1;
-                }
-                if(q->level >= 1000 && q->level < 1015 && q->mute) {
-                    music_play(&cs->assets->track3, cs);
-                    q->music = 3;
-                    q->mute = 0;
-                }
-
                 break;
 
             default:
