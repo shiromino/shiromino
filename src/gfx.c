@@ -115,6 +115,8 @@ void gfx_message_destroy(gfx_message *m)
    if(m->text)
       bdestroy(m->text);
 
+   if(m->fmt)
+      free(m->fmt);
    free(m);
 }
 
@@ -416,23 +418,14 @@ int gfx_drawmessages(coreState *cs, int type)
         if(type == 0 && (m->flags & MESSAGE_EMERGENCY))
             continue;
 
-      if(!cs->gfx_messages[i]->counter) {
-         gfx_message_destroy(cs->gfx_messages[i]);
+      if(!m->counter || (m->delete_check && m->delete_check(cs))) {
+         gfx_message_destroy(m);
          cs->gfx_messages[i] = NULL;
          continue;
       }
 
-        if(m->delete_check) {
-            if(m->delete_check(cs)) {
-                gfx_message_destroy(cs->gfx_messages[i]);
-             cs->gfx_messages[i] = NULL;
-             continue;
-            }
-        }
-
       gfx_drawtext(cs, m->text, m->x, m->y, m->font, m->fmt);
-        if(m->counter > 0)
-            m->counter--;
+      m->counter--;
    }
 
    if(n == cs->gfx_messages_max) {
@@ -1363,60 +1356,6 @@ int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba)
 
    SDL_SetTextureColorMod(font, 255, 255, 255);
    SDL_SetTextureAlphaMod(font, 255);
-
-   return 0;
-}
-
-int gfx_drawtime(coreState *cs, long time, int x, int y, Uint32 rgba)
-{
-   if(!cs)
-      return -1;
-
-   SDL_Texture *font = cs->assets->font.tex;
-   SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
-   SDL_SetTextureAlphaMod(font, A(rgba));
-
-   SDL_Rect src = {.x = 0, .y = 478, .w = 13, .h = 18};
-   SDL_Rect dest = {.x = x, .y = y, .w = 13, .h = 18};
-
-   nz_timer *t = nz_timer_create(60);
-   t->time = time;
-
-   int min = timegetmin(t);
-   int sec = timegetsec(t) % 60;
-   int csec = (timegetmsec(t) / 10) % 100;      // centiseconds
-
-   int digits[6];
-
-   digits[0] = min / 10;
-   digits[1] = min % 10;
-   digits[2] = sec / 10;
-   digits[3] = sec % 10;
-   digits[4] = csec / 10;
-   digits[5] = csec % 10;
-
-   int i = 0;
-
-   for(i = 0; i < 6; i++) {
-      src.x = digits[i] * 13;
-      gfx_rendercopy(cs, font, &src, &dest);
-      dest.x += 13;
-
-      if(i == 1 || i == 3) {
-         src.x = 13*10;      // colon character offset
-         src.w = 7;
-         dest.w = 7;
-         gfx_rendercopy(cs, font, &src, &dest);
-         dest.x += 7;
-         dest.w = 13;
-         src.w = 13;
-      }
-   }
-
-   SDL_SetTextureColorMod(font, 255, 255, 255);
-   SDL_SetTextureAlphaMod(font, 255);
-
-   nz_timer_destroy(t);
 
    return 0;
 }

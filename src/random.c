@@ -130,6 +130,7 @@ void g123_seeds_init()
     pento_seed = g2_rand((s << 4) % 11456);
 }
 
+/*
 int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
 {
     unsigned int i = 0;
@@ -160,6 +161,8 @@ int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
 
     return 0;
 }
+*/
+
 /*
 char *sprintf_rngstate(char *strbuf, rngstate s)
 {

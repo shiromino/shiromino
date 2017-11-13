@@ -13,8 +13,8 @@
 #define PSARE             0x0001
 #define PSLINEARE         0x0002
 #define PSFALL             0x0004
-#define PSDASLEFT        0x0008
-#define PSDASRIGHT        0x0010
+// #define PSDASLEFT        0x0008
+// #define PSDASRIGHT        0x0010
 #define PSLOCK             0x0020
 #define PSLINECLEAR        0x0040
 #define PSFKICKED        0x0080
@@ -22,14 +22,14 @@
 #define PSPRELOCKED        0x0200
 #define PSLOCKFLASH1    0x0400
 #define PSLOCKFLASH2    0x0800
-#define PSLOCKPROTECT    0x1000
+// #define PSLOCKPROTECT    0x1000
 #define PSLOCKFLASH3    0x2000
 #define PSLOCKFLASH4    0x4000
 #define PSPRELOCKFLASH1 0x8000
 #define PSSPAWN            0x10000
 #define PSLOCKPRESSED    0x20000
 #define PSUSEDHOLD        0x40000
-#define PSHOLDFLASH        0x80000
+// #define PSHOLDFLASH        0x80000
 
 #define MOVE_LEFT        -1
 #define MOVE_RIGHT        1
@@ -103,7 +103,7 @@
 #define QRS_FIELD_W 12
 #define QRS_FIELD_H 22
 
-#define GAMESTATE_INACTIVE         0x80000000
+//#define GAMESTATE_INACTIVE         0x80000000
 #define GAMESTATE_INVISIBLE         0x0001
 #define GAMESTATE_BRACKETS             0x0002
 #define GAMESTATE_RISING_GARBAGE     0x0004
@@ -111,16 +111,16 @@
 #define GAMESTATE_FADING            0x0010
 #define GAMESTATE_TOPOUT_ANIM        0x0020
 #define GAMESTATE_FADE_TO_CREDITS    0x0040
-#define GAMESTATE_READYGO            0x0080
+//#define GAMESTATE_READYGO            0x0080
 #define GAMESTATE_GAMEOVER            0x0100
-#define GAMESTATE_PRESS_START        0x0200
+//#define GAMESTATE_PRESS_START        0x0200
 #define GAMESTATE_FIREWORKS_GM        0x0400
 #define GAMESTATE_FIREWORKS            0x0800
 #define GAMESTATE_BETTER_NEXT_TIME    0x1000
-#define GAMESTATE_RESULTS_SCREEN    0x2000
+//#define GAMESTATE_RESULTS_SCREEN    0x2000
 #define GAMESTATE_CREDITS_TOPOUT    0x4000
-#define GAMESTATE_PRE_PROMO_EXAM    0x8000
-#define GAMESTATE_PROMO_RESULTS    0x00010000
+//#define GAMESTATE_PRE_PROMO_EXAM    0x8000
+//#define GAMESTATE_PROMO_RESULTS    0x00010000
 
 //#define GAMESTATE_REWIND            0x4000
 //#define GAMESTATE_FAST_FORWARD        0x8000
@@ -128,7 +128,7 @@
 #define GARBAGE_COPY_BOTTOM_ROW        0x0001
 
 #define LOCKPIECE_BRACKETS 0x0001
-#define LOCKPIECE_RAINBOW 0x0002
+//#define LOCKPIECE_RAINBOW 0x0002
 
 #define SPAWNX_QRS 5
 #define SPAWNY_QRS 1
@@ -361,10 +361,7 @@ const char *get_qrspiece_name(int n);
 void qrsdata_destroy(qrsdata *q);
 void pracdata_destroy(struct pracdata *d);
 
-piecedef *qrspent_create(int pent);
 piecedef **qrspool_create();
-piecedef *arstet_create(int tet);
-piecedef **arspool_create(piecedef **piecepool, int type);
 piecedef *qrspiece_cpy(piecedef **piecepool, int index);
 
 grid_t *qrsfield_create();

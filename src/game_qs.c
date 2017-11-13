@@ -1120,29 +1120,30 @@ int qs_game_frame(game_t *g)
     }
 
     if(c->init < 120) {
-        struct text_formatting *fmt = text_fmt_create(0, 0x00FF00FF, 0);
-        fmt->size_multiplier = 2.0;
-        fmt->outlined = false;
-        if(q->pracdata)
-            fmt->outlined = true;
+        if (c->init == 0 || c->init == 60) {
+            struct text_formatting *fmt = text_fmt_create(0, 0x00FF00FF, 0);
+            fmt->size_multiplier = 2.0;
+            fmt->outlined = false;
+            if(q->pracdata)
+                fmt->outlined = true;
 
-        fmt->outline_rgba = 0x00000080;
+            fmt->outline_rgba = 0x00000080;
 
-        if(c->init == 0) {
-            gfx_pushmessage(cs, "READY", (4*16 + 8 + q->field_x), (11*16 + q->field_y),
-                            0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+            if(c->init == 0) {
+                gfx_pushmessage(cs, "READY", (4*16 + 8 + q->field_x), (11*16 + q->field_y),
+                                0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-            sfx_play(&cs->assets->ready);
+                sfx_play(&cs->assets->ready);
+            }
+
+            else if(c->init == 60) {
+                fmt->rgba = 0xFF0000FF;
+                gfx_pushmessage(cs, "GO", (6*16 + q->field_x), (11*16 + q->field_y),
+                                0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+
+                sfx_play(&cs->assets->go);
+            }
         }
-
-        else if(c->init == 60) {
-            fmt->rgba = 0xFF0000FF;
-            gfx_pushmessage(cs, "GO", (6*16 + q->field_x), (11*16 + q->field_y),
-                            0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
-
-            sfx_play(&cs->assets->go);
-        }
-
         else if(c->init == 119 && !q->pracdata) {
             if(q->replay) {
                 qrs_start_playback(g);
@@ -1492,6 +1493,88 @@ int qs_game_frame(game_t *g)
     return 0;
 }
 
+static int qs_are_expired(game_t *g)
+{
+    qrsdata *q = g->data;
+    unsigned int *s = &q->p1->state;
+    qrs_counters *c = q->p1counters;
+
+    q->lastclear = 0;
+    if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS)) {
+        switch(q->mode_type) {
+            case MODE_G2_DEATH:
+            case MODE_G1_20G:
+            case MODE_G1_MASTER:
+            case MODE_G2_MASTER:
+                if(q->level != 998) {
+                    q->level++;
+                    q->lvlinc = 1;
+                } else {
+                    q->lvlinc = 0;
+                    q->levelstop_time++;
+                }
+
+                break;
+
+            default:
+                q->level++;
+                q->lvlinc = 1;
+                break;
+        }
+    } else {
+        q->lvlinc = 0;
+        if(q->level % 100 == 99)
+            q->levelstop_time++;
+    }
+
+    c->lock = 0;
+    if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
+        return QSGAME_SHOULD_TERMINATE;
+    }
+
+    qrs_proc_initials(g);
+
+    if(qrs_chkcollision(g, q->p1)) {
+        if(q->p1->def->flags & PDBRACKETS)
+            qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
+        else
+            qrs_lock(g, q->p1, 0);
+        (*s) = PSINACTIVE;
+        Mix_HaltMusic();
+        if(q->playback)
+            qrs_end_playback(g);
+        else if(q->recording)
+            qrs_end_record(g);
+
+        // TODO: for lineare, this was different - intentional or copy/paste bug?
+        /*
+                if(q->state_flags & GAMESTATE_CREDITS)
+                    q->state_flags |= GAMESTATE_CREDITS_TOPOUT;
+                else
+                    q->state_flags |= GAMESTATE_TOPOUT_ANIM;
+        */
+        if(q->state_flags & GAMESTATE_CREDITS) {
+            q->state_flags &= ~(GAMESTATE_FADING|GAMESTATE_INVISIBLE);
+            q->state_flags |= GAMESTATE_CREDITS_TOPOUT;
+
+            if(q->mode_type == MODE_G2_MASTER) {
+                if(q->mroll_unlocked)
+                    q->grade = GRADE_M|GREEN_LINE;
+                else
+                    q->grade |= GREEN_LINE;
+            }
+        } else
+            q->state_flags |= GAMESTATE_TOPOUT_ANIM;
+
+        return 0;
+    }
+
+    if(q->state_flags & GAMESTATE_RISING_GARBAGE)
+        q->garbage_counter++;
+
+    return 0;
+}
+
 int qs_process_are(game_t *g)
 {
     //coreState *cs = g->origin;
@@ -1517,76 +1600,13 @@ int qs_process_are(game_t *g)
 
     if((*s) & PSARE) {
         if(c->are == q->p1->speeds->are) {
-            q->lastclear = 0;
-            if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS)) {
-                switch(q->mode_type) {
-                    case MODE_G2_DEATH:
-                    case MODE_G1_20G:
-                    case MODE_G1_MASTER:
-                    case MODE_G2_MASTER:
-                        if(q->level != 998) {
-                            q->level++;
-                            q->lvlinc = 1;
-                        } else {
-                            q->lvlinc = 0;
-                            q->levelstop_time++;
-                        }
-
-                        break;
-
-                    default:
-                        q->level++;
-                        q->lvlinc = 1;
-                        break;
-                }
-            } else {
-                q->lvlinc = 0;
-                if(q->level % 100 == 99)
-                    q->levelstop_time++;
-            }
-
             c->are = 0;
-            c->lock = 0;
-            if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
-                return QSGAME_SHOULD_TERMINATE;
-            }
-
-            qrs_proc_initials(g);
-
-            if(qrs_chkcollision(g, q->p1)) {
-                if(q->p1->def->flags & PDBRACKETS)
-                    qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-                else
-                    qrs_lock(g, q->p1, 0);
-                (*s) = PSINACTIVE;
-                Mix_HaltMusic();
-                if(q->playback)
-                    qrs_end_playback(g);
-                else if(q->recording)
-                    qrs_end_record(g);
-
-                if(q->state_flags & GAMESTATE_CREDITS) {
-                    q->state_flags &= ~(GAMESTATE_FADING|GAMESTATE_INVISIBLE);
-                    q->state_flags |= GAMESTATE_CREDITS_TOPOUT;
-
-                    if(q->mode_type == MODE_G2_MASTER) {
-                        if(q->mroll_unlocked)
-                            q->grade = GRADE_M|GREEN_LINE;
-                        else
-                            q->grade |= GREEN_LINE;
-                    }
-                } else
-                    q->state_flags |= GAMESTATE_TOPOUT_ANIM;
-
-                return 0;
-            }
-
-            if(q->state_flags & GAMESTATE_RISING_GARBAGE)
-                q->garbage_counter++;
+            return qs_are_expired(g);
         } else {
             c->are++;
             if(c->are == 1)
             {
+                // TODO: why is this not in lineare too?
                 if(q->state_flags & GAMESTATE_RISING_GARBAGE)
                 {
                     if(q->garbage_counter >= q->garbage_delay)
@@ -1611,72 +1631,8 @@ int qs_process_lineare(game_t *g)
 
     if((*s) & PSLINEARE) {
         if(c->lineare == q->p1->speeds->lineare) {
-            q->lastclear = 0;
-            if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS)) {
-                switch(q->mode_type) {
-                    case MODE_G2_DEATH:
-                    case MODE_G1_20G:
-                    case MODE_G1_MASTER:
-                    case MODE_G2_MASTER:
-                        if(q->level != 998) {
-                            q->level++;
-                            q->lvlinc = 1;
-                        } else {
-                            q->lvlinc = 0;
-                            q->levelstop_time++;
-                        }
-
-                        break;
-
-                    default:
-                        q->level++;
-                        q->lvlinc = 1;
-                        break;
-                }
-            } else {
-                q->lvlinc = 0;
-                if(q->level % 100 == 99)
-                    q->levelstop_time++;
-            }
-
             c->lineare = 0;
-            c->lock = 0;
-            if(qs_initnext(g, q->p1, 0) == QSGAME_SHOULD_TERMINATE) {
-                return QSGAME_SHOULD_TERMINATE;
-            }
-
-            qrs_proc_initials(g);
-
-            if(qrs_chkcollision(g, q->p1)) {
-                if(q->p1->def->flags & PDBRACKETS)
-                    qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-                else
-                    qrs_lock(g, q->p1, 0);
-                (*s) = PSINACTIVE;
-                Mix_HaltMusic();
-                if(q->playback)
-                    qrs_end_playback(g);
-                else if(q->recording)
-                    qrs_end_record(g);
-
-                if(q->state_flags & GAMESTATE_CREDITS)
-                    q->state_flags |= GAMESTATE_CREDITS_TOPOUT;
-                else
-                    q->state_flags |= GAMESTATE_TOPOUT_ANIM;
-
-                return 0;
-            }
-
-            if(q->state_flags & GAMESTATE_RISING_GARBAGE) {
-                switch(q->mode_type) {
-                    case MODE_G3_TERROR:
-                        q->garbage_counter++;
-                        break;
-
-                    default:
-                        break;
-                }
-            }
+            return qs_are_expired(g);
         } else
             c->lineare++;
     }
@@ -1983,6 +1939,8 @@ int qs_process_lockflash(game_t *g)
                 switch(q->mode_type) {
                     case MODE_G3_TERROR:
                         q->garbage_counter -= n;
+                        if (q->garbage_counter < 0)
+                            q->garbage_counter = 0;
                         break;
 
                     default:

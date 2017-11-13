@@ -20,6 +20,8 @@
 #include "gfx_menu.h"
 
 
+static long framedelay(Uint64 ticks_elap, double fps);
+
 /* <constants> */
 
 
@@ -210,7 +212,6 @@ coreState *coreState_create()
 
    int i = 0;
 
-   cs->running = 0;
    cs->fps = FPS;
    //cs->keyquit = SDLK_F11;
    cs->text_editing = 0;
@@ -292,7 +293,6 @@ coreState *coreState_create()
    }
 
    cs->recent_frame_overload = -1;
-   cs->obnoxious_text = 1;
 
    return cs;
 }
@@ -497,7 +497,6 @@ int init(coreState *cs, struct settings *s)
    check(cs->menu != NULL, "menu_create returned failure\n");
 
    cs->menu->init(cs->menu);
-   cs->running = 1;
 
    return 0;
 
@@ -563,8 +562,6 @@ void quit(coreState *cs)
 
    SDL_Quit();
    IMG_Quit();
-
-   cs->running = 0;
 }
 
 int run(coreState *cs)
@@ -572,18 +569,13 @@ int run(coreState *cs)
    if(!cs)
       return -1;
 
-   int i = 0;
-   long sleep_ns = 0;
-
-   Uint64 timestamp = 0;
-
-   while(cs->running)
+   bool running = true;
+   while(running)
    {
-      timestamp = SDL_GetPerformanceCounter();
+      Uint64 timestamp = SDL_GetPerformanceCounter();
 
       if(procevents(cs))
       {
-         cs->running = 0;
          return 1;
       }
 
@@ -616,14 +608,14 @@ int run(coreState *cs)
             cs->menu = NULL;
 
             if(!cs->p1game)
-               cs->running = 0;
+               running = 0;
          }
 
          //if(!((!cs->button_emergency_override && ((!cs->p1game || cs->menu_input_override) ? 1 : 0))))   printf("Not processing menu input\n");
       }
 
       if(!cs->menu && !cs->p1game)
-         cs->running = 0;
+         running = 0;
 
       //SDL_SetRenderTarget(cs->screen.renderer, NULL);
 
@@ -655,10 +647,8 @@ int run(coreState *cs)
          Mix_Volume(-1, (cs->sfx_volume * cs->master_volume)/100);
       }
 
-      //if(waste_time() == FRAMEDELAY_ERR) return 1;
-
       timestamp = SDL_GetPerformanceCounter() - timestamp;
-      sleep_ns = framedelay(timestamp, cs->fps);
+      long sleep_ns = framedelay(timestamp, cs->fps);
 
       if(sleep_ns == FRAMEDELAY_ERR)
          return 1;
@@ -682,7 +672,7 @@ int run(coreState *cs)
       }
 
       cs->avg_sleep_ms_recent = 0;
-      for(i = 0; i < RECENT_FRAMES; i++) {
+      for(int i = 0; i < RECENT_FRAMES; i++) {
          cs->avg_sleep_ms_recent += cs->avg_sleep_ms_recent_array[i];
       }
 
@@ -723,7 +713,6 @@ int procevents(coreState *cs)
    while(SDL_PollEvent(&event)) {
       switch(event.type) {
          case SDL_QUIT:
-            cs->running = 0;
             return 1;
 
          case SDL_JOYAXISMOTION:
@@ -986,11 +975,6 @@ int procevents(coreState *cs)
 
                if((kc == kb->escape) && (!k->escape))
                   k->escape = 1;
-
-               /*if(kc == cs->keyquit) {
-                  cs->running = 0;
-                  return 1;
-               }*/
             }
 
             if(k->left && k->right) {
@@ -1195,8 +1179,6 @@ int procgame(game_t *g, int input_enabled)
    if(!g)
       return -1;
 
-   Uint64 benchmark = 0;
-
    if(g->preframe)
    {
       if(g->preframe(g))
@@ -1209,7 +1191,7 @@ int procgame(game_t *g, int input_enabled)
          return 1;
    }
 
-   benchmark = SDL_GetPerformanceCounter();
+   Uint64 benchmark = SDL_GetPerformanceCounter();
 
    if(g->frame)
    {
@@ -1218,7 +1200,7 @@ int procgame(game_t *g, int input_enabled)
    }
 
    benchmark = SDL_GetPerformanceCounter() - benchmark;
-   //printf("%f\n", ((double)(benchmark) / 1000000000.0) * 1000);
+//   printf("%fms\n", (double)(benchmark) * 1000 / (double)SDL_GetPerformanceFrequency());
 
    if(g->draw)
    {
@@ -1344,13 +1326,13 @@ int request_fps(coreState *cs, double fps)
    return 0;
 }
 
-long framedelay(Uint64 ns_elap, double fps)
+static long framedelay(Uint64 ticks_elap, double fps)
 {
    if(fps < 1 || fps > 240)
       return FRAMEDELAY_ERR;
 
    struct timespec t = {0, 0};
-   double sec_elap = (double)(ns_elap) / 1000000000;
+   double sec_elap = (double)(ticks_elap) / SDL_GetPerformanceFrequency();
    double spf = (1 / fps);
 
    if(sec_elap < spf)
@@ -1358,6 +1340,7 @@ long framedelay(Uint64 ns_elap, double fps)
       t.tv_nsec = (long)((spf - sec_elap) * 1000000000);
 
       if(nanosleep(&t, NULL)) {
+         // this can happen when the user presses Ctrl+C
          printf("Error: nanosleep() returned failure during frame length calculation\n");
          return FRAMEDELAY_ERR;
       }
@@ -1369,29 +1352,6 @@ long framedelay(Uint64 ns_elap, double fps)
       return t.tv_nsec;
    else
       return 1;
-}
-
-long waste_time()
-{
-   struct timespec t = {0, 0};
-   t.tv_nsec = (long)((0.01) * 1000000000.0);
-
-   if(nanosleep(&t, NULL)) {
-      printf("Error: nanosleep() returned failure during frame length calculation\n");
-      return FRAMEDELAY_ERR;
-   }
-
-   return 0;
-}
-
-int toggle_obnoxious_text(coreState *cs, void *data)
-{
-   if(cs->obnoxious_text)
-      cs->obnoxious_text = 0;
-   else
-      cs->obnoxious_text = 1;
-
-   return 0;
 }
 
 struct replay *compare_replays(struct replay *r1, struct replay *r2)

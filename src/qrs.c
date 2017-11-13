@@ -161,26 +161,6 @@ struct pracdata *pracdata_cpy(struct pracdata *d)
     return cpy;
 }
 
-/*
-piecedef *qrspent_create(int pent)
-{
-   int i = 0;
-   piecedef *pd = malloc(sizeof(piecedef));
-
-   pd->color = pent;
-   pd->flags = 0;
-   pd->anchorx = ANCHORX_ARS;
-   pd->anchory = ANCHORY_ARS;
-
-   for(i = 0; i < 4; i++)
-      pd->rotation_tables[i] = gridfrommask(qrs_piecemasks[pent][i]);
-
-    pd->flags ^= PDNOFKICK;
-
-   return pd;
-}
-*/
-
 piecedef **qrspool_create()
 {
    piecedef **pool = malloc(25 * sizeof(piecedef *));
@@ -224,51 +204,6 @@ piecedef **qrspool_create()
 
    return pool;
 }
-
-/*
-piecedef *arstet_create(int tet)
-{
-   if(tet < 0 || tet > 6)
-      return NULL;
-
-   int i = 0;
-   piecedef *pd = malloc(sizeof(piecedef));
-
-   pd->color = tet + 18;
-   pd->flags = 0;
-   pd->anchorx = ANCHORX_ARS;
-   pd->anchory = ANCHORY_ARS;
-
-   for(i = 0; i < 4; i++)
-      pd->rotation_tables[i] = gridfrommask(ars_piecemasks[tet][i]);
-
-   return pd;
-}
-
-piecedef **arspool_create(piecedef **piecepool, int type)
-{
-   if(type != TAP_ARS && type != TI_ARS)
-      return NULL;
-
-   int i = 0;
-   for(i = 18; i < 25; i++) {
-      piecepool[i] = arstet_create(i - 18);
-
-      if(i == QRS_I4 && type == TAP_ARS)
-         piecepool[i]->flags ^= PDNOWKICK;
-
-      if(i == QRS_I4 || i == QRS_T4) {
-         if(type == TAP_ARS)
-            piecepool[i]->flags ^= PDNOFKICK;
-            else if(i == QRS_T4)
-                piecepool[i]->flags |= PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
-      } else
-         piecepool[i]->flags ^= PDNOFKICK;
-   }
-
-   return piecepool;
-}
-*/
 
 piecedef *qrspiece_cpy(piecedef **piecepool, int index)
 {
@@ -440,7 +375,6 @@ int push_undo_clear_confirm(coreState *cs, void *data)
     gfx_createbutton(cs, "NO", 640/2 + 4*16 - 6, 480/2 + 3*16 - 6,
                      BUTTON_EMERGENCY, undo_clear_confirm_no, button_emergency_inactive, NULL, 0xFFA0A0FF);
 
-    free(fmt);
     return 0;
 }
 

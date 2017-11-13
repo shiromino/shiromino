@@ -9,6 +9,7 @@ replay/*
 # Misc #
 ########
 *.swp
+tags
 
 # Output files #
 ################
