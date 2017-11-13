@@ -450,7 +450,7 @@ int init(coreState *cs, struct settings *s)
    check(SDL_Init(SDL_INIT_EVENTS|SDL_INIT_TIMER|SDL_INIT_VIDEO|SDL_INIT_AUDIO) == 0, "SDL_Init: Error: %s\n", SDL_GetError());
    check(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem: Error: %s\n", SDL_GetError());
    check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG, "IMG_Init: Failed to initialize PNG support: %s\n", IMG_GetError());      // IMG_GetError() not necessarily reliable here
-   check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG, "Mix_Init: Failed to initialize OGG support: %s\n", Mix_GetError());      // ^ same applies here
+   Mix_Init(MIX_INIT_OGG); // check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG, "Mix_Init: Failed to initialize OGG support: %s\n", Mix_GetError());
    check(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != -1, "Mix_OpenAudio: Error\n");
 
    Mix_AllocateChannels(32);
