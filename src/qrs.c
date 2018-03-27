@@ -884,20 +884,12 @@ int qrs_input(game_t *g)
                 qrs_fall(g, p, 256);
                 if(qrs_isonground(g, p)) {
                     qrs_fall(g, p, 256);
-                    /*if(q->state_flags & GAMESTATE_BRACKETS)
-                        qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-                    else
-                        qrs_lock(g, q->p1, 0);*/
                     q->lock_held = 1;
                     p->state &= ~PSLOCK;
                     p->state &= ~PSFALL;
                     p->state |= PSLOCKPRESSED;
                 }
             } else if(p->state & PSLOCK) {
-                /*if(q->state_flags & GAMESTATE_BRACKETS)
-                    qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-                else
-                    qrs_lock(g, q->p1, 0);*/
                 q->lock_held = 1;
                 p->state &= ~PSLOCK;
                 p->state |= PSLOCKPRESSED;
@@ -1328,36 +1320,30 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
    return (YTOROW(p->y) - YTOROW(bkp_y));
 }
 
-int qrs_lock(game_t *g, qrs_player *p, unsigned int flags)
+int qrs_lock(game_t *g, qrs_player *p)
 {
    if(!g || !p)
       return -1;
 
-    qrsdata *q = g->data;
+   qrsdata *q = g->data;
    grid_t *d = p->def->rotation_tables[p->orient];
    grid_t *f = g->field;
 
    int i = 0;
-   int from_x = 0;
-   int from_y = 0;
-   int to_x = 0;
-   int to_y = 0;
    int ax = ANCHORX_QRS;
    int ay = ANCHORY_QRS;
    piece_id c = p->def->qrs_id;
    int s = d->w * d->h;
 
-    int value = 0;
-
    for(i = 0; i < s; i++) {
-      from_x = gridpostox(d, i);
-      from_y = gridpostoy(d, i);
-      to_x = (p->x - ax) + from_x;
-      to_y = (YTOROW(p->y) - ay) + from_y;
+      int from_x = gridpostox(d, i);
+      int from_y = gridpostoy(d, i);
+      int to_x = (p->x - ax) + from_x;
+      int to_y = (YTOROW(p->y) - ay) + from_y;
 
       if(gridgetcell(d, from_x, from_y)) {
-            value = c + 1;
-            if(flags & LOCKPIECE_BRACKETS)
+            int value = c + 1;
+            if(p->def->flags & PDBRACKETS)
                 value |= QRS_PIECE_BRACKETS;
 
             if(q->state_flags & GAMESTATE_FADING) {

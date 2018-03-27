@@ -127,9 +127,6 @@
 
 #define GARBAGE_COPY_BOTTOM_ROW        0x0001
 
-#define LOCKPIECE_BRACKETS 0x0001
-//#define LOCKPIECE_RAINBOW 0x0002
-
 #define SPAWNX_QRS 5
 #define SPAWNY_QRS 1
 
@@ -397,7 +394,7 @@ int qrs_hold(game_t *g, qrs_player *p);
 //int qrs_ihs(game_t *g, int playerid);
 
 int qrs_fall(game_t *g, qrs_player *p, int grav);
-int qrs_lock(game_t *g, qrs_player *p, unsigned int flags);
+int qrs_lock(game_t *g, qrs_player *p);
 int qrs_chkcollision(game_t *g, qrs_player *p);
 int qrs_isonground(game_t *g, qrs_player *p);
 

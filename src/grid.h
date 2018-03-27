@@ -5,8 +5,6 @@
 
 #define GRID_OOB    8128
 
-#define MASKGETNYBBLE(NAME, n)        (int)( (NAME & ( (uint64_t)(0xF) << (4 * n) )) >> (4 * n) )
-
 typedef struct {
     int w;
     int h;
@@ -36,8 +34,6 @@ int grid_cells_filled(grid_t *g);
 // int grids_equal(grid_t *g, grid_t *h); TODO
 grid_t *grid_yx_to_xy(grid_t *g); // i.e. grid[y][x] value is moved to grid[x][y] location in a new grid, and w and h are interchanged
 
-grid_t *gridfrommask(uint64_t mask);    // shortcut to create common piecedefs; 0xWHAB CDEF GHIJ KLMN
-                                        // W = width, H = height, ABCDEFGHIJKLMN = 14 * 4 = 56 cell grid array (max size = 8x7, 7x8)
 grid_t *grid_from_1d_int_array(int *arr, int w, int h);
 
 #endif

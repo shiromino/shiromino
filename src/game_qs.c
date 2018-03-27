@@ -1161,10 +1161,7 @@ int qs_game_frame(game_t *g)
         qrs_proc_initials(g);
 
         if(qrs_chkcollision(g, q->p1)) {
-            if(q->p1->def->flags & PDBRACKETS)
-                qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-            else
-                qrs_lock(g, q->p1, 0);
+            qrs_lock(g, q->p1);
             (*s) = PSINACTIVE;
             Mix_HaltMusic();
             if(q->playback)
@@ -1535,10 +1532,7 @@ static int qs_are_expired(game_t *g)
     qrs_proc_initials(g);
 
     if(qrs_chkcollision(g, q->p1)) {
-        if(q->p1->def->flags & PDBRACKETS)
-            qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-        else
-            qrs_lock(g, q->p1, 0);
+        qrs_lock(g, q->p1);
         (*s) = PSINACTIVE;
         Mix_HaltMusic();
         if(q->playback)
@@ -1714,10 +1708,6 @@ int qs_process_lock(game_t *g)
                 c->lock++;
                 if(c->lock == q->p1->speeds->lock) {
                     c->lock = 0;
-                    /*if(q->state_flags & GAMESTATE_BRACKETS)
-                        qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-                    else
-                        qrs_lock(g, q->p1, 0);*/
                     (*s) &= ~PSLOCK;
                     (*s) |= PSPRELOCKED;
                 }
@@ -1765,10 +1755,7 @@ int qs_process_prelockflash(game_t *g)
 
     if((*s) & PSPRELOCKED) {
         (*s) &= ~PSPRELOCKED;
-        if(q->p1->def->flags & PDBRACKETS)
-            qrs_lock(g, q->p1, LOCKPIECE_BRACKETS);
-        else
-            qrs_lock(g, q->p1, 0);
+        qrs_lock(g, q->p1);
 
         (*s) &= ~PSPRELOCKFLASH1;
         (*s) |= PSLOCKFLASH1;

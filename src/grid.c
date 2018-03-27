@@ -203,42 +203,6 @@ int grid_cells_filled(grid_t *g)
     return n;
 }
 
-grid_t *gridfrommask(uint64_t mask)
-{
-    int w = MASKGETNYBBLE(mask, 15) + 1;
-    int h = MASKGETNYBBLE(mask, 14) + 1;
-    int size = w * h;
-
-    if(size > 56)
-        return NULL;
-
-    grid_t *g = grid_create(w, h);
-    if(!g)
-        return NULL;
-
-    int i = 0;
-    int j = 0;
-    int pos = 0;
-    int nybblemask = 0;
-    int nybble = 0;
-    int n = 0;
-
-    for(i = 0; i < h; i++) {
-        for(j = 0; j < w; j++) {
-            pos = gridxytopos(g, j, i);
-            nybblemask = 8 >> (pos & 3);
-            n = 13 - ((pos - (pos & 3)) / 4);
-
-            nybble = MASKGETNYBBLE(mask, n);
-
-            if(nybble & nybblemask)
-                gridsetcell(g, j, i, 1);
-        }
-    }
-
-    return g;
-}
-
 grid_t *grid_yx_to_xy(grid_t *g)
 {
     if(!g)
