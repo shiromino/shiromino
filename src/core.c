@@ -810,19 +810,19 @@ int procevents(coreState *cs)
                if(rc && k->a == 0)
                   k->a = 1;
 
-               rc = SDL_JoystickGetButton(joy, 1);
+               rc = SDL_JoystickGetButton(joy, 3);
                if(!rc)
                   k->b = 0;
                if(rc && k->b == 0)
                   k->b = 1;
 
-               rc = SDL_JoystickGetButton(joy, 2);
+               rc = SDL_JoystickGetButton(joy, 5);
                if(!rc)
                   k->c = 0;
                if(rc && k->c == 0)
                   k->c = 1;
 
-               rc = SDL_JoystickGetButton(joy, 3);
+               rc = SDL_JoystickGetButton(joy, 1);
                if(!rc)
                   k->d = 0;
                if(rc && k->d == 0)
