@@ -34,7 +34,7 @@ void scoredb_init(struct scoredb *s, const char *filename)
 
     ret = sqlite3_exec(s->db, createPlayerDbSql, NULL, NULL, NULL);
     check(ret == 0, "Could not create players table: %s", sqlite3_errmsg(s->db));
-    
+
     // TODO: Actually design the database. Replay table? Player table + related columns? Indexes?
     const char createTableSql[] =
         "CREATE TABLE IF NOT EXISTS scores ("
@@ -54,9 +54,9 @@ void scoredb_init(struct scoredb *s, const char *filename)
     check(ret == 0, "Could not create scores table");
 
     log_info("Opened scoredb %s", filename);
-    
+
     // TODO: Create a view with human-readable data
-    
+
  error:
     return;
 }
@@ -67,7 +67,7 @@ void scoredb_terminate(struct scoredb *s)
 }
 
 struct scoredb *scoredb_create(const char *filename)
-{   
+{
     struct scoredb *s = malloc(sizeof(struct scoredb));
     scoredb_init(s, filename);
 
@@ -106,9 +106,9 @@ void scoredb_create_player(struct scoredb *s, struct player *out_player, const c
         "SELECT playerId, name, tetroCount, pentoCount, tetrisCount "
         "FROM players "
         "WHERE name = :playerName;";
- 
+
     check(sqlite3_prepare_v2(s->db, selectPlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
-    
+
     check_bind(s->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, playerNameLength, SQLITE_STATIC));
 
     ret = sqlite3_step(sql);
@@ -135,7 +135,7 @@ void scoredb_update_player(struct scoredb *s, struct player *p)
 
     sqlite3_stmt *sql;
     check(sqlite3_prepare_v2(s->db, updatePlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
-    
+
     check_bind(s->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetroCount"), p->tetroCount));
     check_bind(s->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":pentoCount"), p->pentoCount));
     check_bind(s->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetrisCount"), p->tetrisCount));
@@ -161,10 +161,10 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
 
     sqlite3_stmt *sql;
     check(sqlite3_prepare_v2(s->db, insertSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
-    
+
     size_t replayLen = 0;
     uint8_t *replayData = generate_raw_replay(r, &replayLen);
-    
+
     check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":mode"),       r->mode));
     check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerId"),   p->playerId));
     check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":grade"),      r->grade));
@@ -176,8 +176,8 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
     const int ret = sqlite3_step(sql);
     check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(s->db));
 
-    log_info("Wrote replay (%I64u): %s", replayLen, replayDescriptor);
-        
+    log_info("Wrote replay (%I64lu): %s", replayLen, replayDescriptor);
+
  error:
     sqlite3_finalize(sql);
 }
@@ -197,12 +197,12 @@ int scoredb_get_replay_count(struct scoredb *s, struct player *p)
 
     const int ret = sqlite3_step(sql);
     check(ret == SQLITE_ROW, "Could not get replay count: %s", sqlite3_errmsg(s->db));
-    
+
     replayCount = sqlite3_column_int(sql, 0);
-    
+
  error:
     sqlite3_finalize(sql);
-    
+
     return replayCount;
 }
 
@@ -210,7 +210,7 @@ struct replay *scoredb_get_replay_list(struct scoredb *s, struct player *p, int 
 {
     const int replayCount = scoredb_get_replay_count(s, p);
     struct replay *replayList = malloc(sizeof(struct replay) * replayCount);
-    
+
     // TODO: Pagination? Current interface expects a full list of replays
     const char getReplayListSql[] =
         "SELECT scoreId, mode, grade, startLevel, level, time, date "
@@ -220,14 +220,14 @@ struct replay *scoredb_get_replay_list(struct scoredb *s, struct player *p, int 
 
     sqlite3_stmt *sql;
     check(sqlite3_prepare_v2(s->db, getReplayListSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
-    
+
     check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
-    
+
     for (int i = 0; i < replayCount; i++)
     {
         int ret = sqlite3_step(sql);
         check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(s->db));
-        
+
         replayList[i].index          = sqlite3_column_int(sql, 0);
         replayList[i].mode           = sqlite3_column_int(sql, 1);
         replayList[i].grade          = sqlite3_column_int(sql, 2);
@@ -236,7 +236,7 @@ struct replay *scoredb_get_replay_list(struct scoredb *s, struct player *p, int 
         replayList[i].time           = sqlite3_column_int(sql, 5);
         replayList[i].date           = sqlite3_column_int(sql, 6);
     }
-    
+
  error:
     sqlite3_finalize(sql);
 
@@ -250,10 +250,10 @@ void scoredb_get_full_replay(struct scoredb *s, struct replay *out_replay, int r
     const char *getReplaySql =
         "SELECT replay FROM scores "
         "WHERE scoreId = :scoreId;";
-    
+
     sqlite3_stmt *sql;
     check(sqlite3_prepare_v2(s->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
-    
+
     check_bind(s->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":scoreId"), replay_id));
 
     const int ret = sqlite3_step(sql);
@@ -261,9 +261,9 @@ void scoredb_get_full_replay(struct scoredb *s, struct replay *out_replay, int r
 
     const int replayBufferLength = sqlite3_column_bytes(sql, 0);
     const uint8_t *replayBuffer = sqlite3_column_blob(sql, 0);
-    
+
     read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
-    
+
  error:
     sqlite3_finalize(sql);
 }
@@ -275,20 +275,20 @@ void scoredb_get_full_replay_by_condition(struct scoredb *s, struct replay *out_
         "WHERE mode = :mode "
         "ORDER BY grade DESC, level DESC, time, date "
         "LIMIT 1;";
-    
+
     sqlite3_stmt *sql;
     check(sqlite3_prepare_v2(s->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
-    
+
     check_bind(s->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
-    
+
     int ret = sqlite3_step(sql);
     check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(s->db));
-    
+
     int replayBufferLength = sqlite3_column_bytes(sql, 0);
     const uint8_t *replayBuffer = sqlite3_column_blob(sql, 0);
-    
+
     read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
-    
+
  error:
     sqlite3_finalize(sql);
 }

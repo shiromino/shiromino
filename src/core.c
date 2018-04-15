@@ -627,6 +627,7 @@ int run(coreState *cs)
 
         // process menus, graphics, and framerate
 
+        // menu is processed if: either there's no game, or menu overrides existing game
         if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
             if (procgame(cs->menu, !cs->button_emergency_override)) {
                 cs->menu->quit(cs->menu);

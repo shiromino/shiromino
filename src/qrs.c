@@ -778,7 +778,7 @@ int qrs_input(game_t *g)
     }
 
     // hacky way to go back to the practice menu if a game is running from that menu
-   if(cs->prev_keys.escape || cs->keys.escape) {
+   if(cs->pressed.escape) {
         if(menu_is_practice(cs->menu)) {
             cs->menu_input_override = 1;
             if(d) {
@@ -792,8 +792,7 @@ int qrs_input(game_t *g)
                 }
             }
 
-            cs->prev_keys.escape = 0;
-            cs->keys.escape = 0;
+            cs->pressed.escape = 0;
 
             return 0;
         } else
@@ -909,7 +908,7 @@ int qrs_start_record(game_t *g)
     q->replay = malloc(sizeof(struct replay));
 
     memset(q->replay->pinputs, 0, sizeof(struct packed_input) * MAX_KEYFLAGS);
-        
+
     q->replay->len = 0;
     q->replay->mlen = 36000;
     q->replay->mode = q->mode_type;
@@ -944,7 +943,7 @@ int qrs_end_record(game_t *g)
     }
 
     g->origin->player.tetrisCount += tetrisSum;
-    
+
     scoredb_update_player(&g->origin->scores, &g->origin->player);
 
     g2_seed_restore();
