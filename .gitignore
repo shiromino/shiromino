@@ -1,6 +1,7 @@
 # Developer replays #
 #####################
 replay/*
+scores.db
 
 # Files generated while debugging #
 ###################################
