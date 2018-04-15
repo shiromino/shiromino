@@ -44,3 +44,4 @@ bin/
 .Trashes
 ehthumbs.db
 Thumbs.db
+/scores.db

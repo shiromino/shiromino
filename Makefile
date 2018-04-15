@@ -19,8 +19,8 @@ ifdef MINGW
 endif
 PKG_CONFIG ?= pkg-config
 
-COMPILER_FLAGS = `${PKG_CONFIG} --cflags sdl2` -Wall -Werror -Wno-comment -Wno-unused-variable -Wno-unused-parameter -g
-LINK_FLAGS = `${PKG_CONFIG} --libs sdl2` -lSDL2_image -lSDL2_mixer -lm
+COMPILER_FLAGS = -Wall -Werror -Wno-comment -Wno-unused-variable -Wno-unused-parameter -g -DSQLITE_OMIT_LOAD_EXTENSION
+LINK_FLAGS = `${PKG_CONFIG} --libs sdl2` -lSDL2_image -lSDL2_mixer -lm -lpthread 
 
 CFLAGS = $(COMPILER_FLAGS)
 ifeq ($(OS), Windows_NT)

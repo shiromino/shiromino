@@ -10,6 +10,7 @@
 #include "grid.h"
 #include "timer.h"
 #include "piecedef.h"
+#include "replay.h"
 
 #include "game_menu.h" // questionable dependency - TODO look into these
 #include "game_qs.h" // questionable dependency
@@ -54,9 +55,6 @@ void qrsdata_destroy(qrsdata *q)
     free(q->piecepool);
 
     if(q->replay) {
-        if(q->replay->inputs)
-            free(q->replay->inputs);
-
         free(q->replay);
     }
 
@@ -427,17 +425,17 @@ int usr_field_undo_clear(coreState *cs, void *data)
 
 int qrs_input(game_t *g)
 {
-   coreState *cs = g->origin;
-   struct keyflags *k = NULL;
+    coreState *cs = g->origin;
+    struct keyflags *k = NULL;
 
-   qrsdata *q = g->data;
+    qrsdata *q = g->data;
     struct pracdata *d = q->pracdata;
-   qrs_player *p = q->p1;
+    qrs_player *p = q->p1;
 
-   int i = 0;
+    int i = 0;
     int j = 0;
     int c = 0;
-   int init = 120;
+    int init = 120;
 
     int cell_x = 0;
     int cell_y = 0;
@@ -780,7 +778,7 @@ int qrs_input(game_t *g)
     }
 
     // hacky way to go back to the practice menu if a game is running from that menu
-   if(cs->keys[0]->escape || cs->keys[1]->escape) {
+   if(cs->prev_keys.escape || cs->keys.escape) {
         if(menu_is_practice(cs->menu)) {
             cs->menu_input_override = 1;
             if(d) {
@@ -794,8 +792,8 @@ int qrs_input(game_t *g)
                 }
             }
 
-            cs->keys[0]->escape = 0;
-            cs->keys[1]->escape = 0;
+            cs->prev_keys.escape = 0;
+            cs->keys.escape = 0;
 
             return 0;
         } else
@@ -805,29 +803,11 @@ int qrs_input(game_t *g)
    if(init < 120)
       return 0;
 
-   k = cs->keys[0];
-
-    if(q->playback) {
-        if((unsigned int)(q->playback_index) == q->replay->len)
-            qrs_end_playback(g);
-        else {
-            k->up = q->replay->inputs[q->playback_index].up;
-            k->down = q->replay->inputs[q->playback_index].down;
-            k->left = q->replay->inputs[q->playback_index].left;
-            k->right = q->replay->inputs[q->playback_index].right;
-            k->start = q->replay->inputs[q->playback_index].start;
-            k->a = q->replay->inputs[q->playback_index].a;
-            k->b = q->replay->inputs[q->playback_index].b;
-            k->c = q->replay->inputs[q->playback_index].c;
-            k->d = q->replay->inputs[q->playback_index].d;
-
-            q->playback_index++;
-        }
-    }
+    k = &cs->keys;
 
     if(p->state & (PSFALL | PSLOCK) && !(p->state & PSPRELOCKED))
     {
-        if(k->a == 1 || k->c == 1) {
+        if(cs->pressed.a || cs->pressed.c) {
             if(qrs_rotate(g, p, CCW) == 0) {
                 if(q->max_floorkicks != 0 && q->p1counters->floorkicks >= q->max_floorkicks) {
                     if(q->lock_on_rotate == 1) {
@@ -838,7 +818,7 @@ int qrs_input(game_t *g)
             }
         }
 
-        if(k->b == 1) {
+        if(cs->pressed.b == 1) {
             if(qrs_rotate(g, p, CW) == 0) {
                 if(q->max_floorkicks != 0 && q->p1counters->floorkicks >= q->max_floorkicks) {
                     if(q->lock_on_rotate == 1) {
@@ -855,22 +835,22 @@ int qrs_input(game_t *g)
     if(p->state & (PSFALL | PSLOCK) && !(p->state & PSPRELOCKED))
     {
         q->active_piece_time++;
-        if(k->left == 1 || k->left > (1 + p->speeds->das)) {
+        if(cs->pressed.left || (is_left_input_repeat(cs, 1 + p->speeds->das)) ) {
             qrs_move(g, p, MOVE_LEFT);
-            moved_left = 1;
+            /* moved_left = 1; */
         }
 
-        if(k->right == 1 || k->right > (1 + p->speeds->das)) {
+        if(cs->pressed.right || is_right_input_repeat(cs, 1 + p->speeds->das)) {
             qrs_move(g, p, MOVE_RIGHT);
-            moved_right = 1;
+            /* moved_right = 1; */
         }
 
-        if(moved_left && moved_right) {
-            if(k->left < k->right)
-                qrs_move(g, p, MOVE_LEFT);
-            else if(k->right < k->left)
-                qrs_move(g, p, MOVE_RIGHT);
-        }
+        /* if(moved_left && moved_right) { */
+        /*     if(k->left < k->right) */
+        /*         qrs_move(g, p, MOVE_LEFT); */
+        /*     else if(k->right < k->left) */
+        /*         qrs_move(g, p, MOVE_RIGHT); */
+        /* } */
 
         if(!qrs_isonground(g, p)) {
             p->state &= ~PSLOCK;
@@ -879,17 +859,20 @@ int qrs_input(game_t *g)
 
         if(k->down)
         {
+            const bool lock_protect_enabled = q->is_practice ? q->pracdata->lock_protect : q->lock_protect;
+            const bool should_lock_protect = lock_protect_enabled && q->lock_held;
+
             q->soft_drop_counter++;
             if(p->state & PSFALL) {
                 qrs_fall(g, p, 256);
-                if(qrs_isonground(g, p)) {
+                if(qrs_isonground(g, p) && !should_lock_protect) {
                     qrs_fall(g, p, 256);
                     q->lock_held = 1;
                     p->state &= ~PSLOCK;
                     p->state &= ~PSFALL;
                     p->state |= PSLOCKPRESSED;
                 }
-            } else if(p->state & PSLOCK) {
+            } else if(p->state & PSLOCK && !should_lock_protect) {
                 q->lock_held = 1;
                 p->state &= ~PSLOCK;
                 p->state |= PSLOCKPRESSED;
@@ -914,25 +897,6 @@ int qrs_input(game_t *g)
             q->lock_held = 0;
     }
 
-    if(q->recording) {
-        q->replay->len++;
-        if(q->replay->len > q->replay->mlen) {
-            q->replay->mlen *= 2;
-            q->replay->inputs = realloc(q->replay->inputs, q->replay->mlen*sizeof(struct keyflags));
-        }
-
-        q->replay->inputs[q->replay->len - 1].left = k->left;
-        q->replay->inputs[q->replay->len - 1].right = k->right;
-        q->replay->inputs[q->replay->len - 1].up = k->up;
-        q->replay->inputs[q->replay->len - 1].down = k->down;
-        q->replay->inputs[q->replay->len - 1].start = k->start;
-        q->replay->inputs[q->replay->len - 1].a = k->a;
-        q->replay->inputs[q->replay->len - 1].b = k->b;
-        q->replay->inputs[q->replay->len - 1].c = k->c;
-        q->replay->inputs[q->replay->len - 1].d = k->d;
-        q->replay->inputs[q->replay->len - 1].escape = 0;
-    }
-
    return 0;
 }
 
@@ -943,18 +907,20 @@ int qrs_start_record(game_t *g)
     g2_seed_bkp();
 
     q->replay = malloc(sizeof(struct replay));
-    q->replay->inputs = malloc(36000*sizeof(struct keyflags));
+
+    memset(q->replay->pinputs, 0, sizeof(struct packed_input) * MAX_KEYFLAGS);
+        
     q->replay->len = 0;
     q->replay->mlen = 36000;
     q->replay->mode = q->mode_type;
     q->replay->mode_flags = q->mode_flags;
-   q->replay->seed = q->randomizer_seed;
-   q->replay->grade = NO_GRADE;
-   q->replay->time = 0;
-   q->replay->starting_level = q->level;
-   q->replay->ending_level = 0;
+    q->replay->seed = q->randomizer_seed;
+    q->replay->grade = NO_GRADE;
+    q->replay->time = 0;
+    q->replay->starting_level = q->level;
+    q->replay->ending_level = 0;
 
-   q->replay->date = time(0);
+    q->replay->date = time(0);
 
     q->recording = 1;
     return 0;
@@ -968,18 +934,30 @@ int qrs_end_record(game_t *g)
     q->replay->ending_level = q->level;
     q->replay->grade = q->grade;
 
-    write_replay_file(q->replay);
+    scoredb_add(&g->origin->scores, &g->origin->player, q->replay);
+
+    // TODO: Extract this into some (sum) method.
+    int tetrisSum = 0;
+    for (size_t i = 0; i < MAX_SECTIONS; i++)
+    {
+        tetrisSum += q->section_tetrises[i];
+    }
+
+    g->origin->player.tetrisCount += tetrisSum;
+    
+    scoredb_update_player(&g->origin->scores, &g->origin->player);
 
     g2_seed_restore();
     q->recording = 0;
     return 0;
 }
 
-int qrs_load_replay(game_t *g, char *filename)
+int qrs_load_replay(game_t *g, int replay_id)
 {
     qrsdata *q = g->data;
 
-    q->replay = read_replay_file(filename, 1);
+    q->replay = malloc(sizeof(struct replay));
+    scoredb_get_full_replay(&g->origin->scores, q->replay, replay_id);
 
     return 0;
 }
@@ -1063,27 +1041,9 @@ int qrs_proc_initials(game_t *g)
       return -1;
 
    qrsdata *q = (qrsdata *)(g->data);
-   struct keyflags *k = g->origin->keys[0];
+   struct keyflags *k = &g->origin->keys;
    qrs_player *p = q->p1;
 
-    if(k->down && q->lock_held) {
-        if(q->lock_protect) {
-            if(q->pracdata) {
-                if(q->pracdata->lock_protect) {
-                    k->down = 0;
-                    q->lock_held = 0;
-                }
-            } else {
-                k->down = 0;
-                q->lock_held = 0;
-            }
-        } else if(q->pracdata) {
-            if(q->pracdata->lock_protect == 1) {
-                k->down = 0;
-                q->lock_held = 0;
-            }
-        }
-    }
 
     if(k->d && q->hold_enabled)
     {
@@ -1106,7 +1066,7 @@ int qrs_irs(game_t *g)
       return -1;
 
    qrsdata *q = (qrsdata *)(g->data);
-   struct keyflags *k = g->origin->keys[0];
+   struct keyflags *k = &g->origin->keys;
    qrs_player *p = q->p1;
 
    int direction = 0;

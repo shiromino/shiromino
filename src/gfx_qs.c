@@ -249,7 +249,7 @@ int gfx_drawqs(game_t *g)
 
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
-            gfx_drawkeys(cs, cs->keys[0], 22*16, 27*16, RGBA_DEFAULT);
+            gfx_drawkeys(cs, &cs->keys, 22*16, 27*16, RGBA_DEFAULT);
 
             goto active_game_drawing;
         }
@@ -267,7 +267,7 @@ int gfx_drawqs(game_t *g)
         } else
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
 
-        gfx_drawkeys(cs, cs->keys[0], 22*16, 27*16, RGBA_DEFAULT);
+        gfx_drawkeys(cs, &cs->keys, 22*16, 27*16, RGBA_DEFAULT);
 
         // uncomment this for DDR-esque input display :3
         /*if(q->playback) {

@@ -1,33 +1,27 @@
+#include "file_io.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <errno.h>
 #include <time.h>
-#include <dirent.h>
+//#include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <SDL2/SDL.h>
 #include "zed_dbg.h"
 
 #include "core.h"
-#include "file_io.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#define _mkdir(dir, mode) mkdir(dir)
-#else
-#define _mkdir(dir, mode) mkdir(dir, mode)
-#endif
-
-struct settings *parse_cfg(char *filename)
+struct settings *parse_cfg(const char *filename)
 {
     if(!filename)
         return NULL;
 
-    if(access(filename, F_OK) || access(filename, R_OK)) {
-        perror("Configuration file could not be accessed");
-        return NULL;
-    }
+    //if(access(filename, F_OK) || access(filename, R_OK)) {
+    //    perror("Configuration file could not be accessed");
+    //    return NULL;
+    //}
 
     struct settings *s = malloc(sizeof(struct settings));
     struct bstrList *cfg_file_lines = split_file(filename);
@@ -42,6 +36,7 @@ struct settings *parse_cfg(char *filename)
     bstring mastervolume = bfromcstr("MASTERVOLUME");
     bstring home_path = bfromcstr("HOME_PATH");
     bstring videoscale = bfromcstr("VIDEOSCALE");
+    bstring player_name = bfromcstr("PLAYERNAME");
 
     s->keybinds = get_cfg_bindings(cfg_file_lines);
 
@@ -53,6 +48,18 @@ struct settings *parse_cfg(char *filename)
     s->video_scale = get_cfg_option(cfg_file_lines, videoscale);
     s->home_path = get_cfg_string(cfg_file_lines, home_path);
 
+    s->player_name = get_cfg_string(cfg_file_lines, player_name);
+    if (s->player_name == NULL)
+    {
+        char *player_name_config_key = bstr2cstr(player_name, '\0');
+        log_info("Could not find %s setting in config file. Using default player name \"%s\"",
+                 player_name_config_key,
+                 defaultsettings.player_name);
+        bcstrfree(player_name_config_key); 
+
+        s->player_name = defaultsettings.player_name;
+    }
+
     if(s->sfx_volume == OPTION_INVALID || s->sfx_volume < 0 || s->sfx_volume > 100)
         s->sfx_volume = 100;
     if(s->mus_volume == OPTION_INVALID || s->mus_volume < 0 || s->mus_volume > 100)
@@ -62,12 +69,12 @@ struct settings *parse_cfg(char *filename)
     if(s->video_scale == OPTION_INVALID || s->video_scale < 1 || s->video_scale > 4)
         s->video_scale = 1;
 
-    if(s->home_path) {
-        if(stat(s->home_path, &info) != 0 || !(info.st_mode & S_IFDIR)) {
-            s->home_path = NULL;
-            log_err("Invalid HOME_PATH setting");
-        }
-    }
+    //if(s->home_path) {
+    //    if(stat(s->home_path, &info) != 0 || !S_ISDIR(info.st_mode)) {
+    //        s->home_path = NULL;
+    //        log_err("Invalid HOME_PATH setting");
+    //    }
+    //}
 
     return s;
 }
@@ -144,7 +151,7 @@ char *get_cfg_string(struct bstrList *lines, bstring label)
     return str;
 }
 
-struct bstrList *split_file(char *filename)
+struct bstrList *split_file(const char *filename)
 {
     //printf("splitting file\n");
 
@@ -285,7 +292,7 @@ int get_asset_volume(struct bstrList *lines, bstring asset_name)
     return volume;
 }
 
-long parse_long(char *str)
+long parse_long(const char *str)
 {
     errno = 0;
     char *temp;
@@ -310,161 +317,4 @@ SDL_Keycode bstr_sdlk(bstring b)
     }
 
     return (SDL_Keycode)(c);
-}
-
-// replay file structure: header (mode, seed, grade, starting level, final level, final time, date) keyflags array
-
-struct replay *read_replay_file(char *filename, int get_inputs)
-{
-    if(!filename)
-        return NULL;
-
-    if(access(filename, F_OK) || access(filename, R_OK)) {
-        perror("Replay file could not be accessed");
-        return NULL;
-    }
-
-    FILE *f = fopen(filename, "rb");
-    struct replay *r = NULL;
-    long flen = 0;
-
-    if(!f)
-        return NULL;
-
-    fseek(f, 0, SEEK_END);
-    flen = ftell(f);
-    if(flen < MINIMUM_REPLAY_SIZE || (flen - REPLAY_HEADER_SIZE) % sizeof(struct keyflags)) {
-        //printf("Invalid replay file: %s\n", filename);
-        //printf("File has length %d\n", flen);
-        fclose(f);
-        return NULL;
-    }
-
-    fseek(f, 0, SEEK_SET);
-
-    r = malloc(sizeof(struct replay));
-    r->inputs = NULL;
-    r->len = 0;
-    r->mlen = 0;
-    r->mode = 0;
-    r->mode_flags = 0;
-    r->seed = 0;
-    r->grade = 255;
-    r->time = 0;
-    r->starting_level = 0;
-    r->ending_level = 0;
-    r->date = 0;
-
-    fread(&r->mode, sizeof(int), 1, f);
-    fread(&r->mode_flags, sizeof(int), 1, f);
-    fread(&r->seed, sizeof(long), 1, f);
-    fread(&r->grade, sizeof(int), 1, f);
-    fread(&r->time, sizeof(long), 1, f);
-    fread(&r->starting_level, sizeof(int), 1, f);
-    fread(&r->ending_level, sizeof(int), 1, f);
-    fread(&r->date, sizeof(long), 1, f);
-    fread(&r->len, sizeof(int), 1, f);
-
-    if(r->len != (flen - REPLAY_HEADER_SIZE) / sizeof(struct keyflags)) {
-        fclose(f);
-        free(r);
-        return NULL;
-        /*printf("Warning: skipping malformed replay file: %s\n", filename);
-        if(r->len > (flen - REPLAY_HEADER_SIZE) / 40)
-            r->len = (flen - REPLAY_HEADER_SIZE) / 40;*/
-    }
-
-    if(!get_inputs) {
-        fclose(f);
-        return r;
-    }
-
-    r->inputs = malloc(r->len * sizeof(struct keyflags));
-    fread(r->inputs, sizeof(struct keyflags), r->len, f);
-
-    fclose(f);
-    return r;
-}
-
-int write_replay_file(struct replay *r)
-{
-    if(!r)
-        return -1;
-
-    char strbuf[80];
-    bstring filename = NULL;
-    time_t t;
-    struct tm* ts;
-    FILE *f = NULL;
-
-    _mkdir("replay", 0777);
-
-    t = time(NULL);
-    ts = localtime(&t);
-    strftime(strbuf, sizeof(strbuf), "%Y-%m-%d_%H-%M-%S.rep", ts);
-    filename = bformat("replay/%s", strbuf);
-
-    f = fopen((char *)(filename->data), "ab");
-    check(f != NULL, "Could not open replay file for writing");
-
-    fwrite(&r->mode, sizeof(int), 1, f);
-    fwrite(&r->mode_flags, sizeof(int), 1, f);
-    fwrite(&r->seed, sizeof(long), 1, f);
-    fwrite(&r->grade, sizeof(int), 1, f);
-    fwrite(&r->time, sizeof(long), 1, f);
-    fwrite(&r->starting_level, sizeof(int), 1, f);
-    fwrite(&r->ending_level, sizeof(int), 1, f);
-    fwrite(&r->date, sizeof(long), 1, f);
-    fwrite(&r->len, sizeof(int), 1, f);
-
-    fwrite(r->inputs, sizeof(struct keyflags), r->len, f);
-
-    fclose(f);
-    bdestroy(filename);
-    return 0;
-
-error:
-    bdestroy(filename);
-    return 1;
-}
-
-struct bstrList *get_replay_list()
-{
-    _mkdir("replay", 0777);
-    DIR *replay_dir = opendir("replay");
-
-    check(replay_dir != NULL, "Could not open replay directory for reading");
-
-    struct dirent *d = NULL;
-    struct bstrList *b = malloc(sizeof(struct bstrList));
-    b->entry = malloc(200*sizeof(bstring));
-    b->qty = 200;
-
-    int num = 0;
-    int i = 0;
-
-    for(i = 0;; i++) {
-        d = readdir(replay_dir);
-        if(!d)
-            break;
-
-        /* if(d->d_type != DT_REG) */
-        /*     continue; */
-
-        num++;
-        if(num > b->qty) {
-            b->qty *= 2;
-            b->entry = realloc(b->entry, b->qty*sizeof(bstring));
-        }
-
-        b->entry[num - 1] = bformat("replay/%s", d->d_name);
-    }
-
-    b->qty = num;
-    b->entry = realloc(b->entry, num*sizeof(bstring));
-
-    return b;
-
-error:
-    return NULL;
 }

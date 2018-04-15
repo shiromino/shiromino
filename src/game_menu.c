@@ -17,6 +17,7 @@
 #include "game_qs.h"
 #include "game_menu.h"
 #include "gfx_menu.h"
+#include "replay.h"
 
 struct menu_opt *std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, bstring label)
 {
@@ -571,7 +572,7 @@ int menu_input(game_t *g)
         return -1;
 
     coreState *cs = g->origin;
-    struct keyflags *k = cs->keys[0];
+    struct keyflags *k = &cs->keys;
 
     menudata *d = (menudata *)(g->data);
 
@@ -587,11 +588,13 @@ int menu_input(game_t *g)
     int i = 0;
     int update = 0;
 
+    const int DAS = 18;
+
     if(cs->text_editing) {
         return 0;
     }
 
-    if(k->escape == 1 || cs->keys[1]->escape == 1) {
+    if(cs->pressed.escape == 1) {
         if(!(d->menu_id == MENU_ID_MAIN)) {
             mload_main(g, 0);
             return 0;
@@ -615,7 +618,7 @@ int menu_input(game_t *g)
         cs->text_cut = NULL;
     }
 
-    if((k->up == 1 || k->up > 18) && d->selection > 0)
+    if((cs->pressed.up || is_up_input_repeat(cs, DAS)) && d->selection > 0)
     {
         update = 1;
         for(i = d->selection - 1;; i--)
@@ -630,7 +633,7 @@ int menu_input(game_t *g)
                 i = d->numopts - 1;
             if(d->menu[i]->type != MENU_LABEL) {
                 d->selection = i;
-                if(k->up == 1) sfx_play(&cs->assets->menu_choose);
+                if(cs->pressed.up == 1) sfx_play(&cs->assets->menu_choose);
                 if(d->menu[d->selection]->type == MENU_TEXTINPUT) {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -662,7 +665,7 @@ int menu_input(game_t *g)
         }
     }
 
-    if((k->down == 1 || k->down > 18) && (d->selection < d->numopts - 1))
+    if((cs->pressed.down || is_down_input_repeat(cs, DAS)) && (d->selection < d->numopts - 1))
     {
         update = 1;
         for(i = d->selection + 1;; i++)
@@ -677,7 +680,7 @@ int menu_input(game_t *g)
                 i = 0;
             if(d->menu[i]->type != MENU_LABEL) {
                 d->selection = i;
-                if(k->down == 1) sfx_play(&cs->assets->menu_choose);
+                if(cs->pressed.down == 1) sfx_play(&cs->assets->menu_choose);
                 if(d->menu[d->selection]->type == MENU_TEXTINPUT) {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -710,13 +713,13 @@ int menu_input(game_t *g)
     }
 
     if(d->is_paged) {
-        if((k->left == 1 || k->left > 18) && d->page > 0) {
+        if((cs->pressed.left || is_left_input_repeat(cs, DAS)) && d->page > 0) {
             update = 1;
             d->selection = d->selection - d->page_length;
             d->page--;
         }
 
-        if((k->right == 1 || k->right > 18) && d->page < ((d->numopts - 1) / d->page_length)) {
+        if((cs->pressed.right || is_right_input_repeat(cs, DAS)) && d->page < ((d->numopts - 1) / d->page_length)) {
             update = 1;
             d->selection = d->selection + d->page_length;
             d->page++;
@@ -758,7 +761,7 @@ int menu_input(game_t *g)
         case MENU_ACTION:
             d1 = d->menu[d->selection]->data;
 
-            if(k->a == 1 || k->start == 1) {
+            if(cs->pressed.a == 1 || cs->pressed.start == 1) {
                 if(d1->action) {
                     if(d1->action(g, d1->val)) {
                         printf("Received quit signal, shutting down.\n");
@@ -775,14 +778,15 @@ int menu_input(game_t *g)
             d2 = d->menu[d->selection]->data;
 
             if(!d->is_paged) {
-                if( (k->left == 1 || k->left > 14) && d2->selection > 0 ) {
+
+                if((cs->pressed.left || is_left_input_repeat(cs, DAS)) && d2->selection > 0) {
                     d2->selection--;
                     *(d2->param) = d2->vals[d2->selection];
                     if(d->menu[d->selection]->value_update_callback)
                         d->menu[d->selection]->value_update_callback(cs);
                 }
 
-                if( (k->right == 1 || k->right > 14) && d2->selection < (d2->num - 1) ) {
+                if( (cs->pressed.right || is_right_input_repeat(cs, DAS)) && d2->selection < (d2->num - 1) ) {
                     d2->selection++;
                     *(d2->param) = d2->vals[d2->selection];
                     if(d->menu[d->selection]->value_update_callback)
@@ -799,7 +803,7 @@ int menu_input(game_t *g)
             d3 = d->menu[d->selection]->data;
 
             if(!d->is_paged) {
-                if(k->a == 1 || k->left == 1 || k->right == 1) {
+                if(cs->pressed.a || cs->pressed.left || cs->pressed.right) {
                     *(d3->param) = *(d3->param) ? false : true;
                     if(d->menu[d->selection]->value_update_callback)
                         d->menu[d->selection]->value_update_callback(cs);
@@ -811,7 +815,7 @@ int menu_input(game_t *g)
         case MENU_GAME:
             d4 = d->menu[d->selection]->data;
 
-            if(k->a == 1 || k->start == 1)
+            if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
                 switch(d4->mode)
                 {
@@ -821,7 +825,7 @@ int menu_input(game_t *g)
                                 g->origin->p1game = qs_game_create( *((coreState **)(d4->args.ptrs[0])),
                                                                          *((int *)(d4->args.ptrs[1])),
                                                                          *((unsigned int *)(d4->args.ptrs[2])),
-                                                                         *((char **)(d4->args.ptrs[3]))
+                                                                         *((int*)(d4->args.ptrs[3]))
                                                                        );
                                 if(g->origin->p1game) {
                                     g->origin->p1game->init(g->origin->p1game);
@@ -830,7 +834,7 @@ int menu_input(game_t *g)
                                 }
                             }
                         } else {
-                            g->origin->p1game = qs_game_create(g->origin, 0, 0, NULL);
+                            g->origin->p1game = qs_game_create(g->origin, 0, 0, NO_REPLAY);
                             if(g->origin->p1game) {
                                 g->origin->p1game->init(g->origin->p1game);
 
@@ -851,11 +855,11 @@ int menu_input(game_t *g)
             d6 = d->menu[d->selection]->data;
 
             if(!d->is_paged) {
-                if( (k->left == 1 || k->left > 14) && d6->selection > 0 ) {
+                if( (cs->pressed.left == 1 || is_left_input_repeat(cs, DAS)) && d6->selection > 0 ) {
                     d6->selection--;
                 }
 
-                if( (k->right == 1 || k->right > 14) && d6->selection < (d6->num - 1) ) {
+                if( (cs->pressed.right == 1 || is_right_input_repeat(cs, DAS)) && d6->selection < (d6->num - 1) ) {
                     d6->selection++;
                 }
 
@@ -863,18 +867,18 @@ int menu_input(game_t *g)
                     d->main_menu_data.opt_selection = d6->selection;
             }
 
-            if(k->a == 1 || k->start == 1)
+            if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
                 switch(d6->mode)
                 {
                     case QUINTESSE:
                         if(d6->args[d6->selection].ptrs) {
                             if(d6->args[d6->selection].ptrs[0] && d6->args[d6->selection].ptrs[1] && d6->args[d6->selection].ptrs[2] && d6->args[d6->selection].ptrs[3]) {
-                                g->origin->p1game = qs_game_create( *((coreState **)(d6->args[d6->selection].ptrs[0])),
-                                                                         *((int *)(d6->args[d6->selection].ptrs[1])),
-                                                                         *((unsigned int *)(d6->args[d6->selection].ptrs[2])),
-                                                                         *((char **)(d6->args[d6->selection].ptrs[3]))
-                                                                       );
+                                g->origin->p1game = qs_game_create(*((coreState **)(d6->args[d6->selection].ptrs[0])),
+                                                                   *((int *)(d6->args[d6->selection].ptrs[1])),
+                                                                   *((unsigned int *)(d6->args[d6->selection].ptrs[2])),
+                                                                   NO_REPLAY 
+                                );
                                 if(g->origin->p1game) {
                                     g->origin->p1game->init(g->origin->p1game);
 
@@ -882,7 +886,7 @@ int menu_input(game_t *g)
                                 }
                             }
                         } else {
-                            g->origin->p1game = qs_game_create(g->origin, 0, 0, NULL);
+                            g->origin->p1game = qs_game_create(g->origin, 0, 0, NO_REPLAY);
                             if(g->origin->p1game) {
                                 g->origin->p1game->init(g->origin->p1game);
 
@@ -902,7 +906,7 @@ int menu_input(game_t *g)
         case MENU_METAGAME:
             d5 = d->menu[d->selection]->data;
 
-            if(k->a == 1 || k->start == 1)
+            if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
                 switch(d5->mode)
                 {
@@ -1221,7 +1225,7 @@ int mload_practice(game_t *g, int val)
 
     cs->menu_input_override = 1;
 
-    cs->p1game = qs_game_create(cs, 0, QRS_PRACTICE|TETROMINO_ONLY, NULL);
+    cs->p1game = qs_game_create(cs, 0, QRS_PRACTICE|TETROMINO_ONLY, NO_REPLAY);
     cs->p1game->init(cs->p1game);
 
     qrsdata *q = cs->p1game->data;
@@ -1699,6 +1703,8 @@ int mload_options(game_t *g, int val)
     return 0;
 }
 
+#define BUF_SIZE 64
+
 int mload_replay(game_t *g, int val)
 {
     menudata *d = (menudata *)(g->data);
@@ -1706,22 +1712,9 @@ int mload_replay(game_t *g, int val)
     struct action_opt_data *d1 = NULL;
     struct game_opt_data *d4 = NULL;
 
-    int i = 0;
-    int j = 0;
-    int k = 0;
-    int num = 0;
-
-    struct bstrList *filenames = NULL;
-    struct bstrList *filenames_sorted = NULL;
-
     struct replay *r = NULL;
-    struct replay **replaylist = NULL;
-
-    bstring label = NULL;
-    nz_timer *t = nz_timer_create(60);
-
-    struct tm* ts;
-    char strbuf[80];
+    int replayCount = 0;
+    struct replay *replaylist = scoredb_get_replay_list(&g->origin->scores, &g->origin->player, &replayCount);
 
     menu_clear(g);        // data->menu guaranteed to be NULL upon return
 
@@ -1740,68 +1733,9 @@ int mload_replay(game_t *g, int val)
     d->page_text_x = 640-16;
     d->page_text_y = 16;
 
-    filenames = get_replay_list();
-    if(filenames) {
-        filenames_sorted = malloc(sizeof(struct bstrList));
-        filenames_sorted->qty = filenames->qty;
-        filenames_sorted->entry = malloc(2*filenames->qty * sizeof(bstring));
-
-        for(i = 0; i < filenames->qty; i++) {
-            r = read_replay_file((char *)(filenames->entry[i]->data), 0);
-            if(!r) {
-                continue;
-            }
-
-            if(!num) {
-                replaylist = malloc(2*filenames->qty * sizeof(struct replay *));
-                num++;
-                replaylist[0] = r;
-                filenames_sorted->entry[0] = bstrcpy(filenames->entry[i]);
-                continue;
-            }
-
-            if(num == 1) {
-                if(r == compare_replays(r, replaylist[0])) {
-                    replaylist[1] = replaylist[0];
-                    filenames_sorted->entry[1] = filenames_sorted->entry[0];
-                    replaylist[0] = r;
-                    filenames_sorted->entry[0] = bstrcpy(filenames->entry[i]);
-                } else {
-                    replaylist[1] = r;
-                    filenames_sorted->entry[1] = bstrcpy(filenames->entry[i]);
-                }
-
-                num++;
-                continue;
-            }
-
-            for(j = 0; j < num; j++) {
-                if(r == compare_replays(r, replaylist[j])) {
-                    for(k = num+1; k > j; k--) {
-                        replaylist[k] = replaylist[k-1];
-                        filenames_sorted->entry[k] = filenames_sorted->entry[k-1];
-                    }
-
-                    replaylist[j] = r;
-                    filenames_sorted->entry[j] = bstrcpy(filenames->entry[i]);
-                    break;
-                }
-
-                replaylist[num] = r;
-                filenames_sorted->entry[num] = bstrcpy(filenames->entry[i]);
-            }
-
-            num++;
-        }
-
-        replaylist = realloc(replaylist, num * sizeof(struct replay *));
-        filenames_sorted->entry = realloc(filenames_sorted->entry, num * sizeof(bstring));
-        filenames_sorted->qty = num;
-
-        bstrListDestroy(filenames);
-
-        d->menu = malloc((num+1) * sizeof(struct menu_opt *));
-        d->numopts = num+1;
+    if(replaylist) {
+        d->numopts = replayCount + 1;
+        d->menu = malloc(d->numopts * sizeof(struct menu_opt *));
         d->menu[0] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("RETURN"));
         m = d->menu[0];
         d1 = m->data;
@@ -1811,37 +1745,15 @@ int mload_replay(game_t *g, int val)
         m->y = 60;
         m->label_text_flags = DRAWTEXT_THIN_FONT;
 
-        for(i = 1; i < num+1; i++) {
+        for(int i = 1; i < replayCount + 1; i++) {
             d->menu[i] = menu_opt_create(MENU_GAME, NULL, NULL);
-            r = replaylist[i-1];
-            t->time = r->time;
-            ts = localtime(&r->date);
-            strftime(strbuf, sizeof(strbuf), "%Y.%m.%d", ts);
+            r = &replaylist[i - 1];
 
-            switch(replaylist[i-1]->mode) {
-                case MODE_PENTOMINO:
-                    label = bformat("%s  PENTOMINO  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
-                    break;
-                case MODE_G2_DEATH:
-                    label = bformat("%s  G2 DEATH   %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
-                    break;
-                case MODE_G3_TERROR:
-                    label = bformat("%s  G3 TERROR  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
-                    break;
-                case MODE_G1_20G:
-                    label = bformat("%s  G1 20G     %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
-                    break;
-                case MODE_G1_MASTER:
-                    label = bformat("%s  G1 MASTER  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
-                    break;
-                case MODE_G2_MASTER:
-                    label = bformat("%s  G2 MASTER  %4d-%-4d  %02d:%02d:%02d   %s", get_grade_name(r->grade), r->starting_level, r->ending_level, timegetmin(t), timegetsec(t) % 60, timegetmsec(t)/10, strbuf);
-                    break;
-                default:
-                    break;
-            }
+            char replayDescriptor[BUF_SIZE];
 
-            d->menu[i]->label = label;
+            get_replay_descriptor(r, replayDescriptor, BUF_SIZE);
+
+            d->menu[i]->label = bfromcstr(replayDescriptor);
             m = d->menu[i];
             d4 = m->data;
             d4->mode = QUINTESSE;
@@ -1850,39 +1762,19 @@ int mload_replay(game_t *g, int val)
             d4->args.ptrs[0] = malloc(sizeof(coreState *));
             d4->args.ptrs[1] = malloc(sizeof(int));
             d4->args.ptrs[2] = malloc(sizeof(unsigned int));
-            d4->args.ptrs[3] = malloc(sizeof(char *));
+            d4->args.ptrs[3] = malloc(sizeof(int));
             *(coreState **)(d4->args.ptrs[0]) = g->origin;
             *(int *)(d4->args.ptrs[1]) = 0;
             *(unsigned int *)(d4->args.ptrs[2]) = r->mode;
-            *(char **)(d4->args.ptrs[3]) = malloc((filenames_sorted->entry[i-1]->slen+1) * sizeof(char));
-            strcpy(*(char **)(d4->args.ptrs[3]), (char *)(filenames_sorted->entry[i-1]->data));
+            *(int*)(d4->args.ptrs[3]) = r->index;
             m->x = 20 - 13;
             m->y = 60 + (i % 20) * 20;
             m->label_text_flags = DRAWTEXT_THIN_FONT;
             m->label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT;
         }
-
-        if(filenames_sorted->entry) {
-            for(i = 0; i < num; i++) {
-                if(filenames_sorted->entry[i])
-                    bdestroy(filenames_sorted->entry[i]);
-            }
-
-            free(filenames_sorted->entry);
-        }
-
-        free(filenames_sorted);
     }
 
-    nz_timer_destroy(t);
-
-    if(replaylist) {
-        for(i = 0; i < num; i++) {
-            free(replaylist[i]);
-        }
-
-        free(replaylist);
-    }
+    free(replaylist);
 
     return 0;
 }

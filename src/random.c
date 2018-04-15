@@ -549,14 +549,14 @@ piece_id histrand_get_next(struct randomizer *r)
     uint32_t *seedp = r->seedp;
     unsigned int i = 0;
     unsigned int j = 0;
-    int in_hist = 0;
+    bool in_hist = false;
     piece_id t = PIECE_ID_INVALID;
 
     long double p = 0.0;
     double old_sum = 0.0;
     double sum = 0.0;
-    unsigned int histogram[r->num_pieces];
-    double temp_weights[r->num_pieces];
+    unsigned int *histogram = malloc(r->num_pieces * sizeof(unsigned int));
+    double *temp_weights = malloc(r->num_pieces * sizeof(double));
 
     if(!seedp)
         seedp = &g2_seed;
@@ -568,14 +568,18 @@ piece_id histrand_get_next(struct randomizer *r)
 
             in_hist = 0;
             for(j = 0; j < d->hist_len; j++) {
-                if(d->history[j] == t) in_hist = 1;
+                if(d->history[j] == t) 
+                    in_hist = true;
             }
 
             if(!in_hist)
-                return t;
+                break;
 
             t = g123_read_rand(seedp) % 7;
         }
+
+        free(temp_weights);
+        free(histogram);
 
         return t;
     }
@@ -644,6 +648,9 @@ piece_id histrand_get_next(struct randomizer *r)
                 return i;
             } else sum += temp_weights[i];
         }
+
+        free(temp_weights);
+        free(histogram);
 
         return 0;
     }

@@ -25,6 +25,9 @@ typedef struct coreState_ coreState;
 #include "gfx_structures.h"
 #include "audio.h"
 
+#include "scores.h"
+#include "player.h"
+
 enum {
     MODE_INVALID,
     QUINTESSE
@@ -43,16 +46,24 @@ struct bindings {
     SDL_Keycode escape;
 };
 
+typedef enum {
+    DAS_NONE,
+    DAS_LEFT,
+    DAS_RIGHT,
+    DAS_UP,
+    DAS_DOWN
+} das_direction;
+
 struct keyflags {
     Uint8 left;
     Uint8 right;
     Uint8 up;
     Uint8 down;
-    Uint8 start;
     Uint8 a;
     Uint8 b;
     Uint8 c;
     Uint8 d;
+    Uint8 start;
     Uint8 escape;
 };
 
@@ -85,22 +96,8 @@ struct settings {
     int mus_volume;
 
     char *home_path;
-};
 
-struct replay {
-    struct keyflags *inputs;
-    unsigned int len;
-    unsigned int mlen;
-
-    int mode;
-    unsigned int mode_flags;
-    long seed;
-    int grade;
-    long time;
-    int starting_level;
-    int ending_level;
-
-    time_t date;
+    const char *player_name;
 };
 
 typedef struct game game_t;
@@ -169,7 +166,13 @@ struct coreState_ {
     int gfx_animations_max;
     int gfx_buttons_max;
 
-    struct keyflags *keys[2];
+    struct keyflags keys_raw;
+    struct keyflags prev_keys;
+    struct keyflags keys;
+    struct keyflags pressed;
+    das_direction hold_dir;
+    int hold_time;
+    
     SDL_Joystick *joystick;
     int mouse_x;
     int mouse_y;
@@ -193,6 +196,9 @@ struct coreState_ {
 
     long double avg_sleep_ms_recent_array[RECENT_FRAMES];
     int recent_frame_overload;
+    
+    struct scoredb scores;
+    struct player player;
 };
 
 struct game {
@@ -213,8 +219,11 @@ struct game {
 extern struct bindings defaultkeybinds[2];
 extern struct settings defaultsettings;
 
-void keyflags_init(struct keyflags *k);
-void keyflags_update(coreState *cs);
+int is_left_input_repeat(coreState *cs, int delay);
+int is_right_input_repeat(coreState *cs, int delay);
+int is_up_input_repeat(coreState *cs, int delay);
+int is_down_input_repeat(coreState *cs, int delay);
+
 struct bindings *bindings_copy(struct bindings *src);
 
 coreState *coreState_create();
@@ -230,11 +239,13 @@ int run(coreState *cs);
 int procevents(coreState *cs);
 int procgame(game_t *g, int input_enabled);
 
+void handle_replay_input(coreState* cs);
+void update_input_repeat(coreState *cs);
+void update_pressed(coreState *cs);
+
 int button_emergency_inactive(coreState *cs);
 int gfx_buttons_input(coreState *cs);
 
 int request_fps(coreState *cs, double fps);
-
-struct replay *compare_replays(struct replay *r1, struct replay *r2);
 
 #endif
