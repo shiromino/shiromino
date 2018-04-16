@@ -7,7 +7,8 @@ typedef struct sqlite3 sqlite3;
 struct replay;
 struct player;
 
-struct scoredb {
+struct scoredb
+{
     sqlite3 *db;
 };
 

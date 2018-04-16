@@ -10,14 +10,16 @@
 
 #include "core.h" // TODO: Extract keyflags from core.h
 
-struct packed_input {
+struct packed_input
+{
     uint8_t data;
 };
 
 struct packed_input pack_input(struct keyflags *k);
 void unpack_input(struct packed_input p, struct keyflags *out_keys);
 
-struct replay {
+struct replay
+{
     unsigned int len;
     unsigned int mlen;
 
@@ -30,7 +32,7 @@ struct replay {
     int ending_level;
 
     time_t date;
-    
+
     int index;
 
     struct packed_input pinputs[MAX_KEYFLAGS];

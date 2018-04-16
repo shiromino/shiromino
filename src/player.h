@@ -1,7 +1,8 @@
 #ifndef __PLAYER_H_
 #define __PLAYER_H_
 
-struct player {
+struct player
+{
     int playerId;
 
     const unsigned char *name;

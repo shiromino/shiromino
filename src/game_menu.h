@@ -1,9 +1,9 @@
 #ifndef _game_menu_h
 #define _game_menu_h
 
-#include <stdbool.h>
 #include "bstrlib.h"
 #include "core.h"
+#include <stdbool.h>
 
 #define MENU_PRACTICE_NUMOPTS 15
 
@@ -23,12 +23,14 @@ enum {
     MENU_METAGAME = 7
 };
 
-struct game_args {
+struct game_args
+{
     int num;
     void **ptrs;
 };
 
-struct menu_opt {
+struct menu_opt
+{
     int type;
     int (*value_update_callback)(coreState *cs);
     int render_update;
@@ -46,12 +48,14 @@ struct menu_opt {
     void *data;
 };
 
-struct action_opt_data {
-    int (*action)(game_t *, int);    // limited to functions with this shape
+struct action_opt_data
+{
+    int (*action)(game_t *, int); // limited to functions with this shape
     int val;
 };
 
-struct multi_opt_data {
+struct multi_opt_data
+{
     int selection;
     int num;
 
@@ -60,7 +64,8 @@ struct multi_opt_data {
     bstring *labels;
 };
 
-struct text_opt_data {
+struct text_opt_data
+{
     int active;
 
     int position;
@@ -71,27 +76,32 @@ struct text_opt_data {
     bstring text;
 };
 
-struct toggle_opt_data {
+struct toggle_opt_data
+{
     bool *param;
     bstring labels[2];
 };
 
-struct game_opt_data {
+struct game_opt_data
+{
     int mode;
     struct game_args args;
-    //void **args;
+    // void **args;
 };
 
-struct game_multiopt_data {
+struct game_multiopt_data
+{
     int mode;
     int num;
     int selection;
     bstring *labels;
 
-    struct game_args *args;        // array of argument lists. so each argument list is an array of (void *), which can be dereferenced and filled with..
-};                                // ..whatever data types are appropriate. bit confusing, I know.
+    struct game_args *args; // array of argument lists. so each argument list is an array of (void *), which can be
+                            // dereferenced and filled with..
+};                          // ..whatever data types are appropriate. bit confusing, I know.
 
-struct metagame_opt_data {
+struct metagame_opt_data
+{
     int mode;
     int submode;
     int num_args;
@@ -101,16 +111,19 @@ struct metagame_opt_data {
     void **sub_args;
 };
 
-typedef struct {
+typedef struct
+{
     struct menu_opt **menu;
     int menu_id;
 
-    struct {
+    struct
+    {
         int selection;
         int opt_selection;
     } main_menu_data;
 
-    struct {
+    struct
+    {
         struct pracdata *pracdata_mirror;
         int selection;
     } practice_menu_data;
@@ -128,7 +141,7 @@ typedef struct {
     int page_text_y;
 
     bstring title;
-     int x;
+    int x;
     int y;
 } menudata;
 

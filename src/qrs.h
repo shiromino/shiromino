@@ -157,7 +157,8 @@ extern const char *qrs_piece_names[25];
 
 typedef uint8_t piece_id;
 
-typedef struct {
+typedef struct
+{
     int level;
 
     int grav;
@@ -168,7 +169,8 @@ typedef struct {
     int lineclear;
 } qrs_timings;
 
-typedef struct {
+typedef struct
+{
     int init;
 
     int lock;
@@ -179,7 +181,8 @@ typedef struct {
     int hold_flash;
 } qrs_counters;
 
-typedef struct {
+typedef struct
+{
     piecedef *def;
     qrs_timings *speeds;
     unsigned int state;        // rename?
@@ -189,7 +192,8 @@ typedef struct {
     int orient;
 } qrs_player;
 
-struct pracdata {
+struct pracdata
+{
     int game_type;    // mirrors of values in qrsdata; these are just here so that..
     int field_w;    // ..backed up pracdata structs can be used to restore their values
 
@@ -231,7 +235,8 @@ struct pracdata {
     long randomizer_seed;
 };
 
-typedef struct {
+typedef struct
+{
     piecedef **piecepool;
     struct randomizer *randomizer;
     struct pracdata *pracdata;

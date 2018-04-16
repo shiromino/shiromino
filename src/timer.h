@@ -3,7 +3,8 @@
 
 #define TIMEMAX        0xFFFFFFFFu
 
-typedef struct {
+typedef struct
+{
     unsigned long time;
     int fps;
 } nz_timer;

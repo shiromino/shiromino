@@ -3,17 +3,18 @@
 
 #include <stdint.h>
 
-#define GRID_OOB    8128
+#define GRID_OOB 8128
 
-typedef struct {
+typedef struct
+{
     int w;
     int h;
-    int **grid;        // grid[w][h] / grid[column #][row #]
+    int **grid; // grid[w][h] / grid[column #][row #]
 } grid_t;
 
 typedef grid_t yx_grid_t;
 
-grid_t *grid_create(int w, int h);    // malloc(w * sizeof(int *));
+grid_t *grid_create(int w, int h); // malloc(w * sizeof(int *));
 void grid_destroy(grid_t *g);
 
 int gridsetw(grid_t *g, int w);

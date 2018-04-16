@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "bstrlib.h"
 #include <SDL2/SDL.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "core.h"
 #include "game_menu.h"
@@ -22,7 +22,7 @@ int gfx_drawmenu(game_t *g)
     SDL_Texture *font_thin = cs->assets->font_thin.tex;
     SDL_Rect src = {.x = 0, .y = 80, .w = 16, .h = 16};
     SDL_Rect dest = {.x = 0, .y = 0, .w = 16, .h = 16};
-    SDL_Rect barsrc = {.x = 12*16, .y = 17, .w = 2, .h = 14};
+    SDL_Rect barsrc = {.x = 12 * 16, .y = 17, .w = 2, .h = 14};
     SDL_Rect bardest = {.x = 0, .y = 0, .w = 2, .h = 14};
     SDL_Rect baroutlinesrc = {.x = 256, .y = 0, .w = 102, .h = 16};
     SDL_Rect baroutlinedest = {.x = 0, .y = 0, .w = 102, .h = 16};
@@ -48,7 +48,8 @@ int gfx_drawmenu(game_t *g)
     struct text_formatting *fmt = NULL;
     png_monofont *monofont = NULL;
 
-    if(d->is_paged) {
+    if(d->is_paged)
+    {
         page_bstr = bformat("PAGE %d/%d", d->page + 1, ((d->numopts - 1) / d->page_length) + 1);
         fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
 
@@ -70,16 +71,20 @@ int gfx_drawmenu(game_t *g)
     if(d->title)
         gfx_drawtext(cs, d->title, d->x, d->y, monofont_square, NULL);
 
-    if(d->use_target_tex) {
+    if(d->use_target_tex)
+    {
         SDL_SetRenderTarget(cs->screen.renderer, d->target_tex);
     }
 
-    for(i = initial_opt; i <= final_opt; i++) {
-        if(d->menu[i]) {
+    for(i = initial_opt; i <= final_opt; i++)
+    {
+        if(d->menu[i])
+        {
             m = d->menu[i];
             if(d->use_target_tex && !m->render_update)
                 continue;
-            else if(d->use_target_tex && i == initial_opt) {
+            else if(d->use_target_tex && i == initial_opt)
+            {
                 SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
                 SDL_RenderClear(g->origin->screen.renderer);
             }
@@ -96,7 +101,8 @@ int gfx_drawmenu(game_t *g)
             if(m->label_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                 monofont = monofont_fixedsys;
 
-            if(i == d->selection) {
+            if(i == d->selection)
+            {
                 fmt->rgba = 0x9090FFFF;
                 fmt->outline_rgba = 0x2020AFFF;
                 fmt->shadow = true;
@@ -107,7 +113,8 @@ int gfx_drawmenu(game_t *g)
             free(fmt);
             fmt = NULL;
 
-            if(m->type == MENU_MULTIOPT) {
+            if(m->type == MENU_MULTIOPT)
+            {
                 d2 = (struct multi_opt_data *)m->data;
                 fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
                 monofont = monofont_square;
@@ -126,20 +133,23 @@ int gfx_drawmenu(game_t *g)
                 free(fmt);
                 fmt = NULL;
 
-                if(m->value_text_flags & DRAWTEXT_VALUE_BAR) {
-                    barsrc.x = 14*16;
+                if(m->value_text_flags & DRAWTEXT_VALUE_BAR)
+                {
+                    barsrc.x = 14 * 16;
                     bardest.x = m->value_x;
                     baroutlinedest.x = bardest.x;
                     bardest.y = m->value_y + 1;
                     baroutlinedest.y = m->value_y;
                     gfx_rendercopy(cs, font, &baroutlinesrc, &baroutlinedest);
 
-                    if(d2->selection > 0) {
+                    if(d2->selection > 0)
+                    {
                         barsrc.x += 1;
                         bardest.x += 1;
                         barsrc.w = 1;
                         bardest.w = 1;
-                        for(j = 0; j < d2->selection; j++) {
+                        for(j = 0; j < d2->selection; j++)
+                        {
                             mod = (200 * (85 - j)) / 100;
                             if(mod < 0)
                                 mod = 0;
@@ -160,10 +170,13 @@ int gfx_drawmenu(game_t *g)
                 }
             }
 
-            if(m->type == MENU_GAME_MULTIOPT) {
+            if(m->type == MENU_GAME_MULTIOPT)
+            {
                 d3 = (struct game_multiopt_data *)m->data;
-                if(d3->labels) {
-                    if(d3->labels[d3->selection]) {
+                if(d3->labels)
+                {
+                    if(d3->labels[d3->selection])
+                    {
                         fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
                         monofont = monofont_square;
 
@@ -184,27 +197,32 @@ int gfx_drawmenu(game_t *g)
                 }
             }
 
-            if(m->type == MENU_TEXTINPUT) {
+            if(m->type == MENU_TEXTINPUT)
+            {
                 d7 = (struct text_opt_data *)m->data;
 
-                if(d7->text) {
-                    if(d7->text->slen) {
+                if(d7->text)
+                {
+                    if(d7->text->slen)
+                    {
                         textinput_display = blk2bstr(&d7->text->data[d7->leftmost_position], d7->text->slen - d7->leftmost_position);
                         if(textinput_display->slen > d7->visible_chars)
                             btrunc(textinput_display, d7->visible_chars);
 
-                        if(d7->selection) {
+                        if(d7->selection)
+                        {
                             SDL_SetTextureColorMod(font, 255, 255, 255);
                             SDL_SetTextureAlphaMod(font, 255);
-                            src.x = 17*16 - 1;
+                            src.x = 17 * 16 - 1;
                             src.y = 32 - 1;
                             src.h = 18;
                             src.w = (m->value_text_flags & DRAWTEXT_THIN_FONT ? 15 : 18);
                             dest.w = src.w;
                             dest.h = 18;
                             dest.y = m->value_y + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 1 : 0);
-                            for(k = 0; k < (d7->text->slen - d7->leftmost_position) && k < d7->visible_chars; k++) {
-                                dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16)*(k) - 1;
+                            for(k = 0; k < (d7->text->slen - d7->leftmost_position) && k < d7->visible_chars; k++)
+                            {
+                                dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * (k)-1;
 
                                 if(gfx_rendercopy(cs, font, &src, &dest))
                                     printf("%s\n", SDL_GetError());
@@ -216,12 +234,16 @@ int gfx_drawmenu(game_t *g)
                             dest.h = 16;
                         }
 
-                        if(d7->leftmost_position > 0) {
+                        if(d7->leftmost_position > 0)
+                        {
                             src.x = 64;
                             src.y = 80;
-                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT) {
-                                dest.x = m->value_x - ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16)*d7->visible_chars) - 16;
-                            } else {
+                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                            {
+                                dest.x = m->value_x - ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars) - 16;
+                            }
+                            else
+                            {
                                 dest.x = m->value_x - 16;
                             }
                             dest.y = m->value_y + 1;
@@ -229,13 +251,17 @@ int gfx_drawmenu(game_t *g)
                             gfx_rendercopy(cs, font, &src, &dest);
                         }
 
-                        if(d7->leftmost_position < d7->text->slen - d7->visible_chars) {
+                        if(d7->leftmost_position < d7->text->slen - d7->visible_chars)
+                        {
                             src.x = 80;
                             src.y = 80;
-                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT) {
+                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                            {
                                 dest.x = m->value_x;
-                            } else {
-                                dest.x = m->value_x + ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16)*d7->visible_chars);
+                            }
+                            else
+                            {
+                                dest.x = m->value_x + ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars);
                             }
                             dest.y = m->value_y + 1;
 
@@ -260,14 +286,17 @@ int gfx_drawmenu(game_t *g)
                         fmt = NULL;
                     }
 
-                    if(d7->active) {
-                        if(m->value_text_flags & DRAWTEXT_THIN_FONT) {
-                            src.x = 15*13;
-                            src.y = 2*18;
+                    if(d7->active)
+                    {
+                        if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                        {
+                            src.x = 15 * 13;
+                            src.y = 2 * 18;
                             if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                                dest.x = m->value_x - 13*((d7->text->slen > d7->visible_chars ? d7->visible_chars : d7->text->slen)) + 13*(d7->position - d7->leftmost_position);
+                                dest.x = m->value_x - 13 * ((d7->text->slen > d7->visible_chars ? d7->visible_chars : d7->text->slen)) +
+                                         13 * (d7->position - d7->leftmost_position);
                             else
-                                dest.x = m->value_x + 13*(d7->position - d7->leftmost_position);
+                                dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
                             dest.y = m->value_y + 18;
 
                             src.w = 13;
@@ -281,13 +310,16 @@ int gfx_drawmenu(game_t *g)
                             dest.w = 16;
                             src.h = 16;
                             dest.h = 16;
-                        } else {
-                            src.x = 15*16;
+                        }
+                        else
+                        {
+                            src.x = 15 * 16;
                             src.y = 32;
                             if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                                dest.x = m->value_x - 16*((d7->text->slen > d7->visible_chars ? d7->visible_chars : d7->text->slen)) + 16*(d7->position - d7->leftmost_position);
+                                dest.x = m->value_x - 16 * ((d7->text->slen > d7->visible_chars ? d7->visible_chars : d7->text->slen)) +
+                                         16 * (d7->position - d7->leftmost_position);
                             else
-                                dest.x = m->value_x + 16*(d7->position - d7->leftmost_position);
+                                dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
                             dest.y = m->value_y + 16;
 
                             gfx_rendercopy(cs, font, &src, &dest);
@@ -296,7 +328,8 @@ int gfx_drawmenu(game_t *g)
                 }
             }
 
-            if(m->type == MENU_TOGGLE) {
+            if(m->type == MENU_TOGGLE)
+            {
                 d8 = (struct toggle_opt_data *)m->data;
 
                 fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
@@ -325,8 +358,10 @@ int gfx_drawmenu(game_t *g)
     SDL_SetRenderTarget(cs->screen.renderer, NULL);
     SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 255);
 
-    if(d->use_target_tex) {
-        for(i = 0; i < d->numopts; i++) {
+    if(d->use_target_tex)
+    {
+        for(i = 0; i < d->numopts; i++)
+        {
             d->menu[i]->render_update = 0;
         }
 

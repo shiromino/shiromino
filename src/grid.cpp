@@ -1,9 +1,9 @@
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "grid.h"
 
-grid_t *grid_create(int w, int h)    // allocate first horizontally, then vertically
+grid_t *grid_create(int w, int h) // allocate first horizontally, then vertically
 {
     if(w < 1 || h < 1)
         return NULL;
@@ -11,15 +11,16 @@ grid_t *grid_create(int w, int h)    // allocate first horizontally, then vertic
     int i = 0;
     int j = 0;
 
-    grid_t *g = (grid_t *) malloc(sizeof(grid_t));
+    grid_t *g = (grid_t *)malloc(sizeof(grid_t));
     g->w = w;
     g->h = h;
-    g->grid = (int **) malloc(w * sizeof(int *));
+    g->grid = (int **)malloc(w * sizeof(int *));
 
     for(i = 0; i < w; i++)
-        g->grid[i] = (int *) malloc(h * sizeof(int));
+        g->grid[i] = (int *)malloc(h * sizeof(int));
 
-    for(i = 0; i < w; i++) {
+    for(i = 0; i < w; i++)
+    {
         for(j = 0; j < h; j++)
             g->grid[i][j] = 0;
     }
@@ -99,7 +100,8 @@ int gridfill(grid_t *g, int val)
     int i = 0;
     int j = 0;
 
-    for(i = 0; i < g->w; i++) {
+    for(i = 0; i < g->w; i++)
+    {
         for(j = 0; j < g->h; j++)
             g->grid[i][j] = val;
     }
@@ -129,14 +131,17 @@ grid_t *gridcpy(grid_t *src, grid_t *dest)
 
     grid_t *cpy = NULL;
 
-    if(dest) {
+    if(dest)
+    {
         w = (src->w < dest->w ? src->w : dest->w);
         h = (src->h < dest->h ? src->h : dest->h);
         cpy = dest;
-    } else
+    }
+    else
         cpy = grid_create(w, h);
 
-    for(i = 0; i < w; i++) {
+    for(i = 0; i < w; i++)
+    {
         for(j = 0; j < h; j++)
             cpy->grid[i][j] = src->grid[i][j];
     }
@@ -169,20 +174,11 @@ int gridrowcpy(grid_t *src, grid_t *dest, int srcrow, int destrow)
     return 0;
 }
 
-int gridxytopos(grid_t *g, int x, int y)
-{
-    return ((y * g->w) + x);
-}
+int gridxytopos(grid_t *g, int x, int y) { return ((y * g->w) + x); }
 
-int gridpostox(grid_t *g, int pos)
-{
-    return (pos % g->w);
-}
+int gridpostox(grid_t *g, int pos) { return (pos % g->w); }
 
-int gridpostoy(grid_t *g, int pos)
-{
-    return (pos / g->w);
-}
+int gridpostoy(grid_t *g, int pos) { return (pos / g->w); }
 
 int grid_cells_filled(grid_t *g)
 {
@@ -193,8 +189,10 @@ int grid_cells_filled(grid_t *g)
     int j = 0;
     int n = 0;
 
-    for(i = 0; i < g->w; i++) {
-        for(j = 0; j < g->h; j++) {
+    for(i = 0; i < g->w; i++)
+    {
+        for(j = 0; j < g->h; j++)
+        {
             if(gridgetcell(g, i, j))
                 n++;
         }
@@ -208,15 +206,17 @@ grid_t *grid_yx_to_xy(grid_t *g)
     if(!g)
         return NULL;
 
-    grid_t *h = (grid_t *) malloc(sizeof(grid_t));
+    grid_t *h = (grid_t *)malloc(sizeof(grid_t));
     int i = 0;
     int j = 0;
 
     h->w = g->h;
     h->h = g->w;
 
-    for(i = 0; i < g->w; i++) {
-        for(j = 0; j < g->h; j++) {
+    for(i = 0; i < g->w; i++)
+    {
+        for(j = 0; j < g->h; j++)
+        {
             h->grid[j][i] = g->grid[i][j];
         }
     }
@@ -234,7 +234,8 @@ grid_t *grid_from_1d_int_array(int *arr, int w, int h)
     int x = 0;
     int y = 0;
 
-    for(i = 0; i < w*h; i++) {
+    for(i = 0; i < w * h; i++)
+    {
         x = i % w;
         y = i / w;
 

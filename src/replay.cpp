@@ -2,10 +2,11 @@
 
 #include "game_qs.h"
 
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+// clang-format off
 enum packed_input_mask {
     pi_left   = 1 << 0,
     pi_right  = 1 << 1,
@@ -44,13 +45,15 @@ void unpack_input(struct packed_input p, struct keyflags *out_keys)
     out_keys->c     = (p.data & pi_c) ? 1 : 0;
     out_keys->d     = (p.data & pi_d) ? 1 : 0;
 }
+// clang-format on
 
 #define REPLAY_DESCRIPTOR_BUF_SIZE 32
 void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
 {
     char modeStringBuffer[REPLAY_DESCRIPTOR_BUF_SIZE];
 
-    switch(r->mode) {
+    switch(r->mode)
+    {
         case MODE_PENTOMINO:
             strncpy(modeStringBuffer, "PENTOMINO", REPLAY_DESCRIPTOR_BUF_SIZE);
             break;
@@ -80,7 +83,9 @@ void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
     struct tm *ts = localtime(&r->date);
     strftime(dateBuffer, REPLAY_DESCRIPTOR_BUF_SIZE, "%Y.%m.%d", ts);
 
-    snprintf(buffer, bufferLength, "%s  %-10s %4d-%-4d  %02d:%02d:%02d   %s",
+    snprintf(buffer,
+             bufferLength,
+             "%s  %-10s %4d-%-4d  %02d:%02d:%02d   %s",
              get_grade_name(r->grade),
              modeStringBuffer,
              r->starting_level,
@@ -96,40 +101,40 @@ void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, s
     // Keep the same existing format
     const uint8_t *scanner = buffer;
 
-    out_replay->mode = ((int*)scanner)[0];
+    out_replay->mode = ((int *)scanner)[0];
     scanner += sizeof(int);
 
-    out_replay->mode_flags = ((int*)scanner)[0];
+    out_replay->mode_flags = ((int *)scanner)[0];
     scanner += sizeof(int);
 
-    out_replay->seed = ((long*)scanner)[0];
+    out_replay->seed = ((long *)scanner)[0];
     scanner += sizeof(long);
 
-    out_replay->grade = ((int*)scanner)[0];
+    out_replay->grade = ((int *)scanner)[0];
     scanner += sizeof(int);
 
-    out_replay->time = ((long*)scanner)[0];
+    out_replay->time = ((long *)scanner)[0];
     scanner += sizeof(long);
 
-    out_replay->starting_level = ((int*)scanner)[0];
+    out_replay->starting_level = ((int *)scanner)[0];
     scanner += sizeof(int);
 
-    out_replay->ending_level = ((int*)scanner)[0];
+    out_replay->ending_level = ((int *)scanner)[0];
     scanner += sizeof(int);
 
-    out_replay->date = ((long*)scanner)[0];
+    out_replay->date = ((long *)scanner)[0];
     scanner += sizeof(long);
 
-    out_replay->len = ((int*)scanner)[0];
+    out_replay->len = ((int *)scanner)[0];
     scanner += sizeof(int);
 
     memcpy(&out_replay->pinputs[0], scanner, out_replay->len * sizeof(struct packed_input));
 }
 
-uint8_t* generate_raw_replay(struct replay *r, size_t *out_replayLength)
+uint8_t *generate_raw_replay(struct replay *r, size_t *out_replayLength)
 {
     // TODO: Endianness?
-    uint8_t *buffer = (uint8_t *) malloc(sizeof(struct replay));
+    uint8_t *buffer = (uint8_t *)malloc(sizeof(struct replay));
     size_t bufferOffset = 0;
 
     memcpy(buffer + bufferOffset, &r->mode, sizeof(int));
@@ -167,7 +172,4 @@ uint8_t* generate_raw_replay(struct replay *r, size_t *out_replayLength)
     return buffer;
 }
 
-void dispose_raw_replay(void* data)
-{
-    free(data);
-}
+void dispose_raw_replay(void *data) { free(data); }

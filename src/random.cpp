@@ -1,12 +1,13 @@
+#include "random.h"
+#include "qrs.h"
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <math.h>
-#include "qrs.h"
-#include "random.h"
 
+// clang-format off
 static long double pento_piece_weights[25] =
 {
     QRS_I_WEIGHT,
@@ -66,6 +67,7 @@ static long double pento_drought_coeffs[25] =
     ARS_S_DROUGHT_COEFF,
     ARS_Z_DROUGHT_COEFF
 };
+// clang-format on
 
 uint32_t g1_seed = 0;
 uint32_t g1_bkp_seed = 0;
@@ -79,12 +81,13 @@ uint32_t g3_bkp_seed = 0;
 uint32_t pento_seed = 0;
 uint32_t pento_bkp_seed = 0;
 
-//piece_id g3_bag[35];
-//piece_id *sakura_seq; TODO
+// piece_id g3_bag[35];
+// piece_id *sakura_seq; TODO
 
 piece_id ars_to_qrs_id(piece_id t)
 {
-    switch(t) {
+    switch(t)
+    {
         case 0:
             break;
         case 1:
@@ -175,7 +178,7 @@ char *sprintf_rngstate(char *strbuf, rngstate s)
 
 struct randomizer *g1_randomizer_create(uint32_t flags)
 {
-    struct randomizer *r = (struct randomizer *) malloc(sizeof(struct randomizer));
+    struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     struct histrand_data *d = NULL;
 
     r->num_pieces = 7;
@@ -191,7 +194,7 @@ struct randomizer *g1_randomizer_create(uint32_t flags)
 
     d->hist_len = 4;
     d->rerolls = 3;
-    d->history = (piece_id *) malloc(d->hist_len * sizeof(piece_id));
+    d->history = (piece_id *)malloc(d->hist_len * sizeof(piece_id));
     d->history[0] = PIECE_ID_INVALID;
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
@@ -208,7 +211,7 @@ struct randomizer *g1_randomizer_create(uint32_t flags)
 
 struct randomizer *g2_randomizer_create(uint32_t flags)
 {
-    struct randomizer *r = (struct randomizer *) malloc(sizeof(struct randomizer));
+    struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     struct histrand_data *d = NULL;
 
     r->num_pieces = 7;
@@ -224,7 +227,7 @@ struct randomizer *g2_randomizer_create(uint32_t flags)
 
     d->hist_len = 4;
     d->rerolls = 5;
-    d->history = (piece_id *) malloc(d->hist_len * sizeof(piece_id));
+    d->history = (piece_id *)malloc(d->hist_len * sizeof(piece_id));
     d->history[0] = PIECE_ID_INVALID;
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
@@ -241,7 +244,7 @@ struct randomizer *g2_randomizer_create(uint32_t flags)
 
 struct randomizer *g3_randomizer_create(uint32_t flags)
 {
-    struct randomizer *r = (struct randomizer *) malloc(sizeof(struct randomizer));
+    struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     struct g3rand_data *d = NULL;
     int i = 0;
 
@@ -270,7 +273,7 @@ struct randomizer *g3_randomizer_create(uint32_t flags)
 
 struct randomizer *pento_randomizer_create(uint32_t flags)
 {
-    struct randomizer *r = (struct randomizer *) malloc(sizeof(struct randomizer));
+    struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     struct histrand_data *d = NULL;
     unsigned int i = 0;
 
@@ -287,7 +290,7 @@ struct randomizer *pento_randomizer_create(uint32_t flags)
 
     d->hist_len = 6;
     d->rerolls = 0;
-    d->history = (piece_id *) malloc(d->hist_len * sizeof(piece_id));
+    d->history = (piece_id *)malloc(d->hist_len * sizeof(piece_id));
     d->history[0] = PIECE_ID_INVALID;
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
@@ -297,11 +300,12 @@ struct randomizer *pento_randomizer_create(uint32_t flags)
 
     d->difficulty = 0.0;
 
-    d->piece_weights = (double *) malloc(r->num_pieces * sizeof(double));
-    d->drought_protection_coefficients = (double *) malloc(r->num_pieces * sizeof(double));
-    d->drought_times = (unsigned int *) malloc(r->num_pieces * sizeof(unsigned int));
+    d->piece_weights = (double *)malloc(r->num_pieces * sizeof(double));
+    d->drought_protection_coefficients = (double *)malloc(r->num_pieces * sizeof(double));
+    d->drought_times = (unsigned int *)malloc(r->num_pieces * sizeof(unsigned int));
 
-    for(i = 0; i < r->num_pieces; i++) {
+    for(i = 0; i < r->num_pieces; i++)
+    {
         d->piece_weights[i] = pento_piece_weights[i];
         d->drought_protection_coefficients[i] = pento_drought_coeffs[i];
         d->drought_times[i] = 0;
@@ -317,14 +321,19 @@ void randomizer_destroy(struct randomizer *r)
 
     struct histrand_data *d = NULL;
 
-    switch(r->type) {
+    switch(r->type)
+    {
         case HISTRAND:
             d = (struct histrand_data *)r->data;
 
-            if(d->history) free(d->history);
-            if(d->piece_weights) free(d->piece_weights);
-            if(d->drought_protection_coefficients) free(d->drought_protection_coefficients);
-            if(d->drought_times) free(d->drought_times);
+            if(d->history)
+                free(d->history);
+            if(d->piece_weights)
+                free(d->piece_weights);
+            if(d->drought_protection_coefficients)
+                free(d->drought_protection_coefficients);
+            if(d->drought_times)
+                free(d->drought_times);
 
             free(r->data);
             break;
@@ -350,7 +359,8 @@ int g1_randomizer_init(struct randomizer *r, uint32_t *seed)
     int i = 0;
     int num_generated = 0;
 
-    if(seed) {
+    if(seed)
+    {
         g1_bkp_seed = g1_seed;
         g1_seed = *seed;
     }
@@ -376,7 +386,8 @@ int g2_randomizer_init(struct randomizer *r, uint32_t *seed)
     int i = 0;
     int num_generated = 0;
 
-    if(seed) {
+    if(seed)
+    {
         g2_bkp_seed = g2_seed;
         g2_seed = *seed;
     }
@@ -404,13 +415,14 @@ int g3_randomizer_init(struct randomizer *r, uint32_t *seed)
     int i = 0;
     int num_generated = 0;
 
-    if(seed) {
+    if(seed)
+    {
         g3_bkp_seed = g3_seed;
         g3_seed = *seed;
     }
 
     for(i = 0; i < 35; i++)
-      d->bag[i] = i/5;
+        d->bag[i] = i / 5;
 
     d->history[0] = ARS_S;
     d->history[1] = ARS_S;
@@ -436,7 +448,8 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
     int i = 0;
     int num_generated = 0;
 
-    if(seed) {
+    if(seed)
+    {
         pento_bkp_seed = pento_seed;
         pento_seed = *seed;
     }
@@ -449,7 +462,8 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
 
     t = pento_read_rand(r->seedp) % 5;
 
-    switch(t) {
+    switch(t)
+    {
         case 0:
             d->history[5] = QRS_I;
             break;
@@ -472,7 +486,8 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
 
     num_generated = 1;
 
-    for(i = 0; i < 5; i++) {
+    for(i = 0; i < 5; i++)
+    {
         histrand_pull(r); // Fb, Fa, X, S, Z get pulled into the void
         num_generated++;
     }
@@ -486,8 +501,9 @@ void history_push(piece_id *history, unsigned int hist_len, piece_id t)
 {
     unsigned int i = 0;
 
-    for(i = 0; i < hist_len - 1; i++) {
-        history[i] = history[i+1];
+    for(i = 0; i < hist_len - 1; i++)
+    {
+        history[i] = history[i + 1];
     }
 
     history[hist_len - 1] = t;
@@ -505,7 +521,8 @@ bool in_history(piece_id *history, unsigned int hist_len, piece_id t)
 {
     unsigned int i = 0;
 
-    for(i = 0; i < hist_len; i++) {
+    for(i = 0; i < hist_len; i++)
+    {
         if(history[i] == t)
             return true;
     }
@@ -522,10 +539,14 @@ piece_id histrand_pull(struct randomizer *r)
 
     history_push(d->history, d->hist_len, t);
 
-    if(d->drought_times) {  // update drought times if we are using them
-        for(i = 0; i < r->num_pieces; i++) {
-            if(i == t) d->drought_times[i] = 0;
-            else d->drought_times[i]++;
+    if(d->drought_times)
+    { // update drought times if we are using them
+        for(i = 0; i < r->num_pieces; i++)
+        {
+            if(i == t)
+                d->drought_times[i] = 0;
+            else
+                d->drought_times[i]++;
         }
     }
 
@@ -538,9 +559,9 @@ piece_id g3rand_pull(struct randomizer *r)
     piece_id t = g3rand_get_next(r);
     piece_id piece = history_pop(d->history);
 
-   history_push(d->history, 4, t);
+    history_push(d->history, 4, t);
 
-   return piece;
+    return piece;
 }
 
 piece_id histrand_get_next(struct randomizer *r)
@@ -555,19 +576,21 @@ piece_id histrand_get_next(struct randomizer *r)
     long double p = 0.0;
     double old_sum = 0.0;
     double sum = 0.0;
-    unsigned int *histogram = (unsigned int *) malloc(r->num_pieces * sizeof(unsigned int));
-    double *temp_weights = (double *) malloc(r->num_pieces * sizeof(double));
+    unsigned int *histogram = (unsigned int *)malloc(r->num_pieces * sizeof(unsigned int));
+    double *temp_weights = (double *)malloc(r->num_pieces * sizeof(double));
 
     if(!seedp)
         seedp = &g2_seed;
 
     if(!d->piece_weights) // if we are using rerolls and not weighted calculation
     {
-        for(i = 0; i < d->rerolls; i++) {
+        for(i = 0; i < d->rerolls; i++)
+        {
             t = g123_read_rand(seedp) % 7;
 
             in_hist = 0;
-            for(j = 0; j < d->hist_len; j++) {
+            for(j = 0; j < d->hist_len; j++)
+            {
                 if(d->history[j] == t)
                     in_hist = true;
             }
@@ -589,13 +612,16 @@ piece_id histrand_get_next(struct randomizer *r)
         // starts at 1 and counts up, bad pieces' weights are divided by this
         int below_threshold = 1;
 
-        for(i = 0; i < r->num_pieces; i++) {
+        for(i = 0; i < r->num_pieces; i++)
+        {
             temp_weights[i] = d->piece_weights[i];
             // histogram values are all offset by one from how many times the piece is actually in the history
             histogram[i] = 1;
 
-            for(j = 0; j < d->hist_len; j++) {
-                if(d->history[j] == i) {
+            for(j = 0; j < d->hist_len; j++)
+            {
+                if(d->history[j] == i)
+                {
                     histogram[i]++;
                     if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD)
                         below_threshold++;
@@ -603,16 +629,18 @@ piece_id histrand_get_next(struct randomizer *r)
             }
 
             temp_weights[i] /= (double)(histogram[i] * histogram[i]); // OLD: * (i < 18 ? pieces[i] : 1)
-            if(d->drought_protection_coefficients && d->drought_times) {
+            if(d->drought_protection_coefficients && d->drought_times)
+            {
                 // multiply by coefficient^(t/BASELINE)
                 // e.g. for coeff 2 and drought time BASELINE, weight *= 2
-                temp_weights[i] *= pow(d->drought_protection_coefficients[i],
-                                       (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE );
+                temp_weights[i] *= pow(d->drought_protection_coefficients[i], (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE);
             }
         }
 
-        for(i = 0; i < r->num_pieces; i++) {
-            if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD) {
+        for(i = 0; i < r->num_pieces; i++)
+        {
+            if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD)
+            {
                 temp_weights[i] /= (double)(below_threshold);
             }
 
@@ -624,7 +652,8 @@ piece_id histrand_get_next(struct randomizer *r)
             old_sum = sum;
             sum = 0.0;
 
-            for(i = 0; i < r->num_pieces; i++) {
+            for(i = 0; i < r->num_pieces; i++)
+            {
                 // final factor: difficulty, which brings weights closer to being equal to each other
                 // takes the difference from the average and multiplies by difficulty/100, then adds that to the weight
                 // note that if the weight was above average, a negative value is added
@@ -644,9 +673,12 @@ piece_id histrand_get_next(struct randomizer *r)
         for(i = 0; i < r->num_pieces; i++)
         {
             // find which segment p is in
-            if(p >= (long double)(sum) && p < (long double)(sum + temp_weights[i]) ) {
+            if(p >= (long double)(sum) && p < (long double)(sum + temp_weights[i]))
+            {
                 return i;
-            } else sum += temp_weights[i];
+            }
+            else
+                sum += temp_weights[i];
         }
 
         free(temp_weights);
@@ -685,35 +717,36 @@ piece_id g3rand_get_next(struct randomizer *r)
     unsigned int bagpos = 0;
     int i = 0;
 
-   for(i = 0; i < 6; i++)
-   {
-      bagpos = g123_read_rand(r->seedp) % 35;
-      piece = d->bag[bagpos];
+    for(i = 0; i < 6; i++)
+    {
+        bagpos = g123_read_rand(r->seedp) % 35;
+        piece = d->bag[bagpos];
 
-      // piece is not in the history, this is fine
-      if(!in_history(d->history, 4, piece))
-         break;
+        // piece is not in the history, this is fine
+        if(!in_history(d->history, 4, piece))
+            break;
 
-      // piece is already in the history, churn the bag a little and reroll
-      d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
+        // piece is already in the history, churn the bag a little and reroll
+        d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
 
-      // We might be about to fall out of the loop, pick something at random
-      bagpos = g123_read_rand(r->seedp) % 35;
-      piece = d->bag[bagpos];
-   }
+        // We might be about to fall out of the loop, pick something at random
+        bagpos = g123_read_rand(r->seedp) % 35;
+        piece = d->bag[bagpos];
+    }
 
-   // make the pieces we didn't pick more likely in future, and this piece less
-    for(i = 0; i < 7; i++) {
+    // make the pieces we didn't pick more likely in future, and this piece less
+    for(i = 0; i < 7; i++)
+    {
         if(i == (int)(piece))
             d->histogram[i] = 0;
         else
             d->histogram[i]++;
     }
 
-   // piece has finally be chosen, histogram is up to date, put the rarest piece back into the bag and return.
-   d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
+    // piece has finally be chosen, histogram is up to date, put the rarest piece back into the bag and return.
+    d->bag[bagpos] = g3_most_droughted_piece(d->histogram);
 
-   return piece;
+    return piece;
 }
 
 piece_id histrand_lookahead(struct randomizer *r, unsigned int distance)
@@ -833,10 +866,7 @@ rngstate from_hist_seed(char *history_str, uint32_t seed)
 }
 */
 
-uint32_t g2_get_seed()
-{
-    return g2_seed;
-}
+uint32_t g2_get_seed() { return g2_seed; }
 
 uint32_t g2_seed_rand(uint32_t seed)
 {
@@ -857,10 +887,7 @@ uint32_t g2_seed_restore()
     return 0;
 }
 
-uint32_t g2_rand(uint32_t n)
-{
-    return (n * 0x41c64e6d + 12345);
-}
+uint32_t g2_rand(uint32_t n) { return (n * 0x41c64e6d + 12345); }
 
 uint32_t g2_rand_rep(uint32_t n, uint32_t reps)
 {
@@ -876,10 +903,7 @@ uint32_t g2_rand_rep(uint32_t n, uint32_t reps)
     return result;
 }
 
-uint32_t g2_unrand(uint32_t n)
-{
-    return ((n - 12345) * 0xeeb9eb65);
-}
+uint32_t g2_unrand(uint32_t n) { return ((n - 12345) * 0xeeb9eb65); }
 
 uint32_t g2_unrand_rep(uint32_t n, uint32_t reps)
 {
@@ -905,10 +929,7 @@ uint32_t g123_read_rand(uint32_t *seedp)
 }
 
 // TODO
-uint32_t pento_read_rand(uint32_t *seedp)
-{
-    return g123_read_rand(seedp);
-}
+uint32_t pento_read_rand(uint32_t *seedp) { return g123_read_rand(seedp); }
 
 piece_id g123_get_init_piece(uint32_t *seedp)
 {
@@ -917,7 +938,8 @@ piece_id g123_get_init_piece(uint32_t *seedp)
     if(!seedp)
         seedp = &g2_seed;
 
-    while(t == 1 || t == 2 || t == 5) {
+    while(t == 1 || t == 2 || t == 5)
+    {
         t = g123_read_rand(seedp) % 7;
     }
 
@@ -1016,14 +1038,14 @@ piece_id g3_most_droughted_piece(int *histogram)
     unsigned int n = 0;
     unsigned int maxi = 0;
 
-   for(i = 0; i < 7; i++)
-   {
-      if(n < histogram[i])
-      {
-         n = histogram[i];
-         maxi = i;
-      }
-   }
+    for(i = 0; i < 7; i++)
+    {
+        if(n < histogram[i])
+        {
+            n = histogram[i];
+            maxi = i;
+        }
+    }
 
     return (piece_id)(maxi);
 }
