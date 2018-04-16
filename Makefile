@@ -3,9 +3,9 @@ BIN_PATH = bin
 BIN_NAME = game
 
 ifdef MINGW
-    CC = i686-w64-mingw32-gcc
+    CXX = i686-w64-mingw32-g++
 endif
-CC ?= gcc
+CXX ?= g++
 
 SRC_PATH = src
 OBJ_PATH = obj
@@ -19,18 +19,18 @@ ifdef MINGW
 endif
 PKG_CONFIG ?= pkg-config
 
-COMPILER_FLAGS = -Wall -Werror -Wno-comment -Wno-unused-variable -Wno-unused-parameter -g -DSQLITE_OMIT_LOAD_EXTENSION
-LINK_FLAGS = `${PKG_CONFIG} --libs sdl2` -lSDL2_image -lSDL2_mixer -lm -lpthread 
+COMPILER_FLAGS = -Wall -Wno-comment -g -DSQLITE_OMIT_LOAD_EXTENSION
+LINK_FLAGS = `${PKG_CONFIG} --libs sdl2` -lSDL2_image -lSDL2_mixer -lsqlite3 -lm -lpthread
 
 CFLAGS = $(COMPILER_FLAGS)
 ifeq ($(OS), Windows_NT)
 	CFLAGS += -lmingw32 -lSDL2main
 endif
 
-SRC = $(wildcard $(SRC_PATH)/*.c)
-# SRC = $(shell find $(SRC_PATH) -name '*.c' -printf '%T@\t%p\n' | sort -k 1nr | cut -f2-)
+SRC = $(wildcard $(SRC_PATH)/*.cpp)
+# SRC = $(shell find $(SRC_PATH) -name '*.cpp' -printf '%T@\t%p\n' | sort -k 1nr | cut -f2-)
 
-OBJ = $(SRC:$(SRC_PATH)/%.c=$(OBJ_PATH)/%.o)
+OBJ = $(SRC:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
 DEP = $(OBJ:.o=.d)
 
 .PHONY: all
@@ -39,16 +39,16 @@ all: dirs game
 	@ln -s $(BIN_PATH)/$(BIN_NAME) $(BIN_NAME)
 
 game : $(OBJ)
-	$(CC) $(OBJ) $(CFLAGS) $(LINK_FLAGS) -o $(BIN_PATH)/$(BIN_NAME)
+	$(CXX) $(OBJ) $(CFLAGS) $(LINK_FLAGS) -o $(BIN_PATH)/$(BIN_NAME)
 ifdef MINGW
 	cp /usr/i686-w64-mingw32/bin/*.dll .
 endif
 
 -include $(DEPS)
 
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
 	@echo "Compiling: $< -> $@"
-	$(CC) $(CFLAGS) $(INCLUDES) -MP -MMD -c $< -o $@
+	$(CXX) $(CFLAGS) $(INCLUDES) -MP -MMD -c $< -o $@
 
 .PHONY: dirs
 dirs:

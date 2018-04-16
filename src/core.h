@@ -166,13 +166,14 @@ struct coreState_ {
     int gfx_animations_max;
     int gfx_buttons_max;
 
+    struct keyflags prev_keys_raw;
     struct keyflags keys_raw;
     struct keyflags prev_keys;
     struct keyflags keys;
     struct keyflags pressed;
     das_direction hold_dir;
     int hold_time;
-    
+
     SDL_Joystick *joystick;
     int mouse_x;
     int mouse_y;
@@ -196,7 +197,7 @@ struct coreState_ {
 
     long double avg_sleep_ms_recent_array[RECENT_FRAMES];
     int recent_frame_overload;
-    
+
     struct scoredb scores;
     struct player player;
 };
