@@ -20,7 +20,6 @@
 
 typedef struct coreState_ coreState;
 
-#include "bstrlib.h"
 #include "grid.h"
 #include "gfx_structures.h"
 #include "audio.h"
@@ -33,7 +32,8 @@ enum {
     QUINTESSE
 };
 
-struct bindings {
+struct bindings
+{
     SDL_Keycode left;
     SDL_Keycode right;
     SDL_Keycode up;
@@ -54,7 +54,8 @@ typedef enum {
     DAS_DOWN
 } das_direction;
 
-struct keyflags {
+struct keyflags
+{
     Uint8 left;
     Uint8 right;
     Uint8 up;
@@ -67,7 +68,8 @@ struct keyflags {
     Uint8 escape;
 };
 
-struct assetdb {
+struct assetdb
+{
 #define IMG(name, filename) gfx_image name;
 #include "images.h"
 #undef IMG
@@ -80,12 +82,9 @@ struct assetdb {
 #include "sfx.h"
 #undef SFX
 };
-/*
-struct text_box {
-    struct bstrList *lines;
-};*/
 
-struct settings {
+struct settings
+{
     struct bindings *keybinds;
 
     int video_scale;
@@ -104,7 +103,8 @@ typedef struct game game_t;
 
 #include "qrs.h"
 
-struct coreState_ {
+struct coreState_
+{
     double fps;        // because tap fps = 61.68
 
     int text_editing;
@@ -202,7 +202,8 @@ struct coreState_ {
     struct player player;
 };
 
-struct game {
+struct game
+{
     int (*init)(game_t *);
     int (*quit)(game_t *);
     int (*preframe)(game_t *);

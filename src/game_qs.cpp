@@ -1,11 +1,12 @@
 #include "zed_dbg.h"
 #include <SDL2/SDL.h>
 #include <math.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string>
+#include "bstr_to_std.hpp"
 
 #include "core.h"
 #include "game_menu.h"
@@ -17,6 +18,8 @@
 #include "timer.h"
 
 #include "replay.h"
+
+using namespace std;
 
 // clang-format off
 const char *grade_names[37] =
@@ -2561,7 +2564,7 @@ int qs_update_pracdata(coreState *cs)
     qrsdata *q = (qrsdata *)cs->p1game->data;
     struct pracdata *d = q->pracdata;
     menudata *md = (menudata *)cs->menu->data;
-    bstring seq_bstr = NULL;
+    string seqStr;
     char name_str[3] = {0, 0, 0};
 
     int piece_seq[3000];
@@ -2656,18 +2659,19 @@ int qs_update_pracdata(coreState *cs)
 
     if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1]->type == MENU_TEXTINPUT)
     {
-        seq_bstr = ((struct text_opt_data *)(md->menu[md->numopts - 1]->data))->text;
-        for(i = 0; i < seq_bstr->slen; i++)
+        bstring bstr_ = bstrcpy(((struct text_opt_data *)(md->menu[md->numopts - 1]->data))->text);
+        seqStr = bstr_to_std(bstr_);
+        for(i = 0; i < seqStr.length(); i++)
         {
-            c = seq_bstr->data[i];
+            c = seqStr[i];
             if((c < 'A' || c > 'Z') && !(c == '*' || c == '(' || c == ')'))
             {
                 if(rpt_count)
                 {
                     k = 0;
-                    while(k < 4 && i < seq_bstr->slen && seq_bstr->data[i] >= '0' && seq_bstr->data[i] <= '9')
+                    while(k < 4 && i < seqStr.length() && seqStr[i] >= '0' && seqStr[i] <= '9')
                     {
-                        rpt_count_strbuf[k] = seq_bstr->data[i];
+                        rpt_count_strbuf[k] = seqStr[i];
                         rpt_count_strbuf[k + 1] = '\0';
                         i++;
                         k++;
@@ -2697,9 +2701,9 @@ int qs_update_pracdata(coreState *cs)
             {
                 num++;
 
-                if(i < seq_bstr->slen - 1)
+                if(i < seqStr.length() - 1)
                 {
-                    if(c == 'I' && seq_bstr->data[i + 1] == 'N' && seq_bstr->data[i + 2] == 'F')
+                    if(c == 'I' && seqStr[i + 1] == 'N' && seqStr[i + 2] == 'F')
                     {
                         piece_seq[num - 1] = SEQUENCE_REPEAT_INF;
                         goto end_sequence_proc;
@@ -2795,9 +2799,9 @@ int qs_update_pracdata(coreState *cs)
                 continue;
             }
 
-            name_str[0] = seq_bstr->data[i];
+            name_str[0] = seqStr[i];
 
-            if(seq_bstr->data[i + 1] == '4')
+            if(seqStr[i + 1] == '4')
             {
                 name_str[1] = '4';
                 name_str[2] = '\0';
@@ -2875,7 +2879,7 @@ int qs_update_pracdata(coreState *cs)
                 }
             }
 
-            if(seq_bstr->data[i + 1] == 'a')
+            if(seqStr[i + 1] == 'a')
             {
                 name_str[1] = 'a';
                 name_str[2] = '\0';
@@ -2938,7 +2942,7 @@ int qs_update_pracdata(coreState *cs)
                     }
                 }
             }
-            else if(seq_bstr->data[i + 1] == 'b')
+            else if(seqStr[i + 1] == 'b')
             {
                 name_str[1] = 'b';
                 name_str[2] = '\0';

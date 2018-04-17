@@ -2,8 +2,10 @@
 #define _file_io_h
 
 #include <SDL2/SDL.h>
-#include "bstrlib.h"
 #include "core.h"
+
+#include <string>
+#include <vector>
 
 #define OPTION_INVALID -255
 
@@ -11,13 +13,13 @@
 #define REPLAY_HEADER_SIZE (6*sizeof(int) + 3*sizeof(long))
 
 struct settings *parse_cfg(const char *filename);
-long get_cfg_option(struct bstrList *lines, bstring label);
-char *get_cfg_string(struct bstrList *lines, bstring label);
-struct bstrList *split_file(const char *filename);
+long get_cfg_option(std::vector<std::string>& lines, std::string label);
+char *get_cfg_string(std::vector<std::string>& lines, std::string label);
+std::vector<std::string> split_file(const char *filename);
 
-struct bindings *get_cfg_bindings(struct bstrList *lines);
-int get_asset_volume(struct bstrList *lines, bstring asset_name);
+struct bindings *get_cfg_bindings(std::vector<std::string>& lines);
+int get_asset_volume(std::vector<std::string>& lines, std::string asset_name);
 long parse_long(const char *str);
-SDL_Keycode bstr_sdlk(bstring b);
+SDL_Keycode str_sdlk(std::string str);
 
 #endif

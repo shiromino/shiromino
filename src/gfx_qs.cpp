@@ -1,7 +1,7 @@
-#include "bstrlib.h"
 #include <SDL2/SDL.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <string>
+#include "stringtools.hpp"
 
 #include "core.h"
 #include "game_qs.h"
@@ -10,6 +10,8 @@
 #include "qrs.h"
 #include "random.h"
 #include "timer.h"
+
+using namespace std;
 
 // clang-format off
 int piece_colors[26] =
@@ -103,28 +105,27 @@ int gfx_drawqs(game_t *g)
     double mspf = 1000.0 * (1.0 / cs->fps);
     int cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent) / mspf));
 
-    bstring text_level = bfromcstr("LEVEL");
-    bstring level = bformat("%d", q->level);
-    bstring next = bfromcstr("NEXT");
-    bstring next_name = NULL;
+    string text_level = "LEVEL";
+    string level = strtools::format("%d", q->level);
+    string next = "NEXT";
+    string next_name;
     if(q->previews[0])
     {
-        next_name = bfromcstr(get_qrspiece_name(q->previews[0]->qrs_id));
+        next_name = get_qrspiece_name(q->previews[0]->qrs_id);
     }
 
-    bstring grade_text = bfromcstr(get_grade_name(q->grade));
-    bstring score_text = bformat("%d", q->score);
+    string grade_text = get_grade_name(q->grade);
+    string score_text = strtools::format("%d", q->score);
 
-    bstring undo = bfromcstr("UNDO");
-    bstring redo = bfromcstr("REDO");
-    // bstring columns = bfromcstr("0123456789AB");
-    // bstring columns_adj = malloc(sizeof(bstring));
-    bstring avg_sleep_ms = bformat("%LF", cs->avg_sleep_ms_recent);
-    bstring ctp_bstr = bformat("%d%%", cpu_time_percentage);
-    bstring ctp_overload_bstr = NULL;
+    string undo = "UNDO";
+    string redo = "REDO";
+    // string columns = "0123456789AB";
+    string avg_sleep_ms = strtools::format("%LF", cs->avg_sleep_ms_recent);
+    string ctp_str = strtools::format("%d%%", cpu_time_percentage);
+    string ctp_overload_str;
 
-    bstring undo_len = NULL;
-    bstring redo_len = NULL;
+    string undo_len;
+    string redo_len;
 
     struct text_formatting fmt = {.rgba = RGBA_DEFAULT,
                                   .outline_rgba = RGBA_OUTLINE_DEFAULT,
@@ -154,7 +155,7 @@ int gfx_drawqs(game_t *g)
 
             if(q->pracdata->usr_field_undo_len)
             {
-                undo_len = bformat("%d", q->pracdata->usr_field_undo_len);
+                undo_len = strtools::format("%d", q->pracdata->usr_field_undo_len);
 
                 gfx_drawtext(cs, undo, QRS_FIELD_X + 32, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
                 gfx_drawtext(cs, undo_len, QRS_FIELD_X + 32, QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
@@ -165,16 +166,14 @@ int gfx_drawqs(game_t *g)
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
                 gfx_rendercopy(cs, font, &src, &dest);
-
-                bdestroy(undo_len);
             }
 
             if(q->pracdata->usr_field_redo_len)
             {
-                redo_len = bformat("%d", q->pracdata->usr_field_redo_len);
+                redo_len = strtools::format("%d", q->pracdata->usr_field_redo_len);
 
                 gfx_drawtext(cs, redo, QRS_FIELD_X + 9 * 16, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
-                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 - 16 * (redo_len->slen), QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
+                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 - 16 * (redo_len.length()), QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
 
                 src.x = 16 * 16;
                 src.y = 64;
@@ -182,8 +181,6 @@ int gfx_drawqs(game_t *g)
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
                 gfx_rendercopy(cs, font, &src, &dest);
-
-                bdestroy(redo_len);
             }
 
             if(q->pracdata->usr_seq_len)
@@ -541,14 +538,14 @@ int gfx_drawqs(game_t *g)
             else
                 fmt.rgba = RGBA_DEFAULT;
 
-            gfx_drawtext(cs, bfromcstr("SCORE"), x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
+            gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
             fmt.rgba = 0x6060FFFF;
             gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
         }
         else
         {
             fmt.rgba = RGBA_DEFAULT;
-            gfx_drawtext(cs, bfromcstr("SCORE"), x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
+            gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
             fmt.rgba = 0x20FF20FF;
             gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
         }
@@ -575,11 +572,11 @@ int gfx_drawqs(game_t *g)
                 labg_dest.h = 16;
                 gfx_rendercopy(cs, font, &labg_src, &labg_dest);
 
-                gfx_drawtext(cs, bfromcstr("RANK"), x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
+                gfx_drawtext(cs, "RANK", x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
 
                 fmt.rgba = 0xFFA0A0FF;
                 fmt.align = ALIGN_RIGHT;
-                gfx_drawtext(cs, bformat("%.1f", histrand_get_difficulty(q->randomizer)), x + 19 * 16 - 6, y + 22 * 16, monofont_fixedsys, &fmt);
+                gfx_drawtext(cs, strtools::format("%.1f", histrand_get_difficulty(q->randomizer)), x + 19 * 16 - 6, y + 22 * 16, monofont_fixedsys, &fmt);
                 fmt.align = ALIGN_LEFT;
             }
         }
@@ -662,30 +659,16 @@ int gfx_drawqs(game_t *g)
     fmt.shadow = true;
     fmt.outlined = false;
     fmt.rgba = 0x7070D0FF;
-    // gfx_drawtext(cs, ctp_bstr, 640 - 16 + 16 * (1 - ctp_bstr->slen), 2, monofont_square, &fmt);
+    // gfx_drawtext(cs, ctp_str, 640 - 16 + 16 * (1 - ctp_str->slen), 2, monofont_square, &fmt);
 
     if(cs->recent_frame_overload >= 0)
     {
         cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent_array[cs->recent_frame_overload]) / mspf));
-        ctp_overload_bstr = bformat("%d%%", cpu_time_percentage);
+        ctp_overload_str = strtools::format("%d%%", cpu_time_percentage);
 
         fmt.rgba = 0xB00000FF;
-        gfx_drawtext(cs, ctp_overload_bstr, 640 - 16 + 16 * (1 - ctp_overload_bstr->slen), 2, monofont_square, &fmt);
-
-        bdestroy(ctp_overload_bstr);
+        gfx_drawtext(cs, ctp_overload_str, 640 - 16 + 16 * (1 - ctp_overload_str.length()), 2, monofont_square, &fmt);
     }
-
-    bdestroy(text_level);
-    bdestroy(level);
-    bdestroy(next);
-    bdestroy(next_name);
-    bdestroy(grade_text);
-
-    bdestroy(undo);
-    bdestroy(redo);
-    // bdestroy(columns);
-    bdestroy(avg_sleep_ms);
-    bdestroy(ctp_bstr);
 
     return 0;
 }

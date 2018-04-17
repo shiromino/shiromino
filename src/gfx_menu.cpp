@@ -203,10 +203,10 @@ int gfx_drawmenu(game_t *g)
 
                 if(d7->text)
                 {
-                    if(d7->text->slen)
+                    if(d7->text->data && d7->text->slen)
                     {
                         textinput_display = blk2bstr(&d7->text->data[d7->leftmost_position], d7->text->slen - d7->leftmost_position);
-                        if(textinput_display->slen > d7->visible_chars)
+                        if(textinput_display && textinput_display->slen > d7->visible_chars)
                             btrunc(textinput_display, d7->visible_chars);
 
                         if(d7->selection)

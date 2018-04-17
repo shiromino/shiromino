@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "bstrlib.h"
 #include <SDL2/SDL.h>
+#include <string>
 
 #include "core.h"
 #include "grid.h"
@@ -99,6 +100,7 @@ int gfx_drawbuttons(coreState *cs, int type);
 int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned int flags, int x, int y);
 int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
 
+int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);

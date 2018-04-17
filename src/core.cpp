@@ -1,12 +1,11 @@
 #include "core.h"
 
 #include "zed_dbg.h"
-
 #include "file_io.h"
 #include "gfx.h"
 #include "gfx_structures.h"
 
-#include "game_menu.h" // questionable dependencies - TODO look into these
+#include "game_menu.h"
 #include "replay.h"
 
 #include <stdio.h>
@@ -15,8 +14,13 @@
 #include <string.h>
 #include <time.h>
 
+#include <vector>
+#include <string>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+
+using namespace std;
 
 #if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \
     !defined(__MINGW64__)
@@ -125,15 +129,16 @@ struct bindings *bindings_copy(struct bindings *src)
     return b;
 }
 
-static bstring make_path(const char *base, const char *subdir, const char *name, const char *ext)
+static string make_path(const char *base, const char *subdir, const char *name, const char *ext)
 {
-    bstring path = base ? bfromcstr(base) : bfromcstr(".");
-    bconchar(path, '/');
-    bcatcstr(path, subdir);
-    bconchar(path, '/');
-    bcatcstr(path, name);
-    bcatcstr(path, ext);
-    //   printf("asset: %s\n", path->data);
+    string path = base ? string{base} : string{"."};
+    path.append("/");
+    path.append(subdir);
+    path.append("/");
+    path.append(name);
+    path.append(ext);
+
+    //printf("asset: %s\n", path.c_str());
     return path;
 }
 
@@ -171,8 +176,6 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
             return NULL;
         }
     }
-
-    bstring full_path = NULL;
 
     // TODO: convert to new asset system - create an animation asset
     /*
@@ -312,40 +315,40 @@ void coreState_destroy(coreState *cs)
 
 static void load_image(coreState *cs, gfx_image *img, const char *filename)
 {
-    bstring path = make_path(cs->settings->home_path, "gfx", filename, "");
-    if(!img_load(img, (const char *)path->data, cs))
+    string path = make_path(cs->settings->home_path, "gfx", filename, "");
+    if(!img_load(img, (const char *)path.c_str(), cs))
+    {
         log_warn("Failed to load image '%s'", filename);
-    bdestroy(path);
+    }
 }
 
 static int load_asset_volume(coreState *cs, const char *filename)
 {
-    bstring path = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
-    struct bstrList *lines = split_file((char *)path->data);
-    bdestroy(path);
-    bstring bfilename = bfromcstr(filename);
-    int volume = get_asset_volume(lines, bfilename);
-    bdestroy(bfilename);
-    if(lines)
-        bstrListDestroy(lines);
-    return volume;
+    string path = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
+    vector<string> lines = split_file(path.c_str());
+
+    return get_asset_volume(lines, string{filename});
 }
 
 static void load_sfx(coreState *cs, struct sfx *s, const char *filename)
 {
-    bstring path = make_path(cs->settings->home_path, "audio", filename, "");
-    if(!sfx_load(s, (const char *)path->data))
+    string path = make_path(cs->settings->home_path, "audio", filename, "");
+    if(!sfx_load( s, (const char *)path.c_str() ))
+    {
         log_warn("Failed to load sfx '%s'", filename);
-    bdestroy(path);
+    }
+
     s->volume = load_asset_volume(cs, filename);
 }
 
 static void load_music(coreState *cs, struct music *m, const char *filename)
 {
-    bstring path = make_path(cs->settings->home_path, "audio", filename, "");
-    if(!music_load(m, (const char *)path->data))
+    string path = make_path(cs->settings->home_path, "audio", filename, "");
+    if(!music_load( m, (const char *)path.c_str() ))
+    {
         log_warn("Failed to load music '%s'", filename);
-    bdestroy(path);
+    }
+
     m->volume = load_asset_volume(cs, filename);
 }
 

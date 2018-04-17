@@ -2,42 +2,42 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-//#include <unistd.h>
 #include <errno.h>
 #include <time.h>
-//#include <dirent.h>
 #include "zed_dbg.h"
 #include <SDL2/SDL.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <string>
+#include <vector>
+#include "stringtools.hpp"
+
 #include "core.h"
+
+using namespace std;
 
 struct settings *parse_cfg(const char *filename)
 {
     if(!filename)
+    {
         return NULL;
-
-    // if(access(filename, F_OK) || access(filename, R_OK)) {
-    //    perror("Configuration file could not be accessed");
-    //    return NULL;
-    //}
+    }
 
     struct settings *s = (struct settings *)malloc(sizeof(struct settings));
-    struct bstrList *cfg_file_lines = split_file(filename);
-    if(!cfg_file_lines)
+    vector<string> cfg_file_lines = split_file(filename);
+
+    if(cfg_file_lines.empty())
     {
         printf("Error splitting config file\n");
     }
 
-    struct stat info;
-
-    bstring sfxvolume = bfromcstr("SFXVOLUME");
-    bstring musicvolume = bfromcstr("MUSICVOLUME");
-    bstring mastervolume = bfromcstr("MASTERVOLUME");
-    bstring home_path = bfromcstr("HOME_PATH");
-    bstring videoscale = bfromcstr("VIDEOSCALE");
-    bstring player_name = bfromcstr("PLAYERNAME");
+    string sfxvolume {"SFXVOLUME"};
+    string musicvolume {"MUSICVOLUME"};
+    string mastervolume {"MASTERVOLUME"};
+    string home_path {"HOME_PATH"};
+    string videoscale {"VIDEOSCALE"};
+    string player_name {"PLAYERNAME"};
 
     s->keybinds = get_cfg_bindings(cfg_file_lines);
 
@@ -52,251 +52,201 @@ struct settings *parse_cfg(const char *filename)
     s->player_name = get_cfg_string(cfg_file_lines, player_name);
     if(s->player_name == NULL)
     {
-        char *player_name_config_key = bstr2cstr(player_name, '\0');
-        log_info("Could not find %s setting in config file. Using default player name \"%s\"", player_name_config_key, defaultsettings.player_name);
-        bcstrfree(player_name_config_key);
-
+        log_info("Could not find %s setting in config file. Using default player name \"%s\"", player_name.c_str(), defaultsettings.player_name);
         s->player_name = defaultsettings.player_name;
     }
 
     if(s->sfx_volume == OPTION_INVALID || s->sfx_volume < 0 || s->sfx_volume > 100)
+    {
         s->sfx_volume = 100;
+    }
     if(s->mus_volume == OPTION_INVALID || s->mus_volume < 0 || s->mus_volume > 100)
+    {
         s->mus_volume = 100;
+    }
     if(s->master_volume == OPTION_INVALID || s->master_volume < 0 || s->master_volume > 100)
+    {
         s->master_volume = 100;
+    }
     if(s->video_scale == OPTION_INVALID || s->video_scale < 1 || s->video_scale > 4)
+    {
         s->video_scale = 1;
-
-    // if(s->home_path) {
-    //    if(stat(s->home_path, &info) != 0 || !S_ISDIR(info.st_mode)) {
-    //        s->home_path = NULL;
-    //        log_err("Invalid HOME_PATH setting");
-    //    }
-    //}
+    }
 
     return s;
 }
 
-long get_cfg_option(struct bstrList *lines, bstring label)
+long get_cfg_option(vector<string>& lines, string label)
 {
-    int value = 0;
-
-    if(!lines)
-        return OPTION_INVALID;
-
-    bstring wspace = bfromcstr(" \t");
-    struct bstrList *opt = NULL;
-    int i = 0;
-
-    for(i = 0; i < lines->qty; i++)
+    for(auto str : lines)
     {
-        if(lines->entry[i]->data[0] == '#')
+        if(str[0] == '#')
+        {
             continue;
-
-        if(binstr(lines->entry[i], 0, label) == 0)
-        {
-            break;
         }
 
-        if(i == lines->qty - 1)
+        if(str.find(label) == 0)
         {
-            bdestroy(wspace);
-            return OPTION_INVALID;
+            vector<string> tokens = strtools::words(str);
+            if(!tokens.empty())
+            {
+                return parse_long(tokens.back().c_str());
+            }
+            else
+            {
+                return OPTION_INVALID;
+            }
         }
     }
 
-    opt = bsplits(lines->entry[i], wspace);
-    if(opt)
-    {
-        value = parse_long((char *)(opt->entry[opt->qty - 1]->data)); // returns OPTION_INVALID on error
-        bstrListDestroy(opt);
-    }
-
-    bdestroy(wspace);
-    return value;
+    return OPTION_INVALID;
 }
 
-char *get_cfg_string(struct bstrList *lines, bstring label)
+char *get_cfg_string(vector<string>& lines, string label)
 {
-    if(!lines)
-        return NULL;
-
-    char *str = NULL;
-    bstring wspace = bfromcstr(" \t");
-    struct bstrList *opt = NULL;
-    int i = 0;
-
-    for(i = 0; i < lines->qty; i++)
+    for(auto str : lines)
     {
-        if(lines->entry[i]->data[0] == '#')
+        if(str[0] == '#')
+        {
             continue;
-
-        if(binstr(lines->entry[i], 0, label) == 0)
-        {
-            printf("Found %s\n", label->data);
-            break;
         }
 
-        if(i == lines->qty - 1)
+        if(str.find(label) == 0)
         {
-            str = NULL;
-            bdestroy(wspace);
-            return str;
+            vector<string> tokens = strtools::words(str);
+            if(!tokens.empty())
+            {
+                char *str = (char *)malloc(tokens.back().length() + 1);
+                strcpy(str, tokens.back().c_str());
+                return str;
+            }
+            else
+            {
+                return NULL;
+            }
         }
     }
 
-    opt = bsplits(lines->entry[i], wspace);
-    if(opt)
-    {
-        str = (char *)malloc(opt->entry[opt->qty - 1]->slen + 1);
-        strcpy(str, (char *)(opt->entry[opt->qty - 1]->data));
-        bstrListDestroy(opt);
-    }
-
-    bdestroy(wspace);
-    return str;
+    return NULL;
 }
 
-struct bstrList *split_file(const char *filename)
+vector<string> split_file(const char *filename)
 {
-    // printf("splitting file\n");
-
     FILE *f = fopen(filename, "rb");
     if(!f)
-        return NULL;
+    {
+        return {};
+    }
 
     fseek(f, 0, SEEK_END);
     int len = ftell(f);
     char *strbuf = (char *)malloc(len + 1);
-
     fseek(f, 0, SEEK_SET);
     fread(strbuf, 1, len, f);
     strbuf[len] = '\0';
-    bstring buf = bfromcstr(strbuf);
+
+    string buf {strbuf};
     free(strbuf);
-    struct bstrList *lines = bsplit(buf, '\n');
-    bdestroy(buf);
 
-    // printf("split file\n");
-
-    return lines;
+    return strtools::split(buf, '\n');
 }
 
-struct bindings *get_cfg_bindings(struct bstrList *lines)
+struct bindings *get_cfg_bindings(vector<string>& lines)
 {
-    if(!lines)
-        return NULL;
-
     struct bindings *bindings = bindings_copy(&defaultkeybinds[0]);
-    SDL_Keycode tmp = 0;
-    int i = 0;
-    int j = 0;
-    bstring wspace = bfromcstr(" \t");
-    bstring label = bformat("P%dCONTROLS", 1);
-    struct bstrList *keyopt = NULL;
+    string label = strtools::format("P%dCONTROLS", 1);
 
-    bstring keystrings[9] = {bformat("P%dLEFT", 1),
-                             bformat("P%dRIGHT", 1),
-                             bformat("P%dUP", 1),
-                             bformat("P%dDOWN", 1),
-                             bformat("P%dA", 1),
-                             bformat("P%dB", 1),
-                             bformat("P%dC", 1),
-                             bformat("P%dD", 1),
-                             bformat("P%dESCAPE", 1)};
+    string keystrings[9] = {strtools::format("P%dLEFT", 1),
+                            strtools::format("P%dRIGHT", 1),
+                            strtools::format("P%dUP", 1),
+                            strtools::format("P%dDOWN", 1),
+                            strtools::format("P%dA", 1),
+                            strtools::format("P%dB", 1),
+                            strtools::format("P%dC", 1),
+                            strtools::format("P%dD", 1),
+                            strtools::format("P%dESCAPE", 1)};
 
     SDL_Keycode *keyptrs[9] = {
         &bindings->left, &bindings->right, &bindings->up, &bindings->down, &bindings->a, &bindings->b, &bindings->c, &bindings->d, &bindings->escape};
 
-    for(i = 0; i < lines->qty; i++)
+    unsigned int lineIndex = 0;
+    for(auto str : lines)
     {
-        if(lines->entry[i]->data[0] == '#')
+        if(str[0] == '#')
+        {
             continue;
+        }
 
-        if(binstr(lines->entry[i], 0, label) == 0)
+        if(str.find(label) == 0)
         {
             break;
         }
+
+        lineIndex++;
     }
 
-    i++;
+    lineIndex++;
 
-    for(; i < lines->qty; i++)
+    for(; lineIndex < lines.size(); lineIndex++)
     {
-        if(lines->entry[i]->data[0] == '#')
-            continue;
-
-        keyopt = bsplits(lines->entry[i], wspace);
-        if(keyopt->entry[0]->slen == 0)
-            continue;
-
-        for(j = 0; j < 9; j++)
+        string& str = lines[lineIndex];
+        if(str[0] == '#')
         {
-            if(bstrcmp(keyopt->entry[0], keystrings[j]) == 0)
-            {
-                tmp = bstr_sdlk(keyopt->entry[keyopt->qty - 1]);
+            continue;
+        }
 
-                if(tmp)
+        vector<string> tokens = strtools::words(str);
+
+        if(tokens.empty())
+        {
+            continue;
+        }
+
+        for(int j = 0; j < 9; j++)
+        {
+            if(tokens[0] == keystrings[j])
+            {
+                SDL_Keycode val = str_sdlk(tokens.back());
+                if(val > 0)
                 {
-                    (*keyptrs[j]) = tmp;
+                    (*keyptrs[j]) = val;
                     break;
                 }
                 else
                 {
-                    // print message about invalid keycode?
+                    log_warn("Binding for %s is invalid, using default", keystrings[j].c_str());
                 }
             }
         }
-
-        bstrListDestroy(keyopt);
     }
-
-    bdestroy(wspace);
-    bdestroy(label);
 
     return bindings;
 }
 
-int get_asset_volume(struct bstrList *lines, bstring asset_name)
+int get_asset_volume(vector<string>& lines, string asset_name)
 {
-    int volume = 100;
-
-    if(!lines)
-        return volume;
-
-    bstring wspace = bfromcstr(" \t");
-    struct bstrList *opt = NULL;
-    int i = 0;
-
-    for(i = 0; i < lines->qty; i++)
+    for(auto str : lines)
     {
-        if(lines->entry[i]->data[0] == '#')
-            continue;
-
-        if(binstr(lines->entry[i], 0, asset_name) == 0)
+        if(str[0] == '#')
         {
-            break;
+            continue;
         }
 
-        if(i == lines->qty - 1)
+        if(str.find(asset_name) == 0)
         {
-            bdestroy(wspace);
-            return 128;
+            vector<string> tokens = strtools::words(str);
+            int volume = parse_long(tokens.back().c_str());
+
+            if(volume == OPTION_INVALID || volume < 0 || volume > 100)
+            {
+                volume = 100;
+            }
+
+            return (128 * volume) / 100;
         }
     }
 
-    opt = bsplits(lines->entry[i], wspace);
-    volume = parse_long((char *)(opt->entry[opt->qty - 1]->data));
-
-    if(volume == OPTION_INVALID || volume < 0 || volume > 100)
-        volume = 100;
-
-    volume = (128 * volume) / 100;
-
-    bstrListDestroy(opt);
-    bdestroy(wspace);
-    return volume;
+    return 128;
 }
 
 long parse_long(const char *str)
@@ -306,20 +256,24 @@ long parse_long(const char *str)
     long val = strtol(str, &temp, 10);
 
     if(temp == str || (*temp) != '\0' || ((val == LONG_MIN || val == LONG_MAX) && errno == ERANGE))
+    {
         return OPTION_INVALID;
+    }
 
     return val;
 }
 
-SDL_Keycode bstr_sdlk(bstring b)
+SDL_Keycode str_sdlk(string s)
 {
-    long c = b->data[0];
+    long c = (long)(s[0]);
 
     if(c == 'K')
     {
-        c = parse_long((char *)(&b->data[1]));
+        c = parse_long(s.c_str() + 1);
         if(c == OPTION_INVALID)
+        {
             c = 0;
+        }
 
         return (SDL_Keycode)(c);
     }

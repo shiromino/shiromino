@@ -108,7 +108,7 @@ struct menu_opt *menu_opt_create(int type, int (*value_update_callback)(coreStat
             d7->selection = 0;
             d7->leftmost_position = 0;
             d7->visible_chars = 15;
-            d7->text = bfromcstr("\0");
+            d7->text = bfromcstr("");
             break;
 
         case MENU_TOGGLE:

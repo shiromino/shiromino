@@ -12,9 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <string>
 // #include "tests.h"
 
-bool file_exists(char *filename)
+using namespace std;
+
+bool file_exists(const char *filename)
 {
     struct stat buffer = {0};
     return stat(filename, &buffer) == 0;
@@ -26,10 +29,10 @@ int main(int argc, char *argv[])
     struct settings *s = NULL;
     const char path[] = ".";
 
-    bstring calling_path = bfromcstr(path);
-    bstring cfg = bfromcstr("game.cfg");
-    bstring slash = bfromcstr("/");
-    bstring cfg_filename = NULL;
+    string calling_path {path};
+    string cfg = "game.cfg";
+    string slash = "/";
+    string cfg_filename;
 
     game_t *distr_test = NULL;
 
@@ -47,21 +50,23 @@ int main(int argc, char *argv[])
     switch(argc)
     {
         case 1:
-            if(!file_exists((char *)cfg->data))
+            if(!file_exists(cfg.c_str()))
             {
                 log_err("Couldn't find configuration file , aborting\n");
                 goto error;
             }
 
-            s = parse_cfg((char *)cfg->data);
+            s = parse_cfg(cfg.c_str());
             if(!s)
+            {
                 log_info("Using default settings\n");
+            }
 
-            cfg_filename = bstrcpy(calling_path);
-            bconcat(cfg_filename, slash);
-            bconcat(cfg_filename, cfg);
+            cfg_filename = calling_path;
+            cfg_filename.append(slash);
+            cfg_filename.append(cfg);
 
-            cs->cfg_filename = (char *)(cfg_filename->data);
+            cs->cfg_filename = (char *)(cfg_filename.c_str());
             break;
 
         case 2:
