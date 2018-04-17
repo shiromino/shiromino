@@ -17,6 +17,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
+#include "SGUIL/SGUIL.hpp"
 
 typedef struct coreState_ coreState;
 
@@ -70,9 +71,15 @@ struct keyflags
 
 struct assetdb
 {
+    gfx_image ASSET_IMG_NONE = {NULL};
+
 #define IMG(name, filename) gfx_image name;
 #include "images.h"
 #undef IMG
+
+#define FONT(name, sheetName, outlineSheetName, charW, charH) BitFont name;
+#include "fonts.h"
+#undef FONT
 
 #define MUS(name, filename) struct music name;
 #include "music.h"

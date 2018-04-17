@@ -323,6 +323,15 @@ static void load_image(coreState *cs, gfx_image *img, const char *filename)
     }
 }
 
+static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineSheetImg, unsigned int charW, unsigned int charH)
+{
+    font->sheet = sheetImg->tex;
+    font->outlineSheet = outlineSheetImg->tex;
+    font->charW = charW;
+    font->charH = charH;
+    font->isValid = true;
+}
+
 static int load_asset_volume(coreState *cs, const char *filename)
 {
     string path = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
@@ -361,6 +370,11 @@ int load_files(coreState *cs)
 #define IMG(name, filename) load_image(cs, &cs->assets->name, filename);
 #include "images.h"
 #undef IMG
+
+#define FONT(name, sheetName, outlineSheetName, charW, charH) \
+    load_bitfont(&cs->assets->name, &cs->assets->sheetName, &cs->assets->outlineSheetName, charW, charH);
+#include "fonts.h"
+#undef FONT
 
         // audio assets
 

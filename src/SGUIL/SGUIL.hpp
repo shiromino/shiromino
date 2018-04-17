@@ -760,9 +760,9 @@ void Gui_DrawBorder(SDL_Rect&, int, rgba_t);
 void Gui_GenerateTextPositionalValues(std::string&, TextFormat *, BitFont&, SDL_Rect&, std::vector<std::pair<int, int>>&, bool, bool);
 void Gui_GenerateTextPositionalValuesPartial(std::string&, unsigned int, unsigned int, TextFormat *, BitFont&, SDL_Rect&, std::vector<std::pair<int, int>>&, bool, bool);
 
-void Gui_DrawText_PV(std::string&, TextFormat *, BitFont&, std::vector<std::pair<int, int>>&, unsigned int, unsigned int);
-void Gui_DrawTextPartial_PV(std::string&, unsigned int, unsigned int, TextFormat *, BitFont&, std::vector<std::pair<int, int>>&, unsigned int, unsigned int);
-void Gui_DrawText(std::string&, TextFormat *, BitFont&, SDL_Rect&);
-void Gui_DrawTextPartial(std::string&, unsigned int, unsigned int, TextFormat *, BitFont&, SDL_Rect&);
+void Gui_DrawText_PV(std::string, TextFormat *, BitFont&, std::vector<std::pair<int, int>>&, unsigned int, unsigned int);
+void Gui_DrawTextPartial_PV(std::string, unsigned int, unsigned int, TextFormat *, BitFont&, std::vector<std::pair<int, int>>&, unsigned int, unsigned int);
+void Gui_DrawText(std::string, TextFormat *, BitFont&, SDL_Rect&);
+void Gui_DrawTextPartial(std::string, unsigned int, unsigned int, TextFormat *, BitFont&, SDL_Rect&);
 
 #endif

@@ -296,6 +296,13 @@ void Gui_GenerateTextPositionalValues(string& text, TextFormat *fmt, BitFont& fo
 void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
     BitFont& font, SDL_Rect& destBox, vector<pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
 {
+    TextFormat fmtDefault {};
+
+    if(fmt == NULL)
+    {
+        fmt = &fmtDefault;
+    }
+
     stringstream ss {text};
     string to;
     vector<string> lines;
@@ -395,13 +402,13 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
     }
 }
 
-void Gui_DrawText_PV(string& text, TextFormat *fmt, BitFont& font, vector<pair<int, int>>& positionalValues,
+void Gui_DrawText_PV(string text, TextFormat *fmt, BitFont& font, vector<pair<int, int>>& positionalValues,
     unsigned int scrollPosX, unsigned int scrollPosY)
 {
     Gui_DrawTextPartial_PV(text, 0, text.length(), fmt, font, positionalValues, scrollPosX, scrollPosY);
 }
 
-void Gui_DrawTextPartial_PV(string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
+void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, TextFormat *fmt,
     BitFont& font, vector<pair<int, int>>& positionalValues, unsigned int scrollPosX, unsigned int scrollPosY)
 {
     if(positionalValues.size() == 0)
@@ -412,7 +419,9 @@ void Gui_DrawTextPartial_PV(string& text, unsigned int pos, unsigned int len, Te
     TextFormat fmtDefault {};
 
     if(fmt == NULL)
+    {
         fmt = &fmtDefault;
+    }
 
     Gui_SetTextureRGBA(font.sheet, fmt->rgba);
 
@@ -498,14 +507,14 @@ void Gui_DrawTextPartial_PV(string& text, unsigned int pos, unsigned int len, Te
     }
 }
 
-void Gui_DrawText(string& text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
+void Gui_DrawText(string text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
 {
     vector<pair<int, int>> textPositionalValues;
     Gui_GenerateTextPositionalValues(text, fmt, font, destBox, textPositionalValues, false, false);
     Gui_DrawText_PV(text, fmt, font, textPositionalValues, 0, 0);
 }
 
-void Gui_DrawTextPartial(string& text, unsigned int pos, unsigned int len, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
+void Gui_DrawTextPartial(string text, unsigned int pos, unsigned int len, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
 // destBox's w and h fields can be 0, which results in the text being rendered without strict positional bounds
 {
     vector<pair<int, int>> textPositionalValues;
