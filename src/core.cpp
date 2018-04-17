@@ -23,6 +23,8 @@
 
 using namespace std;
 
+BindableVariables bindables;
+
 #if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \
     !defined(__MINGW64__)
 #include <direct.h>
@@ -196,10 +198,8 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
     return a;
 }
 
-coreState *coreState_create()
+void coreState_initialize(coreState *cs)
 {
-    coreState *cs = (coreState *)malloc(sizeof(coreState));
-
     int i = 0;
 
     cs->fps = FPS;
@@ -288,14 +288,14 @@ coreState *coreState_create()
     }
 
     cs->recent_frame_overload = -1;
-
-    return cs;
 }
 
 void coreState_destroy(coreState *cs)
 {
     if(!cs)
+    {
         return;
+    }
 
     if(cs->settings != &defaultsettings && cs->settings)
     {
@@ -310,8 +310,6 @@ void coreState_destroy(coreState *cs)
 
     if(cs->pracdata_mirror)
         pracdata_destroy(cs->pracdata_mirror);
-
-    free(cs);
 }
 
 static void load_image(coreState *cs, gfx_image *img, const char *filename)

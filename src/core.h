@@ -15,6 +15,9 @@
 #define BUTTON_PRESSED_THIS_FRAME 2
 #define JOYSTICK_DEAD_ZONE 8000
 
+#include <vector>
+#include <memory>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "SGUIL/SGUIL.hpp"
@@ -198,6 +201,7 @@ struct coreState_
     game_t *p1game;
     game_t *menu;
     struct pracdata *pracdata_mirror;
+    std::vector<std::unique_ptr<GuiWindow>> guiWindowList;
 
     long double avg_sleep_ms;
     long double avg_sleep_ms_recent;
@@ -229,6 +233,8 @@ struct game
 extern struct bindings defaultkeybinds[2];
 extern struct settings defaultsettings;
 
+extern BindableVariables bindables;
+
 int is_left_input_repeat(coreState *cs, int delay);
 int is_right_input_repeat(coreState *cs, int delay);
 int is_up_input_repeat(coreState *cs, int delay);
@@ -236,7 +242,7 @@ int is_down_input_repeat(coreState *cs, int delay);
 
 struct bindings *bindings_copy(struct bindings *src);
 
-coreState *coreState_create();
+void coreState_initialize(coreState *cs);
 void coreState_destroy(coreState *cs);
 
 gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier);

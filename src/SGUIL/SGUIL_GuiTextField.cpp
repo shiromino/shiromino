@@ -14,21 +14,17 @@
 using namespace std;
 
 
-GuiTextField::GuiTextField(int ID, optionID_t optionID, BitFont& font, SDL_Rect relativeDestRect)
+GuiTextField::GuiTextField(int ID, BindableString *var, BitFont& font, SDL_Rect relativeDestRect)
     : font(font)
 {
     this->ID = ID;
-    this->optionID = optionID;
+    this->var = var;
     this->relativeDestRect = relativeDestRect;
 
     displayTexture = NULL;
     updateDisplayStringPVs = false;
 
     containingWindow = NULL;
-
-    choice = -1;
-    accessType = no_access;
-    accessPtr = NULL;
 
     enabled = true;
     canHoldKeyboardFocus = true;
@@ -50,23 +46,16 @@ GuiTextField::GuiTextField(int ID, optionID_t optionID, BitFont& font, SDL_Rect 
     verticalScroll = true;
 }
 
-GuiTextField::GuiTextField(int ID, optionID_t optionID, string valueDefault, BitFont& font,
-    SDL_Rect relativeDestRect, function<int(optionID_t, string)> valueUpdateCallback)
-    : GuiTextField(ID, optionID, font, relativeDestRect)
+GuiTextField::GuiTextField(int ID, BindableString *var, string valueDefault, BitFont& font, SDL_Rect relativeDestRect)
+    : GuiTextField(ID, var, font, relativeDestRect)
 {
     if(!valueDefault.empty())
     {
         this->value = valueDefault;
     }
-
-    if(valueUpdateCallback)
-    {
-        this->valueUpdateCallback = valueUpdateCallback;
-        this->accessType = use_callback;
-    }
 }
-
-GuiTextField::GuiTextField(int ID, optionID_t optionID, string valueDefault, BitFont& font,
+/*
+GuiTextField::GuiTextField(int ID, string valueDefault, BitFont& font,
     SDL_Rect relativeDestRect, function<int(optionID_t, string)> valueUpdateCallback, string *accessPtr, bool accessCopy)
     : GuiTextField(ID, optionID, font, relativeDestRect)
 {
@@ -92,7 +81,7 @@ GuiTextField::GuiTextField(int ID, optionID_t optionID, string valueDefault, Bit
             this->accessType |= random_access;
         }
     }
-}
+}*/
 
 /*
 GuiTextField::GuiTextField(const GuiTextField& gtf)
@@ -517,6 +506,10 @@ bool GuiTextField::textInsert(string s)
     }
 
     value.insert(cursor, s);
+    if(var)
+    {
+        var->set(value);
+    }
 
     cursor += s.length();
     selectionStart = selectionEnd = cursor;
@@ -555,6 +548,10 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
     }
 
     value.erase((string::iterator)&value[start], (string::iterator)&value[end]);
+    if(var)
+    {
+        var->set(value);
+    }
 
     if(cursor > start)
     {

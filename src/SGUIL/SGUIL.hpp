@@ -340,16 +340,20 @@ public:
 	virtual void set(const std::string& val) = 0;
 	virtual std::string get() const = 0;
 
-//	void addObserver(...);
+	void addObserver(std::function<void(BindableVariable *)> ob) { observers.push_back(ob); }
 
 protected:
 	void valueChanged()
 	{
-		// TODO: call all observers with this
+		for(auto ob : observers)
+        {
+            ob(this);
+        }
 	}
 
 private:
 	const std::string name_;
+    std::vector<std::function<void(BindableVariable *)>> observers;
 };
 
 class BindableString : public BindableVariable
@@ -482,9 +486,18 @@ public:
 
 	BindableVariable* find(const std::string& name)
 	{
+        if(vars.size() == 0)
+        {
+            return NULL;
+        }
+
 		auto it = std::find_if(vars.begin(), vars.end(), [&name](const auto& p){ return p->name() == name; });
 		if(it != vars.end())
+        {
 			return it->get();
+        }
+
+        return NULL;
 	};
 
 private:
@@ -505,29 +518,29 @@ inline enumOptionAccess operator | (enumOptionAccess a, enumOptionAccess b)
 inline enumOptionAccess operator |= (enumOptionAccess a, enumOptionAccess b)
 { return a = a | b; }
 
-template<typename T>
 class GuiOptionInteractable : public GuiInteractable
 {
 protected:
-    std::function<int(optionID_t, T)> valueUpdateCallback;
-    optionID_t optionID;
+    BindableVariable *var;
+    //std::function<int(optionID_t, T)> valueUpdateCallback;
+    //optionID_t optionID;
 
-    std::vector<T> valueOptions;
-    int choice;
-    T value;
+    //std::vector<T> valueOptions;
+    //int choice;
+    //T value;
 
-    enumOptionAccess accessType;
-    T *accessPtr;
+    //enumOptionAccess accessType;
+    //T *accessPtr;
 };
 
 // template<typename T>
-class GuiTextField : public GuiOptionInteractable<std::string>
+class GuiTextField : public GuiOptionInteractable
 // text box which the user can send input to
 {
 public:
-    GuiTextField(int, optionID_t, BitFont&, SDL_Rect);
-    GuiTextField(int, optionID_t, std::string, BitFont&, SDL_Rect, std::function<int(optionID_t, std::string)>);
-    GuiTextField(int, optionID_t, std::string, BitFont&, SDL_Rect, std::function<int(optionID_t, std::string)>, std::string *, bool);
+    GuiTextField(int, BindableString *, BitFont&, SDL_Rect);
+    GuiTextField(int, BindableString *, std::string, BitFont&, SDL_Rect);
+    // GuiTextField(int, optionID_t, std::string, BitFont&, SDL_Rect, std::function<int(optionID_t, std::string)>, std::string *, bool);
     // GuiTextField(const GuiTextField&);
     ~GuiTextField();
 
@@ -559,6 +572,7 @@ protected:
     std::vector<GuiRenderHook<GuiTextField>> renderHooks;
 
     std::vector<std::pair<int, int>> textPositionalValues;
+    std::string value;
     TextFormat fmt;
     BitFont& font;
     uint64_t lastEventTime;

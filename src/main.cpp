@@ -25,7 +25,8 @@ bool file_exists(const char *filename)
 
 int main(int argc, char *argv[])
 {
-    coreState *cs = coreState_create();
+    coreState cs;
+    coreState_initialize(&cs);
     struct settings *s = NULL;
     const char path[] = ".";
 
@@ -36,8 +37,8 @@ int main(int argc, char *argv[])
 
     game_t *distr_test = NULL;
 
-    cs->calling_path = (char *)malloc(strlen(path) + 1);
-    strcpy(cs->calling_path, path);
+    cs.calling_path = (char *)malloc(strlen(path) + 1);
+    strcpy(cs.calling_path, path);
 
     g123_seeds_init();
     /*
@@ -66,14 +67,14 @@ int main(int argc, char *argv[])
             cfg_filename.append(slash);
             cfg_filename.append(cfg);
 
-            cs->cfg_filename = (char *)(cfg_filename.c_str());
+            cs.cfg_filename = (char *)(cfg_filename.c_str());
             break;
 
         case 2:
             if(strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
             {
                 printf("Usage: %s [path to config file]\n", argv[0]);
-                coreState_destroy(cs);
+                coreState_destroy(&cs);
                 return 0;
             }
 
@@ -97,8 +98,8 @@ int main(int argc, char *argv[])
             s = parse_cfg(argv[1]);
             check(s, "File could not be opened for reading");
 
-            cs->cfg_filename = (char *)malloc(strlen(argv[1]) + 1);
-            strcpy(cs->cfg_filename, argv[1]);
+            cs.cfg_filename = (char *)malloc(strlen(argv[1]) + 1);
+            strcpy(cs.cfg_filename, argv[1]);
             break;
 
         default:
@@ -106,24 +107,24 @@ int main(int argc, char *argv[])
             goto error;
     }
 
-    printf("Finished reading configuration file: %s\n", cs->cfg_filename);
+    printf("Finished reading configuration file: %s\n", cs.cfg_filename);
 
-    if(init(cs, s))
+    if(init(&cs, s))
     {
         printf("Initialization failed, aborting.\n");
-        quit(cs);
-        coreState_destroy(cs);
+        quit(&cs);
+        coreState_destroy(&cs);
         return 1;
     }
 
-    run(cs);
+    run(&cs);
 
-    quit(cs);
-    coreState_destroy(cs);
+    quit(&cs);
+    coreState_destroy(&cs);
 
     return 0;
 
 error:
-    coreState_destroy(cs);
+    coreState_destroy(&cs);
     return 1;
 }
