@@ -229,25 +229,6 @@ void gfx_quit(coreState *cs)
     free(monofont_fixedsys);
 }
 
-int gfx_rendercopy(coreState *cs, SDL_Texture *t, SDL_Rect *src, SDL_Rect *dest_)
-{
-    SDL_Rect dest;
-
-    // SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
-
-    if(dest_)
-    {
-        dest.x = dest_->x * cs->settings->video_scale;
-        dest.y = dest_->y * cs->settings->video_scale;
-        dest.w = dest_->w * cs->settings->video_scale;
-        dest.h = dest_->h * cs->settings->video_scale;
-
-        return SDL_RenderCopy(cs->screen.renderer, t, src, &dest);
-    }
-    else
-        return SDL_RenderCopy(cs->screen.renderer, t, src, dest_);
-}
-
 int gfx_start_bg_fade_in(coreState *cs)
 {
     if(!cs)
@@ -288,7 +269,7 @@ int gfx_drawbg(coreState *cs)
             anim_bg_frame = (asset_by_name(cs, asset_name->data))->data;
             //printf("Drawing %s\n", asset_name->data);
 
-            gfx_rendercopy(cs, anim_bg_frame, NULL, NULL);
+            SDL_RenderCopy(cs->screen.renderer, anim_bg_frame, NULL, NULL);
         //}
 
         if(cs->anim_bg) {
@@ -329,7 +310,7 @@ int gfx_drawbg(coreState *cs)
             }
 
             SDL_SetTextureColorMod(cs->bg_old, r, g, b);
-            gfx_rendercopy(cs, cs->bg_old, NULL, NULL);
+            SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
         }
         else
         {
@@ -357,7 +338,7 @@ int gfx_drawbg(coreState *cs)
             }
 
             SDL_SetTextureColorMod(cs->bg, r, g, b);
-            gfx_rendercopy(cs, cs->bg, NULL, NULL);
+            SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
         }
     }
     else
@@ -365,7 +346,7 @@ int gfx_drawbg(coreState *cs)
         if(!cs->bg)
             return 0;
 
-        gfx_rendercopy(cs, cs->bg, NULL, NULL);
+        SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
     }
 
     return 0;
@@ -376,7 +357,7 @@ int gfx_draw_emergency_bg_darken(coreState *cs)
     SDL_Texture *bg_darken = cs->assets->bg_darken.tex;
     SDL_SetTextureColorMod(bg_darken, 0, 0, 0);
     SDL_SetTextureAlphaMod(bg_darken, 210);
-    gfx_rendercopy(cs, bg_darken, NULL, NULL);
+    SDL_RenderCopy(cs->screen.renderer, bg_darken, NULL, NULL);
     SDL_SetTextureColorMod(bg_darken, 255, 255, 255);
     SDL_SetTextureAlphaMod(bg_darken, 255);
 
@@ -544,7 +525,7 @@ int gfx_drawanimations(coreState *cs, int type)
 
         SDL_SetTextureColorMod(t, R(a->rgba_mod), G(a->rgba_mod), B(a->rgba_mod));
         SDL_SetTextureAlphaMod(t, A(a->rgba_mod));
-        gfx_rendercopy(cs, t, NULL, &dest);
+        SDL_RenderCopy(cs->screen.renderer, t, NULL, &dest);
         SDL_SetTextureAlphaMod(t, 255);
         SDL_SetTextureColorMod(t, 255, 255, 255);
 
@@ -662,7 +643,7 @@ int gfx_drawbuttons(coreState *cs, int type)
             SDL_SetTextureAlphaMod(font, A(b->text_rgba_mod));
         }
 
-        gfx_rendercopy(cs, font, &src, &dest);
+        SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
 
         src.x += 6;
         dest.x += 6;
@@ -674,7 +655,7 @@ int gfx_drawbuttons(coreState *cs, int type)
             if(j)
                 dest.x += 16;
 
-            gfx_rendercopy(cs, font, &src, &dest);
+            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
         }
 
         src.x += 16;
@@ -682,7 +663,7 @@ int gfx_drawbuttons(coreState *cs, int type)
         dest.w = 6;
         dest.x += 16;
 
-        gfx_rendercopy(cs, font, &src, &dest);
+        SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
 
         SDL_SetTextureColorMod(font, 255, 255, 255);
         SDL_SetTextureAlphaMod(font, 255);
@@ -750,10 +731,10 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
     /*if(flags & TETRION_DEATH) {
         tetrion_qs = (asset_by_name(cs, "tetrion/tetrion_death"))->data;
-        gfx_rendercopy(cs, tetrion_qs, NULL, &tdest);
+        SDL_RenderCopy(cs->screen.renderer, tetrion_qs, NULL, &tdest);
     } else {
         SDL_SetTextureColorMod(tetrion_qs, (Uint8)r, (Uint8)g, (Uint8)b);
-        gfx_rendercopy(cs, tetrion_qs, NULL, &tdest);
+        SDL_RenderCopy(cs->screen.renderer, tetrion_qs, NULL, &tdest);
     }*/
 
     //   if(flags & GFX_G2) {
@@ -783,16 +764,16 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
             break;
     }
 
-    gfx_rendercopy(cs, tetrion_qs, NULL, &tdest);
+    SDL_RenderCopy(cs->screen.renderer, tetrion_qs, NULL, &tdest);
 
     if(flags & DRAWFIELD_GRID)
-        gfx_rendercopy(cs, playfield_grid, NULL, &tdest);
+        SDL_RenderCopy(cs->screen.renderer, playfield_grid, NULL, &tdest);
 
     /*if(field == cs->p1game->field) {
           use_deltas = 1;
           if(!grid_cells_filled(q->field_deltas)) {
              SDL_SetRenderTarget(cs->screen.renderer, NULL);
-             gfx_rendercopy(cs, q->field_tex, NULL, &field_dest);
+             SDL_RenderCopy(cs->screen.renderer, q->field_tex, NULL, &field_dest);
              return 0;
           }
 
@@ -851,7 +832,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                     dest.x = x + 16 + (i * 16);
                     dest.y = y + (j * 16);
 
-                    gfx_rendercopy(cs, tets, &src, &dest);
+                    SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                     src.x = 32 * 16;
                 }
                 else
@@ -865,23 +846,23 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
                 // piece_bstr->data[0] = c + 'A' - 1;
 
-                // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[c-1] * 0x100) + 0xFF); //gfx_rendercopy(cs, tets, &src, &dest);
+                // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[c-1] * 0x100) + 0xFF); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                 if(!(flags & DRAWFIELD_INVISIBLE) || (c == QRS_FIELD_W_LIMITER))
                 {
                     // this stuff should be handled more elegantly, without needing access to the qrsdata
                     if(q->state_flags & GAMESTATE_FADING)
                     {
                         if(GET_PIECE_FADE_COUNTER(c) > 10)
-                            gfx_rendercopy(cs, tets, &src, &dest);
+                            SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                         else if(GET_PIECE_FADE_COUNTER(c) > 0)
                         {
                             SDL_SetTextureAlphaMod(tets, GET_PIECE_FADE_COUNTER(c) * 25);
-                            gfx_rendercopy(cs, tets, &src, &dest);
+                            SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                             SDL_SetTextureAlphaMod(tets, 255);
                         }
                     }
                     else
-                        gfx_rendercopy(cs, tets, &src, &dest);
+                        SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
 
                     if((!(c & QRS_PIECE_BRACKETS) || c < 0) && !(flags & DRAWFIELD_NO_OUTLINE))
                     {
@@ -892,7 +873,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             src.y = 48;
 
                             if(!use_deltas)
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             /*else {
                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }*/
@@ -905,7 +886,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             src.y = 48;
 
                             if(!use_deltas)
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             /*else {
                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }*/
@@ -918,7 +899,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             src.y = 48;
 
                             if(!use_deltas)
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             /*else {
                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }*/
@@ -931,7 +912,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             src.y = 48;
 
                             if(!use_deltas)
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             /*else {
                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }*/
@@ -947,7 +928,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
     /*if(use_deltas) {
        SDL_SetRenderTarget(cs->screen.renderer, NULL);
        SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_BLEND);
-       gfx_rendercopy(cs, q->field_tex, NULL, &field_dest);
+       SDL_RenderCopy(cs->screen.renderer, q->field_tex, NULL, &field_dest);
     }*/
 
     bdestroy(piece_bstr);
@@ -995,7 +976,7 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 
     src.x = 0;
     dest.x = x;
-    gfx_rendercopy(cs, font, &src, &dest);
+    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
 
     if(k->right)
     {
@@ -1008,7 +989,7 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 
     src.x = 16;
     dest.x = x + 16;
-    gfx_rendercopy(cs, font, &src, &dest);
+    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
 
     if(k->up)
     {
@@ -1021,7 +1002,7 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 
     src.x = 32;
     dest.x = x + 32;
-    gfx_rendercopy(cs, font, &src, &dest);
+    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
 
     if(k->down)
     {
@@ -1034,7 +1015,7 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 
     src.x = 48;
     dest.x = x + 48;
-    gfx_rendercopy(cs, font, &src, &dest);
+    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
 
     SDL_SetTextureColorMod(font, 255, 255, 255);
 
@@ -1219,7 +1200,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             }
             else
             {
-                gfx_rendercopy(cs, font->sheet, &src, &dest);
+                SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
             }
 
             SDL_SetTextureColorMod(font->sheet, R(fmt->rgba), G(fmt->rgba), B(fmt->rgba));
@@ -1243,11 +1224,11 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             if(font->outline_sheet)
                 SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->rgba) / 4);
 
-            gfx_rendercopy(cs, font->sheet, &src, &dest);
+            SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
 
             if(fmt->outlined && font->outline_sheet)
             {
-                gfx_rendercopy(cs, font->outline_sheet, &src, &dest);
+                SDL_RenderCopy(cs->screen.renderer, font->outline_sheet, &src, &dest);
             }
 
             dest.x += 2.0 * fmt->size_multiplier;
@@ -1269,10 +1250,10 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
         }
         else
         {
-            gfx_rendercopy(cs, font->sheet, &src, &dest);
+            SDL_RenderCopy(cs->screen.renderer, font->sheet, &src, &dest);
 
             if(fmt->outlined && font->outline_sheet)
-                gfx_rendercopy(cs, font->outline_sheet, &src, &dest);
+                SDL_RenderCopy(cs->screen.renderer, font->outline_sheet, &src, &dest);
         }
 
         dest.x += fmt->size_multiplier * (float)font->char_w;
@@ -1367,7 +1348,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                     cell_y = (y - field_y) / 16 + j;
                     if(gridgetcell(field, cell_x, cell_y) > 0 || flags & DRAWPIECE_PREVIEW)
                     {
-                        gfx_rendercopy(cs, tets, &src, &dest);
+                        SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
 
                         if(!(flags & DRAWPIECE_PREVIEW))
                         {
@@ -1377,7 +1358,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 src.x = 0;
                                 src.y = 48;
 
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
                             c = gridgetcell(field, cell_x - 1, cell_y); // above, left, right, below
@@ -1386,7 +1367,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 src.x = 16;
                                 src.y = 48;
 
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
                             c = gridgetcell(field, cell_x + 1, cell_y); // above, left, right, below
@@ -1395,7 +1376,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 src.x = 32;
                                 src.y = 48;
 
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
                             c = gridgetcell(field, cell_x, cell_y + 1); // above, left, right, below
@@ -1404,7 +1385,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 src.x = 48;
                                 src.y = 48;
 
-                                gfx_rendercopy(cs, misc, &src, &dest);
+                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
                             src.y = 0;
@@ -1412,8 +1393,8 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                     }
                 }
                 else
-                    // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[pd->qrs_id] * 0x100) + A(rgba)); //gfx_rendercopy(cs, tets, &src, &dest);
-                    gfx_rendercopy(cs, tets, &src, &dest);
+                    // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[pd->qrs_id] * 0x100) + A(rgba)); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
             }
         }
     }
@@ -1457,13 +1438,13 @@ int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba)
     for(i = 0; i < 6; i++)
     {
         src.x = digits[i] * 20;
-        gfx_rendercopy(cs, font, &src, &dest);
+        SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
         dest.x += 20;
 
         if(i == 1 || i == 3)
         {
             src.x = 200; // colon character offset
-            gfx_rendercopy(cs, font, &src, &dest);
+            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
             dest.x += 20;
         }
     }

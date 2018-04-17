@@ -76,8 +76,6 @@ void gfx_button_destroy(gfx_button *b);
 int gfx_init(coreState *cs);
 void gfx_quit(coreState *cs);
 
-int gfx_rendercopy(coreState *cs, SDL_Texture *t, SDL_Rect *src, SDL_Rect *dest_);
-
 int gfx_start_bg_fade_in(coreState *cs);
 int gfx_drawbg(coreState *cs);
 int gfx_draw_emergency_bg_darken(coreState *cs);

@@ -32,22 +32,42 @@ struct settings *parse_cfg(const char *filename)
         printf("Error splitting config file\n");
     }
 
-    string sfxvolume {"SFXVOLUME"};
-    string musicvolume {"MUSICVOLUME"};
-    string mastervolume {"MASTERVOLUME"};
-    string home_path {"HOME_PATH"};
-    string videoscale {"VIDEOSCALE"};
-    string player_name {"PLAYERNAME"};
+    string sfxvolume = "SFXVOLUME";
+    string musicvolume = "MUSICVOLUME";
+    string mastervolume = "MASTERVOLUME";
+    string home_path = "HOME_PATH";
+    string videoscale = "VIDEOSCALE";
+    string player_name = "PLAYERNAME";
+    string fscreen = "FULLSCREEN";
+    string videostretch = "VIDEOSTRETCH";
 
     s->keybinds = get_cfg_bindings(cfg_file_lines);
-
-    s->fullscreen = defaultsettings.fullscreen; // unused option for the time being
 
     s->sfx_volume = get_cfg_option(cfg_file_lines, sfxvolume);
     s->mus_volume = get_cfg_option(cfg_file_lines, musicvolume);
     s->master_volume = get_cfg_option(cfg_file_lines, mastervolume);
     s->video_scale = get_cfg_option(cfg_file_lines, videoscale);
     s->home_path = get_cfg_string(cfg_file_lines, home_path);
+
+    int fscreenInt = get_cfg_option(cfg_file_lines, fscreen);
+    if(fscreenInt != OPTION_INVALID)
+    {
+        s->fullscreen = fscreenInt >= 1 ? true : false;
+    }
+    else
+    {
+        s->fullscreen = defaultsettings.fullscreen;
+    }
+
+    int vstretchInt = get_cfg_option(cfg_file_lines, videostretch);
+    if(vstretchInt != OPTION_INVALID)
+    {
+        s->video_stretch = vstretchInt >= 1 ? true : false;
+    }
+    else
+    {
+        s->video_stretch = defaultsettings.video_stretch;
+    }
 
     s->player_name = get_cfg_string(cfg_file_lines, player_name);
     if(s->player_name == NULL)
@@ -68,7 +88,7 @@ struct settings *parse_cfg(const char *filename)
     {
         s->master_volume = 100;
     }
-    if(s->video_scale == OPTION_INVALID || s->video_scale < 1 || s->video_scale > 4)
+    if(s->video_scale == OPTION_INVALID || s->video_scale < 1 || s->video_scale > 5)
     {
         s->video_scale = 1;
     }

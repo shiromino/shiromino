@@ -87,8 +87,9 @@ struct settings
 {
     struct bindings *keybinds;
 
-    int video_scale;
-    int fullscreen;
+    float video_scale;
+    bool video_stretch;
+    bool fullscreen;
 
     int master_volume;
     int sfx_volume;

@@ -140,7 +140,7 @@ int gfx_drawmenu(game_t *g)
                     baroutlinedest.x = bardest.x;
                     bardest.y = m->value_y + 1;
                     baroutlinedest.y = m->value_y;
-                    gfx_rendercopy(cs, font, &baroutlinesrc, &baroutlinedest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &baroutlinesrc, &baroutlinedest);
 
                     if(d2->selection > 0)
                     {
@@ -161,7 +161,7 @@ int gfx_drawmenu(game_t *g)
                             else if((i % 3) == 0)
                                 SDL_SetTextureColorMod(font, mod, mod, 255);
 
-                            gfx_rendercopy(cs, font, &barsrc, &bardest);
+                            SDL_RenderCopy(cs->screen.renderer, font, &barsrc, &bardest);
                             bardest.x += 1;
                         }
 
@@ -224,7 +224,7 @@ int gfx_drawmenu(game_t *g)
                             {
                                 dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * (k)-1;
 
-                                if(gfx_rendercopy(cs, font, &src, &dest))
+                                if(SDL_RenderCopy(cs->screen.renderer, font, &src, &dest))
                                     printf("%s\n", SDL_GetError());
                             }
 
@@ -248,7 +248,7 @@ int gfx_drawmenu(game_t *g)
                             }
                             dest.y = m->value_y + 1;
 
-                            gfx_rendercopy(cs, font, &src, &dest);
+                            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
                         }
 
                         if(d7->leftmost_position < d7->text->slen - d7->visible_chars)
@@ -265,7 +265,7 @@ int gfx_drawmenu(game_t *g)
                             }
                             dest.y = m->value_y + 1;
 
-                            gfx_rendercopy(cs, font, &src, &dest);
+                            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
                         }
 
                         fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
@@ -304,7 +304,7 @@ int gfx_drawmenu(game_t *g)
                             src.h = 18;
                             dest.h = 18;
 
-                            gfx_rendercopy(cs, font_thin, &src, &dest);
+                            SDL_RenderCopy(cs->screen.renderer, font_thin, &src, &dest);
 
                             src.w = 16;
                             dest.w = 16;
@@ -322,7 +322,7 @@ int gfx_drawmenu(game_t *g)
                                 dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
                             dest.y = m->value_y + 16;
 
-                            gfx_rendercopy(cs, font, &src, &dest);
+                            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
                         }
                     }
                 }
@@ -365,7 +365,7 @@ int gfx_drawmenu(game_t *g)
             d->menu[i]->render_update = 0;
         }
 
-        gfx_rendercopy(cs, d->target_tex, NULL, NULL);
+        SDL_RenderCopy(cs->screen.renderer, d->target_tex, NULL, NULL);
     }
 
     return 0;

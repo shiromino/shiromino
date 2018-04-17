@@ -10,15 +10,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string.h>
 #include <time.h>
 
+#include <iostream>
 #include <vector>
 #include <string>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "SGUIL/SGUIL.hpp"
 
 using namespace std;
 
@@ -85,7 +86,7 @@ struct bindings defaultkeybinds[2] = {
 
     {SDLK_j, SDLK_l, SDLK_i, SDLK_k, SDLK_TAB, SDLK_r, SDLK_e, SDLK_w, SDLK_q, SDLK_F11}};
 
-struct settings defaultsettings = {&defaultkeybinds[0], 1, 0, 50, 100, 100, NULL};
+struct settings defaultsettings = {&defaultkeybinds[0], 1, true, false, 50, 100, 100, NULL};
 
 /* </constants> */
 
@@ -392,9 +393,6 @@ int init(coreState *cs, struct settings *s)
         if(!cs)
             return -1;
 
-        int flags = 0;
-        unsigned int w = 0;
-        unsigned int h = 0;
         int n = 0;
         char *name = NULL;
         // SDL_Texture *blank = NULL;
@@ -411,6 +409,7 @@ int init(coreState *cs, struct settings *s)
                 cs->settings->keybinds = bindings_copy(&defaultkeybinds[0]);
             // bindings_copy(s->keybinds[1], &defaultkeybinds[1]);
             cs->settings->video_scale = s->video_scale;
+            cs->settings->video_stretch = s->video_stretch;
             cs->settings->fullscreen = s->fullscreen;
             cs->settings->sfx_volume = s->sfx_volume;
             cs->settings->mus_volume = s->mus_volume;
@@ -479,35 +478,48 @@ int init(coreState *cs, struct settings *s)
 
         cs->screen.w = cs->settings->video_scale * 640;
         cs->screen.h = cs->settings->video_scale * 480;
-        w = cs->screen.w;
-        h = cs->screen.h;
+        unsigned int w = cs->screen.w;
+        unsigned int h = cs->screen.h;
         name = cs->screen.name;
 
-        cs->screen.window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
+        int windowFlags = SDL_WINDOW_RESIZABLE;
+
+        cs->screen.window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, windowFlags);
         check(cs->screen.window != NULL, "SDL_CreateWindow: Error: %s\n", SDL_GetError());
         cs->screen.renderer =
             SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
         check(cs->screen.renderer != NULL, "SDL_CreateRenderer: Error: %s\n", SDL_GetError());
-        // cs->screen.target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA32,
-        // SDL_TEXTUREACCESS_TARGET, w, h); check(cs->screen.target_tex != NULL, "SDL_CreateTexture: Error: %s\n",
-        // SDL_GetError());
+
+        SDL_SetWindowMinimumSize(cs->screen.window, 640, 480);
+        if(cs->settings->fullscreen)
+        {
+            SDL_SetWindowSize(cs->screen.window, 640, 480);
+            SDL_SetWindowFullscreen(cs->screen.window, SDL_WINDOW_FULLSCREEN);
+        }
+
+        SDL_RenderSetLogicalSize(cs->screen.renderer, 640, 480);
+        if(!cs->settings->video_stretch)
+        {
+            SDL_RenderSetIntegerScale(cs->screen.renderer, SDL_TRUE);
+        }
 
         check(load_files(cs) == 0, "load_files() returned failure\n");
 
+        check(Gui_Init(cs->screen.renderer, NULL), "Gui_Init() returned failure\n");
         check(gfx_init(cs) == 0, "gfx_init returned failure\n");
 
         cs->bg = cs->assets->bg_temp.tex;
         cs->bg_old = cs->bg;
         // blank = cs->assets->blank.tex;
 
-        // check(gfx_rendercopy(cs, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+        // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
         cs->menu = menu_create(cs);
         check(cs->menu != NULL, "menu_create returned failure\n");
 
         cs->menu->init(cs->menu);
 
-        // check(gfx_rendercopy(cs, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+        // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
         // TODO: Configurable scores.db path
         static const char scoredb_file[] = "scores.db";
@@ -753,16 +765,28 @@ int procevents(coreState *cs)
     Uint8 rc = 0;
 
     if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+    {
         cs->mouse_left_down = 1;
+    }
     if(cs->mouse_right_down == BUTTON_PRESSED_THIS_FRAME)
+    {
         cs->mouse_right_down = 1;
+    }
 
     if(cs->select_all)
+    {
         cs->select_all = 0;
+    }
     if(cs->undo)
+    {
         cs->undo = 0;
+    }
     if(cs->redo)
+    {
         cs->redo = 0;
+    }
+
+    bool checkRenderingSize = true;
 
     while(SDL_PollEvent(&event))
     {
@@ -1011,6 +1035,31 @@ int procevents(coreState *cs)
                     cs->right_arrow_das = 1;
                 }
 
+                if(kc == SDLK_F11)
+                {
+                    if(cs->settings->fullscreen)
+                    {
+                        cs->settings->fullscreen = false;
+                        SDL_SetWindowFullscreen(cs->screen.window, 0);
+                        SDL_SetWindowSize(cs->screen.window, 640.0*cs->settings->video_scale, 480.0*cs->settings->video_scale);
+                    }
+                    else
+                    {
+                        cs->settings->fullscreen = true;
+                        SDL_SetWindowSize(cs->screen.window, 640, 480);
+                        int flags = (SDL_GetModState() & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
+                        if(SDL_SetWindowFullscreen(cs->screen.window, flags) < 0)
+                        {
+                            cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << endl;
+                        }
+                    }
+                }
+
+                if(kc == SDLK_F4 && SDL_GetModState() & KMOD_ALT)
+                {
+                    return 1;
+                }
+
                 if(kc == SDLK_0)
                 {
                     cs->zero_pressed = 1;
@@ -1018,26 +1067,61 @@ int procevents(coreState *cs)
 
                 if(kc == SDLK_1)
                 {
+                    if(SDL_GetModState() & KMOD_ALT)
+                    {
+                        cs->settings->video_scale = 1;
+                        SDL_SetWindowSize(cs->screen.window, 640, 480);
+                        checkRenderingSize = false;
+                    }
+
                     cs->one_pressed = 1;
                 }
 
                 if(kc == SDLK_2)
                 {
+                    if(SDL_GetModState() & KMOD_ALT)
+                    {
+                        cs->settings->video_scale = 2;
+                        SDL_SetWindowSize(cs->screen.window, 2*640, 2*480);
+                        checkRenderingSize = false;
+                    }
+
                     cs->two_pressed = 1;
                 }
 
                 if(kc == SDLK_3)
                 {
+                    if(SDL_GetModState() & KMOD_ALT)
+                    {
+                        cs->settings->video_scale = 3;
+                        SDL_SetWindowSize(cs->screen.window, 3*640, 3*480);
+                        checkRenderingSize = false;
+                    }
+
                     cs->three_pressed = 1;
                 }
 
                 if(kc == SDLK_4)
                 {
+                    if(SDL_GetModState() & KMOD_ALT)
+                    {
+                        cs->settings->video_scale = 4;
+                        SDL_SetWindowSize(cs->screen.window, 4*640, 4*480);
+                        checkRenderingSize = false;
+                    }
+
                     cs->four_pressed = 1;
                 }
 
                 if(kc == SDLK_5)
                 {
+                    if(SDL_GetModState() & KMOD_ALT)
+                    {
+                        cs->settings->video_scale = 5;
+                        SDL_SetWindowSize(cs->screen.window, 5*640, 5*480);
+                        checkRenderingSize = false;
+                    }
+
                     cs->five_pressed = 1;
                 }
 

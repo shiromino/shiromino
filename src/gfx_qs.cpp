@@ -165,7 +165,7 @@ int gfx_drawqs(game_t *g)
                 dest.x = QRS_FIELD_X;
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
-                gfx_rendercopy(cs, font, &src, &dest);
+                SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
             }
 
             if(q->pracdata->usr_field_redo_len)
@@ -180,7 +180,7 @@ int gfx_drawqs(game_t *g)
                 dest.x = QRS_FIELD_X + 13 * 16;
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
-                gfx_rendercopy(cs, font, &src, &dest);
+                SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
             }
 
             if(q->pracdata->usr_seq_len)
@@ -206,12 +206,12 @@ int gfx_drawqs(game_t *g)
                     continue;
 
                 palettesrc.x = i * 16;
-                gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
                 if(q->pracdata->palette_selection - 1 == i)
                 {
                     palettesrc.x = 31 * 16;
                     SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                    gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                    SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
                     SDL_SetTextureAlphaMod(tets_dark_qs, 255);
                 }
                 palettedest.y += 16;
@@ -222,35 +222,35 @@ int gfx_drawqs(game_t *g)
             for(i = 18; i < 26; i++)
             {
                 palettesrc.x = i * 16;
-                gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
                 if(q->pracdata->palette_selection - 1 == i || (i == 25 && q->pracdata->palette_selection == -5))
                 {
                     palettesrc.x = 31 * 16;
                     SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                    gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                    SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
                     SDL_SetTextureAlphaMod(tets_dark_qs, 255);
                 }
                 palettedest.y += 16;
             }
 
             palettesrc.x = 30 * 16;
-            gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+            SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
             if(q->pracdata->palette_selection == QRS_PIECE_BRACKETS)
             {
                 palettesrc.x = 31 * 16;
                 SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
                 SDL_SetTextureAlphaMod(tets_dark_qs, 255);
             }
 
             palettedest.y += 16;
             palettesrc.x = 32 * 16;
-            gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+            SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
             if(q->pracdata->palette_selection == QRS_PIECE_GEM)
             {
                 palettesrc.x = 31 * 16;
                 SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                gfx_rendercopy(cs, tets_dark_qs, &palettesrc, &palettedest);
+                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
                 SDL_SetTextureAlphaMod(tets_dark_qs, 255);
             }
         }
@@ -292,19 +292,19 @@ int gfx_drawqs(game_t *g)
             }
         }*/
 
-        gfx_rendercopy(cs, font, &labg_src, &labg_dest);
+        SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
         labg_src.x = 512 - 16;
         labg_src.w = 16;
         labg_dest.w = 16;
         labg_dest.x += (111 - 32);
-        gfx_rendercopy(cs, font, &labg_src, &labg_dest);
+        SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
 
         labg_dest.y -= 5 * 16;
         labg_src.w = 111;
         labg_src.x = 401;
         labg_dest.w = 111;
         labg_dest.x -= 111 - 32;
-        gfx_rendercopy(cs, font, &labg_src, &labg_dest);
+        SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
 
         if(q->p1->speeds->grav >= 20 * 256)
         {
@@ -335,7 +335,7 @@ int gfx_drawqs(game_t *g)
             float size_multiplier = 1.0;
 
             // draw a shadowy square behind the grade
-            // gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+            // SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
             grade_src.w = 64;
             grade_src.h = 64;
@@ -389,11 +389,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.w = 32;
                     grade_src.h = 32;
 
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
                     /*case GRADE_S9:
-                        gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                        SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                         grade_src.y += 32;
                         grade_src.x += 128 + 8*32;
 
@@ -403,7 +403,7 @@ int gfx_drawqs(game_t *g)
                         grade_src.h = 32;
                         grade_dest.w = 32*size_multiplier;
                         grade_dest.h = 32*size_multiplier;
-                        gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                        SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                         break;*/
 
                 case GRADE_S1:
@@ -415,7 +415,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_S7:
                 case GRADE_S8:
                 case GRADE_S9:
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128 + 32 * (q->grade - GRADE_S1);
 
@@ -425,11 +425,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = 32 * size_multiplier;
                     grade_dest.h = 32 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_S10:
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128;
 
@@ -439,16 +439,16 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = 32 * size_multiplier;
                     grade_dest.h = 32 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.x = 128 + 9 * 32;
                     grade_dest.x += 20 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_S11:
                 case GRADE_S12:
                 case GRADE_S13:
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128;
 
@@ -458,10 +458,10 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = 32 * size_multiplier;
                     grade_dest.h = 32 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.x += 32 * (q->grade - GRADE_S11);
                     grade_dest.x += 20 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_M1:
@@ -474,7 +474,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_M8:
                 case GRADE_M9:
                     grade_src.x += 64;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128 + 32 * (q->grade - GRADE_M1);
 
@@ -484,13 +484,13 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = 32 * size_multiplier;
                     grade_dest.h = 32 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_M:
                     grade_src.x = 192;
                     grade_src.y += 64;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_MK:
@@ -501,11 +501,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 64;
 
                     grade_dest.x -= 14 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     grade_src.x = 64 * (q->grade - GRADE_MK);
                     grade_dest.x += 38 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     break;
 
@@ -514,11 +514,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 64;
 
                     grade_dest.x -= 14 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     grade_src.x = 192;
                     grade_dest.x += 38 * size_multiplier;
-                    gfx_rendercopy(cs, font, &grade_src, &grade_dest);
+                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     break;
 
@@ -570,7 +570,7 @@ int gfx_drawqs(game_t *g)
                 labg_dest.y = y + 22 * 16;
                 labg_dest.w = 80;
                 labg_dest.h = 16;
-                gfx_rendercopy(cs, font, &labg_src, &labg_dest);
+                SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
 
                 gfx_drawtext(cs, "RANK", x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
 
@@ -751,10 +751,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
             dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
 
-            gfx_rendercopy(g->origin, medals, &src, &dest_);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
         else
-            gfx_rendercopy(g->origin, medals, &src, &dest);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
     }
 
     dest.y += 24;
@@ -793,10 +793,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
             dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
 
-            gfx_rendercopy(g->origin, medals, &src, &dest_);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
         else
-            gfx_rendercopy(g->origin, medals, &src, &dest);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
     }
 
     dest.y += 24;
@@ -835,10 +835,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
             dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
 
-            gfx_rendercopy(g->origin, medals, &src, &dest_);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
         else
-            gfx_rendercopy(g->origin, medals, &src, &dest);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
     }
 
     dest.y += 24;
@@ -877,10 +877,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
             dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
 
-            gfx_rendercopy(g->origin, medals, &src, &dest_);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
         else
-            gfx_rendercopy(g->origin, medals, &src, &dest);
+            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
     }
 
     return 0;
@@ -938,7 +938,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
                     dest.x = q->field_x + 16 * (i + 1);
                     dest.y = QRS_FIELD_Y + 16 * (j + 2);
 
-                    gfx_rendercopy(g->origin, tets, &src, &dest);
+                    SDL_RenderCopy(g->origin->screen.renderer, tets, &src, &dest);
                 }
             }
         }

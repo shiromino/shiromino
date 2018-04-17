@@ -27,7 +27,10 @@ ifeq ($(OS), Windows_NT)
 	CFLAGS += -lmingw32 -lSDL2main
 endif
 
-SRC = $(wildcard $(SRC_PATH)/*.cpp)
+rwildcard = $(wildcard $1$2)$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+
+SRC = $(call rwildcard,src/,*.cpp)
+# SRC = $(wildcard $(SRC_PATH)/*.cpp)
 # SRC = $(shell find $(SRC_PATH) -name '*.cpp' -printf '%T@\t%p\n' | sort -k 1nr | cut -f2-)
 
 OBJ = $(SRC:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
