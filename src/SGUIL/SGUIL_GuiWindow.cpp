@@ -12,7 +12,7 @@
 
 using namespace std;
 
-GuiWindow::GuiWindow(string title, BitFont& titleFont, function<void(GuiInteractable&)> interactionEventCallback, SDL_Rect& destRect)
+GuiWindow::GuiWindow(string title, BitFont& titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
     : title(title), titleFont(titleFont)
 {
     /*
@@ -179,6 +179,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
             {
                 GuiEvent keyDownEvent {key_pressed, sdlEvent.key.keysym.sym};
                 controlList[keyboardFocus]->handleEvent(keyDownEvent);
+
+                if(interactionEventCallback)
+                {
+                    interactionEventCallback(*controlList[keyboardFocus], keyDownEvent);
+                }
             }
 
             break;
@@ -188,6 +193,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
             {
                 GuiEvent keyUpEvent {key_released, sdlEvent.key.keysym.sym};
                 controlList[keyboardFocus]->handleEvent(keyUpEvent);
+
+                if(interactionEventCallback)
+                {
+                    interactionEventCallback(*controlList[keyboardFocus], keyUpEvent);
+                }
             }
 
             break;
@@ -197,6 +207,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
             {
                 GuiEvent textInputEvent {textinput_event, {sdlEvent.text.text} };
                 controlList[keyboardFocus]->handleEvent(textInputEvent);
+
+                if(interactionEventCallback)
+                {
+                    interactionEventCallback(*controlList[keyboardFocus], textInputEvent);
+                }
             }
 
             break;
@@ -231,6 +246,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                     }
 
                     e->handleEvent(mouseButtonDownEvent);
+
+                    if(interactionEventCallback)
+                    {
+                        interactionEventCallback(*e, mouseButtonDownEvent);
+                    }
                 } else
                 {
                     if(keyboardFocus > -1)
@@ -256,6 +276,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                 if(e)
                 {
                     e->handleEvent(mouseButtonUpEvent);
+
+                    if(interactionEventCallback)
+                    {
+                        interactionEventCallback(*e, mouseButtonUpEvent);
+                    }
                 } else
                 {
                     mouseReleased(x, y);
@@ -281,6 +306,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                 if(e)
                 {
                     e->handleEvent(mouseDraggedEvent);
+
+                    if(interactionEventCallback)
+                    {
+                        interactionEventCallback(*e, mouseDraggedEvent);
+                    }
                 } else
                 {
                     mouseDragged(x, y);
@@ -303,6 +333,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                             GuiEvent mouseHoveredOffEvent {mouse_hovered_off, x - destRect.x, y - destRect.y};
                             selectedElement->handleEvent(mouseHoveredOffEvent);
                             selectedElement->selected = false;
+
+                            if(interactionEventCallback)
+                            {
+                                interactionEventCallback(*selectedElement, mouseHoveredOffEvent);
+                            }
                         }
 
                         for(unsigned int c = 0; c < controlList.size(); c++)
@@ -316,10 +351,20 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                         e->selected = true;
                         GuiEvent mouseHoveredOntoEvent {mouse_hovered_onto, x - destRect.x, y - destRect.y};
                         e->handleEvent(mouseHoveredOntoEvent);
+
+                        if(interactionEventCallback)
+                        {
+                            interactionEventCallback(*e, mouseHoveredOntoEvent);
+                        }
                     }
 
                     GuiEvent mouseMovedEvent {mouse_moved, x - destRect.x, y - destRect.y};
                     e->handleEvent(mouseMovedEvent);
+
+                    if(interactionEventCallback)
+                    {
+                        interactionEventCallback(*e, mouseMovedEvent);
+                    }
                 } else
                 {
                     if(selectingByMouse && selectedElement != NULL)
@@ -327,6 +372,11 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                         GuiEvent mouseHoveredOffEvent {mouse_hovered_off, x - destRect.x, y - destRect.y};
                         selectedElement->handleEvent(mouseHoveredOffEvent);
                         selectedElement->selected = false;
+
+                        if(interactionEventCallback)
+                        {
+                            interactionEventCallback(*selectedElement, mouseHoveredOffEvent);
+                        }
 
                         controlSelection = -1;
                     }

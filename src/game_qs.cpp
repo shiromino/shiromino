@@ -2808,7 +2808,7 @@ int qs_update_pracdata(coreState *cs)
 
                 for(j = 0; j < 25; j++)
                 {
-                    if(strcmp(name_str, get_qrspiece_name(j)) == 0)
+                    if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
                     {
                         t = j;
                         if(!q->pentomino_only)
@@ -2823,7 +2823,7 @@ int qs_update_pracdata(coreState *cs)
 
             for(j = 0; j < 25; j++)
             {
-                if(strcmp(name_str, get_qrspiece_name(j)) == 0)
+                if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
                 {
                     t = j;
                     if(q->tetromino_only)
@@ -2886,7 +2886,7 @@ int qs_update_pracdata(coreState *cs)
 
                 for(j = 0; j < 25; j++)
                 {
-                    if(strcmp(name_str, get_qrspiece_name(j)) == 0)
+                    if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
                     {
                         t = j;
                         if(q->tetromino_only)
@@ -2949,7 +2949,7 @@ int qs_update_pracdata(coreState *cs)
 
                 for(j = 0; j < 25; j++)
                 {
-                    if(strcmp(name_str, get_qrspiece_name(j)) == 0)
+                    if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
                     {
                         t = j;
                         if(q->tetromino_only)

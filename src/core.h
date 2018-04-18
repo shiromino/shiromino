@@ -15,6 +15,7 @@
 #define BUTTON_PRESSED_THIS_FRAME 2
 #define JOYSTICK_DEAD_ZONE 8000
 
+#include <string>
 #include <vector>
 #include <memory>
 
@@ -116,6 +117,11 @@ typedef struct game game_t;
 
 struct coreState_
 {
+    // TODO ----v
+    void loadParentGui() {}
+    void loadChildGui(const std::string name) {}
+    // std::map<std::string, std::unique_ptr<GuiWindow>> guiList;
+
     double fps;        // because tap fps = 61.68
 
     int text_editing;

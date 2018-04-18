@@ -5,7 +5,7 @@
 #ifndef _SGUIL_hpp
 #define _SGUIL_hpp
 
-#define SGUIL_VERSION_STR "0.1.0_01"
+#define SGUIL_VERSION_STR "0.1.0_02"
 
 #include <cstdint>
 #include <cstddef>
@@ -107,6 +107,7 @@ struct TextFormat
 
 enum enumGuiEventType
 {
+event_invalid = 0,
 mouse_event = 0x1000,
     mouse_clicked,
     mouse_released,
@@ -160,6 +161,7 @@ struct GuiTextInputEvent
 
 struct GuiEvent
 {
+    GuiEvent() : type(event_invalid) {}
     GuiEvent(enumGuiEventType type, int x, int y)
         : type(type), mouseEvent(x, y)
     {
@@ -665,7 +667,7 @@ class GuiWindow
 // essentially a container for GuiElement with relative positioning, possibly with -oX controls like in a WM
 {
 public:
-    GuiWindow(std::string, BitFont&, std::function<void(GuiInteractable&)>, SDL_Rect&);
+    GuiWindow(std::string, BitFont&, std::function<void(GuiInteractable&, GuiEvent&)>, SDL_Rect&);
     ~GuiWindow();
 
     void draw();
@@ -703,7 +705,7 @@ private:
 
     std::vector<GuiEventHook<GuiWindow>> eventHooks;
     std::vector<GuiRenderHook<GuiWindow>> renderHooks;
-    std::function<void(GuiInteractable&)> interactionEventCallback;
+    std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback;
 
     rgba_t rgbaBackground;
     rgba_t rgbaTitleBar;

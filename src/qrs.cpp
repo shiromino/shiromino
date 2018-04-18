@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string>
 
 #include "core.h"
 #include "file_io.h"
@@ -20,15 +21,17 @@
 
 #include "rotation_tables.h"
 
+using namespace std;
+
 const char *qrspiece_names[25] = {"I", "J", "L",  "X",  "S", "Z",       "N",  "G",  "U",  "T", "Fa", "Fb", "P",
                                   "Q", "W", "Ya", "Yb", "V", /**/ "I4", "T4", "J4", "L4", "O", "S4", "Z4"};
 
-const char *get_qrspiece_name(int n)
+const string get_qrspiece_name(int n)
 {
     if(n < 0 || n > 24)
-        return NULL;
+        return {};
 
-    return qrspiece_names[n];
+    return {qrspiece_names[n]};
 }
 
 /* */
@@ -278,7 +281,9 @@ int ufu_not_exists(coreState *cs)
 int usr_field_bkp(coreState *cs, struct pracdata *d)
 {
     if(!d)
+    {
         return 1;
+    }
 
     int i = 0;
 
@@ -352,7 +357,9 @@ int usr_field_undo(coreState *cs, struct pracdata *d)
 int usr_field_redo(coreState *cs, struct pracdata *d)
 {
     if(!d)
+    {
         return 1;
+    }
 
     if(!d->usr_field_redo)
         return 0;
