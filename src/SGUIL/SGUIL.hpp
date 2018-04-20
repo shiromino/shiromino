@@ -5,7 +5,7 @@
 #ifndef _SGUIL_hpp
 #define _SGUIL_hpp
 
-#define SGUIL_VERSION_STR "0.1.0_02"
+#define SGUIL_VERSION_STR "0.1.0_03"
 
 #include <cstdint>
 #include <cstddef>
@@ -123,6 +123,17 @@ joy_event = 0x4000,
     joybutton_pressed,
     joybutton_released
 };
+
+struct GuiPoint
+{
+    GuiPoint() : x(0), y(0) {}
+    GuiPoint(int x, int y) : x(x), y(y) {}
+    int x;
+    int y;
+};
+
+typedef GuiPoint GuiRelativePoint;
+typedef GuiPoint GuiVirtualPoint;
 
 struct GuiMouseEvent
 {
@@ -309,10 +320,10 @@ public:
     // canInteractAt: checks if the given mouse X and Y are inside the element's rectangle,
     // and if the element is enabled. if so, either perform some action or let the user do so
     virtual bool canInteractAt(int, int);
-    virtual void mouseClicked(int, int) = 0;
-    virtual void mouseDragged(int, int) = 0;
-    virtual void mouseReleased(int, int) = 0;
-    virtual void keyPressed(SDL_Keycode) = 0;
+    virtual void mouseClicked(int, int) {}
+    virtual void mouseDragged(int, int) {}
+    virtual void mouseReleased(int, int) {}
+    virtual void keyPressed(SDL_Keycode) {}
     virtual void textInput(std::string) {}
 
     virtual void handleEvent(GuiEvent&);
@@ -608,7 +619,7 @@ public:
     void mouseReleased(int, int);
     void keyPressed(SDL_Keycode);
 
-private:
+protected:
     std::vector<GuiEventHook<GuiButton>> eventHooks;
     std::vector<GuiRenderHook<GuiButton>> renderHooks;
 
@@ -630,7 +641,7 @@ public:
     void mouseReleased(int, int);
     void keyPressed(SDL_Keycode);
 
-private:
+protected:
     std::vector<GuiEventHook<GuiButton>> eventHooks;
     std::vector<GuiRenderHook<GuiButton>> renderHooks;
 
@@ -656,7 +667,7 @@ public:
 
     bool addEntry(T, std::string);
 
-private:
+protected:
     std::vector<std::pair<T, std::string>> entry;
     unsigned int selection;
     bool menuShown;
@@ -696,7 +707,7 @@ public:
     SDL_Texture *canvas;
     SDL_Rect destRect;
 
-private:
+protected:
     std::vector<GuiElement *> elements;
     std::vector<GuiInteractable *> controlList;
     int keyboardFocus;

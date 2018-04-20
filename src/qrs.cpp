@@ -888,7 +888,9 @@ int qrs_input(game_t *g)
             }
 
             if(!edit_action_occurred)
+            {
                 d->field_edit_in_progress = 0;
+            }
         }
     }
 

@@ -65,6 +65,9 @@ public:
     int game_type;
     int field_w;
 
+    int field_x;
+    int field_y;
+
     std::string usr_seq_str;
     int usr_sequence[USRSEQ_MAX];
     int usr_seq_expand[USRSEQ_EXPAND_MAX];
@@ -75,20 +78,20 @@ public:
     std::vector<grid_t *> usr_field_redo;
     int usr_field_undo_len;
     int usr_field_redo_len;
-    bool field_edit_in_progress;
+    //bool field_edit_in_progress;
 
     grid_t *usr_field;
-    int palette_selection;
-    int field_selection;
-    int field_selection_vertex1_x;
-    int field_selection_vertex1_y;
-    int field_selection_vertex2_x;
-    int field_selection_vertex2_y;
+    //int palette_selection;
+    //int field_selection;
+    //int field_selection_vertex1_x;
+    //int field_selection_vertex1_y;
+    //int field_selection_vertex2_x;
+    //int field_selection_vertex2_y;
 
     qrs_timings *usr_timings;
 
-    int paused;
-    bool grid_lines_shown;
+    bool paused;
+    //bool grid_lines_shown;
     bool brackets;
     bool invisible;
 

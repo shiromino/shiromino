@@ -194,6 +194,8 @@ struct coreState_
     SDL_Joystick *joystick;
     int mouse_x;
     int mouse_y;
+    int logical_mouse_x;
+    int logical_mouse_y;
     int mouse_left_down;
     int mouse_right_down;
 

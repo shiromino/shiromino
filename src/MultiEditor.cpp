@@ -28,8 +28,411 @@ MultiEditor::~MultiEditor()
 }
 
 void MultiEditor::handleInput()
-{
+{/*
+    if(origin->logical_mouse_x < 0 || origin->logical_mouse_y < 0)
+    {
+        return;
+    }
 
+    int i = 0;
+    int j = 0;
+    int c = 0;
+
+    int lesser_x = 0;
+    int greater_x = 0;
+    int lesser_y = 0;
+    int greater_y = 0;
+
+    int edit_action_occurred = 0;
+
+    int cell_x = ((origin->logical_mouse_x - field_x) / 16) - 1;
+    int cell_y = ((origin->logical_mouse_y - field_y) / 16) - 2;
+    int palette_cell_x = (origin->logical_mouse_x - FIELD_EDITOR_PALETTE_X) / 16;
+    int palette_cell_y = (origin->logical_mouse_y - FIELD_EDITOR_PALETTE_Y) / 16;
+
+    if(origin->select_all && !origin->text_editing)
+    {
+        field_selection = 1;
+        field_selection_vertex1_x = 0;
+        field_selection_vertex1_y = 0;
+        field_selection_vertex2_x = 11;
+        field_selection_vertex2_y = 19;
+    }
+
+    if(origin->undo && !field_edit_in_progress)
+        usr_field_undo(origin, d);
+
+    if(origin->redo && !field_edit_in_progress)
+        usr_field_redo(origin, d);
+
+    if(SDL_GetModState() & KMOD_SHIFT && origin->mouse_left_down)
+    {
+        if(origin->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+        {
+            field_selection = 1;
+            field_selection_vertex1_x = cell_x;
+            field_selection_vertex1_y = cell_y;
+        }
+
+        field_selection_vertex2_x = cell_x;
+        field_selection_vertex2_y = cell_y;
+    }
+    else
+    {
+        if(origin->mouse_left_down)
+        {
+            if(palette_cell_x == 0)
+            {
+                switch(palette_cell_y)
+                {
+                    case 0:
+                        palette_selection = QRS_X + 1;
+                        break;
+                    case 1:
+                        palette_selection = QRS_N + 1;
+                        break;
+                    case 2:
+                        palette_selection = QRS_G + 1;
+                        break;
+                    case 3:
+                        palette_selection = QRS_U + 1;
+                        break;
+                    case 4:
+                        palette_selection = QRS_T + 1;
+                        break;
+                    case 5:
+                        palette_selection = QRS_Fa + 1;
+                        break;
+                    case 6:
+                        break;
+                    case 7:
+                        palette_selection = QRS_I4 + 1;
+                        break;
+                    case 8:
+                        palette_selection = QRS_T4 + 1;
+                        break;
+                    case 9:
+                        palette_selection = QRS_J4 + 1;
+                        break;
+                    case 10:
+                        palette_selection = QRS_L4 + 1;
+                        break;
+                    case 11:
+                        palette_selection = QRS_O + 1;
+                        break;
+                    case 12:
+                        palette_selection = QRS_S4 + 1;
+                        break;
+                    case 13:
+                        palette_selection = QRS_Z4 + 1;
+                        break;
+                    case 14:
+                        palette_selection = QRS_PIECE_GARBAGE;
+                        break;
+                    case 15:
+                        palette_selection = QRS_PIECE_BRACKETS;
+                        break;
+                    case 16:
+                        palette_selection = QRS_PIECE_GEM;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if(field_selection)
+            {
+                if(origin->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+                {
+                    field_selection = 0;
+                    origin->mouse_left_down = 0;
+                }
+            }
+            else if(origin->mouse_left_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+            {
+                if(gridgetcell(usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER)
+                {
+                    if(palette_selection != QRS_PIECE_GEM)
+                    {
+                        if(!field_edit_in_progress)
+                            usr_field_bkp(origin, d);
+                        field_edit_in_progress = 1;
+                        edit_action_occurred = 1;
+                        gridsetcell(usr_field, cell_x, cell_y + 2, palette_selection);
+                    }
+                    else if(gridgetcell(usr_field, cell_x, cell_y + 2) > 0)
+                    {
+                        if(!field_edit_in_progress)
+                            usr_field_bkp(origin, d);
+                        field_edit_in_progress = 1;
+                        edit_action_occurred = 1;
+                        gridsetcell(usr_field, cell_x, cell_y + 2, gridgetcell(usr_field, cell_x, cell_y + 2) | QRS_PIECE_GEM);
+                    }
+                }
+            }
+        }
+        else if(origin->mouse_right_down)
+        {
+            if(field_selection)
+            {
+                if(origin->mouse_right_down == BUTTON_PRESSED_THIS_FRAME)
+                {
+                    field_selection = 0;
+                    origin->mouse_right_down = 0;
+                }
+            }
+            else if(origin->mouse_right_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+            {
+                if(gridgetcell(usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER)
+                {
+                    if(!field_edit_in_progress)
+                        usr_field_bkp(origin, d);
+                    field_edit_in_progress = 1;
+                    edit_action_occurred = 1;
+                    gridsetcell(usr_field, cell_x, cell_y + 2, 0);
+                }
+            }
+        }
+
+        if(origin->delete_das == 2 || origin->backspace_das == 2)
+        {
+            if(field_selection && !origin->text_editing)
+            {
+                if(field_selection_vertex1_x <= field_selection_vertex2_x)
+                {
+                    lesser_x = field_selection_vertex1_x;
+                    greater_x = field_selection_vertex2_x;
+                }
+                else
+                {
+                    lesser_x = field_selection_vertex2_x;
+                    greater_x = field_selection_vertex1_x;
+                }
+
+                if(field_selection_vertex1_y <= field_selection_vertex2_y)
+                {
+                    lesser_y = field_selection_vertex1_y;
+                    greater_y = field_selection_vertex2_y;
+                }
+                else
+                {
+                    lesser_y = field_selection_vertex2_y;
+                    greater_y = field_selection_vertex1_y;
+                }
+
+                for(i = lesser_x; i <= greater_x; i++)
+                {
+                    for(j = lesser_y; j <= greater_y; j++)
+                    {
+                        if(i >= 0 && i < 12 && j >= 0 && j < 20)
+                        {
+                            if(gridgetcell(usr_field, i, j + 2) != QRS_FIELD_W_LIMITER)
+                            {
+                                if(!field_edit_in_progress)
+                                    usr_field_bkp(origin, d);
+                                field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                gridsetcell(usr_field, i, j + 2, 0);
+                            }
+                        }
+                    }
+                }
+
+                field_selection = 0;
+            }
+        }
+    }
+
+    c = 0;
+    if(origin->zero_pressed)
+    {
+        c = palette_selection;
+        if(field_selection)
+            origin->zero_pressed = 0;
+    }
+    if(origin->one_pressed)
+    {
+        c = 19;
+        if(field_selection)
+            origin->one_pressed = 0;
+    }
+    if(origin->two_pressed)
+    {
+        c = 20;
+        if(field_selection)
+            origin->two_pressed = 0;
+    }
+    if(origin->three_pressed)
+    {
+        c = 21;
+        if(field_selection)
+            origin->three_pressed = 0;
+    }
+    if(origin->four_pressed)
+    {
+        c = 22;
+        if(field_selection)
+            origin->four_pressed = 0;
+    }
+    if(origin->five_pressed)
+    {
+        c = 23;
+        if(field_selection)
+            origin->five_pressed = 0;
+    }
+    if(origin->six_pressed)
+    {
+        c = 24;
+        if(field_selection)
+            origin->six_pressed = 0;
+    }
+    if(origin->seven_pressed)
+    {
+        c = 25;
+        if(field_selection)
+            origin->seven_pressed = 0;
+    }
+    if(origin->nine_pressed)
+    {
+        c = QRS_PIECE_BRACKETS;
+        if(field_selection)
+            origin->nine_pressed = 0;
+    }
+
+    if(c && field_selection)
+    {
+        if(field_selection_vertex1_x <= field_selection_vertex2_x)
+        {
+            lesser_x = field_selection_vertex1_x;
+            greater_x = field_selection_vertex2_x;
+        }
+        else
+        {
+            lesser_x = field_selection_vertex2_x;
+            greater_x = field_selection_vertex1_x;
+        }
+
+        if(field_selection_vertex1_y <= field_selection_vertex2_y)
+        {
+            lesser_y = field_selection_vertex1_y;
+            greater_y = field_selection_vertex2_y;
+        }
+        else
+        {
+            lesser_y = field_selection_vertex2_y;
+            greater_y = field_selection_vertex1_y;
+        }
+
+        for(i = lesser_x; i <= greater_x; i++)
+        {
+            for(j = lesser_y; j <= greater_y; j++)
+            {
+                if(i >= 0 && i < 12 && j >= 0 && j < 20)
+                {
+                    if(gridgetcell(usr_field, i, j + 2) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                    {
+                        if(SDL_GetModState() & KMOD_SHIFT)
+                        {
+                            if(IS_STACK(gridgetcell(usr_field, i, j + 2)))
+                            {
+                                if(!field_edit_in_progress)
+                                    usr_field_bkp(origin, d);
+                                field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                gridsetcell(usr_field, i, j + 2, c);
+                            }
+                        }
+                        else
+                        {
+                            if(!field_edit_in_progress)
+                                usr_field_bkp(origin, d);
+                            field_edit_in_progress = 1;
+                            edit_action_occurred = 1;
+                            gridsetcell(usr_field, i, j + 2, c);
+                        }
+                    }
+                    else if(gridgetcell(usr_field, i, j + 2) > 0 && c == QRS_PIECE_GEM)
+                    {
+                        if(SDL_GetModState() & KMOD_SHIFT)
+                        {
+                            if(IS_STACK(gridgetcell(usr_field, i, j + 2)))
+                            {
+                                if(!field_edit_in_progress)
+                                    usr_field_bkp(origin, d);
+                                field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                gridsetcell(usr_field, i, j + 2, gridgetcell(usr_field, i, j + 2) | c);
+                            }
+                        }
+                        else
+                        {
+                            if(!field_edit_in_progress)
+                                usr_field_bkp(origin, d);
+                            field_edit_in_progress = 1;
+                            edit_action_occurred = 1;
+                            gridsetcell(usr_field, i, j + 2, gridgetcell(usr_field, i, j + 2) | c);
+                        }
+                    }
+                }
+            }
+        }
+
+        field_selection = 0;
+    }
+    else if(c)
+    {
+        if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+        {
+            if(gridgetcell(usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+            {
+                if(SDL_GetModState() & KMOD_SHIFT)
+                {
+                    if(IS_STACK(gridgetcell(usr_field, cell_x, cell_y + 2)))
+                    {
+                        if(!field_edit_in_progress)
+                            usr_field_bkp(origin, d);
+                        field_edit_in_progress = 1;
+                        edit_action_occurred = 1;
+                        gridsetcell(usr_field, cell_x, cell_y + 2, c);
+                    }
+                }
+                else
+                {
+                    if(!field_edit_in_progress)
+                        usr_field_bkp(origin, d);
+                    field_edit_in_progress = 1;
+                    edit_action_occurred = 1;
+                    gridsetcell(usr_field, cell_x, cell_y + 2, c);
+                }
+            }
+            else if(gridgetcell(usr_field, cell_x, cell_y + 2) > 0 && c == QRS_PIECE_GEM)
+            {
+                if(SDL_GetModState() & KMOD_SHIFT)
+                {
+                    if(IS_STACK(gridgetcell(usr_field, cell_x, cell_y + 2)))
+                    {
+                        if(!field_edit_in_progress)
+                            usr_field_bkp(origin, d);
+                        field_edit_in_progress = 1;
+                        edit_action_occurred = 1;
+                        gridsetcell(usr_field, cell_x, cell_y + 2, gridgetcell(usr_field, cell_x, cell_y + 2) | c);
+                    }
+                }
+                else
+                {
+                    if(!field_edit_in_progress)
+                        usr_field_bkp(origin, d);
+                    field_edit_in_progress = 1;
+                    edit_action_occurred = 1;
+                    gridsetcell(usr_field, cell_x, cell_y + 2, gridgetcell(usr_field, cell_x, cell_y + 2) | c);
+                }
+            }
+        }
+    }
+
+    if(!edit_action_occurred)
+    {
+        field_edit_in_progress = 0;
+    }*/
 }
 
 void MultiEditor::handleGuiInteraction(GuiInteractable& interactable, GuiEvent& event)
@@ -94,22 +497,22 @@ void MultiEditor::usrFieldRedo()
     usr_field_redo.pop_back();
 }
 /*
-int undo_clear_confirm_yes(coreState *cs, void *data)
+int undo_clear_confirm_yes(coreState *origin, void *data)
 {
-    qrsdata *q = (qrsdata *)cs->p1game->data;
-    usr_field_undo_clear(cs, data);
-    if(q->pracdata->field_edit_in_progress)
-        q->pracdata->field_edit_in_progress = 0;
+    qrsdata *q = (qrsdata *)origin->p1game->data;
+    usr_field_undo_clear(origin, data);
+    if(pracdata->field_edit_in_progress)
+        pracdata->field_edit_in_progress = 0;
 
-    cs->button_emergency_override = 0;
-    cs->mouse_left_down = 0;
+    origin->button_emergency_override = 0;
+    origin->mouse_left_down = 0;
     return 0;
 }
 
-int undo_clear_confirm_no(coreState *cs, void *data)
+int undo_clear_confirm_no(coreState *origin, void *data)
 {
-    cs->button_emergency_override = 0;
-    cs->mouse_left_down = 0;
+    origin->button_emergency_override = 0;
+    origin->mouse_left_down = 0;
     return 0;
 }
 */
