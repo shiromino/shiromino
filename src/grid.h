@@ -5,6 +5,18 @@
 
 #define GRID_OOB 8128
 
+struct grid_rect
+{
+    grid_rect() : x(0), y(0), w(0), h(0) {}
+    grid_rect(int w, int h) : x(0), y(0), w(w), h(h) {}
+    grid_rect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
+
+    int x;
+    int y;
+    int w;
+    int h;
+};
+
 typedef struct
 {
     int w;
@@ -20,8 +32,12 @@ void grid_destroy(grid_t *g);
 int gridsetw(grid_t *g, int w);
 int gridseth(grid_t *g, int h);
 int gridsetcell(grid_t *g, int x, int y, int val);
-int gridfill(grid_t *g, int val);
 int gridgetcell(grid_t *g, int x, int y);
+int gridxorcell(grid_t *g, int x, int y, int xorVal);
+
+int gridfillrect(grid_t *g, grid_rect *rect, int val);
+grid_t *gridfromsrcrect(grid_t *src, grid_rect& rect);
+int gridcpyrect(grid_t *src, grid_t *dest, grid_rect *srcrect, grid_rect *destrect);
 
 grid_t *gridcpy(grid_t *src, grid_t *dest);
 int gridrowcpy(grid_t *src, grid_t *dest, int srcrow, int destrow);

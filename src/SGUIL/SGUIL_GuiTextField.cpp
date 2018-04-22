@@ -28,6 +28,7 @@ GuiTextField::GuiTextField(int ID, BindableString *var, BitFont& font, SDL_Rect 
 
     enabled = true;
     canHoldKeyboardFocus = true;
+    hasDefaultKeyboardFocus = false;
     selected = false;
     hasKeyboardFocus = false;
 

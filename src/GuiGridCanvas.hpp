@@ -7,18 +7,38 @@
 
 #include "grid.h"
 
+struct paletteMapEntry
+{
+    paletteMapEntry(int mappedVal, bool isFlag) : mappedVal(mappedVal), isFlag(isFlag) {}
+
+    int mappedVal;
+    bool isFlag;
+};
+
 class GuiGridCanvas : public GuiInteractable
-// grid of cells which you can edit the values of
-// clicking sets the cell to the current palette selection
-//
 {
 public:
-    GuiGridCanvas(grid_t *grid, unsigned int cellW, unsigned int cellH, unsigned int paletteSize)
-        : grid(grid), cellW(cellW), cellH(cellH), paletteSize(paletteSize), paletteSelection(0) {}
+    GuiGridCanvas(grid_t *grid, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect);
+
+    GuiGridCanvas(grid_t *grid, BindableInt& paletteVar, SDL_Texture *paletteTex, std::vector<paletteMapEntry>& paletteValMap,
+        unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
+        : GuiGridCanvas(grid, paletteVar, paletteTex, cellW, cellH, relativeDestRect)
+    {
+        this->paletteValMap = paletteValMap;
+    }
 
     ~GuiGridCanvas() { grid_destroy(grid); }
 
-    void setPaletteSelection(BindableVariable *var)
+    void draw();
+
+    void handleEvent(GuiEvent& event);
+    void mouseMoved(int x, int y);
+    void mouseClicked(int x, int y);
+    void mouseDragged(int x, int y);
+    void mouseReleased(int x, int y);
+    void keyPressed(SDL_Keycode kc);
+
+    void readPaletteSelection(BindableVariable *var)
     {
         int s = (int)std::stoll(var->get());
         if(s < 0 || s >= paletteSize)
@@ -29,55 +49,58 @@ public:
         paletteSelection = (unsigned int)s;
     }
 
-    unsigned int xyToCell(int x, int y)
+    GuiVirtualPoint xyToCell(int x, int y)
     {
         x -= relativeDestRect.x;
         y -= relativeDestRect.y;
         x /= cellW;
         y /= cellH;
 
-        return gridxytopos(grid, x, y);
+        return {x, y};
     }
 
-    virtual void erase(int x, int y) { gridsetcell(grid, x, y, 0); }
-    virtual void set(int x, int y) { gridsetcell(grid, x, y, paletteSelection + 1); }
-    virtual int get(int x, int y) { return gridgetcell(grid, x, y) - 1; }
+    void makeBackup();
+    void undo();
+    void redo();
+    void clearUndo();
 
-    virtual void erase(unsigned int pos) { gridsetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos), 0); }
-    virtual void set(unsigned int pos) { gridsetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos), paletteSelection + 1); }
-    virtual int get(unsigned int pos) { return gridgetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos)) - 1; }
+    void copySelection();
+    void cutSelection();
+    void pasteSelection();
+
+    void erase(GuiVirtualPoint& point);
+    void set(GuiVirtualPoint& point);
+    int get(GuiVirtualPoint& point);
+
+    //virtual void erase(unsigned int pos) { gridsetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos), 0); }
+    //virtual void set(unsigned int pos) { gridsetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos), paletteSelection + 1); }
+    //virtual int get(unsigned int pos) { return gridgetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos)) - 1; }
 
 protected:
+    // grid_t *translatedGrid; // the true underlying grid being edited, with all its coded values
+
     grid_t *grid;
+    grid_t *clipboard;
+    SDL_Texture *paletteTex;
     unsigned int cellW;
     unsigned int cellH;
 
-    unsigned int paletteSize;
-    unsigned int paletteSelection;
+    std::vector<grid_t *> undoBuffer;
+    std::vector<grid_t *> redoBuffer;
 
+    BindableInt& paletteVar;
+    std::vector<paletteMapEntry> paletteValMap;
+    unsigned int paletteSelection;
+    unsigned int paletteSize;
+
+    GuiVirtualPoint cellUnderMouse;
     bool editInProgress;
     bool selection;
     GuiVirtualPoint selectionVertex1;
     GuiVirtualPoint selectionVertex2;
 
+    bool clipboardMoveMode;
     bool grid_lines_shown;
 };
-
-/*
-class GuiCanvasMultiEditor : public GuiGridCanvas
-{
-public:
-    GuiCanvasMultiEditor();
-    ~GuiCanvasMultiEditor();
-
-    void draw();
-
-    void mouseClicked(int, int);
-    void mouseDragged(int, int);
-    void mouseReleased(int, int);
-    void keyPressed(SDL_Keycode);
-
-    void handleEvent(GuiEvent&);
-};*/
 
 #endif

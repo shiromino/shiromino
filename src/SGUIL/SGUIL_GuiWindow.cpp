@@ -161,8 +161,11 @@ void GuiWindow::addControlElement(GuiInteractable *element)
     }
 }
 
-void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
+void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
 {
+    int x = logicalMousePos.x;
+    int y = logicalMousePos.y;
+
     switch(sdlEvent.type)
     {
         case SDL_KEYDOWN:
@@ -185,6 +188,17 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                     interactionEventCallback(*controlList[keyboardFocus], keyDownEvent);
                 }
             }
+            else
+            {
+                GuiEvent keyDownEvent {key_pressed, sdlEvent.key.keysym.sym};
+                for(auto e : controlList)
+                {
+                    if(e->hasDefaultKeyboardFocus)
+                    {
+                        e->handleEvent(keyDownEvent);
+                    }
+                }
+            }
 
             break;
 
@@ -197,6 +211,17 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                 if(interactionEventCallback)
                 {
                     interactionEventCallback(*controlList[keyboardFocus], keyUpEvent);
+                }
+            }
+            else
+            {
+                GuiEvent keyUpEvent {key_released, sdlEvent.key.keysym.sym};
+                for(auto e : controlList)
+                {
+                    if(e->hasDefaultKeyboardFocus)
+                    {
+                        e->handleEvent(keyUpEvent);
+                    }
                 }
             }
 
@@ -213,15 +238,23 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                     interactionEventCallback(*controlList[keyboardFocus], textInputEvent);
                 }
             }
+            else
+            {
+                GuiEvent textInputEvent {textinput_event, {sdlEvent.text.text} };
+                for(auto e : controlList)
+                {
+                    if(e->hasDefaultKeyboardFocus)
+                    {
+                        e->handleEvent(textInputEvent);
+                    }
+                }
+            }
 
             break;
 
         case SDL_MOUSEBUTTONDOWN:
             if(sdlEvent.button.button == SDL_BUTTON_LEFT)
             {
-                int x;
-                int y;
-                SDL_GetMouseState(&x, &y);
                 GuiEvent mouseButtonDownEvent {mouse_clicked, x - destRect.x, y - destRect.y};
                 GuiInteractable *e = getControlElementAt(x, y);
                 if(e)
@@ -268,9 +301,6 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
         case SDL_MOUSEBUTTONUP:
             if(sdlEvent.button.button == SDL_BUTTON_LEFT)
             {
-                int x;
-                int y;
-                SDL_GetMouseState(&x, &y);
                 GuiEvent mouseButtonUpEvent {mouse_released, x - destRect.x, y - destRect.y};
                 GuiInteractable *e = getControlElementAt(x, y);
                 if(e)
@@ -281,7 +311,8 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                     {
                         interactionEventCallback(*e, mouseButtonUpEvent);
                     }
-                } else
+                }
+                else
                 {
                     mouseReleased(x, y);
                 }
@@ -292,15 +323,10 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
         case SDL_MOUSEMOTION:
             if(moving && (sdlEvent.motion.state & SDL_BUTTON_LMASK))
             {
-                int x;
-                int y;
-                SDL_GetMouseState(&x, &y);
                 mouseDragged(x, y);
-            } else if(sdlEvent.motion.state & SDL_BUTTON_LMASK)
+            }
+            else if(sdlEvent.motion.state & SDL_BUTTON_LMASK)
             {
-                int x;
-                int y;
-                SDL_GetMouseState(&x, &y);
                 GuiEvent mouseDraggedEvent {mouse_dragged, x - destRect.x, y - destRect.y};
                 GuiInteractable *e = getControlElementAt(x, y);
                 if(e)
@@ -317,9 +343,6 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent)
                 }
             } else
             {
-                int x;
-                int y;
-                SDL_GetMouseState(&x, &y);
                 GuiInteractable *e = getControlElementAt(x, y);
                 GuiInteractable *selectedElement = controlSelection > -1 ? controlList[controlSelection] : NULL;
                 if(e)

@@ -5,7 +5,7 @@
 #ifndef _SGUIL_hpp
 #define _SGUIL_hpp
 
-#define SGUIL_VERSION_STR "0.1.0_03"
+#define SGUIL_VERSION_STR "0.1.0_04"
 
 #include <cstdint>
 #include <cstddef>
@@ -330,6 +330,7 @@ public:
 
     bool enabled;
     bool canHoldKeyboardFocus;
+    bool hasDefaultKeyboardFocus;
     int ID;
 
     // these are set by either the user or the parent window if there is one
@@ -692,7 +693,7 @@ public:
     void addElement(GuiElement *);
     void addControlElement(GuiInteractable *);
 
-    void handleSDLEvent(SDL_Event&);
+    void handleSDLEvent(SDL_Event&, GuiPoint);
     GuiInteractable *getControlElementAt(int, int);
 
     void moveRect(int, int);

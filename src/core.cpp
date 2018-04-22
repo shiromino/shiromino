@@ -800,7 +800,48 @@ int procevents(coreState *cs)
         cs->redo = 0;
     }
 
-    bool checkRenderingSize = true;
+    SDL_GetMouseState(&cs->mouse_x, &cs->mouse_y);
+
+    int windowW;
+    int windowH;
+    SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
+
+    if(windowW == (windowH * 4) / 3)
+    {
+        float scale_ = (float)windowW / 640.0;
+        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
+        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
+    }
+    else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
+    {
+        float scale_ = (float)windowW / 640.0;
+        int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
+        if(cs->mouse_y < yOffset || cs->mouse_y >= windowH - yOffset)
+        {
+            cs->logical_mouse_y = -1;
+        }
+        else
+        {
+            cs->logical_mouse_y = (int)((float)(cs->mouse_y - yOffset) / scale_);
+        }
+
+        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
+    }
+    else
+    {
+        float scale_ = (float)windowH / 480.0;
+        int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
+        if(cs->mouse_x < xOffset || cs->mouse_x >= windowW - xOffset)
+        {
+            cs->logical_mouse_x = -1;
+        }
+        else
+        {
+            cs->logical_mouse_x = (int)((float)(cs->mouse_x - xOffset) / scale_);
+        }
+
+        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
+    }
 
     while(SDL_PollEvent(&event))
     {
@@ -1085,7 +1126,6 @@ int procevents(coreState *cs)
                     {
                         cs->settings->video_scale = 1;
                         SDL_SetWindowSize(cs->screen.window, 640, 480);
-                        checkRenderingSize = false;
                     }
 
                     cs->one_pressed = 1;
@@ -1097,7 +1137,6 @@ int procevents(coreState *cs)
                     {
                         cs->settings->video_scale = 2;
                         SDL_SetWindowSize(cs->screen.window, 2*640, 2*480);
-                        checkRenderingSize = false;
                     }
 
                     cs->two_pressed = 1;
@@ -1109,7 +1148,6 @@ int procevents(coreState *cs)
                     {
                         cs->settings->video_scale = 3;
                         SDL_SetWindowSize(cs->screen.window, 3*640, 3*480);
-                        checkRenderingSize = false;
                     }
 
                     cs->three_pressed = 1;
@@ -1121,7 +1159,6 @@ int procevents(coreState *cs)
                     {
                         cs->settings->video_scale = 4;
                         SDL_SetWindowSize(cs->screen.window, 4*640, 4*480);
-                        checkRenderingSize = false;
                     }
 
                     cs->four_pressed = 1;
@@ -1133,7 +1170,6 @@ int procevents(coreState *cs)
                     {
                         cs->settings->video_scale = 5;
                         SDL_SetWindowSize(cs->screen.window, 5*640, 5*480);
-                        checkRenderingSize = false;
                     }
 
                     cs->five_pressed = 1;
@@ -1434,48 +1470,7 @@ int procevents(coreState *cs)
 
     cs->keys = cs->keys_raw;
 
-    SDL_GetMouseState(&cs->mouse_x, &cs->mouse_y);
 
-    int windowW;
-    int windowH;
-    SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
-
-    if(windowW == (windowH * 4) / 3)
-    {
-        float scale_ = (float)windowW / 640.0;
-        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
-        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
-    }
-    else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
-    {
-        float scale_ = (float)windowW / 640.0;
-        int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
-        if(cs->mouse_y < yOffset || cs->mouse_y >= windowH - yOffset)
-        {
-            cs->logical_mouse_y = -1;
-        }
-        else
-        {
-            cs->logical_mouse_y = (int)((float)(cs->mouse_y - yOffset) / scale_);
-        }
-
-        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
-    }
-    else
-    {
-        float scale_ = (float)windowH / 480.0;
-        int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
-        if(cs->mouse_x < xOffset || cs->mouse_x >= windowW - xOffset)
-        {
-            cs->logical_mouse_x = -1;
-        }
-        else
-        {
-            cs->logical_mouse_x = (int)((float)(cs->mouse_x - xOffset) / scale_);
-        }
-
-        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
-    }
 
     return 0;
 }

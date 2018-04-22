@@ -18,6 +18,7 @@ GuiButton::GuiButton(int ID, SDL_Rect relativeDestRect, string displayString, Bi
     this->ID = ID;
     this->enabled = true;
     this->canHoldKeyboardFocus = false;
+    this->hasDefaultKeyboardFocus = false;
     this->selected = false;
     this->hasKeyboardFocus = false;
     this->displayString = displayString;

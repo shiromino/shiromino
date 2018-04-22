@@ -92,18 +92,212 @@ int gridsetcell(grid_t *g, int x, int y, int val)
     return 0;
 }
 
-int gridfill(grid_t *g, int val)
+int gridxorcell(grid_t *g, int x, int y, int xorVal)
 {
     if(!g)
         return -1;
+    if(x < 0 || y < 0 || x >= g->w || y >= g->h)
+        return GRID_OOB;
+    if(xorVal == GRID_OOB)
+        return 1;
 
-    int i = 0;
-    int j = 0;
+    g->grid[x][y] ^= xorVal;
 
-    for(i = 0; i < g->w; i++)
+    return 0;
+}
+
+int gridfillrect(grid_t *g, grid_rect *rect, int val)
+{
+    if(!g)
     {
-        for(j = 0; j < g->h; j++)
+        return -1;
+    }
+
+    grid_rect defaultRect = {0, 0, g->w, g->h};
+
+    if(!rect)
+    {
+        rect = &defaultRect;
+    }
+
+    int startX = rect->x;
+    int endX = rect->x + rect->w;
+    int startY = rect->y;
+    int endY = rect->y + rect->h;
+
+    if(startX < 0)
+    {
+        startX = 0;
+    }
+    if(endX > g->w)
+    {
+        endX = g->w;
+    }
+    if(startY < 0)
+    {
+        startY = 0;
+    }
+    if(endY > g->h)
+    {
+        endY = g->h;
+    }
+
+    for(int i = startX; i < endX; i++)
+    {
+        for(int j = startY; j < endY; j++)
+        {
             g->grid[i][j] = val;
+        }
+    }
+
+    return 0;
+}
+
+grid_t *gridfromsrcrect(grid_t *src, grid_rect& rect)
+{
+    if(!src)
+    {
+        return NULL;
+    }
+
+    int startX = rect.x;
+    int endX = rect.x + rect.w;
+    int startY = rect.y;
+    int endY = rect.y + rect.h;
+
+    if(startX < 0)
+    {
+        startX = 0;
+    }
+    if(endX > src->w)
+    {
+        endX = src->w;
+    }
+    if(startY < 0)
+    {
+        startY = 0;
+    }
+    if(endY > src->h)
+    {
+        endY = src->h;
+    }
+
+    grid_t *g = grid_create(endX - startX, endY - startY);
+    int x = 0;
+    int y = 0;
+
+    for(int i = startX; i < endX; i++)
+    {
+        for(int j = startY; j < endY; j++)
+        {
+            g->grid[x][y] = src->grid[i][j];
+
+            y++;
+        }
+
+        x++;
+        y = 0;
+    }
+
+    return g;
+}
+
+int gridcpyrect(grid_t *src, grid_t *dest, grid_rect *srcrect, grid_rect *destrect)
+{
+    if(!src || !dest)
+    {
+        return -1;
+    }
+
+    grid_rect defaultSrcRect = {0, 0, src->w, src->h};
+    grid_rect defaultDestRect = {0, 0, dest->w, dest->h};
+
+    if(!srcrect)
+    {
+        srcrect = &defaultSrcRect;
+    }
+
+    if(!destrect)
+    {
+        destrect = &defaultDestRect;
+    }
+
+    int startX = srcrect->x;
+    int endX = srcrect->x + srcrect->w;
+    int startY = srcrect->y;
+    int endY = srcrect->y + srcrect->h;
+
+    if(startX < 0)
+    {
+        startX = 0;
+    }
+    if(endX > src->w)
+    {
+        endX = src->w;
+    }
+    if(startY < 0)
+    {
+        startY = 0;
+    }
+    if(endY > src->h)
+    {
+        endY = src->h;
+    }
+
+    int destStartX = destrect->x;
+    int destEndX = destrect->x + destrect->w;
+    int destStartY = destrect->y;
+    int destEndY = destrect->y + destrect->h;
+
+    if(destStartX < 0)
+    {
+        destStartX = 0;
+    }
+    if(destEndX > dest->w)
+    {
+        destEndX = dest->w;
+    }
+    if(destStartY < 0)
+    {
+        destStartY = 0;
+    }
+    if(destEndY > dest->h)
+    {
+        destEndY = dest->h;
+    }
+
+    if((endX - startX) < (destEndX - destStartX))
+    {
+        destEndX = destStartX + (endX - startX);
+    }
+    else if((destEndX - destStartX) < (endX - startX))
+    {
+        endX = startX + (destEndX - destStartX);
+    }
+
+    if((endY - startY) < (destEndY - destStartY))
+    {
+        destEndY = destStartY + (endY - startY);
+    }
+    else if((destEndY - destStartY) < (endY - startY))
+    {
+        endY = startY + (destEndY - destStartY);
+    }
+
+    int destX = destStartX;
+    int destY = destStartY;
+
+    for(int i = startX; i < endX; i++)
+    {
+        for(int j = startY; j < endY; j++)
+        {
+            dest->grid[destX][destY] = src->grid[i][j];
+
+            destY++;
+        }
+
+        destX++;
+        destY = destStartY;
     }
 
     return 0;
