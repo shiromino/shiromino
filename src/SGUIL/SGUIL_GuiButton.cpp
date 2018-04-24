@@ -74,27 +74,17 @@ void GuiButton::draw()
     Gui_DrawText_PV(displayString, &fmt, font, displayStringPositionalValues, 0, 0);
 }
 
-void GuiButton::addEventHook(function<void(GuiButton&, GuiEvent&)> callback, enumGuiEventType type)
-{
-    eventHooks.push_back( GuiEventHook<GuiButton>{callback, type} );
-}
-
-void GuiButton::addRenderHook(function<void(GuiButton&)> callback)
-{
-    renderHooks.push_back( GuiRenderHook<GuiButton>{callback} );
-}
-
-void GuiButton::mouseClicked(int x, int y)
+void GuiButton::mouseClicked(int x, int y, Uint8 button)
 {
 
 }
 
-void GuiButton::mouseDragged(int x, int y)
+void GuiButton::mouseDragged(int x, int y, Uint8 button)
 {
 
 }
 
-void GuiButton::mouseReleased(int x, int y)
+void GuiButton::mouseReleased(int x, int y, Uint8 button)
 {
 
 }

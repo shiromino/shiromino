@@ -260,7 +260,7 @@ int init(coreState *cs, struct settings *s);
 void quit(coreState *cs);
 
 int run(coreState *cs);
-int procevents(coreState *cs);
+int procevents(coreState *cs/*, GuiWindow& wind*/);
 int procgame(game_t *g, int input_enabled);
 
 void handle_replay_input(coreState* cs);

@@ -34,7 +34,7 @@ GuiWindow::GuiWindow(string title, BitFont& titleFont, function<void(GuiInteract
     SDL_SetTextureBlendMode(canvas, SDL_BLENDMODE_BLEND);
 
     keyboardFocus = -1;
-    controlSelection = -1;
+    controlSelection = 0;
     selectingByMouse = true;
 
     rgbaBackground = 0x101010AF;
@@ -44,6 +44,7 @@ GuiWindow::GuiWindow(string title, BitFont& titleFont, function<void(GuiInteract
     showTitleBar = true;
     updateTitlePositionalValues = true;
     moveable = true;
+    moving = false;
 
     if(interactionEventCallback)
     {
@@ -102,16 +103,6 @@ void GuiWindow::draw()
 
     SDL_SetRenderTarget(Gui_SDL_Renderer, NULL);
     SDL_RenderCopy(Gui_SDL_Renderer, canvas, NULL, &destRect);
-}
-
-void GuiWindow::addEventHook(function<void(GuiWindow&, GuiEvent&)> callback, enumGuiEventType type)
-{
-    eventHooks.push_back( GuiEventHook<GuiWindow>{callback, type} );
-}
-
-void GuiWindow::addRenderHook(function<void(GuiWindow&)> callback)
-{
-    renderHooks.push_back( GuiRenderHook<GuiWindow>{callback} );
 }
 
 /*
@@ -253,9 +244,9 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            if(sdlEvent.button.button == SDL_BUTTON_LEFT)
+            if(sdlEvent.button.button == SDL_BUTTON_LEFT || sdlEvent.button.button == SDL_BUTTON_RIGHT)
             {
-                GuiEvent mouseButtonDownEvent {mouse_clicked, x - destRect.x, y - destRect.y};
+                GuiEvent mouseButtonDownEvent {mouse_clicked, x - destRect.x, y - destRect.y, sdlEvent.button.button};
                 GuiInteractable *e = getControlElementAt(x, y);
                 if(e)
                 {
@@ -292,16 +283,16 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
                         keyboardFocus = -1;
                     }
 
-                    mouseClicked(x, y);
+                    mouseClicked(x, y, sdlEvent.button.button);
                 }
             }
 
             break;
 
         case SDL_MOUSEBUTTONUP:
-            if(sdlEvent.button.button == SDL_BUTTON_LEFT)
+            if(sdlEvent.button.button == SDL_BUTTON_LEFT || sdlEvent.button.button == SDL_BUTTON_RIGHT)
             {
-                GuiEvent mouseButtonUpEvent {mouse_released, x - destRect.x, y - destRect.y};
+                GuiEvent mouseButtonUpEvent {mouse_released, x - destRect.x, y - destRect.y, sdlEvent.button.button};
                 GuiInteractable *e = getControlElementAt(x, y);
                 if(e)
                 {
@@ -314,7 +305,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
                 }
                 else
                 {
-                    mouseReleased(x, y);
+                    mouseReleased(x, y, sdlEvent.button.button);
                 }
             }
 
@@ -323,11 +314,13 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
         case SDL_MOUSEMOTION:
             if(moving && (sdlEvent.motion.state & SDL_BUTTON_LMASK))
             {
-                mouseDragged(x, y);
+                mouseDragged(x, y, SDL_BUTTON_LEFT);
             }
-            else if(sdlEvent.motion.state & SDL_BUTTON_LMASK)
+
+            if(sdlEvent.motion.state & SDL_BUTTON_LMASK || sdlEvent.motion.state & SDL_BUTTON_RMASK)
             {
-                GuiEvent mouseDraggedEvent {mouse_dragged, x - destRect.x, y - destRect.y};
+                Uint8 button = sdlEvent.motion.state & SDL_BUTTON_LMASK ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT;
+                GuiEvent mouseDraggedEvent {mouse_dragged, x - destRect.x, y - destRect.y, button};
                 GuiInteractable *e = getControlElementAt(x, y);
                 if(e)
                 {
@@ -339,7 +332,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
                     }
                 } else
                 {
-                    mouseDragged(x, y);
+                    mouseDragged(x, y, button);
                 }
             } else
             {
@@ -353,7 +346,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
 
                         if(selectedElement != NULL)
                         {
-                            GuiEvent mouseHoveredOffEvent {mouse_hovered_off, x - destRect.x, y - destRect.y};
+                            GuiEvent mouseHoveredOffEvent {mouse_hovered_off, x - destRect.x, y - destRect.y, 0};
                             selectedElement->handleEvent(mouseHoveredOffEvent);
                             selectedElement->selected = false;
 
@@ -372,7 +365,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
                         }
 
                         e->selected = true;
-                        GuiEvent mouseHoveredOntoEvent {mouse_hovered_onto, x - destRect.x, y - destRect.y};
+                        GuiEvent mouseHoveredOntoEvent {mouse_hovered_onto, x - destRect.x, y - destRect.y, 0};
                         e->handleEvent(mouseHoveredOntoEvent);
 
                         if(interactionEventCallback)
@@ -381,7 +374,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
                         }
                     }
 
-                    GuiEvent mouseMovedEvent {mouse_moved, x - destRect.x, y - destRect.y};
+                    GuiEvent mouseMovedEvent {mouse_moved, x - destRect.x, y - destRect.y, 0};
                     e->handleEvent(mouseMovedEvent);
 
                     if(interactionEventCallback)
@@ -392,7 +385,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
                 {
                     if(selectingByMouse && selectedElement != NULL)
                     {
-                        GuiEvent mouseHoveredOffEvent {mouse_hovered_off, x - destRect.x, y - destRect.y};
+                        GuiEvent mouseHoveredOffEvent {mouse_hovered_off, x - destRect.x, y - destRect.y, 0};
                         selectedElement->handleEvent(mouseHoveredOffEvent);
                         selectedElement->selected = false;
 
@@ -436,7 +429,7 @@ void GuiWindow::mouseMoved(int x, int y)
 
 }
 
-void GuiWindow::mouseClicked(int x, int y)
+void GuiWindow::mouseClicked(int x, int y, Uint8 button)
 {
     if(showTitleBar && moveable)
     {
@@ -451,7 +444,7 @@ void GuiWindow::mouseClicked(int x, int y)
     }
 }
 
-void GuiWindow::mouseDragged(int x, int y)
+void GuiWindow::mouseDragged(int x, int y, Uint8 button)
 {
     if(moving)
     {
@@ -460,7 +453,7 @@ void GuiWindow::mouseDragged(int x, int y)
     }
 }
 
-void GuiWindow::mouseReleased(int x, int y)
+void GuiWindow::mouseReleased(int x, int y, Uint8 button)
 {
     moving = false;
 }

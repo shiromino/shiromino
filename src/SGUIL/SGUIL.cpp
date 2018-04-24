@@ -185,16 +185,6 @@ void GuiText::draw()
     Gui_DrawText_PV(text, &fmt, font, textPositionalValues, 0, 0);
 }
 
-void GuiText::addEventHook(function<void(GuiText&, GuiEvent&)> callback, enumGuiEventType type)
-{
-    eventHooks.push_back( GuiEventHook<GuiText>{callback, type} );
-}
-
-void GuiText::addRenderHook(function<void(GuiText&)> callback)
-{
-    renderHooks.push_back( GuiRenderHook<GuiText>{callback} );
-}
-
 bool GuiInteractable::canInteractAt(int x, int y)
 {
     return (enabled &&
@@ -210,13 +200,13 @@ void GuiInteractable::handleEvent(GuiEvent& event)
     switch(event.type)
     {
         case mouse_clicked:
-            this->mouseClicked(event.mouseClickedEvent->x, event.mouseClickedEvent->y);
+            this->mouseClicked(event.mouseClickedEvent->x, event.mouseClickedEvent->y, event.mouseClickedEvent->button);
             break;
         case mouse_released:
-            this->mouseReleased(event.mouseReleasedEvent->x, event.mouseReleasedEvent->y);
+            this->mouseReleased(event.mouseReleasedEvent->x, event.mouseReleasedEvent->y, event.mouseReleasedEvent->button);
             break;
         case mouse_dragged:
-            this->mouseDragged(event.mouseDraggedEvent->x, event.mouseReleasedEvent->y);
+            this->mouseDragged(event.mouseDraggedEvent->x, event.mouseDraggedEvent->y, event.mouseDraggedEvent->button);
             break;
         case key_pressed:
             this->keyPressed(event.keyPressedEvent->key);

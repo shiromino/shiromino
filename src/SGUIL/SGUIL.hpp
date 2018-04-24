@@ -5,7 +5,7 @@
 #ifndef _SGUIL_hpp
 #define _SGUIL_hpp
 
-#define SGUIL_VERSION_STR "0.1.0_04"
+#define SGUIL_VERSION_STR "0.1.1"
 
 #include <cstdint>
 #include <cstddef>
@@ -124,6 +124,11 @@ joy_event = 0x4000,
     joybutton_released
 };
 
+enum enumMouseButtonType
+{
+    mouse_button_left, mouse_button_middle, mouse_button_right
+};
+
 struct GuiPoint
 {
     GuiPoint() : x(0), y(0) {}
@@ -137,13 +142,15 @@ typedef GuiPoint GuiVirtualPoint;
 
 struct GuiMouseEvent
 {
-    GuiMouseEvent() {x = 0; y = 0;}
-    GuiMouseEvent(int x, int y) : x(x), y(y) {}
+    GuiMouseEvent() : x(0), y(0), button(0) {}
+    GuiMouseEvent(int x, int y) : x(x), y(y), button(0) {}
+    GuiMouseEvent(int x, int y, Uint8 button) : x(x), y(y), button(button) {}
 
     int x;
     int y;
+    Uint8 button;
 };
-
+/*
 struct GuiMouseButtonEvent
 {
     GuiMouseButtonEvent() {x = 0; y = 0; button = SDL_BUTTON_LEFT;}
@@ -153,7 +160,7 @@ struct GuiMouseButtonEvent
     int y;
     Uint8 button;
 };
-
+*/
 struct GuiKeyEvent
 {
     GuiKeyEvent() {key = SDLK_UNKNOWN;}
@@ -173,8 +180,8 @@ struct GuiTextInputEvent
 struct GuiEvent
 {
     GuiEvent() : type(event_invalid) {}
-    GuiEvent(enumGuiEventType type, int x, int y)
-        : type(type), mouseEvent(x, y)
+    GuiEvent(enumGuiEventType type, int x, int y, Uint8 button)
+        : type(type), mouseEvent(x, y, button)
     {
         switch(type)
         {
@@ -246,24 +253,6 @@ private:
     GuiTextInputEvent typingEvent;
 };
 
-template<typename T>
-struct GuiEventHook
-{
-    GuiEventHook(std::function<void(T&, GuiEvent&)> callback, enumGuiEventType type)
-        : eventType(type), callback(callback) {}
-
-    enumGuiEventType eventType;
-    std::function<void(T&, GuiEvent&)> callback;
-};
-
-template<typename T>
-struct GuiRenderHook
-{
-    GuiRenderHook(std::function<void(T&)> callback) : callback(callback) {}
-
-    std::function<void(T&)> callback;
-};
-
 class GuiWindow;
 
 class GuiElement
@@ -298,13 +287,8 @@ public:
     ~GuiText() {}
 
     void draw();
-    void addEventHook(std::function<void(GuiText&, GuiEvent&)>, enumGuiEventType);
-    void addRenderHook(std::function<void(GuiText&)>);
 
 private:
-    std::vector<GuiEventHook<GuiText>> eventHooks;
-    std::vector<GuiRenderHook<GuiText>> renderHooks;
-
     std::string text;
     std::vector<std::pair<int, int>> textPositionalValues;
     TextFormat fmt;
@@ -320,9 +304,9 @@ public:
     // canInteractAt: checks if the given mouse X and Y are inside the element's rectangle,
     // and if the element is enabled. if so, either perform some action or let the user do so
     virtual bool canInteractAt(int, int);
-    virtual void mouseClicked(int, int) {}
-    virtual void mouseDragged(int, int) {}
-    virtual void mouseReleased(int, int) {}
+    virtual void mouseClicked(int, int, Uint8) {}
+    virtual void mouseDragged(int, int, Uint8) {}
+    virtual void mouseReleased(int, int, Uint8) {}
     virtual void keyPressed(SDL_Keycode) {}
     virtual void textInput(std::string) {}
 
@@ -344,6 +328,59 @@ protected:
     bool updateDisplayStringPVs;
 };
 
+class BindableVariable;
+
+class VariableObserver
+{
+public:
+    virtual ~VariableObserver() {}
+    virtual void call(BindableVariable *) = 0;
+};
+
+class StaticVariableObserver : public VariableObserver
+{
+public:
+    StaticVariableObserver(std::function<void(BindableVariable *)> func) : func(func) {}
+    virtual void call(BindableVariable *bv) override
+    {
+        func(bv);
+    }
+
+protected:
+    std::function<void(BindableVariable *)> func;
+};
+
+template<typename T>
+class IndirectObjVariableObserver : public VariableObserver
+{
+public:
+    IndirectObjVariableObserver(T& obj, void (*proxy)(T&, BindableVariable *)) : obj(obj), proxy(proxy) {}
+    virtual void call(BindableVariable *bv) override
+    {
+        proxy(obj, bv);
+    }
+
+protected:
+    T& obj;
+    void (*proxy)(T&, BindableVariable *);
+};
+
+class MemberVariableObserver : public VariableObserver
+{
+public:
+    MemberVariableObserver(std::function<void(BindableVariable *)> membFunc) : membFunc(membFunc) {}
+    virtual void call(BindableVariable *bv) override
+    {
+        membFunc(bv);
+    }
+
+protected:
+    std::function<void(BindableVariable *)> membFunc;
+};
+
+/* maybe useful for something in the future? possibility for parameter packs*/
+// class TemplatedObserver : public VariableObserver
+
 class BindableVariable
 {
 public:
@@ -354,20 +391,23 @@ public:
 	virtual void set(const std::string& val) = 0;
 	virtual std::string get() const = 0;
 
-	void addObserver(std::function<void(BindableVariable *)> ob) { observers.push_back(ob); }
+	void addObserver(std::unique_ptr<VariableObserver>& ob)
+    {
+        observers.push_back(std::move(ob));
+    }
 
 protected:
 	void valueChanged()
 	{
-		for(auto ob : observers)
+		for(auto& ob : observers)
         {
-            ob(this);
+            ob->call(this);
         }
 	}
 
 private:
 	const std::string name_;
-    std::vector<std::function<void(BindableVariable *)>> observers;
+    std::vector<std::unique_ptr<VariableObserver>> observers;
 };
 
 class BindableString : public BindableVariable
@@ -561,14 +601,12 @@ public:
     void setTextFormat(TextFormat&);
 
     void draw();
-    void addEventHook(std::function<void(GuiTextField&, GuiEvent&)>, enumGuiEventType);
-    void addRenderHook(std::function<void(GuiTextField&)>);
 
     void handleEvent(GuiEvent&);
 
-    void mouseClicked(int, int);
-    void mouseDragged(int, int);
-    void mouseReleased(int, int);
+    void mouseClicked(int, int, Uint8);
+    void mouseDragged(int, int, Uint8);
+    void mouseReleased(int, int, Uint8);
     void keyPressed(SDL_Keycode);
     void textInput(std::string);
 
@@ -582,9 +620,6 @@ public:
     std::string textCopy();
 
 protected:
-    std::vector<GuiEventHook<GuiTextField>> eventHooks;
-    std::vector<GuiRenderHook<GuiTextField>> renderHooks;
-
     std::vector<std::pair<int, int>> textPositionalValues;
     std::string value;
     TextFormat fmt;
@@ -613,17 +648,13 @@ public:
     ~GuiButton();
 
     void draw();
-    void addEventHook(std::function<void(GuiButton&, GuiEvent&)>, enumGuiEventType);
-    void addRenderHook(std::function<void(GuiButton&)>);
-    void mouseClicked(int, int);
-    void mouseDragged(int, int);
-    void mouseReleased(int, int);
+
+    void mouseClicked(int, int, Uint8);
+    void mouseDragged(int, int, Uint8);
+    void mouseReleased(int, int, Uint8);
     void keyPressed(SDL_Keycode);
 
 protected:
-    std::vector<GuiEventHook<GuiButton>> eventHooks;
-    std::vector<GuiRenderHook<GuiButton>> renderHooks;
-
     BitFont &font;
 };
 /*
@@ -683,8 +714,6 @@ public:
     ~GuiWindow();
 
     void draw();
-    void addEventHook(std::function<void(GuiWindow&, GuiEvent&)>, enumGuiEventType);
-    void addRenderHook(std::function<void(GuiWindow&)>);
 
     // void addText(GuiText&);
     // void addTextField(GuiTextField&);
@@ -699,9 +728,9 @@ public:
     void moveRect(int, int);
 
     void mouseMoved(int, int);
-    void mouseClicked(int, int);
-    void mouseDragged(int, int);
-    void mouseReleased(int, int);
+    void mouseClicked(int, int, Uint8);
+    void mouseDragged(int, int, Uint8);
+    void mouseReleased(int, int, Uint8);
     void keyPressed(SDL_Keycode);
     void textInput(std::string);
 
@@ -715,8 +744,6 @@ protected:
     int controlSelection;
     bool selectingByMouse;
 
-    std::vector<GuiEventHook<GuiWindow>> eventHooks;
-    std::vector<GuiRenderHook<GuiWindow>> renderHooks;
     std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback;
 
     rgba_t rgbaBackground;

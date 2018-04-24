@@ -504,6 +504,8 @@ int init(coreState *cs, struct settings *s)
             SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
         check(cs->screen.renderer != NULL, "SDL_CreateRenderer: Error: %s\n", SDL_GetError());
 
+        SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_BLEND);
+
         SDL_SetWindowMinimumSize(cs->screen.window, 640, 480);
         if(cs->settings->fullscreen)
         {
@@ -623,6 +625,32 @@ int run(coreState *cs)
         return -1;
 
     bool running = true;
+
+/*
+    int windW = 620;
+    int windH = 460;
+    SDL_Rect gridRect = {16, 44, windW - 32, windH - 60};
+
+    grid_t *g = grid_create(gridRect.w / 16, gridRect.h / 16);
+    SDL_Texture *paletteTex = cs->assets->tets_bright_qs.tex;
+
+    BindableInt paletteVar {"paletteVar", 0, 25};
+
+    GuiGridCanvas *gridCanvas = new GuiGridCanvas{
+        0,
+        g,
+        paletteVar,
+        paletteTex,
+        16, 16,
+        gridRect
+    };
+
+    SDL_Rect windowRect = {10, 10, windW, windH};
+    GuiWindow wind {"Shiromino", cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
+
+    wind.addControlElement(gridCanvas);
+*/
+
     while(running)
     {
         Uint64 timestamp = SDL_GetPerformanceCounter();
@@ -631,7 +659,7 @@ int run(coreState *cs)
         cs->prev_keys_raw = cs->keys_raw;
         cs->prev_keys = cs->keys;
 
-        if(procevents(cs))
+        if(procevents(cs/*, wind*/))
         {
             return 1;
         }
@@ -660,6 +688,8 @@ int run(coreState *cs)
             }
         }
 
+        // wind.draw();
+
         // process menus, graphics, and framerate
 
         // menu is processed if: either there's no game, or menu overrides existing game
@@ -681,7 +711,9 @@ int run(coreState *cs)
         }
 
         if(!cs->menu && !cs->p1game)
+        {
             running = false;
+        }
 
         // SDL_SetRenderTarget(cs->screen.renderer, NULL);
 
@@ -760,7 +792,7 @@ int run(coreState *cs)
     return 0;
 }
 
-int procevents(coreState *cs)
+int procevents(coreState *cs/*, GuiWindow& wind*/)
 {
     if(!cs)
         return -1;
@@ -845,6 +877,7 @@ int procevents(coreState *cs)
 
     while(SDL_PollEvent(&event))
     {
+        // wind.handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y} );
         switch(event.type)
         {
             case SDL_QUIT:

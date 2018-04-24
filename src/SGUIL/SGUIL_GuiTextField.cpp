@@ -11,6 +11,8 @@
 
 #include "SGUIL.hpp"
 
+#define TEXT_POSITION_NONE 0xFFFFFFFFu
+
 using namespace std;
 
 
@@ -223,16 +225,6 @@ void GuiTextField::draw()
     }
 }
 
-void GuiTextField::addEventHook(function<void(GuiTextField&, GuiEvent&)> callback, enumGuiEventType type)
-{
-    eventHooks.push_back( GuiEventHook<GuiTextField>{callback, type} );
-}
-
-void GuiTextField::addRenderHook(function<void(GuiTextField&)> callback)
-{
-    renderHooks.push_back( GuiRenderHook<GuiTextField>{callback} );
-}
-
 void GuiTextField::handleEvent(GuiEvent& event)
 {
     SDL_Cursor *sdlCursor = NULL;
@@ -261,13 +253,13 @@ void GuiTextField::handleEvent(GuiEvent& event)
 
             break;
         case mouse_clicked:
-            this->mouseClicked(event.mouseClickedEvent->x, event.mouseClickedEvent->y);
+            this->mouseClicked(event.mouseClickedEvent->x, event.mouseClickedEvent->y, event.mouseClickedEvent->button);
             break;
         case mouse_released:
-            this->mouseReleased(event.mouseReleasedEvent->x, event.mouseReleasedEvent->y);
+            this->mouseReleased(event.mouseReleasedEvent->x, event.mouseReleasedEvent->y, event.mouseReleasedEvent->button);
             break;
         case mouse_dragged:
-            this->mouseDragged(event.mouseDraggedEvent->x, event.mouseReleasedEvent->y);
+            this->mouseDragged(event.mouseDraggedEvent->x, event.mouseDraggedEvent->y, event.mouseDraggedEvent->button);
             break;
         case key_pressed:
             this->keyPressed(event.keyPressedEvent->key);
@@ -280,7 +272,7 @@ void GuiTextField::handleEvent(GuiEvent& event)
     }
 }
 
-void GuiTextField::mouseClicked(int x, int y)
+void GuiTextField::mouseClicked(int x, int y, Uint8 button)
 {
     if(updatePositionalValues)
     {
@@ -289,6 +281,10 @@ void GuiTextField::mouseClicked(int x, int y)
     }
 
     int pos = getPositionUnderMouse(x, y);
+    if(pos == TEXT_POSITION_NONE)
+    {
+        return;
+    }
 
     if(SDL_GetModState() & KMOD_SHIFT && pos != cursor)
     {
@@ -302,7 +298,7 @@ void GuiTextField::mouseClicked(int x, int y)
     }
 }
 
-void GuiTextField::mouseDragged(int x, int y)
+void GuiTextField::mouseDragged(int x, int y, Uint8 button)
 {
     if(!hasKeyboardFocus)
     {
@@ -316,11 +312,16 @@ void GuiTextField::mouseDragged(int x, int y)
     }
 
     int pos = getPositionUnderMouse(x, y);
+    if(pos == TEXT_POSITION_NONE)
+    {
+        return;
+    }
+
     lastEventTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
     cursor = selectionEnd = pos;
 }
 
-void GuiTextField::mouseReleased(int x, int y)
+void GuiTextField::mouseReleased(int x, int y, Uint8 button)
 {
 
 }
@@ -424,6 +425,11 @@ void GuiTextField::textInput(string s)
 
 unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
 {
+    if(textPositionalValues.empty())
+    {
+        return 0;
+    }
+
     int i = 0;
     int lineY;
     for(auto p : textPositionalValues)
