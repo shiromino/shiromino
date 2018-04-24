@@ -41,11 +41,6 @@ public:
     void handleInput();
     void handleGuiInteraction(GuiInteractable&, GuiEvent&);
 
-    void backupUsrField();
-    void usrFieldUndo();
-    void usrFieldRedo();
-    void clearUsrFieldUndo();
-
     void updateGravity(BindableVariable *);
     void updateLock(BindableVariable *);
     void updateAre(BindableVariable *);
@@ -102,5 +97,8 @@ public:
 
     long randomizer_seed;
 };
+
+//GuiScreen *loadEditorScreen(GuiScreenManager *mngr);
+
 
 #endif // _multieditor_hpp

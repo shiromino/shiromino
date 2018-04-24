@@ -26,7 +26,17 @@ MultiEditor::~MultiEditor()
 {
 
 }
+/*
+GuiScreen *makeEditorScreen(GuiScreenManager *mngr)
+{
+    GuiScreen *screen = new GuiScreen{
+        "Multi-Editor",
+        ,
+    };
 
+    GuiEnumerationButton (BindableEnumeration, displaystring, displaystring font, )
+}
+*/
 void MultiEditor::handleInput()
 {/*
     if(origin->logical_mouse_x < 0 || origin->logical_mouse_y < 0)
@@ -436,7 +446,7 @@ void MultiEditor::handleInput()
 }
 
 void MultiEditor::handleGuiInteraction(GuiInteractable& interactable, GuiEvent& event)
-{
+{/*
     if(event.type != mouse_clicked)
     {
         return;
@@ -450,86 +460,7 @@ void MultiEditor::handleGuiInteraction(GuiInteractable& interactable, GuiEvent& 
 
         default:
             break;
-    }
-}
-
-void MultiEditor::backupUsrField()
-{
-    /*
-    if(usr_field_undo.empty())
-    {
-        gfx_createbutton(
-            origin, "CLEAR UNDO", QRS_FIELD_X + (16 * 16) - 6, QRS_FIELD_Y + 23 * 16 + 8 - 6, 0, push_undo_clear_confirm, ufu_not_exists, NULL, 0xC0C0FFFF);
-    }
-    */
-
-    usr_field_undo.push_back(gridcpy(usr_field, NULL));
-
-    for(auto r : usr_field_redo)
-    {
-        grid_destroy(r);
-    }
-
-    usr_field_redo.clear();
-}
-
-void MultiEditor::usrFieldUndo()
-{
-    if(usr_field_undo.empty())
-    {
-        return;
-    }
-
-    usr_field_redo.push_back(gridcpy(usr_field, NULL));
-    usr_field = usr_field_undo.back();
-    usr_field_undo.pop_back();
-}
-
-void MultiEditor::usrFieldRedo()
-{
-    if(usr_field_redo.empty())
-    {
-        return;
-    }
-
-    usr_field_undo.push_back(gridcpy(usr_field, NULL));
-    usr_field = usr_field_redo.back();
-    usr_field_redo.pop_back();
-}
-/*
-int undo_clear_confirm_yes(coreState *origin, void *data)
-{
-    qrsdata *q = (qrsdata *)origin->p1game->data;
-    usr_field_undo_clear(origin, data);
-    if(pracdata->field_edit_in_progress)
-        pracdata->field_edit_in_progress = 0;
-
-    origin->button_emergency_override = 0;
-    origin->mouse_left_down = 0;
-    return 0;
-}
-
-int undo_clear_confirm_no(coreState *origin, void *data)
-{
-    origin->button_emergency_override = 0;
-    origin->mouse_left_down = 0;
-    return 0;
-}
-*/
-void MultiEditor::clearUsrFieldUndo()
-{
-    for(auto u : usr_field_undo)
-    {
-        grid_destroy(u);
-    }
-
-    for(auto r : usr_field_redo)
-    {
-        grid_destroy(r);
-    }
-
-    usr_field_undo.clear();
-    usr_field_redo.clear();
+    }*/
 }
 
 void MultiEditor::updateUsrseq(BindableVariable *seqvar)

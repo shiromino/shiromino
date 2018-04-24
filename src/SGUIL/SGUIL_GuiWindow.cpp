@@ -12,9 +12,13 @@
 
 using namespace std;
 
-GuiWindow::GuiWindow(string title, BitFont& titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
-    : title(title), titleFont(titleFont)
+GuiWindow::GuiWindow(string title, BitFont *titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
+    : title(title)
 {
+    if(titleFont)
+    {
+        this->titleFont = *titleFont;
+    }
     /*
     if(destRect.w == 0)
     {
@@ -41,10 +45,18 @@ GuiWindow::GuiWindow(string title, BitFont& titleFont, function<void(GuiInteract
     rgbaTitleBar = 0x202030FF;
 
     titleBarHeight = 28;
+    showBackground = true;
     showTitleBar = true;
     updateTitlePositionalValues = true;
     moveable = true;
     moving = false;
+
+    useExtWindowX = false;
+    useExtWindowY = false;
+    initialX = 0;
+    initialY = 0;
+    moveBeginX = 0;
+    moveBeginY = 0;
 
     if(interactionEventCallback)
     {

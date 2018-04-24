@@ -5,7 +5,7 @@
 #ifndef _SGUIL_hpp
 #define _SGUIL_hpp
 
-#define SGUIL_VERSION_STR "0.1.1"
+#define SGUIL_VERSION_STR "0.1.2"
 
 #include <cstdint>
 #include <cstddef>
@@ -710,7 +710,7 @@ class GuiWindow
 // essentially a container for GuiElement with relative positioning, possibly with -oX controls like in a WM
 {
 public:
-    GuiWindow(std::string, BitFont&, std::function<void(GuiInteractable&, GuiEvent&)>, SDL_Rect&);
+    GuiWindow(std::string, BitFont *, std::function<void(GuiInteractable&, GuiEvent&)>, SDL_Rect&);
     ~GuiWindow();
 
     void draw();
@@ -751,9 +751,10 @@ protected:
 
     std::string title;
     std::vector<std::pair<int, int>> titlePositionalValues;
-    BitFont& titleFont;
+    BitFont titleFont;
     int titleBarHeight;
 
+    bool showBackground;
     bool showTitleBar;
     bool updateTitlePositionalValues;
     bool moveable;
@@ -765,6 +766,31 @@ protected:
     int initialY;
     int moveBeginX;
     int moveBeginY;
+};
+
+class GuiScreen : public GuiWindow
+{
+public:
+    GuiScreen(std::string title, std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
+        : GuiWindow(title, NULL, interactionEventCallback, destRect)
+    {
+        name = title;
+
+        moveable = false;
+        showBackground = false;
+        showTitleBar = false;
+
+        useExtWindowX = true;
+        useExtWindowY = true;
+    }
+
+    void setParent(std::string p) { parent = p; }
+    void addChild(std::string c) { children.push_back(c); }
+
+protected:
+    std::string name;
+    std::string parent;
+    std::vector<std::string> children;
 };
 
 /*

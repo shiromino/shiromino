@@ -22,6 +22,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "SGUIL/SGUIL.hpp"
+#include "GuiScreenManager.hpp"
 
 typedef struct coreState_ coreState;
 
@@ -117,10 +118,7 @@ typedef struct game game_t;
 
 struct coreState_
 {
-    // TODO ----v
-    void loadParentGui() {}
-    void loadChildGui(const std::string name) {}
-    // std::map<std::string, std::unique_ptr<GuiWindow>> guiList;
+    GuiScreenManager screenManager;
 
     double fps;        // because tap fps = 61.68
 
