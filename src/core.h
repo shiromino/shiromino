@@ -240,7 +240,7 @@ class Game
 {
 public:
     Game(coreState& cs) : cs(cs), frameCounter(0) {}
-    virtual ~Game();
+    virtual ~Game() {}
 
     virtual int init() { return 0; }
     virtual int quit() { return 0; }
