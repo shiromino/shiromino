@@ -8,6 +8,7 @@
 #include "core.h"
 #include "replay.h"
 #include "SPM_Spec.hpp"
+#include "SPM_Player.hpp"
 
 class ShiroPhysoMino : public Game
 {
@@ -40,6 +41,7 @@ private:
     bool lockDelayExpired(SPM_Player&);
     bool lineClearExpired(SPM_Player&);
     bool initNextMino(SPM_Player&);
+    ActivatedPolyomino *activateMino(SPM_minoID ID);
 
     SPM_Player player;
 };

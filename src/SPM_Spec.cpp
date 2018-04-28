@@ -22,21 +22,20 @@ SPM_Spec::SPM_Spec()
 
         Polyomino *p = new Polyomino{tableArrs, 4};
         minoList.push_back(p);
-    }
 
-    for(int i = 0; i < 7; i++)
-    {
-        minoBehaviorList.push_back(0);
+        spawnPositions.push_back( {3, 2} );
     }
 
     fieldW = 10;
     fieldH = 23;
     visualFieldH = 20;
-    spawnX = 3;
-    spawnY = 2;
 
     numPreviews = 1;
     allowHold = false;
+    allowHardDrop = true;
+
+    softDropLock = true;
+    hardDropLock = false;
 }
 
 int SPM_Spec::checkCollision(grid_t *field, ActivatedPolyomino& mino)
@@ -130,13 +129,9 @@ int SPM_Spec::checkedFall(grid_t *field, ActivatedPolyomino& mino, int subY)
         {
             mino.position.y--;
             mino.position.subY = 0;
-            if(mino.physicState == spm_physic_falling)
-            {
-                // sfx_play()
-            }
 
             mino.physicState = spm_physic_grounded;
-            return -1;
+            return SPM_FALL_LANDED;
         }
     }
 
@@ -146,17 +141,6 @@ int SPM_Spec::checkedFall(grid_t *field, ActivatedPolyomino& mino, int subY)
     }
 
     return mino.position.y - backupPos.y;
-}
-
-ActivatedPolyomino *SPM_Spec::activatePolyomino(SPM_minoID ID)
-{
-    if(ID >= minoList.size())
-    {
-        return NULL;
-    }
-
-    ActivatedPolyomino *ap = new ActivatedPolyomino{*minoList[ID], ID, spawnX, spawnY};
-    return ap;
 }
 
 void SPM_Spec::imprintMino(grid_t *field, ActivatedPolyomino& mino)
@@ -172,18 +156,18 @@ void SPM_Spec::imprintMino(grid_t *field, ActivatedPolyomino& mino)
 
         if(gridgetcell(d, from_x, from_y))
         {
-            gridsetcell(field, to_x, to_y, mino.ID + 1);
+            gridsetcell(field, to_x, to_y, mino.codedCellValue());
         }
     }
 
     // sfx_play(&g->origin->assets->lock);
 }
 
-int SPM_Spec::checkAndClearLines(grid_t *field)
+int SPM_Spec::checkAndClearLines(grid_t *field, int bound)
 {
     int n = 0;
 
-    for(int i = 0; i < field->h; i++)
+    for(int i = 0; i < field->h && i < bound; i++)
     {
         int cells = 0;
 
@@ -221,10 +205,12 @@ void SPM_Spec::dropField(grid_t *field)
         }
 
         if(i - n >= 0)
+        // if the row to copy downward is within bounds
         {
             gridrowcpy(field, NULL, i - n, i);
         }
         else
+        // make an empty row
         {
             for(int j = 0; j < field->w; j++)
             {

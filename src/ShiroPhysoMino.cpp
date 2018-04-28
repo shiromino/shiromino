@@ -4,7 +4,10 @@
 #include <vector>
 #include "SGUIL/SGUIL.hpp"
 
+#include "core.h"
 #include "SPM_Spec.hpp"
+#include "SPM_Player.hpp"
+#include "SPM_Randomizer.hpp"
 
 using namespace std;
 
@@ -36,7 +39,7 @@ int ShiroPhysoMino::init()
         for(int i = 0; i < spec->numPreviews; i++)
         {
             SPM_minoID t = player.randomizer->pull();
-            player.previews.insert(player.previews.begin(), spec->activatePolyomino(t));
+            player.previews.insert(player.previews.begin(), activateMino(t));
         }
     }
 
@@ -283,6 +286,7 @@ int ShiroPhysoMino::draw()
                 {
                     dest.x = fieldPos.x + (gridX * 16);
                     dest.y = fieldPos.y - ((field->h - spec->visualFieldH) * 16) + (gridY * 16);
+                    dest.y += (16 * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
                     SDL_RenderFillRect(cs.screen.renderer, &dest);
                 }
             }
@@ -370,7 +374,7 @@ bool ShiroPhysoMino::lockDelayExpired(SPM_Player& p)
     spec->imprintMino(field, *p.mino);
     p.mino->physicState = spm_physic_locked;
 
-    int n = spec->checkAndClearLines(field);
+    int n = spec->checkAndClearLines(field, field->h);
 
     if(n)
     {
@@ -432,11 +436,11 @@ bool ShiroPhysoMino::initNextMino(SPM_Player& p)
             p.previews[i] = p.previews[i + 1];
         }
 
-        p.previews.back() = spec->activatePolyomino(t);
+        p.previews.back() = activateMino(t);
     }
     else
     {
-        p.mino = spec->activatePolyomino(t);
+        p.mino = activateMino(t);
     }
 
     if(!p.previews.empty() && p.previews[0])
@@ -462,4 +466,15 @@ bool ShiroPhysoMino::initNextMino(SPM_Player& p)
     p.mino->physicState = spm_physic_spawned;
 
     return true;
+}
+
+ActivatedPolyomino *ShiroPhysoMino::activateMino(SPM_minoID ID)
+{
+    if(ID >= spec->minoList.size())
+    {
+        return NULL;
+    }
+
+    ActivatedPolyomino *ap = new ActivatedPolyomino{*(spec->minoList[ID]), ID, spec->spawnPositions[ID]};
+    return ap;
 }

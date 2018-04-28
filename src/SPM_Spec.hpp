@@ -12,44 +12,11 @@
 #define SPM_SUBUNIT_SCALE 65536
 
 #define MINO_ID_INVALID 0xFFFFFFFF
+#define SPM_FALL_LANDED -1
 
 #define SPM_CELL_CLEARED -2
 
 typedef unsigned int SPM_minoID;
-typedef uint64_t SPM_randomSeed;
-
-class SPM_Randomizer
-{
-public:
-    SPM_Randomizer(unsigned int numMinoes) : numMinoes(numMinoes) {}
-    virtual ~SPM_Randomizer() {}
-
-    virtual void init(SPM_randomSeed) {}
-
-    virtual SPM_minoID pull() = 0;
-    virtual SPM_minoID lookahead(unsigned int) = 0;
-
-protected:
-    unsigned int numMinoes;
-};
-
-class SPM_NonRandomizer : public SPM_Randomizer
-{
-public:
-    SPM_NonRandomizer(unsigned int num) : SPM_Randomizer(num) { index = 0; }
-
-    SPM_minoID pull()
-    {
-        SPM_minoID val = index;
-        index = (index + 1) % 7;
-        return val;
-    }
-
-    SPM_minoID lookahead(unsigned int distance) { return (index + distance) % 7; }
-
-protected:
-    SPM_minoID index;
-};
 
 struct SPM_point
 {
@@ -302,15 +269,14 @@ public:
 
     virtual void draw() {}
 
-//protected:
     grid_t *rotationTables[4]; // these grids technically don't have to be the same size
 };
 
 class ActivatedPolyomino : public Polyomino
 {
 public:
-    ActivatedPolyomino(Polyomino& p, int ID, int x, int y)
-        : ID(ID), position(x, y), physicState(spm_physic_absent), orientation(spm_flat)
+    ActivatedPolyomino(Polyomino& p, SPM_minoID ID, SPM_point position)
+        : ID(ID), position(position), physicState(spm_physic_absent), orientation(spm_flat)
     {
         for(int i = 0; i < 4; i++)
         {
@@ -321,6 +287,11 @@ public:
     grid_t *currentRotationTable()
     {
         return rotationTables[static_cast<int>(orientation)];
+    }
+
+    virtual int codedCellValue()
+    {
+        return ID + 1;
     }
 
     void freeRotateCW() { ++orientation; }
@@ -340,39 +311,6 @@ public:
     SPM_orientation orientation;
 };
 
-struct SPM_Player
-{
-    SPM_Player()
-    {
-        randomizer = new SPM_NonRandomizer{7};
-        mino = NULL;
-        hold = NULL;
-        playPhase = spm_player_control;
-        timings.gravity = 8 * 256;
-        timings.lockDelay = 30;
-        timings.das = 12;
-        timings.dasInterval = 0;
-        timings.are = 25;
-        timings.lineAre = 25;
-        timings.lineClear = 40;
-        minoSeqIndex = 0;
-    }
-
-    SPM_Randomizer *randomizer;
-
-    ActivatedPolyomino *mino;
-    std::vector<ActivatedPolyomino *> previews;
-    ActivatedPolyomino *hold;
-
-    SPM_playPhase playPhase;
-
-    SPM_frameTimings timings;
-    SPM_frameCounters counters;
-
-    std::vector<SPM_minoID> minoSequence;
-    unsigned int minoSeqIndex;
-};
-
 class SPM_Spec
 {
 public:
@@ -389,30 +327,28 @@ public:
     virtual bool isGrounded(grid_t *field, ActivatedPolyomino& mino);
 
     virtual bool checkedShift(grid_t *field, ActivatedPolyomino& mino, SPM_offset offset);
-    virtual bool checkedRotate(grid_t *field, ActivatedPolyomino& mino, SPM_orientation dir); // handles kicks internally via checkedShift
+    virtual bool checkedRotate(grid_t *field, ActivatedPolyomino& mino, SPM_orientation dir);
     virtual int checkedFall(grid_t *field, ActivatedPolyomino& mino, int subY);
 
-    virtual ActivatedPolyomino *activatePolyomino(SPM_minoID ID);
-    // virtual bool spawnMino(grid_t *field, ActivatedPolyomino& mino, struct keyflags& keys);
-
     virtual void imprintMino(grid_t *field, ActivatedPolyomino& mino);
-    virtual int checkAndClearLines(grid_t *field);
+    virtual int checkAndClearLines(grid_t *field, int bound);
     virtual void dropField(grid_t *field);
 
-// protected:
     int fieldW;
     int fieldH;
     int visualFieldH;
 
-    int spawnX;
-    int spawnY;
-
+    std::vector<SPM_point> spawnPositions;
     std::vector<Polyomino *> minoList;
-    std::vector<uint32_t> minoBehaviorList;
-    // SPM_Randomizer *randomizer;
+
+    // TODO: no reset vs. step reset vs. move reset, as well as possibility for other options?
 
     unsigned int numPreviews;
     bool allowHold;
+    bool allowHardDrop;
+
+    bool softDropLock;
+    bool hardDropLock;
 };
 
 #endif
