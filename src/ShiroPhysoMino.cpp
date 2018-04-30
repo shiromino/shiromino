@@ -1,28 +1,15 @@
 #include "ShiroPhysoMino.hpp"
 
+#include <iostream>
 #include <memory>
 #include <vector>
 #include "SGUIL/SGUIL.hpp"
 
 #include "core.h"
 #include "SPM_Spec.hpp"
-#include "SPM_Player.hpp"
 #include "SPM_Randomizer.hpp"
 
 using namespace std;
-
-ShiroPhysoMino::ShiroPhysoMino(coreState& cs, SPM_Spec *spec)
-    : Game(cs)
-{
-    this->spec = spec;
-    field = grid_create(spec->fieldW, spec->fieldH);
-    fieldPos = {48, 60};
-    timer = nz_timer_create(60);
-    rep = NULL;
-    playback = false;
-    playbackIndex = 0;
-    gamePhase = spm_gameplay;
-}
 
 ShiroPhysoMino::~ShiroPhysoMino()
 {
@@ -30,7 +17,7 @@ ShiroPhysoMino::~ShiroPhysoMino()
     nz_timer_destroy(timer);
 }
 
-int ShiroPhysoMino::init()
+int TestSPM::init()
 {
     if(player.randomizer)
     {
@@ -39,7 +26,7 @@ int ShiroPhysoMino::init()
         for(int i = 0; i < spec->numPreviews; i++)
         {
             SPM_minoID t = player.randomizer->pull();
-            player.previews.insert(player.previews.begin(), activateMino(t));
+            player.previews.push_back(activateMino(t));
         }
     }
 
@@ -53,12 +40,12 @@ int ShiroPhysoMino::init()
     return 0;
 }
 
-int ShiroPhysoMino::quit()
+int TestSPM::quit()
 {
     return 0;
 }
 
-int ShiroPhysoMino::input()
+int TestSPM::input()
 {
     if(player.mino == NULL)
     {
@@ -134,7 +121,7 @@ int ShiroPhysoMino::input()
     return 0;
 }
 
-int ShiroPhysoMino::frame()
+int TestSPM::frame()
 {
     if(player.playPhase == spm_player_control && player.mino->physicState == spm_physic_spawned)
     {
@@ -247,12 +234,15 @@ int ShiroPhysoMino::frame()
     return 0;
 }
 
-int ShiroPhysoMino::draw()
+int TestSPM::draw()
 {
-    SDL_Rect dest = {fieldPos.x, fieldPos.y, 16, 16};
+    int blockW = 16;
+    int blockH = 16;
+
+    SDL_Rect dest = {fieldPos.x, fieldPos.y, blockW, blockH};
     SDL_SetRenderDrawColor(cs.screen.renderer, 255, 255, 255, 180);
 
-    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, 16 * field->w, 16 * spec->visualFieldH};
+    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * field->w, blockH * spec->visualFieldH};
     Gui_DrawBorder(fieldRect, 1, GUI_RGBA_DEFAULT);
 
     for(int i = 0; i < field->w; i++)
@@ -260,8 +250,8 @@ int ShiroPhysoMino::draw()
         for(int j = 0; j < spec->visualFieldH; j++)
         {
             int gridY = j + field->h - spec->visualFieldH;
-            dest.x = fieldPos.x + (i * 16);
-            dest.y = fieldPos.y + (j * 16);
+            dest.x = fieldPos.x + (i * blockW);
+            dest.y = fieldPos.y + (j * blockH);
 
             if(gridgetcell(field, i, gridY) > 0)
             {
@@ -284,9 +274,9 @@ int ShiroPhysoMino::draw()
 
                 if(gridY >= (field->h - spec->visualFieldH) && gridgetcell(m, i, j))
                 {
-                    dest.x = fieldPos.x + (gridX * 16);
-                    dest.y = fieldPos.y - ((field->h - spec->visualFieldH) * 16) + (gridY * 16);
-                    dest.y += (16 * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
+                    dest.x = fieldPos.x + (gridX * blockW);
+                    dest.y = fieldPos.y - ((field->h - spec->visualFieldH) * blockH) + (gridY * blockH);
+                    dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
                     SDL_RenderFillRect(cs.screen.renderer, &dest);
                 }
             }
@@ -294,6 +284,9 @@ int ShiroPhysoMino::draw()
     }
 
     SDL_SetRenderDrawColor(cs.screen.renderer, 30, 220, 30, 180);
+
+    dest.w = 16;
+    dest.h = 16;
 
     int n = 0;
     for(auto p : player.previews)
@@ -323,7 +316,7 @@ int ShiroPhysoMino::draw()
     return 0;
 }
 
-bool ShiroPhysoMino::spawnDelayExpired(SPM_Player& p)
+bool TestSPM::spawnDelayExpired(SPM_Player& p)
 {
     p.counters.lockDelay = 0;
 
@@ -369,7 +362,7 @@ bool ShiroPhysoMino::spawnDelayExpired(SPM_Player& p)
     return true;
 }
 
-bool ShiroPhysoMino::lockDelayExpired(SPM_Player& p)
+bool TestSPM::lockDelayExpired(SPM_Player& p)
 {
     spec->imprintMino(field, *p.mino);
     p.mino->physicState = spm_physic_locked;
@@ -390,7 +383,7 @@ bool ShiroPhysoMino::lockDelayExpired(SPM_Player& p)
     return true;
 }
 
-bool ShiroPhysoMino::lineClearExpired(SPM_Player& p)
+bool TestSPM::lineClearExpired(SPM_Player& p)
 {
     p.playPhase = spm_spawn_delay;
     p.counters.spawnDelayExpirePoint = p.timings.lineAre;
@@ -404,7 +397,7 @@ bool ShiroPhysoMino::lineClearExpired(SPM_Player& p)
     return true;
 }
 
-bool ShiroPhysoMino::initNextMino(SPM_Player& p)
+bool TestSPM::initNextMino(SPM_Player& p)
 {
     SPM_minoID t = MINO_ID_INVALID;
 
@@ -468,7 +461,7 @@ bool ShiroPhysoMino::initNextMino(SPM_Player& p)
     return true;
 }
 
-ActivatedPolyomino *ShiroPhysoMino::activateMino(SPM_minoID ID)
+ActivatedPolyomino *TestSPM::activateMino(SPM_minoID ID)
 {
     if(ID >= spec->minoList.size())
     {

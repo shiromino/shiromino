@@ -1,11 +1,20 @@
 Shiromino Version history
-=========================
+===========================
 
 beta3
 {
     New Features:
 
     Changes/Removed Features:
+        * Moved from C to C++
+        * Replays are saved to an SQLite database now instead of the filesystem
+        * Ripped out old menu system and introduced SGUIL, a GUI library for SDL
+        * Overhauled and gave significantly more structure to game logic
+        * Cleaned up the embarrassing mess of spaghetti code that comprised the Multi-Editor
+        * Removed bstrlib dependency
+
+        * V pentomino now floorkicks
+        * T pentomino now floorkicks even if airborne
 
     Bug Fixes:
 }

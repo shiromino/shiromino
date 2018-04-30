@@ -22,6 +22,7 @@
 #include "SGUIL/SGUIL.hpp"
 
 #include "SPM_Spec.hpp"
+#include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
 using namespace std;
@@ -653,8 +654,9 @@ int run(coreState *cs)
 
     wind.addControlElement(gridCanvas);
 */
-    SPM_Spec spec;
-    ShiroPhysoMino SPMgame {*cs, &spec};
+    // SPM_Spec spec;
+    QRS spec {qrs_variant_G3, false};
+    TestSPM SPMgame {*cs, &spec};
     SPMgame.init();
 
     while(running)
@@ -682,11 +684,13 @@ int run(coreState *cs)
         SDL_RenderClear(cs->screen.renderer);
         gfx_drawbg(cs);
 
+        /*
         SPMgame.input();
         SPMgame.frame();
         SPMgame.draw();
+        */
 
-        /*
+
         if(cs->p1game)
         {
             if(procgame(cs->p1game, !cs->button_emergency_override))
@@ -725,7 +729,7 @@ int run(coreState *cs)
         {
             running = false;
         }
-        */
+        
 
         // SDL_SetRenderTarget(cs->screen.renderer, NULL);
 

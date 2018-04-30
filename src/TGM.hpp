@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "core.h"
 #include "SPM_Spec.hpp"
 #include "ShiroPhysoMino.hpp"
 
@@ -82,10 +83,10 @@ struct TGM_frameCounters : public SPM_frameCounters
     int holdFlashExpirePoint;
 };
 
-class TGM_ActivatedPolyomino : public ActivatedPolyomino
+class TGM_Mino : public ActivatedPolyomino
 {
 public:
-    TGM_ActivatedPolyomino(Polyomino& p, SPM_minoID ID, SPM_point position)
+    TGM_Mino(Polyomino& p, SPM_minoID ID, SPM_point position)
         : ActivatedPolyomino(p, ID, position)
     {
         brackets = false;
@@ -120,13 +121,28 @@ struct TGM_sectionData
 {
     long time;
     long coolTime;
+    long levelStopTime;
 
     int numTetrises;
 };
 
-struct TGM_Player : public SPM_Player
+struct TGM_Player
 {
     TGM_Player();
+
+    SPM_Randomizer *randomizer;
+
+    TGM_Mino *mino;
+    std::vector<TGM_Mino *> previews;
+    TGM_Mino *hold;
+
+    SPM_playPhase playPhase;
+
+    SPM_frameTimings timings;
+    TGM_frameCounters counters;
+
+    std::vector<SPM_minoID> minoSequence;
+    unsigned int minoSeqIndex;
 
     TGM_grade grade;
     int internalGrade;
@@ -141,24 +157,7 @@ struct TGM_Player : public SPM_Player
     bool mroll_unlocked;
     long section_timestamp;
 
-    int recoveries;
-    bool isRecovering;
 
-    TGM_medal medalST;
-    TGM_medal medalSK;
-    TGM_medal medalCO;
-    TGM_medal medalAC;
-
-    TGM_medal medalRE;
-    TGM_medal medalRO;
-
-    unsigned long medalST_timestamp;
-    unsigned long medalSK_timestamp;
-    unsigned long medalCO_timestamp;
-    unsigned long medalAC_timestamp;
-
-    unsigned long medalRE_timestamp;
-    unsigned long medalRO_timestamp;
 
     struct placementData
     {
@@ -175,7 +174,7 @@ struct TGM_Player : public SPM_Player
         int comboSimple;
     };
 
-    struct performanceData
+    struct statistics
     {
         int numSingles;
         int numDoubles;
@@ -244,7 +243,40 @@ struct Staged_TGM_Mode
 
 class TGM : public ShiroPhysoMino
 {
+public:
+    TGM(coreState&, SPM_Spec *, TGM_Mode&);
+    ~TGM();
 
+    int init();
+    int quit();
+    int input();
+    int frame();
+    int draw();
+
+protected:
+    std::vector<TGM_Player> players;
+
+    int recoveries;
+    bool isRecovering;
+
+    TGM_medal medalST;
+    TGM_medal medalSK;
+    TGM_medal medalCO;
+    TGM_medal medalAC;
+
+    TGM_medal medalRE;
+    TGM_medal medalRO;
+
+    unsigned long medalST_timestamp;
+    unsigned long medalSK_timestamp;
+    unsigned long medalCO_timestamp;
+    unsigned long medalAC_timestamp;
+
+    unsigned long medalRE_timestamp;
+    unsigned long medalRO_timestamp;
+
+private:
+    TGM_Mode mode;
 };
 
 class Staged_TGM : public TGM

@@ -2,6 +2,7 @@
 #define _qrs_hpp
 
 #include <cstdint>
+#include <vector>
 
 #include "SPM_Spec.hpp"
 #include "rotation_tables.h"
@@ -51,6 +52,8 @@
 #define ARS_O 5
 #define ARS_T 6
 
+/* convoluted QRS kick behavior flags */
+
 #define QRS_KICK_NONE 0
 #define QRS_KICK_WALL (1 << 1)
 #define QRS_KICK_FLOOR (1 << 2)
@@ -59,6 +62,8 @@
 
 #define QRS_FKICK_FLAT  (1 << 4)
 #define QRS_FKICK_AIRBORNE (1 << 5)
+
+/* */
 
 enum QRS_variant
 {
@@ -74,7 +79,7 @@ public:
     QRS(QRS_variant variant, bool doubles)
         : variant(variant)
     {
-        vector<int *> tableArrs;
+        std::vector<int *> tableArrs;
 
         if(variant == qrs_variant_P)
         {
@@ -89,6 +94,20 @@ public:
 
                 Polyomino *p = new Polyomino{tableArrs, 5};
                 minoList.push_back(p);
+
+                spawnPositions.push_back({4, 1});
+            }
+
+            for(int i = 0; i < 7; i++)
+            {
+                spawnPositions.push_back({4, 2});
+            }
+        }
+        else
+        {
+            for(int i = 0; i < 7; i++)
+            {
+                spawnPositions.push_back({3, 2});
             }
         }
 
@@ -116,11 +135,6 @@ public:
                 numPreviews = 1;
                 allowHold = false;
 
-                for(int i = 0; i < 7; i++)
-                {
-                    minoFloorkickHeights.push_back(0);
-                }
-
                 break;
 
             case qrs_variant_G3:
@@ -128,25 +142,15 @@ public:
                 numPreviews = 3;
                 allowHold = true;
 
-                for(int i = 0; i < 7; i++)
-                {
-                    minoFloorkickHeights.push_back(0);
-                }
-
-                minoFloorkickHeights[QRS_ARS_I] = 2;
-                minoFloorkickHeights[QRS_ARS_T] = 1;
-
                 break;
 
+            default:
             case qrs_variant_P:
                 fieldW = 12;
                 numPreviews = 4;
                 allowHold = false;
 
-                for(int i = 0; i < 25; i++)
-                {
-                    minoFloorkickHeights.push_back()
-                }
+                break;
         }
 
         if(doubles)
@@ -162,18 +166,221 @@ public:
     }
 
     // TODO: move sfx_play() calls from SPM_Spec functions to ShiroPhysoMino functions! TODO checkedFall, imprintMino, dropField(?)
-    // using defaults for: checkCollision, isGrounded, checkedShift, checkedFall, imprintMino, checkAndClearLines, dropField
+    // using defaults for: everything other than checkedRotate lol
 
-    bool checkedRotate(grid_t *field, ActivatedPolyomino& mino, SPM_orientation dir)
+    bool wallkick(grid_t *field, ActivatedPolyomino& mino)
     {
+        int x = gridpostox(mino.currentRotationTable(), checkCollision(field, mino) - 1);
+        SPM_orientation o = mino.orientation;
+        SPM_minoID shiftedID = mino.ID;
 
+        if(variant != qrs_variant_P)
+        {
+            shiftedID += 18;
+        }
+
+        if(shiftedID == QRS_I4)
+        {
+            if(variant == qrs_variant_G1 || variant == qrs_variant_G2)
+            {
+                return false;
+            }
+        }
+
+        switch(shiftedID)
+        {
+            case QRS_I:
+            case QRS_I4:
+                if(o == spm_clockwise || o == spm_counter_clockwise)
+                {
+                    return false;
+                }
+
+                break;
+
+            case QRS_J:
+                if((o == spm_clockwise || o == spm_counter_clockwise) && x == 2)
+                {
+                    return false;
+                }
+
+                break;
+
+            case QRS_L:
+            case QRS_L4:
+            case QRS_J4:
+            case QRS_T4:
+                if((o == spm_clockwise || o == spm_counter_clockwise) && x == 1)
+                {
+                    return false;
+                }
+
+                break;
+
+            case QRS_N:
+            case QRS_G:
+            case QRS_Ya:
+            case QRS_Yb:
+                if(o == spm_clockwise && x == 2)
+                {
+                    return false;
+                }
+                else if(o == spm_counter_clockwise && x == 1)
+                {
+                    return false;
+                }
+
+                break;
+
+            default:
+                break;
+        }
+
+        if(checkedShift(field, mino, {1, 0}) == false)
+        {
+            if(checkedShift(field, mino, {-1, 0}) == false)
+            {
+                switch(shiftedID)
+                {
+                    case QRS_I4:
+                    case QRS_I:
+                        break;
+
+                    case QRS_J:
+                    case QRS_L:
+                    case QRS_Ya:
+                    case QRS_Yb:
+                        if(o == spm_clockwise || o == spm_counter_clockwise)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    default:
+                        return false;
+                }
+
+                if(checkedShift(field, mino, {2, 0}) == false)
+                {
+                    return checkedShift(field, mino, {-2, 0});
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool floorkick(grid_t *field, ActivatedPolyomino& mino)
+    {
+        if(variant == qrs_variant_G1 || variant == qrs_variant_G2)
+        {
+            return false;
+        }
+
+        SPM_minoID shiftedID = mino.ID;
+
+        if(variant == qrs_variant_G3)
+        {
+            shiftedID += 18;
+        }
+
+        switch(shiftedID)
+        {
+            case QRS_X:
+            case QRS_S:
+            case QRS_Z:
+            case QRS_U:
+            case QRS_Fa:
+            case QRS_Fb:
+            case QRS_P:
+            case QRS_Q:
+            case QRS_W:
+
+            case QRS_J4:
+            case QRS_L4:
+            case QRS_O:
+            case QRS_S4:
+            case QRS_Z4:
+                return false;
+
+            default:
+                break;
+        }
+
+        if(shiftedID == QRS_T || shiftedID == QRS_T4)
+        {
+            if(mino.orientation != spm_flip)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if(mino.orientation == spm_flat || mino.orientation == spm_flip || mino.physicState != spm_physic_grounded)
+            {
+                return false;
+            }
+        }
+
+        if(checkedShift(field, mino, {0, -1}) == true)
+        {
+            return true;
+        }
+
+        if(shiftedID == QRS_T4)
+        {
+            return false;
+        }
+
+        return checkedShift(field, mino, {0, -2});
+    }
+
+    virtual bool checkedRotate(grid_t *field, ActivatedPolyomino& mino, SPM_orientation dir) override
+    {
+        SPM_orientation old = mino.orientation;
+
+        SPM_minoID shiftedID = mino.ID;
+
+        if(variant != qrs_variant_P)
+        {
+            shiftedID += 18;
+        }
+
+        mino.orientation = static_cast<SPM_orientation>((static_cast<int>(mino.orientation) + static_cast<int>(dir)) % 4);
+
+        if(checkCollision(field, mino))
+        {
+            if(shiftedID == QRS_T4)
+            // T tetromino prefers a wallkick; everything else prefers a floorkick
+            {
+                if(wallkick(field, mino) == false)
+                {
+                    if(floorkick(field, mino) == false)
+                    {
+                        mino.orientation = old;
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if(floorkick(field, mino) == false)
+                {
+                    if(wallkick(field, mino) == false)
+                    {
+                        mino.orientation = old;
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
 protected:
     QRS_variant variant;
-
-    std::vector<uint32_t> minoKickBehavior;
-    std::vector<int> minoFloorkickHeights;
 };
 
 #endif // _qrs_hpp

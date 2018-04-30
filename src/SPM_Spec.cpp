@@ -3,40 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "rotation_tables.h"
-
 using namespace std;
-
-SPM_Spec::SPM_Spec()
-{
-    vector<int *> tableArrs;
-
-    for(int i = 0; i < 7; i++)
-    {
-        tableArrs.clear();
-
-        for(int j = 0; j < 4; j++)
-        {
-            tableArrs.push_back( (int *)(qrstet_yx_rotation_tables[i][j]) );
-        }
-
-        Polyomino *p = new Polyomino{tableArrs, 4};
-        minoList.push_back(p);
-
-        spawnPositions.push_back( {3, 2} );
-    }
-
-    fieldW = 10;
-    fieldH = 23;
-    visualFieldH = 20;
-
-    numPreviews = 1;
-    allowHold = false;
-    allowHardDrop = true;
-
-    softDropLock = true;
-    hardDropLock = false;
-}
 
 int SPM_Spec::checkCollision(grid_t *field, ActivatedPolyomino& mino)
 {

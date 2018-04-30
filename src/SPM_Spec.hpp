@@ -8,6 +8,7 @@
 #include "core.h"
 #include "random.h"
 #include "grid.h"
+#include "rotation_tables.h"
 
 #define SPM_SUBUNIT_SCALE 65536
 
@@ -314,7 +315,6 @@ public:
 class SPM_Spec
 {
 public:
-    SPM_Spec();
     virtual ~SPM_Spec()
     {
         for(auto p : minoList)
@@ -349,6 +349,41 @@ public:
 
     bool softDropLock;
     bool hardDropLock;
+};
+
+class SPM_TestSpec : public SPM_Spec
+{
+public:
+    SPM_TestSpec()
+    {
+        std::vector<int *> tableArrs;
+
+        for(int i = 0; i < 7; i++)
+        {
+            tableArrs.clear();
+
+            for(int j = 0; j < 4; j++)
+            {
+                tableArrs.push_back( (int *)(qrstet_yx_rotation_tables[i][j]) );
+            }
+
+            Polyomino *p = new Polyomino{tableArrs, 4};
+            minoList.push_back(p);
+
+            spawnPositions.push_back( {3, 2} );
+        }
+
+        fieldW = 10;
+        fieldH = 23;
+        visualFieldH = 20;
+
+        numPreviews = 1;
+        allowHold = false;
+        allowHardDrop = true;
+
+        softDropLock = true;
+        hardDropLock = false;
+    }
 };
 
 #endif
