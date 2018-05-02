@@ -195,12 +195,35 @@ struct TGM_GameState
     int music;
 };
 
-enum TGM_levelEventType
+//enum TGM_levelEventType {tgm_event_garbage_on,};
+
+class TGM_LevelEvent
 {
-    tgm_event_garbage_on,
+public:
+    TGM_LevelEvent(int level) : level(level) {}
+    virtual ~TGM_LevelEvent() {}
+
+    virtual void execute() = 0;
+
+    int level;
 };
 
-struct TGM_LevelEvent
+class TGM_SpeedEvent : public TGM_LevelEvent
+{
+public:
+    TGM_SpeedEvent(int level, SPM_frameTimings timings)
+        : TGM_LevelEvent(level)
+    {
+        this->timings = timings;
+    }
+
+    void execute();
+
+protected:
+    SPM_frameTimings timings;
+};
+
+class TGM_MusicEvent : public TGM_LevelEvent
 {
 
 };
@@ -211,6 +234,11 @@ struct TGM_Mode
     SPM_Randomizer *randomizer;
 
     std::vector<std::pair<int, SPM_frameTimings>> speedCurve;
+
+    int numPlayers;
+    std::vector<SPM_offset> playerSpawnOffsets;
+
+    std::vector<std::unique_ptr<TGM_LevelEvent>>
     // TODO: music list, garbage speed updates, garbage on/off, invisible on/off, etc.
     // have a list of LevelEvents
 
@@ -222,9 +250,9 @@ struct TGM_Mode
 
     int startingLevel;
     int finalLevel;
+    bool enableLevelStops;
 
-    bool levelStops;
-
+    bool overrideFieldSize;
     grid_t *startingField;
 };
 
@@ -276,7 +304,7 @@ protected:
     unsigned long medalRO_timestamp;
 
 private:
-    TGM_Mode mode;
+    TGM_Mode *mode;
 };
 
 class Staged_TGM : public TGM

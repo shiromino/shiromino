@@ -185,9 +185,9 @@ struct SPM_frameTimings
     int lineClear;
 };
 
-struct SPM_frameCounters
+struct SPM_gameCounters
 {
-    SPM_frameCounters()
+    SPM_gameCounters()
     {
         frameWait = 0;
         frameWaitExpirePoint = 0;
@@ -197,7 +197,22 @@ struct SPM_frameCounters
 
         transition = 0;
         transitionExpirePoint = 0;
+    }
 
+    int frameWait; // could be used for slow-down: if(frameWait != 0) {frameWait--; return;}
+    int frameWaitExpirePoint;
+
+    int gamePhase; // counter for how long to stay in the current game phase
+    int gamePhaseExpirePoint;
+
+    int transition;
+    int transitionExpirePoint;
+};
+
+struct SPM_frameCounters
+{
+    SPM_frameCounters()
+    {
         lockDelay = 0;
         lockDelayExpirePoint = 0;
 
@@ -211,15 +226,6 @@ struct SPM_frameCounters
         dasInterval = 0;
         dasIntervalExpirePoint = 0;
     }
-
-    int frameWait; // could be used for slow-down: if(frameWait != 0) {frameWait--; return;}
-    int frameWaitExpirePoint;
-
-    int gamePhase; // counter for how long to stay in the current game phase
-    int gamePhaseExpirePoint;
-
-    int transition;
-    int transitionExpirePoint;
 
     int lockDelay;
     int lockDelayExpirePoint;
