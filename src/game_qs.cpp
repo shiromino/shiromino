@@ -703,7 +703,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         q->max_floorkicks = 0;
         q->special_irs = 0;
         q->lock_protect = 0;
-        q->piecepool[QRS_I4]->flags &= ~PDNOWKICK;
+        q->piecepool[QRS_I4]->flags |= PDNOWKICK;
     }
 
     if(flags & SIMULATE_G2)
@@ -714,7 +714,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         q->num_previews = 1;
         q->max_floorkicks = 0;
         q->special_irs = 0;
-        q->piecepool[QRS_I4]->flags &= ~PDNOWKICK;
+        q->piecepool[QRS_I4]->flags |= PDNOWKICK;
         request_fps(cs, G2_FPS);
     }
 

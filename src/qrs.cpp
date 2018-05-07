@@ -200,9 +200,6 @@ piecedef **qrspool_create()
         if(i == QRS_T)
             pool[i]->flags |= PDFLATFLOORKICKS;
 
-        if(i == QRS_I4)
-            pool[i]->flags ^= PDNOWKICK;
-
         if(i == QRS_I4 || i == QRS_T4)
         {
             if(i == QRS_T4)

@@ -729,7 +729,7 @@ int run(coreState *cs)
         {
             running = false;
         }
-        
+
 
         // SDL_SetRenderTarget(cs->screen.renderer, NULL);
 
@@ -1006,7 +1006,7 @@ int procevents(coreState *cs/*, GuiWindow& wind*/)
                     if(rc && k->c == 0)
                         k->c = 1;
 
-                    rc = SDL_JoystickGetButton(joy, 1);
+                    rc = SDL_JoystickGetButton(joy, 4);
                     if(!rc)
                         k->d = 0;
                     if(rc && k->d == 0)

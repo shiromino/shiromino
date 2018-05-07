@@ -203,6 +203,7 @@ public:
     TGM_LevelEvent(int level) : level(level) {}
     virtual ~TGM_LevelEvent() {}
 
+    // TODO, figure out the state structures class TGM will use, and pass state off to this function
     virtual void execute() = 0;
 
     int level;
