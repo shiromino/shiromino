@@ -25,6 +25,8 @@
 #include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
+#define PENTOMINO_C_REVISION_STRING "rev. 1.0"
+
 using namespace std;
 
 BindableVariables bindables;
@@ -255,7 +257,7 @@ void coreState_initialize(coreState *cs)
     cs->mouse_left_down = 0;
     cs->mouse_right_down = 0;
 
-    cs->screen.name = "Shiromino v.beta3-pre1";
+    cs->screen.name = "Shiromino v.beta3-pre2";
     cs->screen.w = 640;
     cs->screen.h = 480;
     cs->screen.window = NULL;
@@ -550,6 +552,8 @@ int init(coreState *cs, struct settings *s)
         check(cs->menu != NULL, "menu_create returned failure\n");
 
         cs->menu->init(cs->menu);
+
+        printf("\nPENTOMINO C: %s\n\n", PENTOMINO_C_REVISION_STRING);
 
         return 0;
     }

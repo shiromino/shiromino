@@ -1,6 +1,14 @@
 Shiromino Version history
 ===========================
 
+beta3-pre2
+{
+    Changes/Removed Features:
+        * All pentominoes and tetrominoes now have unique colors
+        * Updated line clear animation's per-piece colors
+        * Added Pentomino C revision string (output to console on startup)
+}
+
 2018.05.07 beta3-pre1
 {
     New Features:

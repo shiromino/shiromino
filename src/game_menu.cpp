@@ -1093,7 +1093,7 @@ int mload_main(game_t *g, int val)
     d->x = 4 * 16;
     d->y = 3 * 16;
 
-    d->menu[0] = std_game_multiopt_create(g->origin, MODE_PENTOMINO, 12, bfromcstr("PENTOMINO"));
+    d->menu[0] = std_game_multiopt_create(g->origin, MODE_PENTOMINO, 12, bfromcstr("PENTOMINO C"));
     m = d->menu[0];
     d6 = (struct game_multiopt_data *)m->data;
 
@@ -1119,7 +1119,7 @@ int mload_main(game_t *g, int val)
         d6->selection = 0;
     m->x = 4 * 16;
     m->y = 7 * 16;
-    m->value_x = m->x + 10 * 16;
+    m->value_x = m->x + 12 * 16;
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 

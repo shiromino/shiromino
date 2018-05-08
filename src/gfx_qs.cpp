@@ -16,32 +16,32 @@ using namespace std;
 // clang-format off
 int piece_colors[26] =
 {
+    0x00C48B, // I (bright sea green)
+    0xE96FDC, // J (bright pink)
+    0x007400, // L (dark green)
+    0x101010, // X (ash grey)
+    0xD18B2F, // S (coral)
+    0x0086CE, // Z (ocean foam)
+    0x70ECEE, // N (ice)
+    0x0BDA51, // G (malachite green)
+    0x87C69C, // U (pale emerald)
+    0x1200BF, // T (dark blue)
+    0x87FF89, // Fa (pale screamin' green)
+    0x7F0000, // Fb (dark red)
+    0xD3BE00, // P (goldenrod)
+    0x8F0A7A, // Q (deep fuchsia)
+    0xD22D04, // W (red-orange)
+    0xFFB6FF, // Ya (platinum)
+    0xDE3163, // Yb (cerise red)
+    0x007FFF, // V (azure blue)
     0xD00000,
+    0x00A3A3,   // teal
     0x0000FF,
     0xFF6000,
-    0x101010,
-    0xBB3CBB,
-    0x00CD00,
-    0x70ECEE,   // ice
-    0xFF658B,
-    0xD22D04,
-    0x1200BF,   // dark blue
-    0xC70694,
-    0x1200BF,   // dark blue
-    0xEFEF00,
-    0xC70694,
-    0xD22D04,
-    0x70ECEE,   // ice
-    0xFF658B,
-    0x00A3A3,   // teal
-    0xD00000,
-    0x00A3A3,   // teal
-    0x0000FF,
-    0xFF6000,
     0xEFEF00,
     0xBB3CBB,
     0x00CD00,
-    0x808080
+    0x808080 // grey
 };
 // clang-format on
 
