@@ -255,7 +255,7 @@ void coreState_initialize(coreState *cs)
     cs->mouse_left_down = 0;
     cs->mouse_right_down = 0;
 
-    cs->screen.name = "Shiromino v.beta2";
+    cs->screen.name = "Shiromino v.beta3-pre1";
     cs->screen.w = 640;
     cs->screen.h = 480;
     cs->screen.window = NULL;

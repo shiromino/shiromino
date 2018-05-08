@@ -1,9 +1,25 @@
 Shiromino Version history
 ===========================
 
+2018.05.07 beta3-pre1
+{
+    New Features:
+        + Window can be resized arbitrarily larger than the default 640x480
+        + Added fullscreen mode and soft fullscreen mode (hotkeys F11 and Shift+F11 respectively)
+
+    Changes/Removed Features:
+        * Moved from C to C++
+        * Replays are saved to an SQLite database now instead of the filesystem
+
+    Bug Fixes:
+        * Fixed I tetromino wallkick behavior
+}
+
 beta3
 {
     New Features:
+        + Window can be resized arbitrarily larger than the default 640x480
+        + Added fullscreen mode and soft fullscreen mode (hotkeys F11 and Shift+F11 respectively)
 
     Changes/Removed Features:
         * Moved from C to C++
@@ -19,7 +35,7 @@ beta3
     Bug Fixes:
 }
 
-20170823 beta2
+2017.08.23 beta2
 {
     New Features:
         + Joystick support (kind of... still very much recommend Joy2Key)
@@ -72,4 +88,4 @@ beta3
         * HOME_PATH setting can work with different system path formats
 }
 
-20170416 beta1 - First release.
+2017.04.16 beta1 - First release.
