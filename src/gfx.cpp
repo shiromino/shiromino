@@ -866,57 +866,72 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
                     if((!(c & QRS_PIECE_BRACKETS) || c < 0) && !(flags & DRAWFIELD_NO_OUTLINE))
                     {
-                        c = gridgetcell(field, i, j - 1); // above, left, right, below
+                        Uint8 r_;
+                        Uint8 g_;
+                        Uint8 b_;
+                        Uint8 a_;
+                        SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
+                        SDL_SetRenderDrawColor(cs->screen.renderer, 0xFF, 0xFF, 0xFF, 0x8C);
+
+                        SDL_Rect outlineRect = {.x = dest.x, .y = dest.y, .w = 16, .h = 2};
+
+                        c = gridgetcell(field, i, j - 1); // above
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
-                            src.x = 0;
-                            src.y = 48;
+                            outlineRect.x = dest.x;
+                            outlineRect.y = dest.y;
+                            outlineRect.w = 16;
+                            outlineRect.h = 2;
 
                             if(!use_deltas)
-                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            /*else {
-                               SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            }*/
+                            {
+                                SDL_RenderFillRect(cs->screen.renderer, &outlineRect);
+                            }
                         }
 
-                        c = gridgetcell(field, i - 1, j); // above, left, right, below
+                        c = gridgetcell(field, i - 1, j); // left
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
-                            src.x = 16;
-                            src.y = 48;
+                            outlineRect.x = dest.x;
+                            outlineRect.y = dest.y;
+                            outlineRect.w = 2;
+                            outlineRect.h = 16;
 
                             if(!use_deltas)
-                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            /*else {
-                               SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            }*/
+                            {
+                                SDL_RenderFillRect(cs->screen.renderer, &outlineRect);
+                            }
                         }
 
-                        c = gridgetcell(field, i + 1, j); // above, left, right, below
+                        c = gridgetcell(field, i + 1, j); // right
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
-                            src.x = 32;
-                            src.y = 48;
+                            outlineRect.x = dest.x + 14;
+                            outlineRect.y = dest.y;
+                            outlineRect.w = 2;
+                            outlineRect.h = 16;
 
                             if(!use_deltas)
-                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            /*else {
-                               SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            }*/
+                            {
+                                SDL_RenderFillRect(cs->screen.renderer, &outlineRect);
+                            }
                         }
 
-                        c = gridgetcell(field, i, j + 1); // above, left, right, below
+                        c = gridgetcell(field, i, j + 1); // below
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
-                            src.x = 48;
-                            src.y = 48;
+                            outlineRect.x = dest.x;
+                            outlineRect.y = dest.y + 14;
+                            outlineRect.w = 16;
+                            outlineRect.h = 2;
 
                             if(!use_deltas)
-                                SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            /*else {
-                               SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
-                            }*/
+                            {
+                                SDL_RenderFillRect(cs->screen.renderer, &outlineRect);
+                            }
                         }
+
+                        SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
                     }
                 }
 
