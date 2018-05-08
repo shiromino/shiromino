@@ -25,7 +25,7 @@
 #include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
-#define PENTOMINO_C_REVISION_STRING "rev. 1.0"
+#define PENTOMINO_C_REVISION_STRING "rev. 1.1"
 
 using namespace std;
 

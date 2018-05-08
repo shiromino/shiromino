@@ -35,7 +35,7 @@ int piece_colors[26] =
     0xDE3163, // Yb (cerise red)
     0x007FFF, // V (azure blue)
     0xD00000,
-    0x00A3A3,   // teal
+    0x00A3A3,
     0x0000FF,
     0xFF6000,
     0xEFEF00,
@@ -114,7 +114,7 @@ int gfx_drawqs(game_t *g)
         next_name = get_qrspiece_name(q->previews[0]->qrs_id);
     }
 
-    string grade_text = get_grade_name(q->grade);
+    // string grade_text = get_grade_name(q->grade);
     string score_text = strtools::format("%d", q->score);
 
     string undo = "UNDO";
@@ -330,6 +330,8 @@ int gfx_drawqs(game_t *g)
 
         if((q->grade & 0xff) != NO_GRADE)
         {
+            int gradeWithoutFlags = q->grade & 0xff;
+
             SDL_Rect grade_src = {.x = 0, .y = 390, .w = 64, .h = 64};
             SDL_Rect grade_dest = {.x = x + 14 * 16, .y = y + 32, .w = 64, .h = 64};
             float size_multiplier = 1.0;
@@ -340,7 +342,7 @@ int gfx_drawqs(game_t *g)
             grade_src.w = 64;
             grade_src.h = 64;
 
-            if(q->grade < GRADE_S1)
+            if(gradeWithoutFlags < GRADE_S1)
             {
                 grade_src.w = 32;
                 grade_src.h = 32;
@@ -362,8 +364,11 @@ int gfx_drawqs(game_t *g)
 
             grade_src.y = 127;
 
-            if(q->grade < GRADE_S1)
+            if(gradeWithoutFlags < GRADE_S1)
+            {
                 grade_dest.x += 3;
+            }
+
             grade_dest.y += 3;
 
             if(q->p1->speeds->grav >= 20 * 256)
@@ -374,7 +379,7 @@ int gfx_drawqs(game_t *g)
                 }
             }
 
-            switch(q->grade & 0xff)
+            switch(gradeWithoutFlags)
             {
                 case GRADE_1:
                 case GRADE_2:
@@ -385,7 +390,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_7:
                 case GRADE_8:
                 case GRADE_9:
-                    grade_src.x += 2 * 64 + 32 * (GRADE_1 - q->grade);
+                    grade_src.x += 2 * 64 + 32 * (GRADE_1 - gradeWithoutFlags);
                     grade_src.w = 32;
                     grade_src.h = 32;
 
@@ -417,7 +422,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_S9:
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
-                    grade_src.x = 128 + 32 * (q->grade - GRADE_S1);
+                    grade_src.x = 128 + 32 * (gradeWithoutFlags - GRADE_S1);
 
                     grade_dest.x += 47 * size_multiplier;
                     grade_dest.y += 30 * size_multiplier;
@@ -459,7 +464,7 @@ int gfx_drawqs(game_t *g)
                     grade_dest.w = 32 * size_multiplier;
                     grade_dest.h = 32 * size_multiplier;
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
-                    grade_src.x += 32 * (q->grade - GRADE_S11);
+                    grade_src.x += 32 * (gradeWithoutFlags - GRADE_S11);
                     grade_dest.x += 20 * size_multiplier;
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
@@ -476,7 +481,7 @@ int gfx_drawqs(game_t *g)
                     grade_src.x += 64;
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
-                    grade_src.x = 128 + 32 * (q->grade - GRADE_M1);
+                    grade_src.x = 128 + 32 * (gradeWithoutFlags - GRADE_M1);
 
                     grade_dest.x += 42 * size_multiplier;
                     grade_dest.y += 30 * size_multiplier;
@@ -503,7 +508,7 @@ int gfx_drawqs(game_t *g)
                     grade_dest.x -= 14 * size_multiplier;
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
-                    grade_src.x = 64 * (q->grade - GRADE_MK);
+                    grade_src.x = 64 * (gradeWithoutFlags - GRADE_MK);
                     grade_dest.x += 38 * size_multiplier;
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 

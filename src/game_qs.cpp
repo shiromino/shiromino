@@ -67,20 +67,20 @@ static qrs_timings qs_curve[QS_CURVE_MAX] =
     {140, 48, 40, 12, 25, 25, 12},
     {160, 64, 40, 12, 25, 25, 12},
     {180, 96, 40, 12, 25, 25, 12},
-    {200, 128, 40, 12, 25, 25, 12},
-    {250, 192, 40, 12, 25, 25, 12},
-    {300, 256, 40, 12, 25, 25, 12},
-    {400, 512, 40, 12, 25, 25, 12},
-    {450, 768, 40, 12, 25, 25, 12},
-    {480, 5 * 256, 40, 12, 25, 25, 12},
+    {200, 128, 45, 12, 25, 25, 12},
+    {250, 192, 45, 12, 25, 25, 12},
+    {300, 256, 45, 12, 25, 25, 12},
+    {400, 512, 45, 12, 25, 25, 12},
+    {450, 768, 45, 12, 25, 25, 12},
+    {480, 5 * 256, 45, 12, 25, 25, 12},
 
-    {500, 20 * 256, 30, 10, 20, 16, 12},
-    {600, 20 * 256, 30, 10, 18, 16, 8},
-    {700, 20 * 256, 26, 8, 16, 16, 6},
-    {800, 20 * 256, 26, 8, 12, 12, 6},
-    {900, 20 * 256, 20, 8, 12, 12, 6},
-    {1000, 20 * 256, 19, 7, 10, 10, 4},
-    {1100, 20 * 256, 19, 7, 8, 8, 4}
+    {500, 20 * 256, 40, 10, 20, 16, 12},
+    {600, 20 * 256, 36, 10, 18, 16, 8},
+    {700, 20 * 256, 32, 8, 16, 16, 6},
+    {800, 20 * 256, 30, 8, 12, 12, 6},
+    {900, 20 * 256, 24, 8, 12, 12, 6},
+    {1000, 20 * 256, 22, 7, 10, 10, 4},
+    {1100, 20 * 256, 22, 7, 8, 8, 4}
 };
 
 static qrs_timings g1_master_curve[G1_MASTER_CURVE_MAX] =
@@ -1374,19 +1374,22 @@ int qs_game_frame(game_t *g)
 
                 case MODE_G2_MASTER:
                     q->state_flags &= ~(GAMESTATE_CREDITS | GAMESTATE_FADING | GAMESTATE_INVISIBLE);
-                    if(q->mroll_unlocked)
+                    if(q->p1->state != PSINACTIVE)
                     {
-                        q->state_flags |= GAMESTATE_FIREWORKS_GM;
+                        if(q->mroll_unlocked)
+                        {
+                            q->state_flags |= GAMESTATE_FIREWORKS_GM;
 
-                        if(q->credit_roll_lineclears >= 32)
-                            q->grade = GRADE_GM | ORANGE_LINE;
+                            if(q->credit_roll_lineclears >= 32)
+                                q->grade = GRADE_GM | ORANGE_LINE;
+                            else
+                                q->grade = GRADE_GM | GREEN_LINE;
+                        }
                         else
-                            q->grade = GRADE_GM | GREEN_LINE;
-                    }
-                    else
-                    {
-                        q->state_flags |= GAMESTATE_FIREWORKS;
-                        q->grade |= ORANGE_LINE;
+                        {
+                            q->state_flags |= GAMESTATE_FIREWORKS;
+                            q->grade |= ORANGE_LINE;
+                        }
                     }
 
                     (*s) = PSINACTIVE;

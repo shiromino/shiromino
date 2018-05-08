@@ -3,10 +3,19 @@ Shiromino Version history
 
 beta3-pre2
 {
+    New Features:
+        + Added Pentomino C revision string (output to console on startup)
+
     Changes/Removed Features:
+        * Renamed "Pentomino" mode to "Pentomino C"
+        * Pentomino C revision: 1.0 -> 1.1
+        * Pentomino C lock delay made longer throughout speed curve
+
         * All pentominoes and tetrominoes now have unique colors
         * Updated line clear animation's per-piece colors
-        * Added Pentomino C revision string (output to console on startup)
+
+    Bug Fixes:
+        * Fixed grade display when green line or orange line flags are applied
 }
 
 2018.05.07 beta3-pre1
