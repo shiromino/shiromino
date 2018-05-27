@@ -177,7 +177,9 @@ piecedef **qrspool_create()
     for(i = 0; i < 25; i++)
     {
         if(i >= 18)
+        {
             n = 4;
+        }
 
         pool[i] = (piecedef *)malloc(sizeof(piecedef));
         pool[i]->qrs_id = i;
@@ -188,25 +190,32 @@ piecedef **qrspool_create()
         for(j = 0; j < 4; j++)
         {
             if(n == 5)
+            {
                 arr = (int *)(qrspent_yx_rotation_tables[i][j]);
+            }
             else
+            {
                 arr = (int *)(qrstet_yx_rotation_tables[i - 18][j]);
+            }
 
             pool[i]->rotation_tables[j] = grid_from_1d_int_array(arr, n, n);
         }
 
-        if(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L || i == QRS_T || i == QRS_Ya || i == QRS_Yb)
-            pool[i]->flags ^= PDNOFKICK;
-        if(i == QRS_T)
-            pool[i]->flags |= PDFLATFLOORKICKS;
-
-        if(i == QRS_I4 || i == QRS_T4)
+        if(!(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L ||
+             i == QRS_T || i == QRS_Ya || i == QRS_Yb || i == QRS_I4 || i == QRS_T4))
         {
-            if(i == QRS_T4)
-                pool[i]->flags |= PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
-        }
-        else
             pool[i]->flags ^= PDNOFKICK;
+        }
+
+        if(i == QRS_T)
+        {
+            pool[i]->flags |= PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
+        }
+
+        if(i == QRS_T4)
+        {
+            pool[i]->flags |= PDFLIPFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
+        }
     }
 
     return pool;
@@ -222,7 +231,7 @@ piecedef *qrspiece_cpy(piecedef **piecepool, int index)
 
 grid_t *qrsfield_create()
 {
-    grid_t *g = grid_create(12, 22);
+    grid_t *g = grid_create(QRS_FIELD_W, QRS_FIELD_H);
 
     return g;
 }
@@ -246,7 +255,7 @@ int qrsfield_set_w(grid_t *field, int w)
 
     for(i = 0; i < (QRS_FIELD_W - w) / 2; i++)
     {
-        for(j = 0; j < 22; j++)
+        for(j = 0; j < QRS_FIELD_H; j++)
         {
             gridsetcell(field, i, j, QRS_FIELD_W_LIMITER);
             gridsetcell(field, QRS_FIELD_W - i - 1, j, QRS_FIELD_W_LIMITER);
@@ -604,7 +613,7 @@ int qrs_input(game_t *g)
                     }
                     else if(cs->mouse_left_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
-                        if(gridgetcell(d->usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER)
+                        if(gridgetcell(d->usr_field, cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
                         {
                             if(d->palette_selection != QRS_PIECE_GEM)
                             {
@@ -612,15 +621,15 @@ int qrs_input(game_t *g)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 2, d->palette_selection);
+                                gridsetcell(d->usr_field, cell_x, cell_y + 4, d->palette_selection);
                             }
-                            else if(gridgetcell(d->usr_field, cell_x, cell_y + 2) > 0)
+                            else if(gridgetcell(d->usr_field, cell_x, cell_y + 4) > 0)
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 2, gridgetcell(d->usr_field, cell_x, cell_y + 2) | QRS_PIECE_GEM);
+                                gridsetcell(d->usr_field, cell_x, cell_y + 4, gridgetcell(d->usr_field, cell_x, cell_y + 4) | QRS_PIECE_GEM);
                             }
                         }
                     }
@@ -637,13 +646,13 @@ int qrs_input(game_t *g)
                     }
                     else if(cs->mouse_right_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
-                        if(gridgetcell(d->usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER)
+                        if(gridgetcell(d->usr_field, cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
                         {
                             if(!d->field_edit_in_progress)
                                 usr_field_bkp(cs, d);
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 2, 0);
+                            gridsetcell(d->usr_field, cell_x, cell_y + 4, 0);
                         }
                     }
                 }
@@ -680,13 +689,13 @@ int qrs_input(game_t *g)
                             {
                                 if(i >= 0 && i < 12 && j >= 0 && j < 20)
                                 {
-                                    if(gridgetcell(d->usr_field, i, j + 2) != QRS_FIELD_W_LIMITER)
+                                    if(gridgetcell(d->usr_field, i, j + 4) != QRS_FIELD_W_LIMITER)
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
                                         d->field_edit_in_progress = 1;
                                         edit_action_occurred = 1;
-                                        gridsetcell(d->usr_field, i, j + 2, 0);
+                                        gridsetcell(d->usr_field, i, j + 4, 0);
                                     }
                                 }
                             }
@@ -783,17 +792,17 @@ int qrs_input(game_t *g)
                     {
                         if(i >= 0 && i < 12 && j >= 0 && j < 20)
                         {
-                            if(gridgetcell(d->usr_field, i, j + 2) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                            if(gridgetcell(d->usr_field, i, j + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                             {
                                 if(SDL_GetModState() & KMOD_SHIFT)
                                 {
-                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 2)))
+                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 4)))
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
                                         d->field_edit_in_progress = 1;
                                         edit_action_occurred = 1;
-                                        gridsetcell(d->usr_field, i, j + 2, c);
+                                        gridsetcell(d->usr_field, i, j + 4, c);
                                     }
                                 }
                                 else
@@ -802,20 +811,20 @@ int qrs_input(game_t *g)
                                         usr_field_bkp(cs, d);
                                     d->field_edit_in_progress = 1;
                                     edit_action_occurred = 1;
-                                    gridsetcell(d->usr_field, i, j + 2, c);
+                                    gridsetcell(d->usr_field, i, j + 4, c);
                                 }
                             }
-                            else if(gridgetcell(d->usr_field, i, j + 2) > 0 && c == QRS_PIECE_GEM)
+                            else if(gridgetcell(d->usr_field, i, j + 4) > 0 && c == QRS_PIECE_GEM)
                             {
                                 if(SDL_GetModState() & KMOD_SHIFT)
                                 {
-                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 2)))
+                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 4)))
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
                                         d->field_edit_in_progress = 1;
                                         edit_action_occurred = 1;
-                                        gridsetcell(d->usr_field, i, j + 2, gridgetcell(d->usr_field, i, j + 2) | c);
+                                        gridsetcell(d->usr_field, i, j + 4, gridgetcell(d->usr_field, i, j + 4) | c);
                                     }
                                 }
                                 else
@@ -824,7 +833,7 @@ int qrs_input(game_t *g)
                                         usr_field_bkp(cs, d);
                                     d->field_edit_in_progress = 1;
                                     edit_action_occurred = 1;
-                                    gridsetcell(d->usr_field, i, j + 2, gridgetcell(d->usr_field, i, j + 2) | c);
+                                    gridsetcell(d->usr_field, i, j + 4, gridgetcell(d->usr_field, i, j + 4) | c);
                                 }
                             }
                         }
@@ -837,17 +846,17 @@ int qrs_input(game_t *g)
             {
                 if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                 {
-                    if(gridgetcell(d->usr_field, cell_x, cell_y + 2) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                    if(gridgetcell(d->usr_field, cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                     {
                         if(SDL_GetModState() & KMOD_SHIFT)
                         {
-                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 2)))
+                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 4)))
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 2, c);
+                                gridsetcell(d->usr_field, cell_x, cell_y + 4, c);
                             }
                         }
                         else
@@ -856,20 +865,20 @@ int qrs_input(game_t *g)
                                 usr_field_bkp(cs, d);
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 2, c);
+                            gridsetcell(d->usr_field, cell_x, cell_y + 4, c);
                         }
                     }
-                    else if(gridgetcell(d->usr_field, cell_x, cell_y + 2) > 0 && c == QRS_PIECE_GEM)
+                    else if(gridgetcell(d->usr_field, cell_x, cell_y + 4) > 0 && c == QRS_PIECE_GEM)
                     {
                         if(SDL_GetModState() & KMOD_SHIFT)
                         {
-                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 2)))
+                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 4)))
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 2, gridgetcell(d->usr_field, cell_x, cell_y + 2) | c);
+                                gridsetcell(d->usr_field, cell_x, cell_y + 4, gridgetcell(d->usr_field, cell_x, cell_y + 4) | c);
                             }
                         }
                         else
@@ -878,7 +887,7 @@ int qrs_input(game_t *g)
                                 usr_field_bkp(cs, d);
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 2, gridgetcell(d->usr_field, cell_x, cell_y + 2) | c);
+                            gridsetcell(d->usr_field, cell_x, cell_y + 4, gridgetcell(d->usr_field, cell_x, cell_y + 4) | c);
                         }
                     }
                 }
@@ -1376,16 +1385,26 @@ int qrs_floorkick(game_t *g, qrs_player *p)
         return 1;
     }
 
-    if(p->orient == CW || p->orient == CCW)
+    if(p->def->flags & PDFLIPFLOORKICKS)
     {
-        if(p->def->flags & PDFLATFLOORKICKS)
+        if(p->orient != FLIP)
+        {
             return 1;
+        }
     }
-
-    if(p->orient == FLAT || p->orient == FLIP)
+    else if(p->def->flags & PDFLATFLOORKICKS)
     {
-        if(!(p->def->flags & PDFLATFLOORKICKS))
+        if(p->orient == CW || p->orient == CCW)
+        {
             return 1;
+        }
+    }
+    else
+    {
+        if(p->orient == FLAT || p->orient == FLIP)
+        {
+            return 1;
+        }
     }
 
     p->y -= 256;
@@ -1570,22 +1589,47 @@ int qrs_lineclear(game_t *g, qrs_player *p)
         k = 0;
         garbage = 0;
 
-        for(j = (QRS_FIELD_W - q->field_w) / 2; j < (QRS_FIELD_W / 2 + q->field_w / 2); j++)
+        int startX = 0;
+        j = 0;
+
+        while(gridgetcell(g->field, j, i) == QRS_WALL)
         {
-            if(gridgetcell(g->field, j, i))
+            startX++;
+            j++;
+        }
+
+        for(; j < startX + q->field_w; j++)
+        {
+            int cell = gridgetcell(g->field, j, i);
+
+            if(cell && cell != QRS_WALL)
+            {
                 k++;
-            if(gridgetcell(g->field, j, i) & QRS_PIECE_GEM)
+            }
+
+            if(cell & QRS_PIECE_GEM)
+            {
                 gem = true;
-            if(gridgetcell(g->field, j, i) == QRS_PIECE_GARBAGE)
+            }
+
+            if(cell == QRS_PIECE_GARBAGE)
+            {
                 garbage++;
+            }
         }
 
         if(k == q->field_w && garbage != q->field_w)
         {
             n++;
-            gfx_qs_lineclear(g, i);
-            for(j = (QRS_FIELD_W - q->field_w) / 2; j < (QRS_FIELD_W / 2 + q->field_w / 2); j++)
+            if(!(q->state_flags & GAMESTATE_BIGMODE))
+            {
+                gfx_qs_lineclear(g, i);
+            }
+
+            for(j = startX; j < startX + q->field_w; j++)
+            {
                 gridsetcell(g->field, j, i, -2);
+            }
 
             if(gem)
             {
@@ -1611,16 +1655,30 @@ int qrs_dropfield(game_t *g)
 
     for(i = QRS_FIELD_H - 1; i > 0; i--)
     {
-        while(gridgetcell(field, 6, i - n) == -2)
+        while(gridgetcell(field, 4, i - n) == -2)
             n++;
 
         if(i - n >= 0)
+        {
             gridrowcpy(field, NULL, i - n, i);
+        }
         else
         {
-            for(j = (QRS_FIELD_W - q->field_w) / 2; j < (QRS_FIELD_W / 2 + q->field_w / 2); j++)
+            if(q->state_flags & GAMESTATE_BIGMODE)
             {
-                gridsetcell(field, j, i, 0);
+                for(j = 0; j < q->field_w; j++)
+                {
+                    gridsetcell(field, j, i, 0);
+                }
+
+                gridsetcell(field, j, i, QRS_WALL);
+            }
+            else
+            {
+                for(j = (QRS_FIELD_W - q->field_w) / 2; j < (QRS_FIELD_W / 2 + q->field_w / 2); j++)
+                {
+                    gridsetcell(field, j, i, 0);
+                }
             }
         }
     }

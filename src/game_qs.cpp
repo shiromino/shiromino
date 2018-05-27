@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string>
+#include <fstream>
 #include "bstr_to_std.hpp"
 
 #include "core.h"
@@ -392,6 +393,7 @@ static const struct levelmusic pentomino_music[] = {
     { 700, 2 },
     { 980, -1 },
     { 1000, 3 },
+    { QS_LEVEL_CREDITS, 4 },
     { 9999, -1 }
 };
 
@@ -403,6 +405,7 @@ static const struct levelmusic g2_master_music[] = {
     { 700, 2 },
     { 880, -1 },
     { 900, 3 },
+    { QS_LEVEL_CREDITS, 4 },
     { 9999, -1 }
 };
 
@@ -423,6 +426,7 @@ static const struct levelmusic g3_terror_music[] = {
     { 700, 4 },
     { 980, -1 },
     { 1000, 5 },
+    { QS_LEVEL_CREDITS, 6 },
     { 9999, -1 }
 };
 
@@ -430,6 +434,7 @@ static const struct levelmusic g1_music[] = {
     { 0, 0 },
     { 485, -1 },
     { 500, 1 },
+    { QS_LEVEL_CREDITS, 2 },
     { 9999, -1 }
 };
 // clang-format on
@@ -648,6 +653,8 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         {
             q->state_flags |= GAMESTATE_BRACKETS;
         }
+
+        q->credit_roll_counter = 54 * 60;
     }
     else if(flags & MODE_G1_MASTER)
     {
@@ -806,6 +813,29 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     q->speed_curve_index = 0;
     q->music = -1;
 
+    /* for testing */
+    // flags |= BIG_MODE;
+
+    if(flags & BIG_MODE && !(flags & QRS_PRACTICE))
+    {
+        q->state_flags |= GAMESTATE_BIGMODE;
+
+        int w = q->field_w / 2;
+
+        gridfillrect(g->field, NULL, 0);
+        for(int i = 0; i <= w; i++)
+        {
+            gridsetcell(g->field, i, QRS_FIELD_H - 10, QRS_WALL);
+        }
+
+        for(int j = QRS_FIELD_H - 10; j >= 0; j--)
+        {
+            gridsetcell(g->field, w, j, QRS_WALL);
+        }
+
+        q->field_w = w;
+    }
+
     if(flags & QRS_PRACTICE)
     {
         q->is_practice = 1;
@@ -874,7 +904,9 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         q->pracdata = NULL;
 
     if(!level)
+    {
         q->p1->speeds = &qs_curve[0];
+    }
     else
     {
         q->level = level;
@@ -976,9 +1008,13 @@ int qs_game_init(game_t *g)
     }
 
     if(q->cur_piece_qrs_id >= 18)
-        p->y = ROWTOY(SPAWNY_QRS + 2);
+    {
+        p->y = ROWTOY(SPAWNY_QRS + 4);
+    }
     else
+    {
         p->y = ROWTOY(SPAWNY_QRS);
+    }
 
     p->def = NULL;
     p->x = SPAWNX_QRS;
@@ -1115,9 +1151,13 @@ int qs_game_pracinit(game_t *g, int val)
     }
 
     if(q->cur_piece_qrs_id >= 18)
-        p->y = ROWTOY(SPAWNY_QRS + 2);
+    {
+        p->y = ROWTOY(SPAWNY_QRS + 4);
+    }
     else
+    {
         p->y = ROWTOY(SPAWNY_QRS);
+    }
 
     p->def = NULL;
     p->x = SPAWNX_QRS;
@@ -1238,7 +1278,7 @@ int qs_game_frame(game_t *g)
         }
     }
 
-    if(!q->pracdata)
+    if(!q->pracdata && !(q->state_flags & GAMESTATE_FADE_TO_CREDITS))
     {
         // handle speed curve and music updates (this runs every frame)
         // TODO: why does this need to run every frame and not only on level updates?
@@ -1305,13 +1345,20 @@ int qs_game_frame(game_t *g)
         }
         else if(q->stack_anim_counter % 3 == 1)
         {
-            int row = 21 - (q->stack_anim_counter / 3);
+            int row = QRS_FIELD_H - 1 - (q->stack_anim_counter / 3);
             int start_i = (g->field->w - q->field_w) / 2;
 
-            for(int i = start_i; i < g->field->w - start_i; i++)
+            if(q->state_flags & GAMESTATE_BIGMODE)
             {
-                if(gridgetcell(g->field, i, row))
+                start_i = 0;
+            }
+
+            for(int i = start_i; i < start_i + q->field_w; i++)
+            {
+                if(gridgetcell(g->field, i, row) && (gridgetcell(g->field, i, row) != QRS_WALL))
+                {
                     gridsetcell(g->field, i, row, QRS_PIECE_GARBAGE);
+                }
             }
         }
     }
@@ -1319,37 +1366,80 @@ int qs_game_frame(game_t *g)
     if(q->state_flags & GAMESTATE_FADE_TO_CREDITS)
     {
         q->stack_anim_counter++;
-        if(q->stack_anim_counter == 6 * 20) // 6 frames for each visible row
+        if(q->stack_anim_counter >= 5 * 20) // 6 frames for each visible row
         {
-            q->stack_anim_counter = 0;
-
-            // just zeroing out the last two (invisible) rows
-            int start_i = (g->field->w - q->field_w) / 2;
-            for(int i = start_i; i < g->field->w - start_i; i++)
+            if(q->stack_anim_counter == 5 * 20)
             {
-                gridsetcell(g->field, i, 0, 0);
-                gridsetcell(g->field, i, 1, 0);
+                // just zeroing out the last two (invisible) rows
+                int start_i = (g->field->w - q->field_w) / 2;
+
+                if(q->state_flags & GAMESTATE_BIGMODE)
+                {
+                    start_i = 0;
+                }
+
+                for(int i = start_i; i < start_i + q->field_w; i++)
+                {
+                    gridsetcell(g->field, i, 0, 0);
+                    gridsetcell(g->field, i, 1, 0);
+                }
+            }
+            else if(q->stack_anim_counter == (5 * 20) + 30)
+            {
+                q->stack_anim_counter = 0;
+                q->state_flags &= ~GAMESTATE_FADE_TO_CREDITS;
+
+                /* for testing */
+                // q->mroll_unlocked = true;
+
+                if(q->mode_type == MODE_G2_MASTER)
+                {
+                    if(q->mroll_unlocked)
+                    {
+                        q->state_flags |= GAMESTATE_INVISIBLE | GAMESTATE_CREDITS;
+                    }
+                    else
+                    {
+                        q->state_flags |= GAMESTATE_FADING | GAMESTATE_CREDITS;
+                    }
+                }
+                else if(q->mode_type == MODE_G3_TERROR)
+                {
+                    q->state_flags |= GAMESTATE_BIGMODE | GAMESTATE_CREDITS;
+
+                    int w = q->field_w / 2;
+
+                    gridfillrect(g->field, NULL, 0);
+                    for(int i = 0; i <= w; i++)
+                    {
+                        gridsetcell(g->field, i, QRS_FIELD_H - 10, QRS_WALL);
+                    }
+
+                    for(int j = QRS_FIELD_H - 10; j >= 0; j--)
+                    {
+                        gridsetcell(g->field, w, j, QRS_WALL);
+                    }
+
+                    q->field_w = w;
+                }
+
+                qs_initnext(g, q->p1, 0);
+                qrs_proc_initials(g);
+            }
+        }
+        else if(q->stack_anim_counter % 5 == 1)
+        {
+            int row = QRS_FIELD_H - 1 - (q->stack_anim_counter / 5);
+            int start_i = (g->field->w - q->field_w) / 2;
+
+            if(q->state_flags & GAMESTATE_BIGMODE)
+            {
+                start_i = 0;
             }
 
-            q->state_flags &= ~GAMESTATE_FADE_TO_CREDITS;
+            gfx_qs_lineclear(g, row);
 
-            // for testing
-            // q->mroll_unlocked = true;
-
-            if(q->mroll_unlocked)
-                q->state_flags |= GAMESTATE_INVISIBLE | GAMESTATE_CREDITS;
-            else
-                q->state_flags |= GAMESTATE_FADING | GAMESTATE_CREDITS;
-
-            qs_initnext(g, q->p1, 0);
-            qrs_proc_initials(g);
-        }
-        else if(q->stack_anim_counter % 6 == 1)
-        {
-            int row = 21 - (q->stack_anim_counter / 6);
-            int start_i = (g->field->w - q->field_w) / 2;
-
-            for(int i = start_i; i < g->field->w - start_i; i++)
+            for(int i = start_i; i < start_i + q->field_w; i++)
             {
                 gridsetcell(g->field, i, row, 0);
             }
@@ -1780,6 +1870,15 @@ int qs_process_lineclear(game_t *g)
 
                     break;
 
+                case MODE_G3_TERROR:
+                    if(q->level == 1300 && !(q->state_flags & GAMESTATE_CREDITS))
+                    {
+                        q->state_flags |= GAMESTATE_FADE_TO_CREDITS;
+                        (*s) = PSINACTIVE;
+                    }
+
+                    break;
+
                 default:
                     break;
             }
@@ -1967,7 +2066,7 @@ int qs_process_lockflash(game_t *g)
                     break;
             }
 
-            if(!(q->state_flags & GAMESTATE_CREDITS))
+            if(!(q->state_flags & GAMESTATE_CREDITS) && !q->pracdata)
             {
                 if(q->game_type == SIMULATE_G3 && n > 2)
                     q->lvlinc = 2 * n - 2;
@@ -2341,9 +2440,13 @@ int qs_process_lockflash(game_t *g)
 
                         case MODE_G3_TERROR:
                             if(q->grade == NO_GRADE)
+                            {
                                 q->grade = GRADE_S1;
+                            }
                             else
+                            {
                                 q->grade++;
+                            }
 
                             q->last_gradeup_timestamp = g->frame_counter;
                             sfx_play(&cs->assets->gradeup);
@@ -2352,17 +2455,11 @@ int qs_process_lockflash(game_t *g)
                             {
                                 if(q->timer->time > G3_TERROR_TORIKAN)
                                 {
-                                    q->grade = GRADE_S5;
-
                                     if(q->playback)
                                         qrs_end_playback(g);
                                     else if(q->recording)
                                         qrs_end_record(g);
                                     q->p1->state = PSINACTIVE;
-                                }
-                                else
-                                {
-                                    q->grade = GRADE_S5;
                                 }
                             }
                             else if(q->section == 10)
@@ -2377,20 +2474,10 @@ int qs_process_lockflash(game_t *g)
                                         qrs_end_record(g);
                                     q->p1->state = PSINACTIVE;
                                 }
-                                else
-                                {
-                                    q->grade = GRADE_S10;
-                                }
                             }
                             else if(q->section == 13)
                             {
                                 q->level = 1300;
-                                q->grade = GRADE_S13;
-                                if(q->playback)
-                                    qrs_end_playback(g);
-                                else if(q->recording)
-                                    qrs_end_record(g);
-                                q->p1->state = PSINACTIVE;
                             }
 
                             break;
@@ -3445,11 +3532,23 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     }
 
     if(q->cur_piece_qrs_id >= 18)
-        p->y = ROWTOY(SPAWNY_QRS + 2);
+    {
+        p->y = ROWTOY(SPAWNY_QRS + 4);
+    }
     else
+    {
         p->y = ROWTOY(SPAWNY_QRS);
+    }
 
-    p->x = SPAWNX_QRS;
+    if(q->state_flags & GAMESTATE_BIGMODE)
+    {
+        p->x = 2;
+    }
+    else
+    {
+        p->x = SPAWNX_QRS;
+    }
+
     p->orient = FLAT;
     p->state = PSFALL | PSSPAWN;
 

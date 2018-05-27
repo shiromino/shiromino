@@ -64,8 +64,8 @@ int gfx_drawqs(game_t *g)
             drawpiece_next1_flags |= DRAWPIECE_IPREVIEW;
     }
 
-    unsigned int drawqrsfield_flags = 0;
-    unsigned int drawpiece_flags = /*q->mode_type == MODE_G2_DEATH ? GFX_G2 : */ 0;
+    unsigned int drawqrsfield_flags = q->state_flags & GAMESTATE_BIGMODE ? DRAWFIELD_BIG : 0;
+    unsigned int drawpiece_flags = q->state_flags & GAMESTATE_BIGMODE ? DRAWPIECE_BIG : 0;
 
     SDL_Texture *font = cs->assets->font.tex;
     SDL_Texture *tets_dark_qs = cs->assets->tets_dark_qs.tex;
@@ -84,8 +84,13 @@ int gfx_drawqs(game_t *g)
     int i = 0;
     int x = q->field_x;
     int y = q->field_y;
-    int piece_x = x + (16 * q->p1->x);
-    int piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
+    int piece_x = x + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * q->p1->x);
+    int piece_y = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->y) - QRS_FIELD_H + 20));
+
+    if((q->state_flags & GAMESTATE_BIGMODE) && (q->game_type != SIMULATE_QRS))
+    {
+        piece_x += 16;
+    }
 
     SDL_Rect labg_src = {.x = 401, .y = 0, .w = 111 - 32, .h = 64};
     SDL_Rect labg_dest = {.x = 264 - 48 + 4 + x, .y = 312 - 32 + y, .w = 111 - 32, .h = 64};
@@ -596,6 +601,7 @@ int gfx_drawqs(game_t *g)
                 cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
 
         if(q->hold)
+        {
             gfx_drawpiece(cs,
                           g->field,
                           x,
@@ -606,6 +612,7 @@ int gfx_drawqs(game_t *g)
                           hold_x,
                           hold_y,
                           RGBA_DEFAULT);
+        }
 
         if((q->p1->state & (PSFALL | PSLOCK)) && !(q->p1->state & PSPRELOCKED))
         {
@@ -614,26 +621,26 @@ int gfx_drawqs(game_t *g)
                 y_bkp = q->p1->y;
                 s_bkp = q->p1->state;
                 qrs_fall(g, q->p1, 28 * 256);
-                piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
+                piece_y = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->y) - QRS_FIELD_H + 20));
 
                 switch(q->mode_type)
                 {
                     case MODE_PENTOMINO:
                         if(q->level < 300)
-                            gfx_drawpiece(cs, g->field, x, y, pd_current, 0, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
+                            gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
 
                         break;
 
                     default:
                         if(q->level < 100)
-                            gfx_drawpiece(cs, g->field, x, y, pd_current, 0, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
+                            gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
 
                         break;
                 }
 
                 q->p1->y = y_bkp;
                 q->p1->state = s_bkp;
-                piece_y = y + (16 * YTOROW(q->p1->y)) - 16;
+                piece_y = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->y) - QRS_FIELD_H + 20));
             }
 
             if(pd_current->flags & PDBRACKETS)
@@ -695,17 +702,28 @@ int gfx_qs_lineclear(game_t *g, int row)
     for(i = (QRS_FIELD_W - q->field_w) / 2; i < (QRS_FIELD_W + q->field_w) / 2; i += 2)
     {
         c = gridgetcell(g->field, i, row);
-        if(c & QRS_PIECE_BRACKETS)
+        if((c == 0) || (c & QRS_PIECE_BRACKETS))
+        {
             continue;
+        }
+
         if(c > 0)
+        {
             mod = piece_colors[(c & 0xFF) - 1] * 0x100 + 0xFF;
+        }
         else
+        {
             mod = piece_colors[25] * 0x100 + 0xFF;
+        }
 
         if(row % 2)
-            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16), 16 * (row - 1) + q->field_y, 5, 3, mod);
+        {
+            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16), q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)), 5, 3, mod);
+        }
         else
-            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16) + 16, 16 * (row - 1) + q->field_y, 5, 3, mod);
+        {
+            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16) + 16, q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)), 5, 3, mod);
+        }
     }
 
     return 0;

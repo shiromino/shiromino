@@ -4,18 +4,26 @@ Shiromino Version history
 beta3-pre2
 {
     New Features:
+        + Added support for big blocks in all modes
+        + New mode: Big Master
+        + Added credit roll to G3 Terror
         + Added Pentomino C revision string (output to console on startup)
 
     Changes/Removed Features:
+        * Increased logical playfield height from 22 to 24
+
         * Renamed "Pentomino" mode to "Pentomino C"
         * Pentomino C revision: 1.0 -> 1.1
         * Pentomino C lock delay made longer throughout speed curve
 
         * All pentominoes and tetrominoes now have unique colors
         * Updated line clear animation's per-piece colors
+        * Improved the look of some minor graphics
 
     Bug Fixes:
+        * Fixed T tetromino floorkick orientation limitations
         * Fixed grade display when green line or orange line flags are applied
+        * No more grade-up sound effect in multi-editor
 }
 
 2018.05.07 beta3-pre1

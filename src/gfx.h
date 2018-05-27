@@ -27,14 +27,16 @@
 #define DRAWPIECE_IPREVIEW      0x0004
 #define DRAWPIECE_SMALL         0x0008
 #define DRAWPIECE_BRACKETS      0x0010
+#define DRAWPIECE_BIG           0x0020
 
 #define DRAWFIELD_BRACKETS      0x0001
 #define DRAWFIELD_INVISIBLE     0x0002
 #define DRAWFIELD_NO_OUTLINE    0x0004
 #define DRAWFIELD_GRID          0x0008
 #define DRAWFIELD_CURSES        0x0010
+#define DRAWFIELD_BIG           0x0020
 #define TEN_W_TETRION           0x8000
-#define TETRION_DEATH           0x00010000
+#define TETRION_DEATH       0x00010000
 
 //#define DRAWTEXT_LINEFEED       0x0001
 #define DRAWTEXT_CENTERED       0x0002

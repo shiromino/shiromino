@@ -766,8 +766,10 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
     SDL_RenderCopy(cs->screen.renderer, tetrion_qs, NULL, &tdest);
 
-    if(flags & DRAWFIELD_GRID)
+    if((flags & DRAWFIELD_GRID) && !(flags & DRAWFIELD_BIG))
+    {
         SDL_RenderCopy(cs->screen.renderer, playfield_grid, NULL, &tdest);
+    }
 
     /*if(field == cs->p1game->field) {
           use_deltas = 1;
@@ -782,17 +784,42 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
        SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_NONE);
        }*/
 
-    if(flags & GFX_G2)
+    /* if(flags & GFX_G2)
+    {
         SDL_SetTextureColorMod(misc, 124, 124, 116);
+    }
     else
+    {
         SDL_SetTextureAlphaMod(misc, 140);
+    }*/
 
-    for(i = 0; i < QRS_FIELD_W; i++)
+    int logicalW = QRS_FIELD_W;
+    int logicalH = QRS_FIELD_H;
+
+    int cellSize = 16;
+
+    if(flags & DRAWFIELD_BIG)
+    {
+        logicalW = q->field_w;
+        logicalH = QRS_FIELD_H - 10;
+
+        cellSize = 32;
+    }
+
+    dest.w = cellSize;
+    dest.h = cellSize;
+
+    for(i = 0; i < logicalW; i++)
     { // test feature: last 31 frames of every 91 frames make the stack shine
-        for(j = 2; j < QRS_FIELD_H; j++)
+        for(j = QRS_FIELD_H - 20; j < logicalH; j++)
         {
-            if(flags & TEN_W_TETRION && (i == 0 || i == 11))
-                continue;
+            if(flags & TEN_W_TETRION)
+            {
+                if(!(flags & DRAWFIELD_BIG) && (i == 0 || i == 11))
+                {
+                    continue;
+                }
+            }
             /*if(use_deltas && !gridgetcell(q->field_deltas, i, j))
                 continue;*/
 
@@ -829,8 +856,13 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                 {
                     src.x = ((c & 0xff) - 1) * 16;
                     src.y = 0;
-                    dest.x = x + 16 + (i * 16);
-                    dest.y = y + (j * 16);
+                    dest.x = x + 16 + (i * cellSize);
+                    dest.y = y + 32 + ((j - QRS_FIELD_H + 20) * cellSize);
+
+                    if((flags & DRAWFIELD_BIG) && (flags & TEN_W_TETRION))
+                    {
+                        dest.x += 16;
+                    }
 
                     SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                     src.x = 32 * 16;
@@ -841,8 +873,13 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                 }
 
                 src.y = 0;
-                dest.x = x + 16 + (i * 16);
-                dest.y = y + (j * 16);
+                dest.x = x + 16 + (i * cellSize);
+                dest.y = y + 32 + ((j - QRS_FIELD_H + 20) * cellSize);
+
+                if((flags & DRAWFIELD_BIG) && (flags & TEN_W_TETRION))
+                {
+                    dest.x += 16;
+                }
 
                 // piece_bstr->data[0] = c + 'A' - 1;
 
@@ -873,14 +910,14 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                         SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
                         SDL_SetRenderDrawColor(cs->screen.renderer, 0xFF, 0xFF, 0xFF, 0x8C);
 
-                        SDL_Rect outlineRect = {.x = dest.x, .y = dest.y, .w = 16, .h = 2};
+                        SDL_Rect outlineRect = {.x = dest.x, .y = dest.y, .w = cellSize, .h = 2};
 
                         c = gridgetcell(field, i, j - 1); // above
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
                             outlineRect.y = dest.y;
-                            outlineRect.w = 16;
+                            outlineRect.w = cellSize;
                             outlineRect.h = 2;
 
                             if(!use_deltas)
@@ -895,7 +932,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             outlineRect.x = dest.x;
                             outlineRect.y = dest.y;
                             outlineRect.w = 2;
-                            outlineRect.h = 16;
+                            outlineRect.h = cellSize;
 
                             if(!use_deltas)
                             {
@@ -906,10 +943,10 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                         c = gridgetcell(field, i + 1, j); // right
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
-                            outlineRect.x = dest.x + 14;
+                            outlineRect.x = dest.x + cellSize - 2;
                             outlineRect.y = dest.y;
                             outlineRect.w = 2;
-                            outlineRect.h = 16;
+                            outlineRect.h = cellSize;
 
                             if(!use_deltas)
                             {
@@ -921,8 +958,8 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
-                            outlineRect.y = dest.y + 14;
-                            outlineRect.w = 16;
+                            outlineRect.y = dest.y + cellSize - 2;
+                            outlineRect.w = cellSize;
                             outlineRect.h = 2;
 
                             if(!use_deltas)
@@ -1295,7 +1332,14 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
         return -1;
 
     if(flags & DRAWPIECE_BRACKETS && flags & DRAWPIECE_LOCKFLASH)
+    {
         return 0;
+    }
+
+    if((flags & DRAWPIECE_PREVIEW) && (flags & DRAWPIECE_BIG))
+    {
+        flags &= ~DRAWPIECE_BIG;
+    }
 
     SDL_Texture *tets;
     SDL_Texture *misc = cs->assets->misc.tex;
@@ -1307,13 +1351,17 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
     //         tets = cs->assets->g2_tets_bright_g2.tex;
     //   } else {
     if(flags & DRAWPIECE_SMALL)
+    {
         tets = cs->assets->tets_bright_qs_small.tex;
+    }
     else
+    {
         tets = cs->assets->tets_bright_qs.tex;
+    }
     //   }
 
-    int size = (flags & DRAWPIECE_SMALL) ? 8 : 16;
-    SDL_Rect src = {.x = 0, .y = 0, .w = size, .h = size};
+    int size = (flags & DRAWPIECE_SMALL) ? 8 : (flags & DRAWPIECE_BIG ? 32 : 16);
+    SDL_Rect src = {.x = 0, .y = 0, .w = (size == 8 ? 8 : 16), .h = (size == 8 ? 8 : 16)};
     SDL_Rect dest = {.x = 0, .y = 0, .w = size, .h = size};
 
     bstring piece_bstr = bfromcstr("A");
@@ -1331,7 +1379,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
     int cell_y = 0;
 
     g = pd->rotation_tables[orient & 3];
-    src.x = pd->qrs_id * size;
+    src.x = pd->qrs_id * (size == 8 ? 8 : 16);
 
     /*if(flags & DRAWPIECE_IPREVIEW && !(flags & GFX_G2)) {
        y += 8;
@@ -1344,23 +1392,34 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
     {
         for(j = 0; j < h; j++)
         {
-            if(gridgetcell(g, i, j) && (y + (j * 16) > (field_y + 16) || flags & DRAWPIECE_PREVIEW))
+            if(gridgetcell(g, i, j) && (y + (j * size) > (field_y + 16) || flags & DRAWPIECE_PREVIEW))
             {
-                dest.x = x + (i * size);
+                dest.x = x + 16 + ((i - 1) * size);
 
-                if(w == 4 && flags & DRAWPIECE_PREVIEW)
-                    dest.y = y + ((j + 1) * size);
+                if(flags & DRAWPIECE_PREVIEW)
+                {
+                    if(w == 4)
+                    {
+                        dest.y = y + ((j + 1) * size);
+                    }
+                    else
+                    {
+                        dest.y = y + (j * size);
+                    }
+                }
                 else
-                    dest.y = y + (j * size);
+                {
+                    dest.y = y + 16 + ((j - 1) * size);
+                }
 
                 if(flags & DRAWPIECE_BRACKETS || pd->flags & PDBRACKETS)
-                    src.x = 30 * size;
+                    src.x = 30 * (size == 8 ? 8 : 16);
 
                 if(flags & DRAWPIECE_LOCKFLASH && !(flags & DRAWPIECE_BRACKETS) && !(pd->flags & PDBRACKETS))
                 {
-                    src.x = 26 * size;
-                    cell_x = (x - field_x) / 16 + i - 1;
-                    cell_y = (y - field_y) / 16 + j;
+                    src.x = 26 * (size == 8 ? 8 : 16);
+                    cell_x = (x - field_x - 16) / size + i;
+                    cell_y = (y - field_y - 16) / size + j;
                     if(gridgetcell(field, cell_x, cell_y) > 0 || flags & DRAWPIECE_PREVIEW)
                     {
                         SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);

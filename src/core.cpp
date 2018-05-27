@@ -20,6 +20,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "SGUIL/SGUIL.hpp"
+#include "GuiGridCanvas.hpp"
 
 #include "SPM_Spec.hpp"
 #include "QRS.hpp"
@@ -634,7 +635,7 @@ int run(coreState *cs)
 
     bool running = true;
 
-/*
+
     int windW = 620;
     int windH = 460;
     SDL_Rect gridRect = {16, 44, windW - 32, windH - 60};
@@ -649,17 +650,17 @@ int run(coreState *cs)
         g,
         paletteVar,
         paletteTex,
-        16, 16,
+        32, 32,
         gridRect
     };
 
     SDL_Rect windowRect = {10, 10, windW, windH};
-    GuiWindow wind {"Shiromino", cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
+    GuiWindow wind {"Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
 
     wind.addControlElement(gridCanvas);
-*/
+
     // SPM_Spec spec;
-    QRS spec {qrs_variant_G3, false};
+    QRS spec {qrs_variant_P, false};
     TestSPM SPMgame {*cs, &spec};
     SPMgame.init();
 
@@ -671,7 +672,7 @@ int run(coreState *cs)
         cs->prev_keys_raw = cs->keys_raw;
         cs->prev_keys = cs->keys;
 
-        if(procevents(cs/*, wind*/))
+        if(procevents(cs, wind))
         {
             return 1;
         }
@@ -707,7 +708,7 @@ int run(coreState *cs)
             }
         }
 
-        // wind.draw();
+        //wind.draw();
 
         // process menus, graphics, and framerate
 
@@ -812,7 +813,7 @@ int run(coreState *cs)
     return 0;
 }
 
-int procevents(coreState *cs/*, GuiWindow& wind*/)
+int procevents(coreState *cs, GuiWindow& wind)
 {
     if(!cs)
         return -1;

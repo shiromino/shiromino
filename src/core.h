@@ -5,6 +5,7 @@
 #define SIMULATE_G1    0x0010
 #define SIMULATE_G2    0x0020
 #define SIMULATE_G3    0x0040
+#define BIG_MODE       0x8000
 
 #define FPS            60.0
 #define G2_FPS         61.68
@@ -275,7 +276,7 @@ int init(coreState *cs, struct settings *s);
 void quit(coreState *cs);
 
 int run(coreState *cs);
-int procevents(coreState *cs/*, GuiWindow& wind*/);
+int procevents(coreState *cs, GuiWindow& wind);
 int procgame(game_t *g, int input_enabled);
 
 void handle_replay_input(coreState* cs);
