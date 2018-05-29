@@ -1419,7 +1419,8 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                 {
                     src.x = 26 * (size == 8 ? 8 : 16);
                     cell_x = (x - field_x - 16) / size + i;
-                    cell_y = (y - field_y - 16) / size + j;
+                    cell_y = (y - field_y - 32) / size + j + QRS_FIELD_H - 20;
+
                     if(gridgetcell(field, cell_x, cell_y) > 0 || flags & DRAWPIECE_PREVIEW)
                     {
                         SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);

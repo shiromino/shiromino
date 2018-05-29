@@ -1697,18 +1697,23 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     }
     else if(flags & GARBAGE_COPY_BOTTOM_ROW)
     {
-        for(i = 0; i < 21; i++)
+        for(i = 0; i < QRS_FIELD_H - 1; i++)
         {
             gridrowcpy(g->field, NULL, i + 1, i);
         }
 
-        gridrowcpy(g->field, NULL, 20, 21);
+        gridrowcpy(g->field, NULL, QRS_FIELD_H - 2, QRS_FIELD_H - 1);
         for(i = 0; i < QRS_FIELD_W; i++)
         {
-            if(gridgetcell(g->field, i, 20) == QRS_FIELD_W_LIMITER)
+            if(gridgetcell(g->field, i, QRS_FIELD_H - 2) == QRS_FIELD_W_LIMITER)
+            {
                 continue;
-            if(gridgetcell(g->field, i, 20))
-                gridsetcell(g->field, i, 21, QRS_PIECE_GARBAGE);
+            }
+
+            if(gridgetcell(g->field, i, QRS_FIELD_H - 2))
+            {
+                gridsetcell(g->field, i, QRS_FIELD_H - 1, QRS_PIECE_GARBAGE);
+            }
         }
     }
     else
