@@ -282,6 +282,7 @@ void coreState_initialize(coreState *cs)
     cs->p1game = NULL;
     cs->menu = NULL;
 
+    cs->displayMode = game_display_default;
     cs->pracdata_mirror = NULL;
 
     cs->sfx_volume = 32;
@@ -1142,6 +1143,22 @@ int procevents(coreState *cs, GuiWindow& wind)
                 if(kc == SDLK_RIGHT)
                 {
                     cs->right_arrow_das = 1;
+                }
+
+                if(kc == SDLK_F8)
+                {
+                    switch(cs->displayMode)
+                    {
+                        case game_display_default:
+                            cs->displayMode = game_display_detailed;
+                            break;
+                        case game_display_detailed:
+                            cs->displayMode = game_display_centered;
+                            break;
+                        default:
+                            cs->displayMode = game_display_default;
+                            break;
+                    }
                 }
 
                 if(kc == SDLK_F11)

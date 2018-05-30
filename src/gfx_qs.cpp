@@ -266,7 +266,7 @@ int gfx_drawqs(game_t *g)
 
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
-            gfx_drawkeys(cs, &cs->keys, 22 * 16, 27 * 16, RGBA_DEFAULT);
+            gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT);
 
             goto active_game_drawing;
         }
@@ -288,7 +288,94 @@ int gfx_drawqs(game_t *g)
         else
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
 
-        gfx_drawkeys(cs, &cs->keys, 22 * 16, 27 * 16, RGBA_DEFAULT);
+        if(cs->displayMode == game_display_detailed)
+        {
+            gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
+
+            string secTimeStr;
+            struct text_formatting secTimeFmt =
+            {
+                .rgba = RGBA_DEFAULT,
+                .outline_rgba = 0x000000A0,
+                .outlined = false,
+                .shadow = false,
+                .size_multiplier = 2.0,
+                .line_spacing = 1.0,
+                .align = ALIGN_RIGHT,
+                .wrap_length = 0
+            };
+
+            long cumulativeTime = 0;
+
+            int secX = 356;
+            int secY = 48;
+
+            SDL_Rect secTimeBGRect = {.x = secX, .y = secY, .w = 640 - secX + 6, .h = 24};
+
+            Uint8 r_;
+            Uint8 g_;
+            Uint8 b_;
+            Uint8 a_;
+            SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
+            SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0x80);
+
+            for(int sec = 0; sec < MAX_SECTIONS; sec++)
+            {
+                if(q->section_times[sec] != -1)
+                {
+                    cumulativeTime += q->section_times[sec];
+
+                    if(sec < MAX_SECTIONS - 1 && q->section_times[sec + 1] != -1)
+                    {
+                        secTimeBGRect.h = 24;
+                    }
+                    else
+                    {
+                        secTimeBGRect.h = 32;
+                    }
+
+                    secTimeBGRect.y = secY;
+
+                    SDL_RenderFillRect(cs->screen.renderer, &secTimeBGRect);
+
+                    int minutes = q->section_times[sec] / (60*60);
+                    int seconds = (q->section_times[sec] / 60) % 60;
+                    int centiseconds = (int)((double)(q->section_times[sec] % 60) * 100.0 / 60.0);
+
+                    int cuMinutes = cumulativeTime / (60*60);
+                    int cuSeconds = (cumulativeTime / 60) % 60;
+                    int cuCentiseconds = (int)((double)(cumulativeTime % 60) * 100.0 / 60.0);
+
+                    int textX = 634;
+
+                    secTimeStr = strtools::format("%d:%02d:%02d", cuMinutes, cuSeconds, cuCentiseconds);
+                    secTimeFmt.rgba = 0x909090FF;
+                    gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                    secTimeFmt.rgba = RGBA_DEFAULT;
+                    textX -= 7*16 + 8;
+
+                    if(minutes == 0)
+                    {
+                        secTimeStr = strtools::format("   %02d:%02d", seconds, centiseconds);
+                        gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                    }
+                    else
+                    {
+                        secTimeStr = strtools::format(" %d:%02d:%02d", minutes, seconds, centiseconds);
+                        gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                    }
+
+                    textX -= 7*16 + 8;
+                    secTimeStr = strtools::format("%d", sec+1);
+                    secTimeFmt.rgba = 0x8080B0FF;
+                    gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                }
+
+                secY += 24;
+            }
+
+            SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
+        }
 
         // uncomment this for DDR-esque input display :3
         /*if(q->playback) {
@@ -566,8 +653,8 @@ int gfx_drawqs(game_t *g)
             fmt.rgba = RGBA_DEFAULT;
             fmt.outlined = false;
 
-            gfx_drawtext(cs, next, 12 + QRS_FIELD_X, 13, monofont_small, &fmt);
-            gfx_drawtext(cs, next_name, 12 + QRS_FIELD_X, 25, monofont_small, &fmt);
+            gfx_drawtext(cs, next, q->field_x + 12, 13, monofont_small, &fmt);
+            gfx_drawtext(cs, next_name, q->field_x + 12, 25, monofont_small, &fmt);
 
             if(histrand_get_difficulty(q->randomizer) > 0.0)
             {

@@ -79,8 +79,8 @@ static qrs_timings qs_curve[QS_CURVE_MAX] =
     {600, 20 * 256, 36, 10, 18, 16, 8},
     {700, 20 * 256, 32, 8, 16, 16, 6},
     {800, 20 * 256, 30, 8, 12, 12, 6},
-    {900, 20 * 256, 24, 8, 12, 12, 6},
-    {1000, 20 * 256, 22, 7, 10, 10, 4},
+    {900, 20 * 256, 27, 8, 12, 12, 6},
+    {1000, 20 * 256, 25, 7, 10, 10, 4},
     {1100, 20 * 256, 22, 7, 8, 8, 4}
 };
 
@@ -1206,7 +1206,24 @@ int qs_game_frame(game_t *g)
     if(q->pracdata)
     {
         if(q->pracdata->paused)
+        {
             return 0;
+        }
+    }
+    else
+    {
+        switch(cs->displayMode)
+        {
+            default:
+            case game_display_default:
+            case game_display_detailed:
+                q->field_x = QRS_FIELD_X;
+                break;
+
+            case game_display_centered:
+                q->field_x = 192;
+                break;
+        }
     }
 
     if(c->init < 120)

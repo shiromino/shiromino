@@ -39,6 +39,14 @@ enum {
     QUINTESSE
 };
 
+enum gameDisplayMode
+{
+    game_display_default,
+    game_display_detailed,
+    game_display_centered,
+    game_display_bare
+};
+
 struct bindings
 {
     SDL_Keycode left;
@@ -209,6 +217,8 @@ struct coreState_
     game_t *menu;
     struct pracdata *pracdata_mirror;
     std::vector<std::unique_ptr<GuiWindow>> guiWindowList;
+
+    gameDisplayMode displayMode;
 
     long double avg_sleep_ms;
     long double avg_sleep_ms_recent;
