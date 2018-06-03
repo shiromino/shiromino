@@ -81,6 +81,11 @@ int gfx_drawqs(game_t *g)
     char r = 255 - (char)(80 * l / lt);
     Uint32 rgba = (r * 0x1000000) + (r * 0x10000) + (r * 0x100) + 0xFF;
 
+    if(YTOROW(q->p1->y) != q->locking_row)
+    {
+        rgba = RGBA_DEFAULT;
+    }
+
     int i = 0;
     int x = q->field_x;
     int y = q->field_y;
@@ -731,7 +736,9 @@ int gfx_drawqs(game_t *g)
             }
 
             if(pd_current->flags & PDBRACKETS)
+            {
                 rgba = RGBA_DEFAULT;
+            }
 
             gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, rgba);
         }

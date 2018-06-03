@@ -46,7 +46,12 @@
 #define QRS_DROUGHT_BASELINE 16.0
 #define QRS_DROUGHT_COEFF_DEFAULT 1.1
 // threshold: weights below this value are considered "bad" pieces and have collective flood protection
-#define QRS_WEIGHT_TIER_THRESHOLD 0.45
+#define QRS_WEIGHT_HIGHTIER_THRESHOLD 0.45
+#define QRS_WEIGHT_MIDTIER_THRESHOLD 0.25
+
+#define QRS_DROUGHT_HIGHTIER_SOFTLIMIT 20
+#define QRS_DROUGHT_MIDTIER_SOFTLIMIT 42
+#define QRS_DROUGHT_LOWTIER_SOFTLIMIT -1
 
 #define QRS_I_DROUGHT_COEFF 3.0
 #define QRS_L_DROUGHT_COEFF 1.3

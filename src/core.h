@@ -228,6 +228,7 @@ struct coreState_
     int recent_frame_overload;
 
     struct scoredb scores;
+    // struct scoredb archive;
     struct player player;
 };
 

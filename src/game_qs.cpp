@@ -918,7 +918,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
             if(q->level >= 1000)
             {
                 double amount = pow(1.025, q->level - 1000);
-                histrand_set_difficulty(q->randomizer, 15.0 + (amount > 85.0 ? 85.0 : amount));
+                histrand_set_difficulty(q->randomizer, 15.0 + (amount > 45.0 ? 45.0 : amount));
             }
         }
     }
@@ -1677,7 +1677,7 @@ int qs_game_frame(game_t *g)
         {
             // histrand_set_difficulty(q->randomizer, 5.0 + 0.2 * (q->level - 1000));
             double amount = pow(1.025, q->level - 1000);
-            histrand_set_difficulty(q->randomizer, 15.0 + (amount > 85.0 ? 85.0 : amount));
+            histrand_set_difficulty(q->randomizer, 15.0 + (amount > 45.0 ? 45.0 : amount));
         }
 
         // for testing
@@ -3505,7 +3505,14 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     {
         t = qrand->pull(qrand);
         if(q->randomizer->num_pieces == 7)
+        {
             t = ars_to_qrs_id(t);
+        }
+
+        if((p->speeds->grav >= 512) && (t == QRS_X))
+        {
+            t = qrand->pull(qrand);
+        }
     }
 
     if(p->def)

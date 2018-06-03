@@ -454,6 +454,11 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
         pento_seed = *seed;
     }
 
+    for(int j = 0; j < r->num_pieces; j++)
+    {
+        d->drought_times[j] = pento_read_rand(r->seedp) % 30;
+    }
+
     d->history[0] = QRS_Fb;
     d->history[1] = QRS_Fa;
     d->history[2] = QRS_X;
@@ -610,7 +615,7 @@ piece_id histrand_get_next(struct randomizer *r)
     else
     {
         // starts at 1 and counts up, bad pieces' weights are divided by this
-        int below_threshold = 1;
+        int below_high_threshold = 1;
 
         for(i = 0; i < r->num_pieces; i++)
         {
@@ -623,8 +628,10 @@ piece_id histrand_get_next(struct randomizer *r)
                 if(d->history[j] == i)
                 {
                     histogram[i]++;
-                    if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD)
-                        below_threshold++;
+                    if(d->piece_weights[i] < QRS_WEIGHT_HIGHTIER_THRESHOLD)
+                    {
+                        below_high_threshold++;
+                    }
                 }
             }
 
@@ -634,14 +641,36 @@ piece_id histrand_get_next(struct randomizer *r)
                 // multiply by coefficient^(t/BASELINE)
                 // e.g. for coeff 2 and drought time BASELINE, weight *= 2
                 temp_weights[i] *= pow(d->drought_protection_coefficients[i], (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE);
+
+                if((d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD) && (QRS_DROUGHT_HIGHTIER_SOFTLIMIT >= 0))
+                {
+                    if(d->drought_times[i] >= QRS_DROUGHT_HIGHTIER_SOFTLIMIT)
+                    {
+                        temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1));
+                    }
+                }
+                else if((d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD) && (QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0))
+                {
+                    if(d->drought_times[i] >= QRS_DROUGHT_MIDTIER_SOFTLIMIT)
+                    {
+                        temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1));
+                    }
+                }
+                else if(QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0)
+                {
+                    if(d->drought_times[i] >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
+                    {
+                        temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1));
+                    }
+                }
             }
         }
 
         for(i = 0; i < r->num_pieces; i++)
         {
-            if(d->piece_weights[i] < QRS_WEIGHT_TIER_THRESHOLD)
+            if(d->piece_weights[i] < QRS_WEIGHT_HIGHTIER_THRESHOLD)
             {
-                temp_weights[i] /= (double)(below_threshold);
+                temp_weights[i] /= (double)(below_high_threshold);
             }
 
             sum += temp_weights[i];

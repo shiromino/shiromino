@@ -26,7 +26,7 @@
 #include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
-#define PENTOMINO_C_REVISION_STRING "rev. 1.1"
+#define PENTOMINO_C_REVISION_STRING "rev 1.1"
 
 using namespace std;
 
@@ -550,6 +550,12 @@ int init(coreState *cs, struct settings *s)
         scoredb_init(&cs->scores, scoredb_file);
         scoredb_create_player(&cs->scores, &cs->player, cs->settings->player_name);
 
+        /*
+        static const char archive_file[] = "archive.db";
+        scoredb_init(&cs->archive, archive_file);
+        scoredb_create_player(&cs->archive, &cs->player, cs->settings->player_name);
+        */
+
         cs->menu = menu_create(cs);
         check(cs->menu != NULL, "menu_create returned failure\n");
 
@@ -567,6 +573,7 @@ error:
 void quit(coreState *cs)
 {
     scoredb_terminate(&cs->scores);
+    // scoredb_terminate(&cs->archive);
 
     if(cs->assets)
     {

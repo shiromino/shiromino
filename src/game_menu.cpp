@@ -722,7 +722,15 @@ int menu_input(game_t *g)
             }
 
             if(i == d->numopts)
-                i = 0;
+            {
+                do
+                {
+                    i--;
+                } while(d->menu[i]->type == MENU_LABEL);
+
+                break;
+            }
+
             if(d->menu[i]->type != MENU_LABEL)
             {
                 d->selection = i;
@@ -1084,11 +1092,11 @@ int mload_main(game_t *g, int val)
     cs->bg = cs->assets->bg_temp.tex;
     cs->bg_old = cs->bg;
 
-    d->menu = (struct menu_opt **)malloc(14 * sizeof(struct menu_opt *));
+    d->menu = (struct menu_opt **)malloc(15 * sizeof(struct menu_opt *));
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 14;
+    d->numopts = 15;
     d->title = bfromcstr("MAIN MENU");
     d->x = 4 * 16;
     d->y = 3 * 16;
@@ -1290,6 +1298,12 @@ int mload_main(game_t *g, int val)
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 26 * 16;
+
+    d->menu[14] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.1"));
+    m = d->menu[14];
+    m->x = 638 - (19 * 15);
+    m->y = 2;
+    m->label_text_rgba = 0x808080A0;
 
     return 0;
 }
