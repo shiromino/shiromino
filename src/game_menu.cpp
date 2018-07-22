@@ -1126,7 +1126,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 6 * 16;
+    m->y = 7 * 16;
     m->value_x = m->x + 12 * 16;
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
@@ -1139,7 +1139,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 7 * 16;
+    m->y = 8 * 16;
     m->value_x = m->x + 10 * 16;
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
@@ -1152,7 +1152,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 8 * 16;
+    m->y = 9 * 16;
     m->value_x = m->x + 10 * 16;
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
@@ -1165,7 +1165,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 9 * 16;
+    m->y = 10 * 16;
     m->value_x = m->x + 10 * 16;
     m->value_y = m->y;
     m->label_text_rgba = 0xFFFF40FF;
@@ -1179,7 +1179,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 10 * 16;
+    m->y = 11 * 16;
     m->value_x = m->x + 10 * 16;
     m->value_y = m->y;
     m->label_text_rgba = 0xFF4040FF;
@@ -1193,7 +1193,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 11 * 16;
+    m->y = 12 * 16;
     m->value_x = m->x + 10 * 16;
     m->value_y = m->y;
     m->label_text_rgba = 0xFF4040FF;
@@ -1207,7 +1207,7 @@ int mload_main(game_t *g, int val)
     else
         d6->selection = 0;
     m->x = 4 * 16;
-    m->y = 12 * 16;
+    m->y = 13 * 16;
     m->value_x = m->x + 11 * 16;
     m->value_y = m->y;
     m->label_text_rgba = 0x40FF40FF;
@@ -1219,7 +1219,7 @@ int mload_main(game_t *g, int val)
     d1->action = mload_practice;
     d1->val = 0;
     m->x = 4 * 16;
-    m->y = 15 * 16;
+    m->y = 16 * 16;
 
     d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("REPLAY"));
     m = d->menu[8];
@@ -1227,12 +1227,12 @@ int mload_main(game_t *g, int val)
     d1->action = mload_replay;
     d1->val = 0;
     m->x = 4 * 16;
-    m->y = 16 * 16;
+    m->y = 17 * 16;
 
     d->menu[9] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("SETTINGS"));
     m = d->menu[9];
     m->x = 4 * 16;
-    m->y = 19 * 16;
+    m->y = 20 * 16;
 
     d->menu[10] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MASTER VOLUME"));
     m = d->menu[10];
@@ -1248,7 +1248,7 @@ int mload_main(game_t *g, int val)
     }
     d2->selection = g->origin->settings->master_volume;
     m->x = 4 * 16;
-    m->y = 21 * 16;
+    m->y = 22 * 16;
     m->value_x = 21 * 16;
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
@@ -1267,7 +1267,7 @@ int mload_main(game_t *g, int val)
     }
     d2->selection = g->origin->settings->sfx_volume;
     m->x = 4 * 16;
-    m->y = 22 * 16;
+    m->y = 23 * 16;
     m->value_x = 21 * 16;
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
@@ -1286,7 +1286,7 @@ int mload_main(game_t *g, int val)
     }
     d2->selection = g->origin->settings->mus_volume;
     m->x = 4 * 16;
-    m->y = 23 * 16;
+    m->y = 24 * 16;
     m->value_x = 21 * 16;
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
@@ -1297,9 +1297,9 @@ int mload_main(game_t *g, int val)
     d1->action = menu_action_quit;
     d1->val = 0;
     m->x = 4 * 16;
-    m->y = 26 * 16;
+    m->y = 27 * 16;
 
-    d->menu[14] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.1"));
+    d->menu[14] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.2"));
     m = d->menu[14];
     m->x = 638 - (19 * 15);
     m->y = 2;
@@ -1960,4 +1960,22 @@ int menu_is_practice(game_t *g)
 
     else
         return 0;
+}
+
+int menu_is_main(game_t *g)
+{
+    if(!g)
+    {
+        return 0;
+    }
+
+    menudata *d = (menudata *)g->data;
+    if(d->menu_id == MENU_ID_MAIN)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }

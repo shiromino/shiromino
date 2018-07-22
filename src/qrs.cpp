@@ -1178,8 +1178,11 @@ int qrs_rotate(game_t *g, qrs_player *p, int direction)
             {
                 if(qrs_floorkick(g, p))
                 {
-                    p->orient = bkp_o;
-                    return 1;
+                    if(qrs_ceilingkick(g, p))
+                    {
+                        p->orient = bkp_o;
+                        return 1;
+                    }
                 }
             }
         }
@@ -1189,8 +1192,11 @@ int qrs_rotate(game_t *g, qrs_player *p, int direction)
             {
                 if(qrs_wallkick(g, p))
                 {
-                    p->orient = bkp_o;
-                    return 1;
+                    if(qrs_ceilingkick(g, p))
+                    {
+                        p->orient = bkp_o;
+                        return 1;
+                    }
                 }
             }
         }
@@ -1240,7 +1246,7 @@ int qrs_irs(game_t *g)
     if(k->b)
         direction = CW;
 
-    if(k->d && q->special_irs && !q->hold_enabled)
+    if((k->d || (k->a && k->c)) && q->special_irs && !q->hold_enabled)
     {
         direction = FLIP;
     }
@@ -1427,6 +1433,26 @@ int qrs_floorkick(game_t *g, qrs_player *p)
 
     q->p1counters->floorkicks++;
     // printf("Number of floorkicks so far: %d\n", q->p1counters->floorkicks);
+
+    return 0;
+}
+
+int qrs_ceilingkick(game_t *g, qrs_player *p)
+{
+    qrsdata *q = (qrsdata *)g->data;
+    int bkp_y = p->y;
+
+    if(q->mode_type != MODE_PENTOMINO)
+    {
+        return 1;
+    }
+
+    p->y += 256;
+    if(qrs_chkcollision(g, p))
+    {
+        p->y = bkp_y;
+        return 1;
+    }
 
     return 0;
 }

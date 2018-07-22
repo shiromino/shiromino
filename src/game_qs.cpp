@@ -918,7 +918,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
             if(q->level >= 1000)
             {
                 double amount = pow(1.025, q->level - 1000);
-                histrand_set_difficulty(q->randomizer, 15.0 + (amount > 45.0 ? 45.0 : amount));
+                histrand_set_difficulty(q->randomizer, 45.0 + (amount > 45.0 ? 45.0 : amount));
             }
         }
     }
@@ -1292,6 +1292,18 @@ int qs_game_frame(game_t *g)
         if(!q->pracdata)
         {
             update_music(q, cs);
+
+            if(q->mode_type == MODE_PENTOMINO)
+            {
+                if(q->level < 500)
+                {
+                    histrand_set_difficulty(q->randomizer, 20.0);
+                }
+                else
+                {
+                    histrand_set_difficulty(q->randomizer, 10.0);
+                }
+            }
         }
     }
 
@@ -1677,7 +1689,7 @@ int qs_game_frame(game_t *g)
         {
             // histrand_set_difficulty(q->randomizer, 5.0 + 0.2 * (q->level - 1000));
             double amount = pow(1.025, q->level - 1000);
-            histrand_set_difficulty(q->randomizer, 15.0 + (amount > 45.0 ? 45.0 : amount));
+            histrand_set_difficulty(q->randomizer, 45.0 + (amount > 45.0 ? 45.0 : amount));
         }
 
         // for testing
@@ -2142,6 +2154,25 @@ int qs_process_lockflash(game_t *g)
 
                         q->score += pts;
 
+                        switch(n)
+                        {
+                            case 1:
+                                histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) - 0.2);
+                                break;
+                            case 2:
+                                histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) + 0.4);
+                                break;
+                            case 3:
+                                histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) + 0.8);
+                                break;
+                            case 4:
+                                histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) + 1.6);
+                                break;
+                            case 5:
+                                histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) + 2.0);
+                                break;
+                        }
+
                         for(int i = 0; i < 17; i++)
                         {
                             if(q->score - pts < g1_grade_score_reqs[i] && q->score >= g1_grade_score_reqs[i])
@@ -2317,6 +2348,8 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->mroll_unlocked = false;
                                 }
+
+                                histrand_set_difficulty(q->randomizer, 10.0);
                             }
                             else if(q->section == 10)
                             {

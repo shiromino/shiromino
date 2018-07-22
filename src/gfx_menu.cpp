@@ -69,7 +69,21 @@ int gfx_drawmenu(game_t *g)
         return 0;
 
     if(d->title)
-        gfx_drawtext(cs, d->title, d->x, d->y, monofont_square, NULL);
+    {
+        if(menu_is_main(g))
+        {
+            SDL_Rect titlePNGdest = {.x = 62, .y = 30, .w = 300, .h = 50};
+            // SDL_SetTextureColorMod(cs->assets->title.tex, 255, 0, 0);
+            SDL_SetTextureAlphaMod(cs->assets->title.tex, 150);
+            SDL_SetTextureBlendMode(cs->assets->title.tex, SDL_BLENDMODE_BLEND);
+            SDL_SetTextureBlendMode(cs->assets->bg_temp.tex, SDL_BLENDMODE_BLEND);
+            SDL_RenderCopy(cs->screen.renderer, cs->assets->title.tex, NULL, &titlePNGdest);
+        }
+        else
+        {
+            gfx_drawtext(cs, d->title, d->x, d->y, monofont_square, NULL);
+        }
+    }
 
     if(d->use_target_tex)
     {

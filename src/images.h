@@ -1,5 +1,6 @@
 // internal name, relative filename
 
+IMG(title, "title")
 IMG(tetrion_qs_white, "tetrion_qs_white")
 IMG(tets_bright_qs, "tets_bright_qs")
 IMG(tets_bright_qs_small, "tets_bright_qs_small")
@@ -52,4 +53,3 @@ IMG(g2_tetrion_g2_death, "g2/tetrion_g2_death")
 IMG(g2_tetrion_g2_master, "g2/tetrion_g2_master")
 
 IMG(g3_tetrion_g3_terror, "g3/tetrion_g3_terror")
-

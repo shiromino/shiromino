@@ -401,6 +401,7 @@ int qrs_proc_initials(game_t *g);
 int qrs_irs(game_t *g);
 int qrs_wallkick(game_t *g, qrs_player *p);
 int qrs_floorkick(game_t *g, qrs_player *p);
+int qrs_ceilingkick(game_t *g, qrs_player *p);
 int qrs_hold(game_t *g, qrs_player *p);
 //int qrs_ihs(game_t *g, int playerid);
 

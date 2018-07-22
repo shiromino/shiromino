@@ -26,7 +26,7 @@
 #include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
-#define PENTOMINO_C_REVISION_STRING "rev 1.1"
+#define PENTOMINO_C_REVISION_STRING "rev 1.2"
 
 using namespace std;
 
@@ -258,7 +258,7 @@ void coreState_initialize(coreState *cs)
     cs->mouse_left_down = 0;
     cs->mouse_right_down = 0;
 
-    cs->screen.name = "Shiromino v.beta3-pre2";
+    cs->screen.name = "Shiromino v.beta3-pre3";
     cs->screen.w = 640;
     cs->screen.h = 480;
     cs->screen.window = NULL;

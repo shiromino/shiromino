@@ -649,14 +649,14 @@ piece_id histrand_get_next(struct randomizer *r)
                         temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1));
                     }
                 }
-                else if((d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD) && (QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0))
+                else if((d->difficulty >= 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD) && (QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0))
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_MIDTIER_SOFTLIMIT)
                     {
                         temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1));
                     }
                 }
-                else if(QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0)
+                else if((d->difficulty >= 30.0) && (QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0))
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
                     {
@@ -673,10 +673,20 @@ piece_id histrand_get_next(struct randomizer *r)
                 temp_weights[i] /= (double)(below_high_threshold);
             }
 
+            if((d->difficulty < 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_TOPTIER_THRESHOLD))
+            {
+                temp_weights[i] *= pow(1.1, (30.0 - d->difficulty) / 3);
+            }
+
+            if((d->difficulty < 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD) && (d->piece_weights[i] < QRS_WEIGHT_TOPTIER_THRESHOLD))
+            {
+                temp_weights[i] *= pow(1.1, (30.0 - d->difficulty) / 6);
+            }
+
             sum += temp_weights[i];
         }
 
-        if(d->difficulty > 0.0)
+        if(d->difficulty > 30.0)
         {
             old_sum = sum;
             sum = 0.0;
@@ -686,7 +696,7 @@ piece_id histrand_get_next(struct randomizer *r)
                 // final factor: difficulty, which brings weights closer to being equal to each other
                 // takes the difference from the average and multiplies by difficulty/100, then adds that to the weight
                 // note that if the weight was above average, a negative value is added
-                temp_weights[i] += (d->difficulty / 100.0) * ((old_sum / r->num_pieces) - temp_weights[i]);
+                temp_weights[i] += ((d->difficulty - 30.0) / 100.0) * ((old_sum / r->num_pieces) - temp_weights[i]);
 
                 sum += temp_weights[i];
             }
