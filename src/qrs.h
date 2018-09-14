@@ -192,6 +192,9 @@ typedef struct
 
     int x;
     int y;
+    int *old_xs;
+    int *old_ys;
+    int num_olds;
     int orient;
 } qrs_player;
 
@@ -251,7 +254,7 @@ typedef struct
     nz_timer *timer;
     qrs_player *p1;
     qrs_counters *p1counters;
-    piecedef *previews[3];
+    piecedef *previews[4];
     piecedef *hold;
 
 // fields which are assumed to be read-only during normal gameplay
@@ -413,5 +416,7 @@ int qrs_isonground(game_t *g, qrs_player *p);
 int qrs_lineclear(game_t *g, qrs_player *p);
 int qrs_dropfield(game_t *g);
 int qrs_spawn_garbage(game_t *g, unsigned int flags);
+
+void qrs_embiggen(piecedef *p);
 
 #endif

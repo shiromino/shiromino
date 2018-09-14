@@ -216,9 +216,10 @@ struct coreState_
     game_t *p1game;
     game_t *menu;
     struct pracdata *pracdata_mirror;
-    std::vector<std::unique_ptr<GuiWindow>> guiWindowList;
+    GuiScreenManager *screenManager;
 
     gameDisplayMode displayMode;
+    bool motionBlur;
 
     long double avg_sleep_ms;
     long double avg_sleep_ms_recent;

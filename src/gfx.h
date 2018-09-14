@@ -28,6 +28,7 @@
 #define DRAWPIECE_SMALL         0x0008
 #define DRAWPIECE_BRACKETS      0x0010
 #define DRAWPIECE_BIG           0x0020
+#define DRAWPIECE_JEWELED       0x0040
 
 #define DRAWFIELD_BRACKETS      0x0001
 #define DRAWFIELD_INVISIBLE     0x0002
@@ -35,6 +36,7 @@
 #define DRAWFIELD_GRID          0x0008
 #define DRAWFIELD_CURSES        0x0010
 #define DRAWFIELD_BIG           0x0020
+#define DRAWFIELD_JEWELED       0x0040
 #define TEN_W_TETRION           0x8000
 #define TETRION_DEATH       0x00010000
 

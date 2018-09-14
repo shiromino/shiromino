@@ -6,6 +6,7 @@
 #include "gfx_structures.h"
 
 #include "game_menu.h"
+#include "game_qs.h"
 #include "replay.h"
 
 #include <stdio.h>
@@ -21,6 +22,7 @@
 #include <SDL2/SDL_image.h>
 #include "SGUIL/SGUIL.hpp"
 #include "GuiGridCanvas.hpp"
+#include "GuiScreenManager.hpp"
 
 #include "SPM_Spec.hpp"
 #include "QRS.hpp"
@@ -282,7 +284,10 @@ void coreState_initialize(coreState *cs)
     cs->p1game = NULL;
     cs->menu = NULL;
 
+    cs->screenManager = new GuiScreenManager {};
+
     cs->displayMode = game_display_default;
+    cs->motionBlur = false;
     cs->pracdata_mirror = NULL;
 
     cs->sfx_volume = 32;
@@ -543,6 +548,11 @@ int init(coreState *cs, struct settings *s)
 
         cs->menu->init(cs->menu);
 
+        cs->screenManager->addScreen("main", mainMenu_create(cs, cs->screenManager, cs->assets->fixedsys));
+        //SDL_Rect gameScreenRect = {0, 0, 640, 480};
+        //cs->screenManager->addScreen("game", new GuiScreen {cs, "game", NULL, gameScreenRect});
+        cs->screenManager->loadScreen("main");
+
         // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
         // TODO: Configurable scores.db path
@@ -643,7 +653,6 @@ int run(coreState *cs)
 
     bool running = true;
 
-
     int windW = 620;
     int windH = 460;
     SDL_Rect gridRect = {16, 44, windW - 32, windH - 60};
@@ -663,7 +672,7 @@ int run(coreState *cs)
     };
 
     SDL_Rect windowRect = {10, 10, windW, windH};
-    GuiWindow wind {"Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
+    GuiWindow wind {cs, "Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
 
     wind.addControlElement(gridCanvas);
 
@@ -671,6 +680,9 @@ int run(coreState *cs)
     QRS spec {qrs_variant_P, false};
     TestSPM SPMgame {*cs, &spec};
     SPMgame.init();
+
+    //cs->p1game = qs_game_create(cs, 0, MODE_PENTOMINO, NO_REPLAY);
+    //cs->p1game->init(cs->p1game);
 
     while(running)
     {
@@ -714,6 +726,10 @@ int run(coreState *cs)
 
                 cs->bg = cs->assets->bg_temp.tex;
             }
+        }
+        else
+        {
+            //cs->screenManager->drawScreen();
         }
 
         //wind.draw();
@@ -907,6 +923,9 @@ int procevents(coreState *cs, GuiWindow& wind)
     while(SDL_PollEvent(&event))
     {
         // wind.handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y} );
+        //printf("Handling SDL event\n");
+        //cs->screenManager->handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y});
+
         switch(event.type)
         {
             case SDL_QUIT:
@@ -1166,6 +1185,11 @@ int procevents(coreState *cs, GuiWindow& wind)
                             cs->displayMode = game_display_default;
                             break;
                     }
+                }
+
+                if(kc == SDLK_F9)
+                {
+                    cs->motionBlur = !cs->motionBlur;
                 }
 
                 if(kc == SDLK_F11)

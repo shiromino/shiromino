@@ -1,5 +1,5 @@
-#ifndef _guiscreenswitchbutton_hpp
-#define _guiscreenswitchbutton_hpp
+#ifndef _guiscreenmanager_hpp
+#define _guiscreenmanager_hpp
 
 #include <string>
 #include <map>
@@ -7,6 +7,10 @@
 #include <functional>
 #include <SDL2/SDL.h>
 #include "SGUIL/SGUIL.hpp"
+
+class GuiScreenManager;
+
+#include "core.h"
 
 class GuiScreenManager
 {
@@ -16,11 +20,22 @@ public:
         currentScreen = NULL;
     }
 
+    void addScreen(std::string name, GuiScreen *screen)
+    {
+        screens[name] = screen;
+    }
+
+    GuiScreen *getCurrentScreen()
+    {
+        return currentScreen;
+    }
+
     void loadScreen(std::string name)
     {
         auto it = screens.find(name);
         if(it == screens.end())
         {
+            /*
             auto itM = screenMakers.find(name);
             if(itM != screenMakers.end())
             {
@@ -28,6 +43,7 @@ public:
                 screens[std::get<0>(*itM)] = s;
                 currentScreen = s;
             }
+            */
         }
         else
         {
@@ -51,9 +67,14 @@ public:
         }
     }
 
+    void scrollSelection(int amount)
+    {
+        
+    }
+
 protected:
     std::map<std::string, GuiScreen *> screens;
-    std::map<std::string, std::function<GuiScreen *(GuiScreenManager *)>> screenMakers;
+    //std::map<std::string, std::function<GuiScreen *(GuiScreenManager *)>> screenMakers;
     GuiScreen *currentScreen;
 };
 
@@ -79,5 +100,8 @@ protected:
     std::string screenName;
     GuiScreenManager *mngr;
 };
+
+GuiScreen *mainMenu_create(coreState *cs, GuiScreenManager *mngr, BitFont& font);
+void mainMenuInteractionCallback(GuiInteractable&, GuiEvent&);
 
 #endif

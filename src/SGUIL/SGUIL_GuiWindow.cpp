@@ -12,7 +12,7 @@
 
 using namespace std;
 
-GuiWindow::GuiWindow(string title, BitFont *titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
+GuiWindow::GuiWindow(coreState *origin, string title, BitFont *titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
     : title(title)
 {
     if(titleFont)
@@ -28,12 +28,18 @@ GuiWindow::GuiWindow(string title, BitFont *titleFont, function<void(GuiInteract
     */
 
     this->destRect = destRect;
+    this->origin = origin;
 
     canvas = SDL_CreateTexture(
         Gui_SDL_Renderer,
         SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_TARGET,
         destRect.w, destRect.h);
+
+    uint32_t *pixels = (uint32_t *)malloc(640 * 480 * sizeof(uint32_t));
+    memset(pixels, 0, 640 * 480 * 4);
+
+    SDL_UpdateTexture(canvas, NULL, (void *)pixels, 640 * 4);
 
     SDL_SetTextureBlendMode(canvas, SDL_BLENDMODE_BLEND);
 

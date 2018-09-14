@@ -67,8 +67,14 @@ int gfx_drawqs(game_t *g)
     unsigned int drawqrsfield_flags = q->state_flags & GAMESTATE_BIGMODE ? DRAWFIELD_BIG : 0;
     unsigned int drawpiece_flags = q->state_flags & GAMESTATE_BIGMODE ? DRAWPIECE_BIG : 0;
 
+    /*if(q->game_type != SIMULATE_QRS)
+    {
+        drawpiece_flags |= DRAWPIECE_JEWELED;
+    }*/
+
     SDL_Texture *font = cs->assets->font.tex;
     SDL_Texture *tets_dark_qs = cs->assets->tets_dark_qs.tex;
+    SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
 
     SDL_Rect palettesrc = {.x = 0, .y = 0, .w = 16, .h = 16};
     SDL_Rect palettedest = {.x = FIELD_EDITOR_PALETTE_X, .y = FIELD_EDITOR_PALETTE_Y, .w = 16, .h = 16};
@@ -92,9 +98,22 @@ int gfx_drawqs(game_t *g)
     int piece_x = x + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * q->p1->x);
     int piece_y = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->y) - QRS_FIELD_H + 20));
 
+    int old_piece_xs[q->p1->num_olds];
+    int old_piece_ys[q->p1->num_olds];
+
+    for(int j = 0; j < q->p1->num_olds; j++)
+    {
+        old_piece_xs[j] = x + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * q->p1->old_xs[j]);
+        old_piece_ys[j] = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->old_ys[j]) - QRS_FIELD_H + 20));
+    }
+
     if((q->state_flags & GAMESTATE_BIGMODE) && (q->game_type != SIMULATE_QRS))
     {
         piece_x += 16;
+        for(int j = 0; j < q->p1->num_olds; j++)
+        {
+            old_piece_xs[j] += 16;
+        }
     }
 
     SDL_Rect labg_src = {.x = 401, .y = 0, .w = 111 - 32, .h = 64};
@@ -103,11 +122,20 @@ int gfx_drawqs(game_t *g)
     int preview1_x = x + 5 * 16;
     int preview2_x = q->tetromino_only ? x + 20 * 8 : x + 21 * 8;
     int preview3_x = q->tetromino_only ? x + 24 * 8 + 12 : x + 27 * 8;
+    int preview4_x = q->tetromino_only ? x + 28 * 8 + 24 : x + 33 * 8;
     int preview1_y = y - 3 * 16 - (q->game_type && !q->pracdata ? 4 : 0);
     int preview2_y = y - 2 * 8 - (q->game_type && !q->pracdata ? 4 : 0);
     int preview3_y = y - 2 * 8 - (q->game_type && !q->pracdata ? 4 : 0);
+    int preview4_y = y - 2 * 8 - (q->game_type && !q->pracdata ? 4 : 0);
     int hold_x = preview1_x - 8 * 6;
     int hold_y = preview2_y - 12;
+
+    if(q->mode_type == MODE_PENTOMINO)
+    {
+        preview2_x -= 8;
+        preview3_x -= 14;
+        preview4_x -= 20;
+    }
 
     int y_bkp = 0;
     int s_bkp = 0;
@@ -208,6 +236,8 @@ int gfx_drawqs(game_t *g)
                     gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
                 if(q->num_previews > 2)
                     gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                if(q->num_previews > 3)
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
             }
 
             for(i = 0; i < 18; i++)
@@ -267,7 +297,9 @@ int gfx_drawqs(game_t *g)
         else
         {
             if(q->pracdata->invisible)
+            {
                 drawqrsfield_flags |= DRAWFIELD_INVISIBLE;
+            }
 
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
             gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
@@ -279,7 +311,7 @@ int gfx_drawqs(game_t *g)
     else
     {
         if(q->mode_type != MODE_PENTOMINO)
-            gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags | TEN_W_TETRION, x, y);
+            gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags | TEN_W_TETRION/* | DRAWFIELD_JEWELED*/, x, y);
         else
             gfx_drawqrsfield(cs, g->field, q->mode_type, drawqrsfield_flags, x, y);
 
@@ -691,6 +723,9 @@ int gfx_drawqs(game_t *g)
         if(q->num_previews > 2)
             gfx_drawpiece(
                 cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+        if(q->num_previews > 3)
+            gfx_drawpiece(
+                cs, g->field, x, y, q->previews[3], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
 
         if(q->hold)
         {
@@ -738,6 +773,15 @@ int gfx_drawqs(game_t *g)
             if(pd_current->flags & PDBRACKETS)
             {
                 rgba = RGBA_DEFAULT;
+            }
+
+            if(cs->motionBlur)
+            {
+                for(int j = q->p1->num_olds - 1; j >= 0; j--)
+                {
+                    gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, old_piece_xs[j], old_piece_ys[j], 0xFFFFFF00 + (0xC0 / (j + 1)) );
+                    //if(g->frame_counter % 60 == 0) printf("Old piece x #%d: %d\n", j, q->p1->old_xs[j]);
+                }
             }
 
             gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, rgba);

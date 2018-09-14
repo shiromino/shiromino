@@ -1,10 +1,12 @@
 // internal name, relative filename
 
 IMG(title, "title")
+IMG(title_emboss, "title_emboss")
 IMG(tetrion_qs_white, "tetrion_qs_white")
 IMG(tets_bright_qs, "tets_bright_qs")
 IMG(tets_bright_qs_small, "tets_bright_qs_small")
 IMG(tets_dark_qs, "tets_dark_qs")
+IMG(tets_jeweled, "tets_jeweled")
 IMG(playfield_grid, "playfield_grid")
 IMG(playfield_grid_alt, "playfield_grid_alt")
 IMG(font, "font")

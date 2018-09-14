@@ -706,11 +706,13 @@ protected:
 };
 */
 
+typedef struct coreState_ coreState;
+
 class GuiWindow
 // essentially a container for GuiElement with relative positioning, possibly with -oX controls like in a WM
 {
 public:
-    GuiWindow(std::string, BitFont *, std::function<void(GuiInteractable&, GuiEvent&)>, SDL_Rect&);
+    GuiWindow(coreState *origin, std::string, BitFont *, std::function<void(GuiInteractable&, GuiEvent&)>, SDL_Rect&);
     ~GuiWindow();
 
     void draw();
@@ -718,6 +720,8 @@ public:
     // void addText(GuiText&);
     // void addTextField(GuiTextField&);
     // void addButton(GuiButton&);
+
+    std::string& getTitle() {return title;}
 
     void addElement(GuiElement *);
     void addControlElement(GuiInteractable *);
@@ -734,6 +738,7 @@ public:
     void keyPressed(SDL_Keycode);
     void textInput(std::string);
 
+    coreState *origin;
     SDL_Texture *canvas;
     SDL_Rect destRect;
 
@@ -771,8 +776,8 @@ protected:
 class GuiScreen : public GuiWindow
 {
 public:
-    GuiScreen(std::string title, std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
-        : GuiWindow(title, NULL, interactionEventCallback, destRect)
+    GuiScreen(coreState *origin, std::string title, std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
+        : GuiWindow(origin, title, NULL, interactionEventCallback, destRect)
     {
         name = title;
 

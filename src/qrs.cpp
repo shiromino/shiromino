@@ -1749,3 +1749,110 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
 
     return 0;
 }
+
+void qrs_embiggen(piecedef *p)
+{
+    int xs[5] = {-1, -1, -1, -1, -1};
+    int ys[5] = {-1, -1, -1, -1, -1};
+    int k = 0;
+
+    gridsetw(p->rotation_tables[0], p->rotation_tables[0]->w + 1);
+    gridseth(p->rotation_tables[0], p->rotation_tables[0]->h + 1);
+    gridsetw(p->rotation_tables[1], p->rotation_tables[1]->w + 1);
+    gridseth(p->rotation_tables[1], p->rotation_tables[1]->h + 1);
+    gridsetw(p->rotation_tables[2], p->rotation_tables[2]->w + 1);
+    gridseth(p->rotation_tables[2], p->rotation_tables[2]->h + 1);
+    gridsetw(p->rotation_tables[3], p->rotation_tables[3]->w + 1);
+    gridseth(p->rotation_tables[3], p->rotation_tables[3]->h + 1);
+
+    for(int r = 0; r < 4; r++)
+    {
+        for(int i = 0; i < p->rotation_tables[r]->w; i++)
+        {
+            for(int j = 0; j < p->rotation_tables[r]->h; j++)
+            {
+                if(gridgetcell(p->rotation_tables[r], i, j))
+                {
+                    xs[k] = i;
+                    ys[k] = j;
+                    k++;
+                }
+            }
+        }
+
+        int index = rand() % k;
+        int direction = rand() % 4;
+        int tries = 0;
+
+switchStatement:
+        if(tries == 4)
+        {
+            k = 0;
+            continue;
+        }
+
+        switch(direction)
+        {
+            case 0:
+                if(ys[index] == 0 || gridgetcell(p->rotation_tables[r], xs[index], ys[index] - 1))
+                {
+                    direction++;
+                    tries++;
+                    goto switchStatement;
+                }
+                else
+                {
+                    gridsetcell(p->rotation_tables[r], xs[index], ys[index] - 1, 1);
+                }
+
+                break;
+
+            case 1:
+                if(xs[index] == (p->rotation_tables[r]->w - 1) || gridgetcell(p->rotation_tables[r], xs[index] + 1, ys[index]))
+                {
+                    direction++;
+                    tries++;
+                    goto switchStatement;
+                }
+                else
+                {
+                    gridsetcell(p->rotation_tables[r], xs[index] + 1, ys[index], 1);
+                }
+
+                break;
+
+            case 2:
+                if(ys[index] == (p->rotation_tables[r]->h - 1) || gridgetcell(p->rotation_tables[r], xs[index], ys[index] + 1))
+                {
+                    direction++;
+                    tries++;
+                    goto switchStatement;
+                }
+                else
+                {
+                    gridsetcell(p->rotation_tables[r], xs[index], ys[index] + 1, 1);
+                }
+
+                break;
+
+            case 3:
+                if(xs[index] == 0 || gridgetcell(p->rotation_tables[r], xs[index] - 1, ys[index]))
+                {
+                    direction = 0;
+                    tries++;
+                    goto switchStatement;
+                }
+                else
+                {
+                    gridsetcell(p->rotation_tables[r], xs[index] - 1, ys[index], 1);
+                }
+
+                break;
+
+            default:
+                break;
+        }
+
+        k = 0;
+    }
+}

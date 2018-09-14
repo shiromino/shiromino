@@ -523,6 +523,14 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     p->state = PSINACTIVE;
     p->x = 0;
     p->y = 0;
+    p->num_olds = 10;
+    p->old_xs = (int *)malloc(10 * sizeof(int));
+    p->old_ys = (int *)malloc(10 * sizeof(int));
+    for(int i = 0; i < 10; i++)
+    {
+        p->old_xs[i] = 0;
+        p->old_ys[i] = 0;
+    }
     p->orient = FLAT;
 
     q->p1counters = (qrs_counters *)malloc(sizeof(qrs_counters));
@@ -578,6 +586,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     q->previews[0] = NULL;
     q->previews[1] = NULL;
     q->previews[2] = NULL;
+    q->previews[3] = NULL;
     q->hold = NULL;
 
     q->field_x = QRS_FIELD_X;
@@ -589,7 +598,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     q->pentomino_only = 0;
     q->lock_delay_enabled = 1;
     q->lock_protect = 1;
-    q->num_previews = 3;
+    q->num_previews = 4;
     q->hold_enabled = 0;
     q->special_irs = 1;
     q->using_gems = false;
@@ -935,7 +944,7 @@ int qs_game_init(game_t *g)
     qrs_player *p = q->p1;
     struct randomizer *qrand = q->randomizer;
 
-    piece_id next1_id, next2_id, next3_id;
+    piece_id next1_id, next2_id, next3_id, next4_id;
     int rc = 0;
 
     /*SDL_SetRenderTarget(g->origin->screen.renderer, q->field_tex);
@@ -971,12 +980,14 @@ int qs_game_init(game_t *g)
         next1_id = qrand->pull(qrand);
         next2_id = qrand->pull(qrand);
         next3_id = qrand->pull(qrand);
+        next4_id = qrand->pull(qrand);
 
         if(qrand->num_pieces == 7)
         {
             next1_id = ars_to_qrs_id(next1_id);
             next2_id = ars_to_qrs_id(next2_id);
             next3_id = ars_to_qrs_id(next3_id);
+            next4_id = ars_to_qrs_id(next4_id);
         }
     }
 
@@ -985,14 +996,16 @@ int qs_game_init(game_t *g)
         q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 0));
         q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 1));
         q->previews[2] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 2));
+        q->previews[3] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 3));
 
-        q->pracdata->hist_index = 2;
+        q->pracdata->hist_index = 3;
     }
     else
     {
         q->previews[0] = qrspiece_cpy(q->piecepool, next1_id);
         q->previews[1] = qrspiece_cpy(q->piecepool, next2_id);
         q->previews[2] = qrspiece_cpy(q->piecepool, next3_id);
+        q->previews[3] = qrspiece_cpy(q->piecepool, next4_id);
     }
 
     if(q->state_flags & GAMESTATE_BRACKETS)
@@ -1005,6 +1018,9 @@ int qs_game_init(game_t *g)
 
         if(q->previews[2])
             q->previews[2]->flags |= PDBRACKETS;
+
+        if(q->previews[3])
+            q->previews[3]->flags |= PDBRACKETS;
     }
 
     if(q->cur_piece_qrs_id >= 18)
@@ -1018,6 +1034,11 @@ int qs_game_init(game_t *g)
 
     p->def = NULL;
     p->x = SPAWNX_QRS;
+    for(int i = 0; i < p->num_olds; i++)
+    {
+        p->old_xs[i] = p->x;
+        p->old_ys[i] = p->y;
+    }
 
     q->p1->state = PSFALL;
 
@@ -1056,7 +1077,7 @@ int qs_game_pracinit(game_t *g, int val)
     qrs_counters *c = q->p1counters;
 
     struct randomizer *qrand = q->randomizer;
-    piece_id next1_id, next2_id, next3_id;
+    piece_id next1_id, next2_id, next3_id, next4_id;
 
     int i = 0;
     int j = 0;
@@ -1109,18 +1130,22 @@ int qs_game_pracinit(game_t *g, int val)
         piecedef_destroy(q->previews[1]);
     if(q->previews[2])
         piecedef_destroy(q->previews[2]);
+    if(q->previews[3])
+        piecedef_destroy(q->previews[3]);
 
     qrand->init(qrand, NULL);
 
     next1_id = qrand->pull(qrand);
     next2_id = qrand->pull(qrand);
     next3_id = qrand->pull(qrand);
+    next4_id = qrand->pull(qrand);
 
     if(qrand->num_pieces == 7)
     {
         next1_id = ars_to_qrs_id(next1_id);
         next2_id = ars_to_qrs_id(next2_id);
         next3_id = ars_to_qrs_id(next3_id);
+        next4_id = ars_to_qrs_id(next4_id);
     }
 
     if(q->pracdata->usr_seq_len)
@@ -1128,14 +1153,16 @@ int qs_game_pracinit(game_t *g, int val)
         q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 0));
         q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 1));
         q->previews[2] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 2));
+        q->previews[3] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(q->pracdata, 3));
 
-        q->pracdata->hist_index = 2;
+        q->pracdata->hist_index = 3;
     }
     else
     {
         q->previews[0] = qrspiece_cpy(q->piecepool, next1_id);
         q->previews[1] = qrspiece_cpy(q->piecepool, next2_id);
         q->previews[2] = qrspiece_cpy(q->piecepool, next3_id);
+        q->previews[3] = qrspiece_cpy(q->piecepool, next4_id);
     }
 
     if(q->state_flags & GAMESTATE_BRACKETS)
@@ -1148,6 +1175,9 @@ int qs_game_pracinit(game_t *g, int val)
 
         if(q->previews[2])
             q->previews[2]->flags |= PDBRACKETS;
+
+        if(q->previews[3])
+            q->previews[3]->flags |= PDBRACKETS;
     }
 
     if(q->cur_piece_qrs_id >= 18)
@@ -1161,6 +1191,11 @@ int qs_game_pracinit(game_t *g, int val)
 
     p->def = NULL;
     p->x = SPAWNX_QRS;
+    for(int i = 0; i < p->num_olds; i++)
+    {
+        p->old_xs[i] = p->x;
+        p->old_ys[i] = p->y;
+    }
 
     q->p1->state = PSFALL;
     q->level = 0;
@@ -1225,6 +1260,15 @@ int qs_game_frame(game_t *g)
                 break;
         }
     }
+
+    for(int i = q->p1->num_olds - 1; i > 0; i--)
+    {
+        q->p1->old_xs[i] = q->p1->old_xs[i - 1];
+        q->p1->old_ys[i] = q->p1->old_ys[i - 1];
+    }
+
+    q->p1->old_xs[0] = q->p1->x;
+    q->p1->old_ys[0] = q->p1->y;
 
     if(c->init < 120)
     {
@@ -1297,7 +1341,7 @@ int qs_game_frame(game_t *g)
             {
                 if(q->level < 500)
                 {
-                    histrand_set_difficulty(q->randomizer, 20.0);
+                    histrand_set_difficulty(q->randomizer, 15.0);
                 }
                 else
                 {
@@ -2090,6 +2134,12 @@ int qs_process_lockflash(game_t *g)
                     break;
                 case 1:
                     q->singles++;
+                    if(q->mode_type == MODE_PENTOMINO)
+                    {
+                        //qrs_embiggen(q->previews[0]);
+                        //qrs_embiggen(q->previews[1]);
+                        //qrs_embiggen(q->previews[2]);
+                    }
                     break;
                 default:
                     break;
@@ -2353,7 +2403,7 @@ int qs_process_lockflash(game_t *g)
                             }
                             else if(q->section == 10)
                             {
-                                if(q->timer->time > 9 * 60 * 60 + 45 * 60)
+                                if(q->timer->time > 11 * 60 * 60)
                                 {
                                     q->section--;
 
@@ -2730,7 +2780,7 @@ int qs_update_pracdata(coreState *cs)
     switch(q->game_type)
     {
         case 0:
-            q->num_previews = 3;
+            q->num_previews = 4;
             q->randomizer_type = RANDOMIZER_NORMAL;
             if(q->randomizer)
                 randomizer_destroy(q->randomizer);
@@ -3200,22 +3250,27 @@ end_sequence_proc:
         piecedef_destroy(q->previews[1]);
     if(q->previews[2])
         piecedef_destroy(q->previews[2]);
+    if(q->previews[3])
+        piecedef_destroy(q->previews[3]);
 
     q->previews[0] = NULL;
     q->previews[1] = NULL;
     q->previews[2] = NULL;
+    q->previews[3] = NULL;
 
     if(q->pracdata->usr_seq_len)
     {
         q->previews[0] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(d, 0));
         q->previews[1] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(d, 1));
         q->previews[2] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(d, 2));
+        q->previews[3] = qrspiece_cpy(q->piecepool, qs_get_usrseq_elem(d, 3));
     }
     else
     {
         q->previews[0] = qrspiece_cpy(q->piecepool, q->randomizer->lookahead(q->randomizer, 1));
         q->previews[1] = qrspiece_cpy(q->piecepool, q->randomizer->lookahead(q->randomizer, 2));
         q->previews[2] = qrspiece_cpy(q->piecepool, q->randomizer->lookahead(q->randomizer, 3));
+        q->previews[3] = qrspiece_cpy(q->piecepool, q->randomizer->lookahead(q->randomizer, 4));
     }
 
     if(d->brackets)
@@ -3238,6 +3293,9 @@ end_sequence_proc:
 
         if(q->previews[2])
             q->previews[2]->flags |= PDBRACKETS;
+
+        if(q->previews[3])
+            q->previews[3]->flags |= PDBRACKETS;
     }
     else
     {
@@ -3249,6 +3307,9 @@ end_sequence_proc:
 
         if(q->previews[2])
             q->previews[2]->flags &= ~PDBRACKETS;
+
+        if(q->previews[3])
+            q->previews[3]->flags &= ~PDBRACKETS;
     }
 
     return 0;
@@ -3559,13 +3620,14 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
     q->previews[0] = q->previews[1];
     q->previews[1] = q->previews[2];
-    q->previews[2] = qrspiece_cpy(q->piecepool, t);
-    // printf("New piecedef to deal out: %lx with ID %d\n", q->previews[2], t);
+    q->previews[2] = q->previews[3];
+    q->previews[3] = qrspiece_cpy(q->piecepool, t);
+    // printf("New piecedef to deal out: %lx with ID %d\n", q->previews[3], t);
 
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
-        if(q->previews[2])
-            q->previews[2]->flags |= PDBRACKETS;
+        if(q->previews[3])
+            q->previews[3]->flags |= PDBRACKETS;
     }
 
     if(q->previews[0])
@@ -3604,6 +3666,15 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     else
     {
         p->x = SPAWNX_QRS;
+    }
+
+    p->old_xs[0] = p->x;
+    p->old_ys[0] = p->y;
+
+    for(int i = 1; i < p->num_olds; i++)
+    {
+        p->old_xs[i] = p->old_xs[i - 1];
+        p->old_ys[i] = p->old_ys[i - 1];
     }
 
     p->orient = FLAT;

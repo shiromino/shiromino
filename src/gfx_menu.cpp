@@ -73,11 +73,11 @@ int gfx_drawmenu(game_t *g)
         if(menu_is_main(g))
         {
             SDL_Rect titlePNGdest = {.x = 62, .y = 30, .w = 300, .h = 50};
-            // SDL_SetTextureColorMod(cs->assets->title.tex, 255, 0, 0);
-            SDL_SetTextureAlphaMod(cs->assets->title.tex, 150);
-            SDL_SetTextureBlendMode(cs->assets->title.tex, SDL_BLENDMODE_BLEND);
+            SDL_SetTextureColorMod(cs->assets->title_emboss.tex, 180, 180, 255);
+            //SDL_SetTextureAlphaMod(cs->assets->title_emboss.tex, 150);
+            SDL_SetTextureBlendMode(cs->assets->title_emboss.tex, SDL_BLENDMODE_BLEND);
             SDL_SetTextureBlendMode(cs->assets->bg_temp.tex, SDL_BLENDMODE_BLEND);
-            SDL_RenderCopy(cs->screen.renderer, cs->assets->title.tex, NULL, &titlePNGdest);
+            SDL_RenderCopy(cs->screen.renderer, cs->assets->title_emboss.tex, NULL, &titlePNGdest);
         }
         else
         {

@@ -702,6 +702,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
     SDL_Texture *tetrion_qs = cs->assets->tetrion_qs_white.tex;
     SDL_Texture *playfield_grid = cs->assets->playfield_grid_alt.tex;
     SDL_Texture *tets = cs->assets->tets_dark_qs.tex;
+    SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
     SDL_Texture *misc = cs->assets->misc.tex;
 
     SDL_Rect tdest = {.x = x, .y = y - 48, .w = 274, .h = 416};
@@ -854,7 +855,15 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                 }
                 else if(c & QRS_PIECE_GEM)
                 {
-                    src.x = ((c & 0xff) - 1) * 16;
+                    if(flags & DRAWFIELD_JEWELED)
+                    {
+                        src.x = ((c & 0xff) - 19) * 16;
+                    }
+                    else
+                    {
+                        src.x = ((c & 0xff) - 1) * 16;
+                    }
+
                     src.y = 0;
                     dest.x = x + 16 + (i * cellSize);
                     dest.y = y + 32 + ((j - QRS_FIELD_H + 20) * cellSize);
@@ -864,12 +873,27 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                         dest.x += 16;
                     }
 
-                    SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    if(flags & DRAWFIELD_JEWELED)
+                    {
+                        SDL_RenderCopy(cs->screen.renderer, tets_jeweled, &src, &dest);
+                    }
+                    else
+                    {
+                        SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    }
+
                     src.x = 32 * 16;
                 }
                 else
                 {
-                    src.x = ((c & 0xff) - 1) * 16;
+                    if(flags & DRAWFIELD_JEWELED)
+                    {
+                        src.x = ((c & 0xff) - 19) * 16;
+                    }
+                    else
+                    {
+                        src.x = ((c & 0xff) - 1) * 16;
+                    }
                 }
 
                 src.y = 0;
@@ -890,7 +914,16 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                     if(q->state_flags & GAMESTATE_FADING)
                     {
                         if(GET_PIECE_FADE_COUNTER(c) > 10)
-                            SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                        {
+                            if(flags & DRAWFIELD_JEWELED)
+                            {
+                                SDL_RenderCopy(cs->screen.renderer, tets_jeweled, &src, &dest);
+                            }
+                            else
+                            {
+                                SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                            }
+                        }
                         else if(GET_PIECE_FADE_COUNTER(c) > 0)
                         {
                             SDL_SetTextureAlphaMod(tets, GET_PIECE_FADE_COUNTER(c) * 25);
@@ -899,7 +932,16 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                         }
                     }
                     else
-                        SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    {
+                        if(flags & DRAWFIELD_JEWELED)
+                        {
+                            SDL_RenderCopy(cs->screen.renderer, tets_jeweled, &src, &dest);
+                        }
+                        else
+                        {
+                            SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                        }
+                    }
 
                     if((!(c & QRS_PIECE_BRACKETS) || c < 0) && !(flags & DRAWFIELD_NO_OUTLINE))
                     {
@@ -1341,7 +1383,13 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
         flags &= ~DRAWPIECE_BIG;
     }
 
+    if((flags & DRAWPIECE_JEWELED) && (flags & DRAWPIECE_SMALL))
+    {
+        flags &= ~DRAWPIECE_JEWELED;
+    }
+
     SDL_Texture *tets;
+    SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
     SDL_Texture *misc = cs->assets->misc.tex;
 
     //   if(flags & GFX_G2) {
@@ -1380,6 +1428,10 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
 
     g = pd->rotation_tables[orient & 3];
     src.x = pd->qrs_id * (size == 8 ? 8 : 16);
+    if(flags & DRAWPIECE_JEWELED)
+    {
+        src.x -= 18 * 16;
+    }
 
     /*if(flags & DRAWPIECE_IPREVIEW && !(flags & GFX_G2)) {
        y += 8;
@@ -1468,8 +1520,17 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                     }
                 }
                 else
+                {
                     // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[pd->qrs_id] * 0x100) + A(rgba)); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
-                    SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    if(flags & DRAWPIECE_JEWELED)
+                    {
+                        SDL_RenderCopy(cs->screen.renderer, tets_jeweled, &src, &dest);
+                    }
+                    else
+                    {
+                        SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    }
+                }
             }
         }
     }

@@ -10,6 +10,7 @@
 #include "zed_dbg.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     strcpy(cs.calling_path, path);
 
     g123_seeds_init();
+    srand(time(0));
     /*
        g2_output_seed_syncs();
        goto error;
