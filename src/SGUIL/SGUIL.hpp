@@ -706,7 +706,7 @@ protected:
 };
 */
 
-typedef struct coreState_ coreState;
+struct coreState;
 
 class GuiWindow
 // essentially a container for GuiElement with relative positioning, possibly with -oX controls like in a WM

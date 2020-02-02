@@ -1,10 +1,10 @@
-#include "zed_dbg.h"
-#include <SDL2/SDL.h>
-#include <math.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include "Debug.hpp"
+#include "SDL.h"
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include <string>
 #include <fstream>
 #include "bstr_to_std.hpp"
@@ -20,6 +20,7 @@
 
 #include "replay.h"
 
+using namespace Shiro;
 using namespace std;
 
 // clang-format off
@@ -447,7 +448,7 @@ static int find_music(int level, const struct levelmusic *table)
     return music;
 }
 
-static void play_or_halt_music(qrsdata *q, coreState *cs, struct music *first_music, int desired_music)
+static void play_or_halt_music(qrsdata *q, coreState *cs, Shiro::Music** tracks, int desired_music)
 {
     if(q->music == desired_music)
         return;
@@ -457,7 +458,7 @@ static void play_or_halt_music(qrsdata *q, coreState *cs, struct music *first_mu
     if(desired_music == -1)
         Mix_HaltMusic();
     else
-        music_play(first_music + desired_music, cs);
+        tracks[desired_music]->play(cs);
 }
 
 static void update_music(qrsdata *q, coreState *cs)
@@ -465,24 +466,24 @@ static void update_music(qrsdata *q, coreState *cs)
     switch(q->mode_type)
     {
         case MODE_PENTOMINO:
-            play_or_halt_music(q, cs, &cs->assets->track0, find_music(q->level, pentomino_music));
+            play_or_halt_music(q, cs, cs->assets->tracks   , find_music(q->level, pentomino_music));
             break;
 
         case MODE_G2_MASTER:
-            play_or_halt_music(q, cs, &cs->assets->g2_track0, find_music(q->level, g2_master_music));
+            play_or_halt_music(q, cs, cs->assets->g2_tracks, find_music(q->level, g2_master_music));
             break;
 
         case MODE_G2_DEATH:
-            play_or_halt_music(q, cs, &cs->assets->g2_track0, find_music(q->level, g2_death_music));
+            play_or_halt_music(q, cs, cs->assets->g2_tracks, find_music(q->level, g2_death_music));
             break;
 
         case MODE_G3_TERROR:
-            play_or_halt_music(q, cs, &cs->assets->g3_track0, find_music(q->level, g3_terror_music));
+            play_or_halt_music(q, cs, cs->assets->g3_tracks, find_music(q->level, g3_terror_music));
             break;
 
         case MODE_G1_MASTER:
         case MODE_G1_20G:
-            play_or_halt_music(q, cs, &cs->assets->g1_track0, find_music(q->level, g1_music));
+            play_or_halt_music(q, cs, cs->assets->g1_tracks, find_music(q->level, g1_music));
             break;
 
         default:
@@ -945,7 +946,7 @@ int qs_game_init(game_t *g)
     struct randomizer *qrand = q->randomizer;
 
     piece_id next1_id, next2_id, next3_id, next4_id;
-    int rc = 0;
+    //int rc = 0;
 
     /*SDL_SetRenderTarget(g->origin->screen.renderer, q->field_tex);
     SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
@@ -1214,8 +1215,8 @@ int qs_game_quit(game_t *g)
     if(g->field)
         grid_destroy(g->field);
 
-    if(g->data)
-        qrsdata_destroy((qrsdata *)g->data);
+    if(q)
+        qrsdata_destroy(q);
 
     Mix_HaltMusic();
 
@@ -1299,7 +1300,7 @@ int qs_game_frame(game_t *g)
 
                 gfx_pushmessage(cs, "READY", (4 * 16 + 8 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-                sfx_play(&cs->assets->ready);
+                cs->assets->ready->play();
             }
 
             else if(c->init == 60)
@@ -1307,7 +1308,7 @@ int qs_game_frame(game_t *g)
                 fmt->rgba = 0xFF0000FF;
                 gfx_pushmessage(cs, "GO", (6 * 16 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-                sfx_play(&cs->assets->go);
+                cs->assets->go->play();
             }
         }
 
@@ -1672,19 +1673,19 @@ int qs_game_frame(game_t *g)
             {
                 case 1:
                     q->medal_re = BRONZE;
-                    sfx_play(&cs->assets->medal);
+                    cs->assets->medal->play();
                     break;
                 case 2:
                     q->medal_re = SILVER;
-                    sfx_play(&cs->assets->medal);
+                    cs->assets->medal->play();
                     break;
                 case 3:
                     q->medal_re = GOLD;
-                    sfx_play(&cs->assets->medal);
+                    cs->assets->medal->play();
                     break;
                 case 5:
                     q->medal_re = PLATINUM;
-                    sfx_play(&cs->assets->medal);
+                    cs->assets->medal->play();
                     break;
                 default:
                     break;
@@ -1930,7 +1931,7 @@ int qs_process_lineclear(game_t *g)
 
             c->lineclear = 0;
             qrs_dropfield(g);
-            sfx_play(&cs->assets->dropfield);
+            cs->assets->dropfield->play();
 
             switch(q->mode_type)
             {
@@ -2175,7 +2176,7 @@ int qs_process_lockflash(game_t *g)
                                 if(!gradeup)
                                 {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    sfx_play(&cs->assets->gradeup);
+                                    cs->assets->gradeup->play();
                                     gradeup = true;
                                 }
                             }
@@ -2231,7 +2232,7 @@ int qs_process_lockflash(game_t *g)
                                 if(!gradeup)
                                 {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    sfx_play(&cs->assets->gradeup);
+                                    cs->assets->gradeup->play();
                                     gradeup = true;
                                 }
                             }
@@ -2256,7 +2257,7 @@ int qs_process_lockflash(game_t *g)
                             if(old_grade != q->grade)
                             {
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                sfx_play(&cs->assets->gradeup);
+                                cs->assets->gradeup->play();
                             }
                         }
 
@@ -2296,7 +2297,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = BRONZE;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            sfx_play(&cs->assets->medal);
+                            cs->assets->medal->play();
                         }
 
                         break;
@@ -2305,7 +2306,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = SILVER;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            sfx_play(&cs->assets->medal);
+                            cs->assets->medal->play();
                         }
 
                         break;
@@ -2314,7 +2315,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = GOLD;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            sfx_play(&cs->assets->medal);
+                            cs->assets->medal->play();
                         }
 
                         break;
@@ -2323,7 +2324,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = PLATINUM;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            sfx_play(&cs->assets->medal);
+                            cs->assets->medal->play();
                         }
 
                         break;
@@ -2340,7 +2341,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = BRONZE;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                sfx_play(&cs->assets->medal);
+                                cs->assets->medal->play();
                             }
 
                             break;
@@ -2349,7 +2350,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = SILVER;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                sfx_play(&cs->assets->medal);
+                                cs->assets->medal->play();
                             }
 
                             break;
@@ -2358,7 +2359,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = GOLD;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                sfx_play(&cs->assets->medal);
+                                cs->assets->medal->play();
                             }
 
                             break;
@@ -2367,7 +2368,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = PLATINUM;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                sfx_play(&cs->assets->medal);
+                                cs->assets->medal->play();
                             }
 
                             break;
@@ -2377,7 +2378,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-            sfx_play(&cs->assets->lineclear);
+            cs->assets->lineclear->play();
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
@@ -2422,7 +2423,7 @@ int qs_process_lockflash(game_t *g)
                                     {
                                         q->grade = GRADE_M;
                                         q->last_gradeup_timestamp = g->frame_counter;
-                                        sfx_play(&cs->assets->gradeup);
+                                        cs->assets->gradeup->play();
                                     }
                                 }
                             }
@@ -2437,7 +2438,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    sfx_play(&cs->assets->gradeup);
+                                    cs->assets->gradeup->play();
                                 }
 
                                 if(q->playback)
@@ -2520,7 +2521,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_M;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    sfx_play(&cs->assets->gradeup);
+                                    cs->assets->gradeup->play();
                                 }
                             }
                             else if(q->level >= 999)
@@ -2528,7 +2529,7 @@ int qs_process_lockflash(game_t *g)
                                 q->level = 999;
                                 q->grade = GRADE_GM;
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                sfx_play(&cs->assets->gradeup);
+                                cs->assets->gradeup->play();
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)
@@ -2549,7 +2550,7 @@ int qs_process_lockflash(game_t *g)
                             }
 
                             q->last_gradeup_timestamp = g->frame_counter;
-                            sfx_play(&cs->assets->gradeup);
+                            cs->assets->gradeup->play();
 
                             if(q->section == 5)
                             {
@@ -2601,7 +2602,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    sfx_play(&cs->assets->gradeup);
+                                    cs->assets->gradeup->play();
                                 }
 
                                 if(q->playback)
@@ -2617,7 +2618,7 @@ int qs_process_lockflash(game_t *g)
                             break;
                     }
 
-                    sfx_play(&cs->assets->newsection);
+                    cs->assets->newsection->play();
                     if(q->section < 13)
                     {
                         cs->bg = (&cs->assets->bg0 + q->section)->tex;
@@ -2640,7 +2641,7 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G2_DEATH:
                         q->grade = GRADE_GM;
                         q->last_gradeup_timestamp = g->frame_counter;
-                        sfx_play(&cs->assets->gradeup);
+                        cs->assets->gradeup->play();
                         if(q->playback)
                             qrs_end_playback(g);
                         else if(q->recording)
@@ -2661,7 +2662,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->grade = GRADE_GM;
                             q->last_gradeup_timestamp = g->frame_counter;
-                            sfx_play(&cs->assets->gradeup);
+                            cs->assets->gradeup->play();
                         }
 
                         if(q->playback)
@@ -2758,17 +2759,17 @@ int qs_update_pracdata(coreState *cs)
     char name_str[3] = {0, 0, 0};
 
     int piece_seq[3000];
-    int num = 0;
+    std::size_t num = 0;
 
-    int i = 0;
-    int j = 0;
-    int k = 0;
-    int t = 0;
+    std::size_t i = 0;
+    std::size_t j = 0;
+    std::size_t k = 0;
+    std::size_t t = 0;
     unsigned char c;
 
     int rpt_start = 0;
     int rpt_end = 0;
-    int rpt = 0;
+    bool rpt = false;
     int rpt_count = 0;
     int pre_rpt_count = 0;
 
@@ -2920,7 +2921,7 @@ int qs_update_pracdata(coreState *cs)
                     {
                         rpt_count = 1;
                         pre_rpt_count = 0;
-                        rpt = 0;
+                        rpt = false;
                         if(!(piece_seq[num - 1] & SEQUENCE_REPEAT_END))
                             piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
                     }
@@ -2963,7 +2964,7 @@ int qs_update_pracdata(coreState *cs)
                     continue;
 
                 rpt_start = 1;
-                rpt = 1;
+                rpt = true;
                 continue;
             }
 
@@ -3316,25 +3317,25 @@ end_sequence_proc:
 }
 
 // TODO: clean this function up, especially the parser + expander, and use more established terminology
-int qs_get_usrseq_elem(struct pracdata *d, int index)
+int qs_get_usrseq_elem(struct pracdata *d, std::size_t index)
 {
     int *seq = d->usr_sequence;
     int expand[4000];
-    int expand_count = 0;
+    std::size_t expand_count = 0;
 
-    int rpt_start = 0;
-    int rpt_end = 0;
-    int rpt_len = 0;
-    int rpt_count = 0;
-    int rpt = 0;
-    int inf_rpt_len = 0;
-    int inf_start = 0;
+    std::size_t rpt_start = 0;
+    std::size_t rpt_end = 0;
+    std::size_t rpt_len = 0;
+    std::size_t rpt_count = 0;
+    bool rpt = false;
+    std::size_t inf_rpt_len = 0;
+    std::size_t inf_start = 0;
 
     int inf = 0;
 
-    int i = 0;
-    int j = 0;
-    int k = 0;
+    std::size_t i = 0;
+    std::size_t j = 0;
+    std::size_t k = 0;
     int val = 0;
     int complex = 0;
 
@@ -3406,11 +3407,11 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
         val = seq[i];
         if(rpt)
         {
-            /* rpt = 1 implies we encountered the beginning of a grouped subsequence, where groups are assumed
+            /* rpt = true implies we encountered the beginning of a grouped subsequence, where groups are assumed
             to have a rep count specified at the end */
             if(val & SEQUENCE_REPEAT_END || i == d->usr_seq_len - 1)
             {
-                rpt = 0;
+                rpt = false;
                 rpt_end = i;
                 rpt_len = rpt_end - rpt_start + 1; // length of grouped subsequence
                 i++;                               // next element of the sequence is either a repetition count or beyond the end of the sequence
@@ -3458,7 +3459,7 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
                     }
 
                     expand_count += rpt_count * rpt_len;
-                    rpt = 0; // we are done with this grouped subsequence
+                    rpt = false; // we are done with this grouped subsequence
                 }
             }
         }
@@ -3467,7 +3468,7 @@ int qs_get_usrseq_elem(struct pracdata *d, int index)
             if(val & SEQUENCE_REPEAT_START)
             {
                 rpt_start = i;
-                rpt = 1;
+                rpt = true;
                 if(val & SEQUENCE_REPEAT_END || i == d->usr_seq_len - 1)
                 {
                     i--;      // hacky way for the loop to go into the if(rpt) branch and handle these edge cases
@@ -3639,8 +3640,8 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
             int ts = t;
             if(ts >= 18)
                 ts -= 18;
-            struct sfx *sfx = &cs->assets->piece0 + (ts % 7);
-            sfx_play(sfx);
+            Sfx* sfx = cs->assets->pieces[ts % 7];
+            sfx->play();
         }
     }
 

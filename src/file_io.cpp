@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
-#include "zed_dbg.h"
+#include "Debug.hpp"
 #include <SDL2/SDL.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -17,6 +17,7 @@
 
 using namespace std;
 
+#if 0
 struct settings *parse_cfg(const char *filename)
 {
     if(!filename)
@@ -149,6 +150,7 @@ char *get_cfg_string(vector<string>& lines, string label)
 
     return NULL;
 }
+#endif
 
 vector<string> split_file(const char *filename)
 {

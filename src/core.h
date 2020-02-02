@@ -1,5 +1,4 @@
-#ifndef _core_h
-#define _core_h
+#pragma once
 
 #define SIMULATE_QRS   0
 #define SIMULATE_G1    0x0010
@@ -20,16 +19,15 @@
 #include <vector>
 #include <memory>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include "SDL.h"
+#include "SDL_mixer.h"
 #include "SGUIL/SGUIL.hpp"
 #include "GuiScreenManager.hpp"
-
-typedef struct coreState_ coreState;
+#include "PDINI.hpp"
 
 #include "grid.h"
 #include "gfx_structures.h"
-#include "audio.h"
+#include "Audio.hpp"
 
 #include "scores.h"
 #include "player.h"
@@ -49,6 +47,25 @@ enum gameDisplayMode
 
 struct bindings
 {
+    SDL_Keycode left;
+    SDL_Keycode right;
+    SDL_Keycode up;
+    SDL_Keycode down;
+    SDL_Keycode start;
+    SDL_Keycode a;
+    SDL_Keycode b;
+    SDL_Keycode c;
+    SDL_Keycode d;
+    SDL_Keycode escape;
+};
+
+class Keybinds {
+public:
+    Keybinds();
+    Keybinds(const int playerNum);
+
+    bool read(PDINI::INI& ini, const std::string sectionName);
+
     SDL_Keycode left;
     SDL_Keycode right;
     SDL_Keycode up;
@@ -83,6 +100,7 @@ struct keyflags
     Uint8 escape;
 };
 
+// TODO: Refactor lists of assets with a number appended into arrays.
 struct assetdb
 {
     gfx_image ASSET_IMG_NONE = {NULL};
@@ -95,13 +113,19 @@ struct assetdb
 #include "fonts.h"
 #undef FONT
 
-#define MUS(name, filename) struct music name;
+#define MUSIC(name, i) Shiro::Music* name[i];
+#define DEF_ARRAY
 #include "music.h"
-#undef MUS
+#undef DEF_ARRAY
+#undef MUSIC
 
-#define SFX(name) struct sfx name;
+#define SFX(name) Shiro::Sfx* name;
+#define DEF_ARRAY
+#define SFX_ARRAY(name, i) Shiro::Sfx* name[i];
 #include "sfx.h"
 #undef SFX
+#undef DEF_ARRAY
+#undef SFX_ARRAY
 };
 
 struct settings
@@ -121,13 +145,36 @@ struct settings
     const char *player_name;
 };
 
+class Settings {
+public:
+    Settings();
+
+    bool read(const std::string filename);
+
+    Keybinds keybinds;
+    // TODO: Conbinds conbinds;
+
+    float videoScale;
+    int videoStretch;
+    int fullscreen;
+
+    int masterVolume;
+    int sfxVolume;
+    int musicVolume;
+
+    std::string basePath;
+
+    std::string playerName;
+};
+
+
 typedef struct game game_t;
 
 #include "qrs.h"
 
-struct coreState_
+struct coreState
 {
-    coreState_() {}
+    coreState() {}
 
     double fps;        // because tap fps = 61.68
 
@@ -163,7 +210,7 @@ struct coreState_
     int nine_pressed;
 
     struct {
-        char *name;
+        const char *name;
         unsigned int w;
         unsigned int h;
         SDL_Window *window;
@@ -171,10 +218,10 @@ struct coreState_
         //SDL_Texture *target_tex;
     } screen;
 
-    char *cfg_filename;
+    char *iniFilename;
     char *calling_path;
 
-    struct settings *settings;
+    Settings* settings;
     struct assetdb *assets;
     SDL_Texture *bg;
     SDL_Texture *bg_old;
@@ -284,7 +331,7 @@ void coreState_destroy(coreState *cs);
 gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier);
 int load_files(coreState *cs);
 
-int init(coreState *cs, struct settings *s);
+int init(coreState *cs, Settings*s);
 void quit(coreState *cs);
 
 int run(coreState *cs);
@@ -299,5 +346,3 @@ int button_emergency_inactive(coreState *cs);
 int gfx_buttons_input(coreState *cs);
 
 int request_fps(coreState *cs, double fps);
-
-#endif

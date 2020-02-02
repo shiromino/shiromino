@@ -148,7 +148,7 @@ int qs_process_lineare(game_t *g);
 
 int qrs_game_is_inactive(coreState *cs);
 int qs_update_pracdata(coreState *cs);
-int qs_get_usrseq_elem(struct pracdata *d, int index);
+int qs_get_usrseq_elem(struct pracdata *d, std::size_t index);
 
 int qs_initnext(game_t *g, qrs_player *p, unsigned int flags);
 int qs_init_randomize(game_t *g);

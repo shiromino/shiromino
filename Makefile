@@ -19,7 +19,13 @@ ifdef MINGW
 endif
 PKG_CONFIG ?= pkg-config
 
-COMPILER_FLAGS = -Wall -Wno-comment -g `${PKG_CONFIG} --cflags sdl2` -DSQLITE_OMIT_LOAD_EXTENSION
+COMPILER_FLAGS = -Wall -Wno-comment `${PKG_CONFIG} --cflags sdl2` -DSQLITE_OMIT_LOAD_EXTENSION --std=c++17
+ifdef NDEBUG
+	COMPILER_FLAGS += -DNDEBUG -O3
+else
+	COMPILER_FLAGS += -g
+endif
+
 LINK_FLAGS = `${PKG_CONFIG} --libs sdl2` -lSDL2_image -lSDL2_mixer -lsqlite3 -lm -lpthread
 
 CFLAGS = $(COMPILER_FLAGS)

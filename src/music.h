@@ -1,21 +1,28 @@
-// internal name, relative filename
+// array name, array length or array index
 
-MUS(track0, "track0")
-MUS(track1, "track1")
-MUS(track2, "track2")
-MUS(track3, "track3")
+#ifdef DEF_ARRAY
+MUSIC(tracks, 4)
+MUSIC(g1_tracks, 2)
+MUSIC(g2_tracks, 4)
+MUSIC(g3_tracks, 6)
+#else
+MUSIC(tracks, 0)
+MUSIC(tracks, 1)
+MUSIC(tracks, 2)
+MUSIC(tracks, 3)
 
-MUS(g1_track0, "g1/track0")
-MUS(g1_track1, "g1/track1")
+MUSIC(g1_tracks, 0)
+MUSIC(g1_tracks, 1)
 
-MUS(g2_track0, "g2/track0")
-MUS(g2_track1, "g2/track1")
-MUS(g2_track2, "g2/track2")
-MUS(g2_track3, "g2/track3")
+MUSIC(g2_tracks, 0)
+MUSIC(g2_tracks, 1)
+MUSIC(g2_tracks, 2)
+MUSIC(g2_tracks, 3)
 
-MUS(g3_track0, "g3/track0")
-MUS(g3_track1, "g3/track1")
-MUS(g3_track2, "g3/track2")
-MUS(g3_track3, "g3/track3")
-MUS(g3_track4, "g3/track4")
-MUS(g3_track5, "g3/track5")
+MUSIC(g3_tracks, 0)
+MUSIC(g3_tracks, 1)
+MUSIC(g3_tracks, 2)
+MUSIC(g3_tracks, 3)
+MUSIC(g3_tracks, 4)
+MUSIC(g3_tracks, 5)
+#endif

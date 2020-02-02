@@ -1,5 +1,4 @@
-#ifndef __SCOREDB_H_
-#define __SCOREDB_H_
+#pragma once
 
 struct sqlite3;
 typedef struct sqlite3 sqlite3;
@@ -30,5 +29,3 @@ struct replay *scoredb_get_replay_list(struct scoredb *s, struct player *p, int 
 
 void scoredb_get_full_replay(struct scoredb *s, struct replay *out_replay, int replay_id);
 void scoredb_get_full_replay_by_condition(struct scoredb *s, struct replay *out_replay, int mode);
-
-#endif // __SCOREDB_H_

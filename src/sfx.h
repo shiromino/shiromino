@@ -3,14 +3,17 @@ SFX(menu_choose)
 SFX(ready)
 SFX(go)
 
-// the piece sounds must be adjacent and in order because they are addressed by offset:
-SFX(piece0)
-SFX(piece1)
-SFX(piece2)
-SFX(piece3)
-SFX(piece4)
-SFX(piece5)
-SFX(piece6)
+#ifdef DEF_ARRAY
+SFX_ARRAY(pieces, 7)
+#else
+SFX_ARRAY(pieces, 0)
+SFX_ARRAY(pieces, 1)
+SFX_ARRAY(pieces, 2)
+SFX_ARRAY(pieces, 3)
+SFX_ARRAY(pieces, 4)
+SFX_ARRAY(pieces, 5)
+SFX_ARRAY(pieces, 6)
+#endif
 
 SFX(prerotate)
 SFX(land)

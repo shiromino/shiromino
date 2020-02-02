@@ -604,7 +604,7 @@ int menu_input(game_t *g)
         return -1;
 
     coreState *cs = g->origin;
-    struct keyflags *k = &cs->keys;
+    //struct keyflags *k = &cs->keys;
 
     menudata *d = (menudata *)(g->data);
 
@@ -672,8 +672,9 @@ int menu_input(game_t *g)
             if(d->menu[i]->type != MENU_LABEL)
             {
                 d->selection = i;
-                if(cs->pressed.up == 1)
-                    sfx_play(&cs->assets->menu_choose);
+                if(cs->pressed.up == 1) {
+                    cs->assets->menu_choose->play();
+                }
                 if(d->menu[d->selection]->type == MENU_TEXTINPUT)
                 {
                     cs->text_toggle = menu_text_toggle;
@@ -734,8 +735,9 @@ int menu_input(game_t *g)
             if(d->menu[i]->type != MENU_LABEL)
             {
                 d->selection = i;
-                if(cs->pressed.down == 1)
-                    sfx_play(&cs->assets->menu_choose);
+                if(cs->pressed.down == 1) {
+                    cs->assets->menu_choose->play();
+                }
                 if(d->menu[d->selection]->type == MENU_TEXTINPUT)
                 {
                     cs->text_toggle = menu_text_toggle;
@@ -1070,7 +1072,7 @@ int mload_main(game_t *g, int val)
     struct menu_opt *m = NULL;
     struct action_opt_data *d1 = NULL;
     struct multi_opt_data *d2 = NULL;
-    struct game_opt_data *d4 = NULL;
+    //struct game_opt_data *d4 = NULL;
     struct game_multiopt_data *d6 = NULL;
     int i = 0;
 
@@ -1238,7 +1240,7 @@ int mload_main(game_t *g, int val)
     m = d->menu[10];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
-    d2->param = &g->origin->settings->master_volume;
+    d2->param = &g->origin->settings->masterVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
     d2->labels = (bstring *)malloc(101 * sizeof(bstring));
     for(i = 0; i < 101; i++)
@@ -1246,7 +1248,7 @@ int mload_main(game_t *g, int val)
         d2->labels[i] = bformat("%d", i);
         d2->vals[i] = i;
     }
-    d2->selection = g->origin->settings->master_volume;
+    d2->selection = g->origin->settings->masterVolume;
     m->x = 4 * 16;
     m->y = 22 * 16;
     m->value_x = 21 * 16;
@@ -1257,7 +1259,7 @@ int mload_main(game_t *g, int val)
     m = d->menu[11];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
-    d2->param = &g->origin->settings->sfx_volume;
+    d2->param = &g->origin->settings->sfxVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
     d2->labels = (bstring *)malloc(101 * sizeof(bstring));
     for(i = 0; i < 101; i++)
@@ -1265,7 +1267,7 @@ int mload_main(game_t *g, int val)
         d2->labels[i] = bformat("%d", i);
         d2->vals[i] = i;
     }
-    d2->selection = g->origin->settings->sfx_volume;
+    d2->selection = g->origin->settings->sfxVolume;
     m->x = 4 * 16;
     m->y = 23 * 16;
     m->value_x = 21 * 16;
@@ -1276,7 +1278,7 @@ int mload_main(game_t *g, int val)
     m = d->menu[12];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
-    d2->param = &g->origin->settings->mus_volume;
+    d2->param = &g->origin->settings->musicVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
     d2->labels = (bstring *)malloc(101 * sizeof(bstring));
     for(i = 0; i < 101; i++)
@@ -1284,7 +1286,7 @@ int mload_main(game_t *g, int val)
         d2->labels[i] = bformat("%d", i);
         d2->vals[i] = i;
     }
-    d2->selection = g->origin->settings->mus_volume;
+    d2->selection = g->origin->settings->musicVolume;
     m->x = 4 * 16;
     m->y = 24 * 16;
     m->value_x = 21 * 16;

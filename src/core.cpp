@@ -1,6 +1,6 @@
 #include "core.h"
 
-#include "zed_dbg.h"
+#include "Debug.hpp"
 #include "file_io.h"
 #include "gfx.h"
 #include "gfx_structures.h"
@@ -9,17 +9,18 @@
 #include "game_qs.h"
 #include "replay.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include <string>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include "SDL.h"
+#include "SDL_image.h"
 #include "SGUIL/SGUIL.hpp"
 #include "GuiGridCanvas.hpp"
 #include "GuiScreenManager.hpp"
@@ -30,7 +31,9 @@
 
 #define PENTOMINO_C_REVISION_STRING "rev 1.2"
 
+using namespace Shiro;
 using namespace std;
+using namespace PDINI;
 
 BindableVariables bindables;
 
@@ -44,7 +47,7 @@ BindableVariables bindables;
 
 int nanosleep(struct timespec *t, void *unused)
 {
-    LARGE_INTEGER ft = {.QuadPart = -(t->tv_nsec / 100)};
+    LARGE_INTEGER ft = {.QuadPart = -(t->tv_sec * 10000000 + t->tv_nsec / 100)};
 
     const HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
     SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
@@ -100,6 +103,170 @@ struct bindings defaultkeybinds[2] = {
 struct settings defaultsettings = {&defaultkeybinds[0], 1, true, false, 50, 100, 100, NULL};
 
 /* </constants> */
+
+Keybinds::Keybinds() : Keybinds(0) {}
+
+Keybinds::Keybinds(int playerNum) {
+    switch (playerNum) {
+    default:
+    case 0:
+        left = SDLK_LEFT;
+        right = SDLK_RIGHT;
+        up = SDLK_UP;
+        down = SDLK_DOWN;
+        start = SDLK_RETURN;
+        a = SDLK_f;
+        b = SDLK_d;
+        c = SDLK_s;
+        d = SDLK_a;
+        escape = SDLK_ESCAPE;
+        break;
+
+    case 1:    
+        left = SDLK_j;
+        right = SDLK_l;
+        up = SDLK_i;
+        down = SDLK_k;
+        start = SDLK_TAB;
+        a = SDLK_r;
+        b = SDLK_e;
+        c = SDLK_w;
+        d = SDLK_q;
+        escape = SDLK_F11;
+        break;
+    }
+}
+
+static array<string, 10> keybindNames = {
+    "LEFT",
+    "RIGHT",
+    "UP",
+    "DOWN",
+    "START",
+    "A",
+    "B",
+    "C",
+    "D",
+    "ESCAPE"
+};
+
+bool Keybinds::read(INI& ini, const string sectionName) {
+    bool defaultUsed = false;
+    SDL_Keycode* const keycodes[] = {&left, &right, &up, &down, &start, &a, &b, &c, &d, &escape};
+    SDL_Keycode* const* keycode = keycodes;
+    for (const auto keybindName : keybindNames) {
+        string keyName;
+        if (!ini.get(sectionName, keybindName, keyName) || SDL_GetKeyFromName(keyName.c_str()) == SDLK_UNKNOWN) {
+            log_warn("Binding for %s is invalid", keybindName.c_str());
+            defaultUsed = true;
+        }
+        else {
+            **keycode = SDL_GetKeyFromName(keyName.c_str());
+        }
+        keycode++;
+    }
+    return defaultUsed;
+}
+
+Settings::Settings() :
+    videoScale(1.0f),
+    videoStretch(1),
+    fullscreen(0),
+    masterVolume(80),
+    sfxVolume(100),
+    musicVolume(90),
+    basePath("."),
+    playerName("ARK") {}
+
+bool Settings::read(string filename) {
+    INI ini;
+    auto readStatus = ini.read(filename);
+    if (readStatus.second > 0) {
+        log_warn("Error reading configuation INI \"%s\" on line %z", filename.c_str(), readStatus.second);
+    }
+    if (!readStatus.first) {
+        log_warn("Failed opening configuration INI \"%s\"", filename.c_str());
+        return true;
+    }
+
+    bool defaultUsed = keybinds.read(ini, "P1CONTROLS");
+
+    // [PATHS]
+    string basePath;
+    if (!ini.get("PATHS", "BASE_PATH", basePath)) {
+        char *basePath = SDL_GetBasePath();
+        this->basePath = basePath;
+        SDL_free(basePath);
+        defaultUsed = true;
+    }
+    else {
+        this->basePath = basePath;
+    }
+
+    // TODO: Add support for player 2.
+    // [P1CONTROLS]
+    if (this->keybinds.read(ini, "P1CONTROLS")) {
+        defaultUsed = true;
+    }
+
+    // [AUDIO]
+    //value = ini.get("AUDIO", "MASTERVOLUME");
+    int volume;
+    if (!ini.get("AUDIO", "MASTERVOLUME", volume) || (volume < 0 && volume > 100)) {
+        defaultUsed = true;
+    }
+    else {
+        this->masterVolume = volume;
+    }
+    if (!ini.get("AUDIO", "SFXVOLUME", volume) || (volume < 0 && volume > 100)) {
+        defaultUsed = true;
+    }
+    else {
+        this->sfxVolume = volume;
+    }
+    if (!ini.get("AUDIO", "MUSICVOLUME", volume) || (volume < 0 && volume > 100)) {
+        defaultUsed = true;
+    }
+    else {
+        this->musicVolume = volume;
+    }
+
+    // [SCREEN]
+    float videoScale;
+    if (!ini.get("SCREEN", "VIDEOSCALE", videoScale) || videoScale <= 0.0f) {
+        defaultUsed = true;
+    }
+    else {
+        this->videoScale = videoScale;
+    }
+    
+    int videoStretch;
+    if (!ini.get("SCREEN", "VIDEOSTRETCH", videoStretch)) {
+        defaultUsed = true;
+    }
+    else {
+        this->videoStretch = videoStretch;
+    }
+    
+    int fullscreen;
+    if (!ini.get("SCREEN", "FULLSCREEN", fullscreen)) {
+        defaultUsed = true;
+    }
+    else {
+        this->fullscreen = fullscreen;
+    }
+
+    // [ACCOUNT]
+    string playerName;
+    if (ini.get("ACCOUNT", "PLAYERNAME", playerName)) {
+        this->playerName = playerName;
+    }
+    else {
+        defaultUsed = true;
+    }
+
+    return defaultUsed;
+}
 
 int is_left_input_repeat(coreState *cs, int delay)
 {
@@ -159,8 +326,6 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
     if(!directory)
         return NULL;
 
-    int i = 0;
-
     gfx_animation *a = (gfx_animation *)malloc(sizeof(gfx_animation));
     a->frame_multiplier = frame_multiplier;
     a->x = 0;
@@ -191,7 +356,7 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
 
     // TODO: convert to new asset system - create an animation asset
     /*
-    for(i = 0; i < 1000; i++) {
+    for(int i = 0; i < 1000; i++) {
        full_path = bformat("%s/%05d", directory, i);
        if(load_asset(cs, ASSET_IMG, (char *)(full_path->data)) < 0) {
           a->num_frames = i;
@@ -242,7 +407,7 @@ void coreState_initialize(coreState *cs)
     cs->seven_pressed = 0;
     cs->nine_pressed = 0;
 
-    cs->assets = (assetdb *)malloc(sizeof(struct assetdb));
+    cs->assets = new assetdb;
 
     cs->joystick = NULL;
     cs->prev_keys_raw = (struct keyflags){0};
@@ -312,16 +477,7 @@ void coreState_destroy(coreState *cs)
         return;
     }
 
-    if(cs->settings != &defaultsettings && cs->settings)
-    {
-        if(cs->settings->keybinds)
-            free(cs->settings->keybinds);
-
-        if(cs->settings->home_path)
-            free(cs->settings->home_path);
-
-        free(cs->settings);
-    }
+    delete cs->settings;
 
     if(cs->pracdata_mirror)
         pracdata_destroy(cs->pracdata_mirror);
@@ -329,7 +485,7 @@ void coreState_destroy(coreState *cs)
 
 static void load_image(coreState *cs, gfx_image *img, const char *filename)
 {
-    string path = make_path(cs->settings->home_path, "gfx", filename, "");
+    string path = make_path(cs->settings->basePath.c_str(), "gfx", filename, "");
     if(!img_load(img, (const char *)path.c_str(), cs))
     {
         log_warn("Failed to load image '%s'", filename);
@@ -347,38 +503,40 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
 
 static int load_asset_volume(coreState *cs, const char *filename)
 {
-    string path = make_path(cs->settings->home_path, "audio", "volume", ".cfg");
+    string path = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".cfg");
     vector<string> lines = split_file(path.c_str());
 
     return get_asset_volume(lines, string{filename});
 }
 
-static void load_sfx(coreState *cs, struct sfx *s, const char *filename)
+static void load_sfx(coreState* cs, Sfx** s, const char* filename)
 {
-    string path = make_path(cs->settings->home_path, "audio", filename, "");
-    if(!sfx_load( s, (const char *)path.c_str() ))
-    {
+    string path = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
+    *s = new Sfx();
+    if (!(*s)->load(path)) {
         log_warn("Failed to load sfx '%s'", filename);
     }
 
-    s->volume = load_asset_volume(cs, filename);
+    (*s)->volume = load_asset_volume(cs, filename);
 }
 
-static void load_music(coreState *cs, struct music *m, const char *filename)
+static void load_music(coreState* cs, Music** m, const char* filename)
 {
-    string path = make_path(cs->settings->home_path, "audio", filename, "");
-    if(!music_load( m, (const char *)path.c_str() ))
-    {
+    string path = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
+    *m = new Music();
+    if (!(*m)->load(path)) {
         log_warn("Failed to load music '%s'", filename);
     }
 
-    m->volume = load_asset_volume(cs, filename);
+    (*m)->volume = load_asset_volume(cs, filename);
 }
 
 int load_files(coreState *cs)
 {
     if(!cs)
         return -1;
+
+        // image assets
 
 #define IMG(name, filename) load_image(cs, &cs->assets->name, filename);
 #include "images.h"
@@ -391,12 +549,14 @@ int load_files(coreState *cs)
 
         // audio assets
 
-#define MUS(name, filename) load_music(cs, &cs->assets->name, filename);
+#define MUSIC(name, i) load_music(cs, &cs->assets->name[i], #name #i);
 #include "music.h"
-#undef MUS
+#undef MUSIC
 
 #define SFX(name) load_sfx(cs, &cs->assets->name, #name);
+#define SFX_ARRAY(name, i) load_sfx(cs, &cs->assets->name[i], #name #i);
 #include "sfx.h"
+#undef SFX_ARRAY
 #undef SFX
 
     /*
@@ -414,62 +574,27 @@ int load_files(coreState *cs)
     return 0;
 }
 
-int init(coreState *cs, struct settings *s)
+int init(coreState *cs, Settings* settings)
 {
-    {
+    try {
         if(!cs)
             return -1;
 
-        int n = 0;
-        char *name = NULL;
+        const char *name = NULL;
         // SDL_Texture *blank = NULL;
 
         // copy settings into main game structure
 
-        if(s)
-        {
-            cs->settings = (struct settings *)malloc(sizeof(struct settings));
-            // cs->settings->keybinds[1] = bindings_create(malloc(sizeof(struct bindings));
-            if(s->keybinds)
-                cs->settings->keybinds = bindings_copy(s->keybinds);
-            else
-                cs->settings->keybinds = bindings_copy(&defaultkeybinds[0]);
-            // bindings_copy(s->keybinds[1], &defaultkeybinds[1]);
-            cs->settings->video_scale = s->video_scale;
-            cs->settings->video_stretch = s->video_stretch;
-            cs->settings->fullscreen = s->fullscreen;
-            cs->settings->sfx_volume = s->sfx_volume;
-            cs->settings->mus_volume = s->mus_volume;
-            cs->settings->master_volume = s->master_volume;
-            cs->settings->player_name = s->player_name;
-
-            cs->sfx_volume = s->sfx_volume;
-            cs->mus_volume = s->mus_volume;
-            cs->master_volume = s->master_volume;
-            if(s->home_path)
-            {
-                n = strlen(s->home_path);
-                if(s->home_path[n - 1] == '/' || s->home_path[n - 1] == '\\')
-                {
-                    cs->settings->home_path = (char *)malloc(strlen(s->home_path));
-                    strncpy(cs->settings->home_path, s->home_path, n - 1);
-                    cs->settings->home_path[n - 1] = '\0';
-                }
-                else
-                {
-                    cs->settings->home_path = (char *)malloc(strlen(s->home_path) + 1);
-                    strcpy(cs->settings->home_path, s->home_path);
-                }
-
-                printf("Home path is: %s\n", cs->settings->home_path);
-                if(chdir(cs->settings->home_path) < 0) // chdir so relative paths later on make sense
-                    log_err("chdir() returned failure");
+        if(settings) {
+            cs->settings = settings;
+            printf("Base path is: %s\n", cs->settings->basePath.c_str());
+            if(chdir(cs->settings->basePath.c_str()) < 0) { // chdir so relative paths later on make sense
+                log_err("chdir() returned failure");
             }
-            else
-                cs->settings->home_path = NULL;
         }
-        else
-            cs->settings = &defaultsettings;
+        else {
+            cs->settings = new Settings();
+        }
 
         check(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
               "SDL_Init: Error: %s\n",
@@ -503,8 +628,8 @@ int init(coreState *cs, struct settings *s)
             }
         }
 
-        cs->screen.w = cs->settings->video_scale * 640;
-        cs->screen.h = cs->settings->video_scale * 480;
+        cs->screen.w = cs->settings->videoScale * 640;
+        cs->screen.h = cs->settings->videoScale * 480;
         unsigned int w = cs->screen.w;
         unsigned int h = cs->screen.h;
         name = cs->screen.name;
@@ -527,7 +652,7 @@ int init(coreState *cs, struct settings *s)
         }
 
         SDL_RenderSetLogicalSize(cs->screen.renderer, 640, 480);
-        if(!cs->settings->video_stretch)
+        if(!cs->settings->videoStretch)
         {
             SDL_RenderSetIntegerScale(cs->screen.renderer, SDL_TRUE);
         }
@@ -558,7 +683,7 @@ int init(coreState *cs, struct settings *s)
         // TODO: Configurable scores.db path
         static const char scoredb_file[] = "scores.db";
         scoredb_init(&cs->scores, scoredb_file);
-        scoredb_create_player(&cs->scores, &cs->player, cs->settings->player_name);
+        scoredb_create_player(&cs->scores, &cs->player, cs->settings->playerName.c_str());
 
         /*
         static const char archive_file[] = "archive.db";
@@ -575,9 +700,9 @@ int init(coreState *cs, struct settings *s)
 
         return 0;
     }
-
-error:
-    return 1;
+    catch (const logic_error& error) {
+        return 1;
+    }
 }
 
 void quit(coreState *cs)
@@ -592,15 +717,22 @@ void quit(coreState *cs)
 #include "images.h"
 #undef IMG
 
-#define MUS(name, filename) music_destroy(&cs->assets->name);
-#include "music.h"
-#undef MUS
+    // Ensures the BitFont destructor doesn't double-destroy the sheets.
+#define FONT(name, sheetName, outlineSheetName, charW, charH) cs->assets->name.isValid = false;
+    #include "fonts.h"
+#undef FONT
 
-#define SFX(name) sfx_destroy(&cs->assets->name);
+#define MUSIC(name, i) delete cs->assets->name[i];
+#include "music.h"
+#undef MUSIC
+
+#define SFX(name) delete cs->assets->name;
+#define SFX_ARRAY(name, i) delete cs->assets->name[i];
 #include "sfx.h"
+#undef SFX_ARRAY
 #undef SFX
 
-        free(cs->assets);
+        delete cs->assets;
     }
 
     if(cs->screen.renderer)
@@ -775,18 +907,18 @@ int run(coreState *cs)
 
         SDL_RenderPresent(cs->screen.renderer);
 
-        if(cs->sfx_volume != cs->settings->sfx_volume)
+        if(cs->sfx_volume != cs->settings->sfxVolume)
         {
-            cs->sfx_volume = cs->settings->sfx_volume;
+            cs->sfx_volume = cs->settings->sfxVolume;
             Mix_Volume(-1, (cs->sfx_volume * cs->master_volume) / 100);
         }
 
-        if(cs->mus_volume != cs->settings->mus_volume)
-            cs->mus_volume = cs->settings->mus_volume;
+        if(cs->mus_volume != cs->settings->musicVolume)
+            cs->mus_volume = cs->settings->musicVolume;
 
-        if(cs->master_volume != cs->settings->master_volume)
+        if(cs->master_volume != cs->settings->masterVolume)
         {
-            cs->master_volume = cs->settings->master_volume;
+            cs->master_volume = cs->settings->masterVolume;
             Mix_Volume(-1, (cs->sfx_volume * cs->master_volume) / 100);
         }
 
@@ -842,16 +974,13 @@ int procevents(coreState *cs, GuiWindow& wind)
     if(!cs)
         return -1;
 
-    struct bindings *kb = NULL;
     struct keyflags *k = NULL;
-    struct keyflags joyflags
-    {
-        0
-    };
+    //struct keyflags joyflags{0};
     SDL_Joystick *joy = cs->joystick;
 
     SDL_Event event;
     SDL_Keycode kc;
+    Keybinds& kb = cs->settings->keybinds;
 
     Uint8 rc = 0;
 
@@ -1053,41 +1182,37 @@ int procevents(coreState *cs, GuiWindow& wind)
 
                 kc = event.key.keysym.sym;
 
-                if(cs->settings->keybinds)
-                {
-                    k = &cs->keys_raw;
-                    kb = cs->settings->keybinds;
+                k = &cs->keys_raw;
 
-                    if(kc == kb->left)
-                        k->left = 1;
+                if(kc == kb.left)
+                    k->left = 1;
 
-                    if(kc == kb->right)
-                        k->right = 1;
+                if(kc == kb.right)
+                    k->right = 1;
 
-                    if(kc == kb->up)
-                        k->up = 1;
+                if(kc == kb.up)
+                    k->up = 1;
 
-                    if(kc == kb->down)
-                        k->down = 1;
+                if(kc == kb.down)
+                    k->down = 1;
 
-                    if(kc == kb->start)
-                        k->start = 1;
+                if(kc == kb.start)
+                    k->start = 1;
 
-                    if(kc == kb->a)
-                        k->a = 1;
+                if(kc == kb.a)
+                    k->a = 1;
 
-                    if(kc == kb->b)
-                        k->b = 1;
+                if(kc == kb.b)
+                    k->b = 1;
 
-                    if(kc == kb->c)
-                        k->c = 1;
+                if(kc == kb.c)
+                    k->c = 1;
 
-                    if(kc == kb->d)
-                        k->d = 1;
+                if(kc == kb.d)
+                    k->d = 1;
 
-                    if(kc == kb->escape)
-                        k->escape = 1;
-                }
+                if(kc == kb.escape)
+                    k->escape = 1;
 
                 if(kc == SDLK_v && SDL_GetModState() & KMOD_CTRL)
                 {
@@ -1198,7 +1323,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                     {
                         cs->settings->fullscreen = false;
                         SDL_SetWindowFullscreen(cs->screen.window, 0);
-                        SDL_SetWindowSize(cs->screen.window, 640.0*cs->settings->video_scale, 480.0*cs->settings->video_scale);
+                        SDL_SetWindowSize(cs->screen.window, 640.0*cs->settings->videoScale, 480.0*cs->settings->videoScale);
                     }
                     else
                     {
@@ -1226,7 +1351,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
-                        cs->settings->video_scale = 1;
+                        cs->settings->videoScale = 1;
                         SDL_SetWindowSize(cs->screen.window, 640, 480);
                     }
 
@@ -1237,7 +1362,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
-                        cs->settings->video_scale = 2;
+                        cs->settings->videoScale = 2;
                         SDL_SetWindowSize(cs->screen.window, 2*640, 2*480);
                     }
 
@@ -1248,7 +1373,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
-                        cs->settings->video_scale = 3;
+                        cs->settings->videoScale = 3;
                         SDL_SetWindowSize(cs->screen.window, 3*640, 3*480);
                     }
 
@@ -1259,7 +1384,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
-                        cs->settings->video_scale = 4;
+                        cs->settings->videoScale = 4;
                         SDL_SetWindowSize(cs->screen.window, 4*640, 4*480);
                     }
 
@@ -1270,7 +1395,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
-                        cs->settings->video_scale = 5;
+                        cs->settings->videoScale = 5;
                         SDL_SetWindowSize(cs->screen.window, 5*640, 5*480);
                     }
 
@@ -1297,41 +1422,37 @@ int procevents(coreState *cs, GuiWindow& wind)
             case SDL_KEYUP:
                 kc = event.key.keysym.sym;
 
-                if(cs->settings->keybinds)
-                {
-                    k = &cs->keys_raw;
-                    kb = cs->settings->keybinds;
+                k = &cs->keys_raw;
 
-                    if(kc == kb->left)
-                        k->left = 0;
+                if(kc == kb.left)
+                    k->left = 0;
 
-                    if(kc == kb->right)
-                        k->right = 0;
+                if(kc == kb.right)
+                    k->right = 0;
 
-                    if(kc == kb->up)
-                        k->up = 0;
+                if(kc == kb.up)
+                    k->up = 0;
 
-                    if(kc == kb->down)
-                        k->down = 0;
+                if(kc == kb.down)
+                    k->down = 0;
 
-                    if(kc == kb->start)
-                        k->start = 0;
+                if(kc == kb.start)
+                    k->start = 0;
 
-                    if(kc == kb->a)
-                        k->a = 0;
+                if(kc == kb.a)
+                    k->a = 0;
 
-                    if(kc == kb->b)
-                        k->b = 0;
+                if(kc == kb.b)
+                    k->b = 0;
 
-                    if(kc == kb->c)
-                        k->c = 0;
+                if(kc == kb.c)
+                    k->c = 0;
 
-                    if(kc == kb->d)
-                        k->d = 0;
+                if(kc == kb.d)
+                    k->d = 0;
 
-                    if(kc == kb->escape)
-                        k->escape = 0;
-                }
+                if(kc == kb.escape)
+                    k->escape = 0;
 
                 if(kc == SDLK_LEFT)
                     cs->left_arrow_das = 0;
@@ -1741,7 +1862,7 @@ int gfx_buttons_input(coreState *cs)
     int scale = 1;
     if(cs->settings)
     {
-        scale = cs->settings->video_scale;
+        scale = cs->settings->videoScale;
     }
 
     for(i = 0; i < cs->gfx_buttons_max; i++)

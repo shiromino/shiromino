@@ -1,0 +1,73 @@
+/*  print.css - MoinMoin Default Styles
+
+Copyright (c) 2001, 2002, 2003 by Juergen Hermann
+Copyright (c) 2008 - 2009 by Roger Haase - minor changes for fixedleft theme
+License: GNU GPL
+
+*/
+
+/* content styles */
+
+html {
+	font-family: Times, serif;
+	font-size: 12pt;
+}
+
+body {
+    /* Give about 3.4cm in Mozilla/Firefox and about 2.2cm in Safari */
+	margin: 1.5cm;
+}
+
+a, a:visited, a.nonexistent, a.badinterwiki {
+	color: black;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+.info a {
+    color: gray;
+}
+
+pre {
+	font-size: 10pt;
+}
+
+a.interwiki:before, a.badinterwiki:before {
+	content: attr(title) ":";
+}
+
+a.interwiki img, a.badinterwiki img {
+	display: none;
+}
+
+.footnotes div {
+	width: 5em;
+	border-top: 1pt solid gray;
+}
+
+/* user interface styles */
+
+#header, #sidebar, #footer, #timings, #credits, #interwiki, #pagelocation {
+	display: none;
+}
+
+/* mods for fixed left theme start here  */
+
+/* subdue the local wiki header and footer information. */
+.page-footerOne, .page-footerTwo, .page-headerOne, .page-headerTwo{
+    font-size: .7em;
+    color: gray; 
+	float: left;
+    margin-top: 2em;
+}
+
+div#altWikiNavMenu, div#sidebarWikiMenu {
+	display: none;
+}
+/* override possible javascript styling for left margin */
+div#wikipagecontent {
+    margin: 0px !important;  
+}

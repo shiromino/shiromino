@@ -500,7 +500,7 @@ int qrs_input(game_t *g)
     int scale = 1;
     if(cs->settings)
     {
-        scale = cs->settings->video_scale;
+        scale = cs->settings->videoScale;
     }
 
     init = q->p1counters->init;
@@ -1256,7 +1256,7 @@ int qrs_irs(game_t *g)
         p->orient = 0;
     else if(direction)
     {
-        sfx_play(&g->origin->assets->prerotate);
+        g->origin->assets->prerotate->play();
     }
 
     return 0;
@@ -1476,7 +1476,7 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
 
             if(p->state & PSFALL && grav != 28 * 256)
             {
-                sfx_play(&g->origin->assets->land);
+                g->origin->assets->land->play();
             }
             p->state &= ~PSFALL;
             p->state |= PSLOCK;
@@ -1529,7 +1529,7 @@ int qrs_lock(game_t *g, qrs_player *p)
 
     p->state &= ~(PSLOCK | PSFALL);
     // p->state |= PSPRELOCKFLASH1;
-    sfx_play(&g->origin->assets->lock);
+    g->origin->assets->lock->play();
 
     return 0;
 }

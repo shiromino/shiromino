@@ -209,13 +209,13 @@ struct pracdata
 
     int usr_sequence[2000];
     int usr_seq_expand[4000];
-    int usr_seq_len;
-    int usr_seq_expand_len;
+    std::size_t usr_seq_len;
+    std::size_t usr_seq_expand_len;
 
     grid_t **usr_field_undo;
     grid_t **usr_field_redo;
-    int usr_field_undo_len;
-    int usr_field_redo_len;
+    std::size_t usr_field_undo_len;
+    std::size_t usr_field_redo_len;
     bool field_edit_in_progress;
 
     grid_t *usr_field;

@@ -41,7 +41,7 @@ struct text_formatting
     float size_multiplier;
     float line_spacing;
     enum text_alignment align;
-    unsigned int wrap_length;
+    std::size_t wrap_length;
 };
 
 typedef struct

@@ -74,7 +74,7 @@ int gfx_drawqs(game_t *g)
 
     SDL_Texture *font = cs->assets->font.tex;
     SDL_Texture *tets_dark_qs = cs->assets->tets_dark_qs.tex;
-    SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
+    //SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
 
     SDL_Rect palettesrc = {.x = 0, .y = 0, .w = 16, .h = 16};
     SDL_Rect palettedest = {.x = FIELD_EDITOR_PALETTE_X, .y = FIELD_EDITOR_PALETTE_Y, .w = 16, .h = 16};

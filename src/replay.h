@@ -1,12 +1,11 @@
-#ifndef __REPLAY_H_
-#define __REPLAY_H_
+#pragma once
 
 #define NO_REPLAY -1
 
 #define MAX_KEYFLAGS 72000 // 20 minutes of inputs (@ 60 fps)
 
-#include <time.h>
-#include <stdint.h>
+#include <ctime>
+#include <cstdint>
 
 #include "core.h" // TODO: Extract keyflags from core.h
 
@@ -44,5 +43,3 @@ void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, s
 
 uint8_t* generate_raw_replay(struct replay *r, size_t *out_replayLength);
 void dispose_raw_replay(void* data);
-
-#endif // __REPLAY_H_

@@ -1,5 +1,4 @@
-#ifndef _guigridcanvas_hpp
-#define _guigridcanvas_hpp
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -128,5 +127,3 @@ static inline void GuiGridCanvas_callPaletteObserver(GuiGridCanvas& obj, Bindabl
 {
     obj.readPaletteSelection(bv);
 }
-
-#endif

@@ -724,9 +724,11 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
     int z = cs->p1game->frame_counter;
 
+    /*
     int r = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)(z % 3000) / 3000.0)));
     int g = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z - 1000) % 3000) / 3000.0)));
     int b = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z - 2000) % 3000) / 3000.0)));
+    */
 
     // SDL_SetTextureAlphaMod(misc, 180);
 
@@ -1197,14 +1199,14 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
         SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->outline_rgba));
     }
 
-    SDL_Rect src = {.x = 0, .y = 0, .w = font->char_w, .h = font->char_h};
-    SDL_Rect dest = {.x = x, .y = y, .w = fmt->size_multiplier * (float)font->char_w, .h = fmt->size_multiplier * (float)font->char_h};
+    SDL_Rect src = {.x = 0, .y = 0, .w = (int)font->char_w, .h = (int)font->char_h};
+    SDL_Rect dest = {.x = x, .y = y, .w = (int)(fmt->size_multiplier * (float)font->char_w), .h = (int)(fmt->size_multiplier * (float)font->char_h)};
 
-    int i = 0;
+    std::size_t i = 0;
 
-    int linefeeds = 0;
-    int last_wrap_line_pos = 0;
-    int last_wrap_pos = 0;
+    std::size_t linefeeds = 0;
+    std::size_t last_wrap_line_pos = 0;
+    std::size_t last_wrap_pos = 0;
 
     struct bstrList *lines = bsplit(text, '\n');
 

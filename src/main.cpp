@@ -1,13 +1,13 @@
 /*
-   main.c - handle command line arguments, load
-   game settings, manage main data structures
+   main.cpp - handle command line arguments, load game settings, manage main
+   data structures
 */
 
 #include "core.h"
 #include "file_io.h"
 #include "random.h"
 
-#include "zed_dbg.h"
+#include "Debug.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -28,11 +28,11 @@ int main(int argc, char *argv[])
 {
     coreState cs;
     coreState_initialize(&cs);
-    struct settings *s = NULL;
+    Settings* settings = new Settings();
     const char path[] = ".";
 
-    string calling_path {path};
-    string cfg = "game.cfg";
+    string callingPath {path};
+    string iniFilename = "game.ini";
     string slash = "/";
     string cfg_filename;
 
@@ -43,75 +43,71 @@ int main(int argc, char *argv[])
 
     g123_seeds_init();
     srand(time(0));
-    /*
-       g2_output_seed_syncs();
-       goto error;
+    #if 0
+    g2_output_seed_syncs();
+    goto error;
 
-       g2_output_sync_histogram();
-       goto error;
-    */
-    switch(argc)
-    {
-        case 1:
-            if(!file_exists(cfg.c_str()))
-            {
-                log_err("Couldn't find configuration file , aborting\n");
-                goto error;
-            }
+    g2_output_sync_histogram();
+    goto error;
+    #endif
 
-            s = parse_cfg(cfg.c_str());
-            if(!s)
-            {
-                log_info("Using default settings\n");
-            }
-
-            cfg_filename = calling_path;
-            cfg_filename.append(slash);
-            cfg_filename.append(cfg);
-
-            cs.cfg_filename = (char *)(cfg_filename.c_str());
-            break;
-
-        case 2:
-            if(strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
-            {
-                printf("Usage: %s [path to config file]\n", argv[0]);
-                coreState_destroy(&cs);
-                return 0;
-            }
-
-            /*
-            if(strcmp(argv[1], "--pento-distr-test") == 0) {
-               //random_distr_test(cs, 0, 100000);
-               goto error;
-            } else if(strcmp(argv[1], "--list-tgm-seeds") == 0) {
-               get_tgm_seed_count(0);
-               goto error;
-            } else if(strcmp(argv[1], "--output") == 0) {
-               verify_tgm_rand_periodicity(0);
-               goto error;
-            } else if(strcmp(argv[1], "--seed-avg-sync") == 0) {
-               seed_avg_sync(0x20);
-               goto error;
-            }*/
-
-            // check(access(argv[1], F_OK) == 0, "File does not exist");
-
-            s = parse_cfg(argv[1]);
-            check(s, "File could not be opened for reading");
-
-            cs.cfg_filename = (char *)malloc(strlen(argv[1]) + 1);
-            strcpy(cs.cfg_filename, argv[1]);
-            break;
-
-        default:
-            printf("Usage: %s [path to config file]\n", argv[0]);
+    // TODO: Use an argument handler library here, rather than hard-coded
+    // logic.
+    if (argc == 1) {
+        if(!file_exists(iniFilename.c_str()))
+        {
+            log_err("Couldn't find configuration file, aborting\n");
             goto error;
+        }
+
+        if (settings->read(iniFilename)) {
+            log_info("Using one or more default settings\n");
+        }
+
+        iniFilename = callingPath + slash + iniFilename;
+        cs.iniFilename = (char*)malloc(iniFilename.length() + 1);
+        strcpy(cs.iniFilename, iniFilename.c_str());
+    }
+    else if (argc >= 2) {
+        if(strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+        {
+            printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
+            coreState_destroy(&cs);
+            return 0;
+        }
+        else if(strlen(argv[1]) >= 4 && strcmp(&argv[1][strlen(argv[1]) - 4], ".ini") != 0) {
+            printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
+            goto error;
+        }
+
+        /*
+        if(strcmp(argv[1], "--pento-distr-test") == 0) {
+           //random_distr_test(cs, 0, 100000);
+           goto error;
+        } else if(strcmp(argv[1], "--list-tgm-seeds") == 0) {
+           get_tgm_seed_count(0);
+           goto error;
+        } else if(strcmp(argv[1], "--output") == 0) {
+           verify_tgm_rand_periodicity(0);
+           goto error;
+        } else if(strcmp(argv[1], "--seed-avg-sync") == 0) {
+           seed_avg_sync(0x20);
+           goto error;
+        }*/
+
+        // check(access(argv[1], F_OK) == 0, "File does not exist");
+
+        if (settings->read(argv[1])) {
+            log_info("Using one or more default settings\n");
+        }
+
+        cs.iniFilename = (char*)malloc(strlen(argv[1]) + 1);
+        strcpy(cs.iniFilename, argv[1]);
     }
 
-    printf("Finished reading configuration file: %s\n", cs.cfg_filename);
+    printf("Finished reading configuration file: %s\n", cs.iniFilename);
 
-    if(init(&cs, s))
+    if(init(&cs, settings))
     {
         printf("Initialization failed, aborting.\n");
         quit(&cs);
