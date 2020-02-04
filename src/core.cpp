@@ -1,5 +1,6 @@
 #include "core.h"
 
+#include "Config.hpp"
 #include "Debug.hpp"
 #include "file_io.h"
 #include "gfx.h"
@@ -39,6 +40,7 @@ BindableVariables bindables;
 
 #if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \
     !defined(__MINGW64__)
+#define _WIN32_WINNT 0x0400
 #include <direct.h>
 #define chdir _chdir
 
@@ -56,6 +58,8 @@ int nanosleep(struct timespec *t, void *unused)
 
     return 0;
 }
+
+#define S_ISDIR(flags) ((flags) & S_IFDIR)
 #else
 #include <errno.h>
 #include <sys/stat.h>
@@ -410,11 +414,11 @@ void coreState_initialize(coreState *cs)
     cs->assets = new assetdb;
 
     cs->joystick = NULL;
-    cs->prev_keys_raw = (struct keyflags){0};
-    cs->keys_raw = (struct keyflags){0};
-    cs->prev_keys = (struct keyflags){0};
-    cs->keys = (struct keyflags){0};
-    cs->pressed = (struct keyflags){0};
+    cs->prev_keys_raw = {0};
+    cs->keys_raw = {0};
+    cs->prev_keys = {0};
+    cs->keys = {0};
+    cs->pressed = {0};
     cs->hold_dir = DAS_NONE;
     cs->hold_time = 0;
 
@@ -425,7 +429,7 @@ void coreState_initialize(coreState *cs)
     cs->mouse_left_down = 0;
     cs->mouse_right_down = 0;
 
-    cs->screen.name = "Shiromino v.beta3-pre3";
+    cs->screen.name = "Shiromino " SHIROMINO_VERSION_STRING;
     cs->screen.w = 640;
     cs->screen.h = 480;
     cs->screen.window = NULL;
@@ -713,13 +717,20 @@ void quit(coreState *cs)
     if(cs->assets)
     {
 
+        // Already destroyed in the BitFont destructor previously; this prevents a double-free.
+        cs->assets->font_fixedsys_excelsior.tex = nullptr;
+
 #define IMG(name, filename) img_destroy(&cs->assets->name);
 #include "images.h"
 #undef IMG
 
-    // Ensures the BitFont destructor doesn't double-destroy the sheets.
-#define FONT(name, sheetName, outlineSheetName, charW, charH) cs->assets->name.isValid = false;
-    #include "fonts.h"
+        // All the textures have been destroyed, so prevent them being freed by
+        // the GuiWindow destructor.
+#define FONT(name, sheetName, outlineSheetName, charW, charH) \
+        cs->assets->name.isValid = false; \
+        cs->assets->name.sheet = nullptr; \
+        cs->assets->name.outlineSheet = nullptr;
+#include "fonts.h"
 #undef FONT
 
 #define MUSIC(name, i) delete cs->assets->name[i];
@@ -804,6 +815,9 @@ int run(coreState *cs)
     };
 
     SDL_Rect windowRect = {10, 10, windW, windH};
+    // TODO: Fix how fixedsys is loaded/unloaded; currently, both SGUIL and
+    // Shiromio try to free it, with SGUIL freeing it first in the GuiWindow
+    // destructor.
     GuiWindow wind {cs, "Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
 
     wind.addControlElement(gridCanvas);

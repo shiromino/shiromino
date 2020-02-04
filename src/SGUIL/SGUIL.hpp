@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 #include <list>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 
 #define GUI_TEXT_ALIGN_CENTER   0x0002
 #define GUI_TEXT_OUTLINE        0x0004
@@ -108,18 +108,18 @@ struct TextFormat
 enum enumGuiEventType
 {
 event_invalid = 0,
-mouse_event = 0x1000,
+mouse_guievent = 0x1000,
     mouse_clicked,
     mouse_released,
     mouse_dragged,
     mouse_hovered_onto,
     mouse_hovered_off,
     mouse_moved,
-key_event = 0x2000,
+key_guievent = 0x2000,
     key_pressed,
     key_released,
-textinput_event = 0x2FFF,
-joy_event = 0x4000,
+textinput_guievent = 0x2FFF,
+joy_guievent = 0x4000,
     joybutton_pressed,
     joybutton_released
 };

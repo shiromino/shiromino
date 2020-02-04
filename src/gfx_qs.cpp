@@ -1,6 +1,7 @@
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <stdlib.h>
 #include <string>
+#include <vector>
 #include "stringtools.hpp"
 
 #include "core.h"
@@ -98,8 +99,8 @@ int gfx_drawqs(game_t *g)
     int piece_x = x + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * q->p1->x);
     int piece_y = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->y) - QRS_FIELD_H + 20));
 
-    int old_piece_xs[q->p1->num_olds];
-    int old_piece_ys[q->p1->num_olds];
+    vector<int> old_piece_xs(q->p1->num_olds);
+    vector<int> old_piece_ys(q->p1->num_olds);
 
     for(int j = 0; j < q->p1->num_olds; j++)
     {

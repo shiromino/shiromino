@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "bstrlib.h"
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <string>
 
 #include "core.h"

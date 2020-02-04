@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include "SGUIL/SGUIL.hpp"
 
 #include "grid.h"

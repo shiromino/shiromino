@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <time.h>
 #include "Debug.hpp"
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 

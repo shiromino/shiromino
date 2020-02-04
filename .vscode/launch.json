@@ -11,12 +11,12 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/game",
+      "program": "${command:cmake.launchTargetPath}",
       "args": ["${workspaceFolder}/game.ini"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
-      "externalConsole": false,
+      "externalConsole": true,
       "linux": {
         "MIMode": "gdb",
         "miDebuggerPath": "/usr/bin/gdb"
@@ -34,8 +34,7 @@
           "text": "-enable-pretty-printing",
           "ignoreFailures": true
         }
-      ],
-      "preLaunchTask": "make"
+      ]
     }
   ]
 }

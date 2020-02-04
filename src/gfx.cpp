@@ -1,9 +1,8 @@
 #include "bstrlib.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdio.h>
+#include "SDL.h"
+#include "SDL_image.h"
+#include <cmath>
+#include <cstdio>
 
 #include "core.h"
 #include "game_qs.h"
@@ -13,6 +12,8 @@
 #include "piecedef.h"
 #include "qrs.h"
 #include "timer.h"
+
+using namespace std;
 
 /*
 int gfx_piece_colors[25] =
@@ -46,27 +47,20 @@ int gfx_piece_colors[25] =
 };
 */
 
-bool img_load(gfx_image *img, const char *path_without_ext, coreState *cs)
-{
+bool img_load(gfx_image *img, string path_without_ext, coreState *cs) {
     img->tex = NULL;
 
     SDL_Surface *s = NULL;
 
-    bstring path = bfromcstr(path_without_ext);
-    bcatcstr(path, ".png");
-    s = IMG_Load((const char *)(path->data));
-    bdestroy(path);
+    string path = path_without_ext + ".png";
+    s = IMG_Load(path.c_str());
 
-    if(!s)
-    {
-        path = bfromcstr(path_without_ext);
-        bcatcstr(path, ".jpg");
-        s = IMG_Load((const char *)(path->data));
-        bdestroy(path);
+    if(!s) {
+        path = path_without_ext + ".jpg";
+        s = IMG_Load(path.c_str());
     }
 
-    if(s)
-    {
+    if(s) {
         img->tex = SDL_CreateTextureFromSurface(cs->screen.renderer, s);
         SDL_FreeSurface(s);
     }
@@ -74,10 +68,11 @@ bool img_load(gfx_image *img, const char *path_without_ext, coreState *cs)
     return img->tex != NULL;
 }
 
-void img_destroy(gfx_image *img)
-{
-    if(img->tex)
+void img_destroy(gfx_image *img) {
+    if (img->tex) {
         SDL_DestroyTexture(img->tex);
+        img->tex = nullptr;
+    }
 }
 
 png_monofont *monofont_tiny = NULL;

@@ -6,8 +6,8 @@
 #include <chrono>
 #include <vector>
 #include <map>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include "SDL.h"
+#include "SDL_image.h"
 
 #include "SGUIL.hpp"
 
@@ -264,7 +264,7 @@ void GuiTextField::handleEvent(GuiEvent& event)
         case key_pressed:
             this->keyPressed(event.keyPressedEvent->key);
             break;
-        case textinput_event:
+        case textinput_guievent:
             this->textInput(event.textInputEvent->text);
             break;
         default:
@@ -554,7 +554,8 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
         end = value.length();
     }
 
-    value.erase((string::iterator)&value[start], (string::iterator)&value[end]);
+    value.erase(start, end - start);
+    //value.erase((string::iterator)&value[start], (string::iterator)&value[end]);
     if(var)
     {
         var->set(value);

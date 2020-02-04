@@ -3,7 +3,7 @@
 #include <utility>
 #include <memory>
 #include <functional>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include "SGUIL/SGUIL.hpp"
 
 #include "grid.h"
@@ -429,7 +429,7 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
         }
         else
         {
-            paletteVar.setInt(num);
+            paletteVar.setInt(static_cast<int64_t>(num));
         }
     }
 }

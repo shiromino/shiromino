@@ -2,7 +2,7 @@
 #define _gfx_helpers_hpp
 
 #include <vector>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 
 #include "grid.h"
 

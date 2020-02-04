@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <functional>
 #include <map>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include "SDL.h"
+#include "SDL_image.h"
 
 #include "SGUIL.hpp"
 
@@ -239,7 +239,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
         case SDL_TEXTINPUT:
             if(keyboardFocus > -1 && keyboardFocus < controlList.size())
             {
-                GuiEvent textInputEvent {textinput_event, {sdlEvent.text.text} };
+                GuiEvent textInputEvent {textinput_guievent, {sdlEvent.text.text} };
                 controlList[keyboardFocus]->handleEvent(textInputEvent);
 
                 if(interactionEventCallback)
@@ -249,7 +249,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
             }
             else
             {
-                GuiEvent textInputEvent {textinput_event, {sdlEvent.text.text} };
+                GuiEvent textInputEvent {textinput_guievent, {sdlEvent.text.text} };
                 for(auto e : controlList)
                 {
                     if(e->hasDefaultKeyboardFocus)

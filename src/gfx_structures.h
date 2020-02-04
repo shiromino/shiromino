@@ -2,8 +2,8 @@
 #define _gfx_structures_h
 
 #include "bstrlib.h"
-#include <SDL2/SDL.h>
-#include <stdbool.h>
+#include "SDL.h"
+#include <string>
 
 #define EMERGENCY_OVERRIDE 1
 #define MESSAGE_EMERGENCY 0x1000000
@@ -16,7 +16,7 @@ typedef struct
     SDL_Texture *tex;
 } gfx_image;
 
-bool img_load(gfx_image *img, const char *path_without_ext, coreState *cs);
+bool img_load(gfx_image *img, std::string path_without_ext, coreState *cs);
 void img_destroy(gfx_image *img);
 
 enum text_alignment { ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER };

@@ -23,7 +23,7 @@ struct SPM_point
 {
     SPM_point() : x(0), y(0), subX(0), subY(0) {}
     SPM_point(int x, int y) : x(x), y(y), subX(0), subY(0) {}
-    SPM_point(int x, int y, uint32_t subX, uint32_t subY) : x(x), y(y), subX(subX), subY(subY) {}
+    SPM_point(int x, int y, int32_t subX, int32_t subY) : x(x), y(y), subX(subX), subY(subY) {}
 
     int x;
     int y;

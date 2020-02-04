@@ -5,7 +5,7 @@
 #include <map>
 #include <utility>
 #include <functional>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include "SGUIL/SGUIL.hpp"
 
 class GuiScreenManager;

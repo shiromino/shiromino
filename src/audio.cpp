@@ -2,11 +2,18 @@
 #include "core.h"
 
 #include "SDL_mixer.h"
+#include "vorbis/vorbisfile.h"
 
 using namespace Shiro;
 using namespace std;
 
-Music::Music() : volume(0), data(nullptr) {}
+Music::Music() : volume(0), data(nullptr) {
+    // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
+    // no-op, so it has no performance penalty.
+    OggVorbis_File vf;
+    vf.seekable = 0;
+    ov_info(&vf, 0);
+}
 
 Music::~Music() {
     if(data) {
