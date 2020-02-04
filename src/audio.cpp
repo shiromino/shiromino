@@ -2,7 +2,7 @@
 #include "core.h"
 
 #include "SDL_mixer.h"
-#include "vorbis/vorbisfile.h"
+#include <vorbis/vorbisfile.h>
 
 using namespace Shiro;
 using namespace std;
