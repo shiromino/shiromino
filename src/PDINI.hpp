@@ -39,7 +39,7 @@ namespace PDINI {
          * read, the second value is 0.
          */
         std::pair<bool, std::size_t> read(const std::string filename) {
-            std::ifstream file(std::move(filename));
+            std::ifstream file(filename);
 
             if (file.fail()) {
                 return { false, 0 };
@@ -100,14 +100,14 @@ namespace PDINI {
          * file was written successfully, otherwise false.
          */
         bool write(const std::string filename) {
-            std::ofstream file(move(filename));
+            std::ofstream file(filename);
 
             if (file.fail()) {
                 return false;
             }
 
             // Write null section.
-            decltype(sections.extract("")) nullHandle;
+            decltype(sections)::node_type nullHandle;
             bool moveBackNull = false;
             if (sections.count("") && sections[""].size()) {
                 for (auto keyValue : sections[""]) {
@@ -127,7 +127,7 @@ namespace PDINI {
                 for (auto keyValue : section.second) {
                     file << keyValue.first << " = " << keyValue.second << '\n';
                 }
-                auto firstHandle = sections.extract(sections.begin());
+                decltype(sections)::node_type firstHandle = sections.extract(sections.begin());
                 for (auto section : sections) {
                     file << "\n[" << section.first << "]" << '\n';
                     for (auto keyValue : section.second) {
@@ -238,12 +238,12 @@ namespace PDINI {
             const std::regex valueRegex("(?!\\s+).*[^\\s]");
             if (regex_match(sectionName, nameRegex) && regex_match(keyName, nameRegex) && regex_match(value, valueRegex)) {
                 if (value != "") {
-                    sections[move(sectionName)][move(keyName)] = value;
+                    sections[sectionName][keyName] = value;
                 }
                 else {
                     sections[sectionName].erase(keyName);
                     if (!sections[sectionName].size()) {
-                        sections.erase(move(sectionName));
+                        sections.erase(sectionName);
                     }
                 }
             }
@@ -256,7 +256,7 @@ namespace PDINI {
         void removeSection(const std::string sectionName) {
             const std::regex nameRegex("[_a-zA-Z][_a-zA-Z0-9]*");
             if (regex_match(sectionName, nameRegex) && sections.count(sectionName)) {
-                sections.erase(std::move(sectionName));
+                sections.erase(sectionName);
             }
         }
 

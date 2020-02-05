@@ -7,6 +7,8 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstdint>
+#include <cinttypes>
 
 using namespace Shiro;
 using namespace std;
@@ -188,7 +190,7 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(s->db));
 
-        log_info("Wrote replay (%zu): %s", replayLen, replayDescriptor);
+        log_info("Wrote replay (%" PRIu32 "): %s", static_cast<uint32_t>(replayLen), replayDescriptor);
     }
     catch (const logic_error& error) {
     }

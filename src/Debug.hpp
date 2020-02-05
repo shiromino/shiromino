@@ -20,10 +20,10 @@
 
 #define log_info(M, ...) SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
-#define check(A, M, ...) do { if (!(A)) { log_err(M, ##__VA_ARGS__); errno = 0; throw std::logic_error("check failed"); } } while(false)
+#define check(A, M, ...) do { if (!(A)) { log_err(M, ##__VA_ARGS__); errno = 0; throw std::logic_error("check failed"); } } while (false)
 
-#define sentinel(M, ...) do { log_err(M, ##__VA_ARGS__); errno = 0; } while
+#define sentinel(M, ...) do { log_err(M, ##__VA_ARGS__); errno = 0; } while (false)
 
 #define check_mem(A) check((A), "Out of memory.")
 
-#define check_debug(A, M, ...) do { if (!(A)) { debug(M, ##__VA_ARGS__); errno = 0; } while
+#define check_debug(A, M, ...) do { if (!(A)) { debug(M, ##__VA_ARGS__); errno = 0; } while (false)

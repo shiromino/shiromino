@@ -96,6 +96,10 @@ void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
              dateBuffer);
 }
 
+// TODO: Use SDL endianness functions to ensure replay data is stored little
+// endian. The majority of players play on x86/x64 in older versions, so it'd
+// maintain compatibilty with old replays at first.
+
 void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, size_t bufferLength)
 {
     // Keep the same existing format
@@ -133,7 +137,6 @@ void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, s
 
 uint8_t *generate_raw_replay(struct replay *r, size_t *out_replayLength)
 {
-    // TODO: Endianness?
     uint8_t *buffer = (uint8_t *)malloc(sizeof(struct replay));
     size_t bufferOffset = 0;
 
