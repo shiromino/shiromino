@@ -70,8 +70,8 @@ void GuiGridCanvas::draw()
             int destX = relativeDestRect.x + (i * cellW);
             int destY = relativeDestRect.y + (j * cellH);
 
-            SDL_Rect src = {0, 0, cellW, cellH};
-            SDL_Rect dest = {destX, destY, cellW, cellH};
+            SDL_Rect src = SDL_Rect{0, 0, (int)cellW, (int)cellH};
+            SDL_Rect dest = SDL_Rect{destX, destY, (int)cellW, (int)cellH};
 
             if(!paletteValMap.empty())
             {
@@ -126,7 +126,7 @@ void GuiGridCanvas::draw()
 
         grid_rect rect = {lesserX, lesserY, (greaterX - lesserX) + 1, (greaterY - lesserY) + 1};
 
-        SDL_Rect selectionRect = {relativeDestRect.x + (rect.x * cellW), relativeDestRect.y + (rect.y * cellH), rect.w * cellW, rect.h * cellH};
+        SDL_Rect selectionRect = SDL_Rect{relativeDestRect.x + (rect.x * (int)cellW), relativeDestRect.y + (rect.y * (int)cellH), rect.w * (int)cellW, rect.h * (int)cellH};
 
         rgba_t v = 0x9090FF9F;
 
@@ -140,7 +140,7 @@ void GuiGridCanvas::draw()
         int cursorX = relativeDestRect.x + (cellUnderMouse.x * cellW);
         int cursorY = relativeDestRect.y + (cellUnderMouse.y * cellH);
 
-        SDL_Rect cursorRect = {cursorX, cursorY, cellW, cellH};
+        SDL_Rect cursorRect = SDL_Rect{cursorX, cursorY, (int)cellW, (int)cellH};
 
         rgba_t v = 0xEFEFEF9F;
 
@@ -412,18 +412,18 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
 
             grid_rect selectionRect = {lesserX, lesserY, (greaterX - lesserX) + 1, (greaterY - lesserY) + 1};
 
-            if(paletteValMap.size() <= num + 1)
+            if(paletteValMap.size() <= (std::size_t)num + 1)
             {
                 makeBackup();
 
                 gridfillrect(grid, &selectionRect, num + 1);
                 selection = false;
             }
-            else if(!paletteValMap[num + 1].isFlag)
+            else if(!paletteValMap[(std::size_t)num + 1].isFlag)
             {
                 makeBackup();
 
-                gridfillrect(grid, &selectionRect, paletteValMap[num + 1].mappedVal);
+                gridfillrect(grid, &selectionRect, paletteValMap[(std::size_t)num + 1].mappedVal);
                 selection = false;
             }
         }
@@ -586,14 +586,14 @@ void GuiGridCanvas::fillCell(GuiVirtualPoint& point)
     }
     else
     {
-        if(paletteValMap[paletteSelection + 1].isFlag && (getCell(point) != paletteValMap[0].mappedVal))
+        if(paletteValMap[(std::size_t)paletteSelection + 1].isFlag && (getCell(point) != paletteValMap[0].mappedVal))
         // only allow xor if the cell isn't empty
         {
-            gridxorcell(grid, point.x, point.y, paletteValMap[paletteSelection + 1].mappedVal);
+            gridxorcell(grid, point.x, point.y, paletteValMap[(std::size_t)paletteSelection + 1].mappedVal);
         }
         else
         {
-            gridsetcell(grid, point.x, point.y, paletteValMap[paletteSelection + 1].mappedVal);
+            gridsetcell(grid, point.x, point.y, paletteValMap[(std::size_t)paletteSelection + 1].mappedVal);
         }
     }
 }

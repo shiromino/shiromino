@@ -57,7 +57,7 @@ public:
     void readPaletteSelection(BindableVariable *var)
     {
         int s = (int)std::stoll(var->get());
-        if(s < 0 || s >= paletteSize)
+        if(s < 0 || (unsigned)s >= paletteSize)
         {
             s = 0;
         }
