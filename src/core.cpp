@@ -14,6 +14,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <cstdint>
+#include <cinttypes>
 
 #include <iostream>
 #include <vector>
@@ -47,16 +49,40 @@ BindableVariables bindables;
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-int nanosleep(struct timespec *t, void *unused)
-{
-    LARGE_INTEGER ft = {.QuadPart = -(t->tv_sec * 10000000 + t->tv_nsec / 100)};
-
+// TODO: Check Windows docs, and see if setting errno to EFAULT might make
+// sense. The EINTR case might be wrong, too.
+// TODO: Add more granular waits for the seconds portion, then precise waiting
+// for the rest.
+int nanosleep(const struct timespec* req, struct timespec* rem) {
+    LARGE_INTEGER startTime;
+    if (req->tv_nsec < 0 || req->tv_nsec > 999999999ll || req->tv_sec < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    QueryPerformanceCounter(&startTime);
+    LARGE_INTEGER waitTime = { .QuadPart = -((LONGLONG)req->tv_sec * 10000000ll + (LONGLONG)req->tv_nsec / 100ll) };
     const HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
-    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-    WaitForSingleObject(timer, INFINITE);
-    CloseHandle(timer);
+    if (timer) {
+        SetWaitableTimer(timer, &waitTime, 0, NULL, NULL, 0);
+        WaitForSingleObject(timer, INFINITE);
+        CloseHandle(timer);
+        return 0;
 
-    return 0;
+    }
+    else {
+        errno = EINTR;
+        LARGE_INTEGER endTime;
+        LARGE_INTEGER frequency;
+        // Microsoft's docs guarantee these don't fail on XP or newer, and
+        // that's all we're supporting. -nightmareci
+        QueryPerformanceCounter(&endTime);
+        QueryPerformanceFrequency(&frequency);
+        LONGLONG nsWait = ((endTime.QuadPart - startTime.QuadPart) * 1000000000ll) / frequency.QuadPart;
+        LONGLONG nsRem = ((LONGLONG)req->tv_sec * 1000000000ll + (LONGLONG)req->tv_nsec) - nsWait;
+        rem->tv_sec = nsRem / 1000000000ll;
+        rem->tv_nsec = nsRem % 1000000000ll;
+        return -1;
+    }
 }
 
 #define S_ISDIR(flags) ((flags) & S_IFDIR)
@@ -66,6 +92,8 @@ int nanosleep(struct timespec *t, void *unused)
 #include <unistd.h> // For chdir
 #endif
 
+// TODO: Analyze frame timing, and see whether it's already accurate enough, or
+// needs tweaks to be more accurate.
 static long framedelay(Uint64 ticks_elap, double fps)
 {
     if(fps < 1 || fps > 240)
@@ -77,14 +105,16 @@ static long framedelay(Uint64 ticks_elap, double fps)
 
     if(sec_elap < spf)
     {
-        t.tv_nsec = (long)((spf - sec_elap) * 1000000000);
+        t.tv_nsec = (long)((spf - sec_elap) * 1000000000ll);
 
-        if(nanosleep(&t, NULL))
+        struct timespec rem;
+        if(nanosleep(&t, &rem))
         {
             // this can happen when the user presses Ctrl+C
-            printf("Error: nanosleep() returned failure during frame length calculation\n");
+            log_err("nanosleep() returned failure during frame length calculation");
             return FRAMEDELAY_ERR;
         }
+        printf("rem->tv_sec == %ld, rem->tv_nsec == %ld\n", rem.tv_sec, rem.tv_nsec);
     }
     else
     {
@@ -186,7 +216,7 @@ bool Settings::read(string filename) {
     INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
-        log_warn("Error reading configuation INI \"%s\" on line %z", filename.c_str(), readStatus.second);
+        log_warn("Error reading configuation INI \"%s\" on line %" PRIu64, filename.c_str(), (uint64_t)readStatus.second);
     }
     if (!readStatus.first) {
         log_warn("Failed opening configuration INI \"%s\"", filename.c_str());
@@ -1186,6 +1216,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                         k->d = 0;
                     if(rc && k->d == 0)
                         k->d = 1;
+                    // TODO: Add all buttons here.
                 }
 
                 break;
