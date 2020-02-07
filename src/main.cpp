@@ -24,6 +24,11 @@ bool file_exists(const char *filename)
     return stat(filename, &buffer) == 0;
 }
 
+// When building with GCC on Windows, this fixes the error where WinMain is
+// undefined.
+#ifdef main
+#undef main
+#endif
 int main(int argc, char *argv[])
 {
     coreState cs;

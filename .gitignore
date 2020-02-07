@@ -21,10 +21,7 @@ tags
 *.exe
 *.o
 *.so
-game
-obj/
-bin/
-build/
+/build*
 
 # Packages #
 ############

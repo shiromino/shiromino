@@ -2,23 +2,59 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Shiromino VERSION 0.1 LANGUAGES CXX)
 
-if(VCPKG_TOOLCHAIN)
+if(${VCPKG_TOOLCHAIN})
     set(VCPKG_CRT_LINKAGE dynamic)
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+if(${VCPKG_TOOLCHAIN})
+    # Some features supported by GCC for C++17 aren't supported by MSVC
+    # C++17. This makes MSVC use the "latest" standard, which has the
+    # features we need.
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    # For now, only C++17 features will be used, despite needing to use
+    # C++20 for MSVC.
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(sdl2 REQUIRED)
-find_package(sdl2-image REQUIRED)
-find_package(sdl2-mixer REQUIRED)
-if(VCPKG_TOOLCHAIN)
+find_package(PkgConfig)
+if(${PKG_CONFIG_FOUND})
+    pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+    pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
+    pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
+    pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
+    set(LIBRARIES
+        SDL2
+        SDL2_image
+        SDL2_mixer
+        sqlite3)
+elseif(${VCPKG_TOOLCHAIN})
+    find_package(sdl2 REQUIRED)
+    find_package(sdl2-image REQUIRED)
+    find_package(sdl2-mixer REQUIRED)
+    find_package(sqlite3 REQUIRED)
+    # vcpkg doesn't automatically copy over the OGG/Vorbis libraries needed to
+    # play OGG files with SDL_mixer, so they have to be explicitly added as
+    # dependencies to Shiromino to work around that bug.
     find_package(ogg REQUIRED)
-    find_library(VORBIS vorbis)
-    find_library(VORBISFILE vorbisfile)
+    find_library(VORBIS_LIBRARY vorbis)
+    find_library(VORBISFILE_LIBRARY vorbisfile)
+
+    set(LIBRARIES
+        SDL2::SDL2 SDL2::SDL2main
+        SDL2::SDL2_image
+        SDL2::SDL2_mixer
+        SQLite::SQLite3
+        ${OGG_LIBARIES}
+        ${VORBIS_LIBRARY}
+        ${VORBISFILE_LIBRARY})
+
+    add_compile_definitions(VCPKG_TOOLCHAIN)
+#else()
+# TODO: Other platforms; macOS for sure.
 endif()
-find_package(sqlite3 REQUIRED)
 
 configure_file(include/Config.hpp.in Config.hpp)
 
@@ -103,29 +139,18 @@ source_group("Header Files" FILES ${HEADERS})
 
 add_executable(Shiromino ${SOURCES} ${HEADERS})
 
-# For whatever reason, the proper include directory for sqlite3 isn't set when
-# using vcpkg and Visual Studio, so the include directory has to be manually
-# added.
-if(VCPKG_TOOLCHAIN)
-    find_path(SYSTEM_INCLUDE_DIR sqlite3.h)
-else()
-    set(SYSTEM_INCLUDE_DIR "")
+if(${VCPKG_TOOLCHAIN})
+    # For whatever reason, the proper include directory for sqlite3 isn't set when
+    # using vcpkg and Visual Studio, so the include directory has to be manually
+    # added.
+    find_path(INCLUDE_DIRS sqlite3.h)
+elseif(${PKG_CONFIG_FOUND})
+    target_compile_options(Shiromino PUBLIC ${SDL2_CFLAGS_OTHER} ${SDL2_IMAGE_CFLAGS_OTHER} ${SDL2_MIXER_CFLAGS_OTHER} ${SQLITE3_CFLAGS_OTHER})
+    set(INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS} ${SQLITE3_INCLUDE_DIRS})
 endif()
 
-target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${SYSTEM_INCLUDE_DIR})
+target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${INCLUDE_DIRS})
 
 set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 
-set(LIBRARIES
-    SDL2::SDL2 SDL2::SDL2main
-    SDL2::SDL2_image
-    SDL2::SDL2_mixer
-    SQLite::SQLite3)
-if(VCPKG_TOOLCHAIN)
-    set(LIBRARIES
-        ${LIBRARIES}
-        Ogg::ogg
-        ${VORBIS}
-        ${VORBISFILE})
-endif()
 target_link_libraries(Shiromino PRIVATE ${LIBRARIES})
