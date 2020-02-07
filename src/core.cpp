@@ -50,7 +50,7 @@ BindableVariables bindables;
 #include <windows.h>
 
 // TODO: Check Windows docs, and see if setting errno to EFAULT might make
-// sense. The EINTR case might be wrong, too.
+// sense somewhere here. The EINTR case might be wrong, too.
 // TODO: Add more granular waits for the seconds portion, then precise waiting
 // for the rest.
 int nanosleep(const struct timespec* req, struct timespec* rem) {
@@ -67,7 +67,6 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
         WaitForSingleObject(timer, INFINITE);
         CloseHandle(timer);
         return 0;
-
     }
     else {
         errno = EINTR;
@@ -114,7 +113,6 @@ static long framedelay(Uint64 ticks_elap, double fps)
             log_err("nanosleep() returned failure during frame length calculation");
             return FRAMEDELAY_ERR;
         }
-        printf("rem->tv_sec == %ld, rem->tv_nsec == %ld\n", rem.tv_sec, rem.tv_nsec);
     }
     else
     {

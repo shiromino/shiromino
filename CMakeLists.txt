@@ -13,9 +13,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 find_package(sdl2 REQUIRED)
 find_package(sdl2-image REQUIRED)
 find_package(sdl2-mixer REQUIRED)
-find_package(ogg REQUIRED)
-find_library(VORBIS vorbis)
-find_library(VORBISFILE vorbisfile)
+if(VCPKG_TOOLCHAIN)
+    find_package(ogg REQUIRED)
+    find_library(VORBIS vorbis)
+    find_library(VORBISFILE vorbisfile)
+endif()
 find_package(sqlite3 REQUIRED)
 
 configure_file(include/Config.hpp.in Config.hpp)
@@ -52,8 +54,7 @@ set(SOURCES
     src/SGUIL/SGUIL_GuiOptionButton.cpp
     src/SGUIL/SGUIL_GuiTextField.cpp
     src/SGUIL/SGUIL_GuiWindow.cpp
-    src/SGUIL/SGUIL.cpp
-)
+    src/SGUIL/SGUIL.cpp)
 
 set(HEADERS
     src/Audio.hpp
@@ -97,8 +98,7 @@ set(HEADERS
 
     src/PCG/pcg_extras.hpp
     src/PCG/pcg_random.hpp
-    src/PCG/pcg_uint128.hpp
-)
+    src/PCG/pcg_uint128.hpp)
 source_group("Header Files" FILES ${HEADERS})
 
 add_executable(Shiromino ${SOURCES} ${HEADERS})
@@ -116,12 +116,16 @@ target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${SYST
 
 set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 
-target_link_libraries(Shiromino PRIVATE
+set(LIBRARIES
     SDL2::SDL2 SDL2::SDL2main
     SDL2::SDL2_image
     SDL2::SDL2_mixer
-    SQLite::SQLite3
-    Ogg::ogg
-    ${VORBIS}
-    ${VORBISFILE}
-)
+    SQLite::SQLite3)
+if(VCPKG_TOOLCHAIN)
+    set(LIBRARIES
+        ${LIBRARIES}
+        Ogg::ogg
+        ${VORBIS}
+        ${VORBISFILE})
+endif()
+target_link_libraries(Shiromino PRIVATE ${LIBRARIES})
