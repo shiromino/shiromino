@@ -5,5 +5,4 @@
 
 #define Shiromino_VERSION_MAJOR @Shiromino_VERSION_MAJOR@
 #define Shiromino_VERSION_MINOR @Shiromino_VERSION_MINOR@
-#define SHIROMINO_VERSION (#Shiromino_VERSION_MAJOR "." #Shiromino_VERSION_MINOR)
 #define SHIROMINO_VERSION_STRING STR2(Shiromino_VERSION_MAJOR) "." STR2(Shiromino_VERSION_MINOR)
