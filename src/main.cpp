@@ -14,6 +14,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
+#ifdef VCPKG_TOOLCHAIN
+#include <vorbis/vorbisfile.h>
+#endif
 // #include "tests.h"
 
 using namespace std;
@@ -29,8 +32,16 @@ bool file_exists(const char *filename)
 #ifdef main
 #undef main
 #endif
-int main(int argc, char *argv[])
-{
+int main(int argc, char** argv) {
+#ifdef VCPKG_TOOLCHAIN
+    {
+        // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
+        // no-op, so it has no performance penalty.
+        OggVorbis_File vf;
+        vf.seekable = 0;
+        ov_info(&vf, 0);
+    }
+#endif
     coreState cs;
     coreState_initialize(&cs);
     Settings* settings = new Settings();
@@ -59,8 +70,7 @@ int main(int argc, char *argv[])
     // TODO: Use an argument handler library here, rather than hard-coded
     // logic.
     if (argc == 1) {
-        if(!file_exists(iniFilename.c_str()))
-        {
+        if (!file_exists(iniFilename.c_str())) {
             log_err("Couldn't find configuration file, aborting\n");
             goto error;
         }
@@ -74,28 +84,27 @@ int main(int argc, char *argv[])
         strcpy(cs.iniFilename, iniFilename.c_str());
     }
     else if (argc >= 2) {
-        if(strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
-        {
+        if (strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
             printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
             coreState_destroy(&cs);
             return 0;
         }
-        else if(strlen(argv[1]) >= 4 && strcmp(&argv[1][strlen(argv[1]) - 4], ".ini") != 0) {
+        else if (strlen(argv[1]) >= 4 && strcmp(&argv[1][strlen(argv[1]) - 4], ".ini") != 0) {
             printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
             goto error;
         }
 
         /*
-        if(strcmp(argv[1], "--pento-distr-test") == 0) {
+        if (strcmp(argv[1], "--pento-distr-test") == 0) {
            //random_distr_test(cs, 0, 100000);
            goto error;
-        } else if(strcmp(argv[1], "--list-tgm-seeds") == 0) {
+        } else if (strcmp(argv[1], "--list-tgm-seeds") == 0) {
            get_tgm_seed_count(0);
            goto error;
-        } else if(strcmp(argv[1], "--output") == 0) {
+        } else if (strcmp(argv[1], "--output") == 0) {
            verify_tgm_rand_periodicity(0);
            goto error;
-        } else if(strcmp(argv[1], "--seed-avg-sync") == 0) {
+        } else if (strcmp(argv[1], "--seed-avg-sync") == 0) {
            seed_avg_sync(0x20);
            goto error;
         }*/
@@ -112,8 +121,7 @@ int main(int argc, char *argv[])
 
     printf("Finished reading configuration file: %s\n", cs.iniFilename);
 
-    if(init(&cs, settings))
-    {
+    if (init(&cs, settings)) {
         printf("Initialization failed, aborting.\n");
         quit(&cs);
         coreState_destroy(&cs);

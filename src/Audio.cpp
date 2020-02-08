@@ -3,21 +3,10 @@
 #include "SDL_mixer.h"
 #include "Config.hpp"
 
-#ifdef VCPKG_TOOLCHAIN
-#include <vorbis/vorbisfile.h>
-#endif
-
 using namespace Shiro;
 using namespace std;
 
 Music::Music() : volume(0), data(nullptr) {
-#ifdef VCPKG_TOOLCHAIN
-    // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
-    // no-op, so it has no performance penalty.
-    OggVorbis_File vf;
-    vf.seekable = 0;
-    ov_info(&vf, 0);
-#endif
 }
 
 Music::~Music() {
