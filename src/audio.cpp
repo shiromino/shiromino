@@ -1,9 +1,9 @@
 #include "Audio.hpp"
 #include "core.h"
+#include "SDL_mixer.h"
 #include "Config.hpp"
 
 #ifdef VCPKG_TOOLCHAIN
-#include "SDL_mixer.h"
 #include <vorbis/vorbisfile.h>
 #endif
 
