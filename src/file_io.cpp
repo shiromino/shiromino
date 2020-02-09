@@ -57,11 +57,11 @@ int get_asset_volume(vector<string>& lines, string asset_name)
                 volume = 100;
             }
 
-            return (128 * volume) / 100;
+            return (MIX_MAX_VOLUME * volume) / 100;
         }
     }
 
-    return 128;
+    return MIX_MAX_VOLUME;
 }
 
 long parse_long(const char *str)
