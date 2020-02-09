@@ -36,7 +36,7 @@ bool Music::play(coreState* cs) {
         return false;
     }
 
-    Mix_VolumeMusic((volume * ((cs->mus_volume * cs->master_volume) / 100)) / MIX_MAX_VOLUME);
+    Mix_VolumeMusic(static_cast<int>(volume * (cs->mus_volume / 100.0f) * (cs->master_volume / 100.0f)));
     Mix_PlayMusic(data, -1);
 
     return true;
@@ -61,13 +61,14 @@ bool Sfx::load(string filenameNoExt) {
     return data != nullptr;
 }
 
-bool Sfx::play() {
+bool Sfx::play(coreState* cs) {
     if(!data) {
         return false;
     }
 
     // Mix_VolumeChunk(data, printf(((float)(nz->settings->sfx_volume) / 100.0) * 128.0));
     Mix_VolumeChunk(data, volume);
+    Mix_VolumeChunk(data, static_cast<int>(volume * (cs->sfx_volume / 100.0f) * (cs->master_volume / 100.0f)));
     if(Mix_PlayChannel(-1, data, 0) < 0) {
         printf("Mix_PlayChannel() error: %s\n", Mix_GetError());
     }

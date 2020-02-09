@@ -708,14 +708,15 @@ int init(coreState *cs, Settings* settings)
               SDL_GetError());
         check(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem: Error: %s\n", SDL_GetError());
         check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG,
-              "IMG_Init: Failed to initialize PNG support: %s\n",
-              IMG_GetError());  // IMG_GetError() not necessarily reliable here
-        Mix_Init(MIX_INIT_OGG); // check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG, "Mix_Init: Failed to initialize OGG
-                                // support: %s\n", Mix_GetError());
+            "IMG_Init: Failed to initialize PNG support: %s\n",
+            IMG_GetError());  // IMG_GetError() not necessarily reliable here
+        check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG,
+            "Mix_Init: Failed to initialize OGG support: %s\n",
+            Mix_GetError());
         check(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != -1, "Mix_OpenAudio: Error\n");
 
         Mix_AllocateChannels(32);
-        Mix_Volume(-1, (cs->sfx_volume * cs->master_volume) / 100);
+        Mix_Volume(-1, static_cast<int>((cs->sfx_volume / 100.0f) * (cs->master_volume / 100.0f) * MIX_MAX_VOLUME));
 
         if (SDL_NumJoysticks()) {
             const int numJoysticks = SDL_NumJoysticks();

@@ -1300,7 +1300,7 @@ int qs_game_frame(game_t *g)
 
                 gfx_pushmessage(cs, "READY", (4 * 16 + 8 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-                cs->assets->ready->play();
+                cs->assets->ready->play(cs);
             }
 
             else if(c->init == 60)
@@ -1308,7 +1308,7 @@ int qs_game_frame(game_t *g)
                 fmt->rgba = 0xFF0000FF;
                 gfx_pushmessage(cs, "GO", (6 * 16 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
 
-                cs->assets->go->play();
+                cs->assets->go->play(cs);
             }
         }
 
@@ -1673,19 +1673,19 @@ int qs_game_frame(game_t *g)
             {
                 case 1:
                     q->medal_re = BRONZE;
-                    cs->assets->medal->play();
+                    cs->assets->medal->play(cs);
                     break;
                 case 2:
                     q->medal_re = SILVER;
-                    cs->assets->medal->play();
+                    cs->assets->medal->play(cs);
                     break;
                 case 3:
                     q->medal_re = GOLD;
-                    cs->assets->medal->play();
+                    cs->assets->medal->play(cs);
                     break;
                 case 5:
                     q->medal_re = PLATINUM;
-                    cs->assets->medal->play();
+                    cs->assets->medal->play(cs);
                     break;
                 default:
                     break;
@@ -1931,7 +1931,7 @@ int qs_process_lineclear(game_t *g)
 
             c->lineclear = 0;
             qrs_dropfield(g);
-            cs->assets->dropfield->play();
+            cs->assets->dropfield->play(cs);
 
             switch(q->mode_type)
             {
@@ -2176,7 +2176,7 @@ int qs_process_lockflash(game_t *g)
                                 if(!gradeup)
                                 {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play();
+                                    cs->assets->gradeup->play(cs);
                                     gradeup = true;
                                 }
                             }
@@ -2232,7 +2232,7 @@ int qs_process_lockflash(game_t *g)
                                 if(!gradeup)
                                 {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play();
+                                    cs->assets->gradeup->play(cs);
                                     gradeup = true;
                                 }
                             }
@@ -2257,7 +2257,7 @@ int qs_process_lockflash(game_t *g)
                             if(old_grade != q->grade)
                             {
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                cs->assets->gradeup->play();
+                                cs->assets->gradeup->play(cs);
                             }
                         }
 
@@ -2297,7 +2297,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = BRONZE;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play();
+                            cs->assets->medal->play(cs);
                         }
 
                         break;
@@ -2306,7 +2306,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = SILVER;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play();
+                            cs->assets->medal->play(cs);
                         }
 
                         break;
@@ -2315,7 +2315,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = GOLD;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play();
+                            cs->assets->medal->play(cs);
                         }
 
                         break;
@@ -2324,7 +2324,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = PLATINUM;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play();
+                            cs->assets->medal->play(cs);
                         }
 
                         break;
@@ -2341,7 +2341,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = BRONZE;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play();
+                                cs->assets->medal->play(cs);
                             }
 
                             break;
@@ -2350,7 +2350,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = SILVER;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play();
+                                cs->assets->medal->play(cs);
                             }
 
                             break;
@@ -2359,7 +2359,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = GOLD;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play();
+                                cs->assets->medal->play(cs);
                             }
 
                             break;
@@ -2368,7 +2368,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = PLATINUM;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play();
+                                cs->assets->medal->play(cs);
                             }
 
                             break;
@@ -2378,7 +2378,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-            cs->assets->lineclear->play();
+            cs->assets->lineclear->play(cs);
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
@@ -2423,7 +2423,7 @@ int qs_process_lockflash(game_t *g)
                                     {
                                         q->grade = GRADE_M;
                                         q->last_gradeup_timestamp = g->frame_counter;
-                                        cs->assets->gradeup->play();
+                                        cs->assets->gradeup->play(cs);
                                     }
                                 }
                             }
@@ -2438,7 +2438,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play();
+                                    cs->assets->gradeup->play(cs);
                                 }
 
                                 if(q->playback)
@@ -2521,7 +2521,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_M;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play();
+                                    cs->assets->gradeup->play(cs);
                                 }
                             }
                             else if(q->level >= 999)
@@ -2529,7 +2529,7 @@ int qs_process_lockflash(game_t *g)
                                 q->level = 999;
                                 q->grade = GRADE_GM;
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                cs->assets->gradeup->play();
+                                cs->assets->gradeup->play(cs);
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)
@@ -2550,7 +2550,7 @@ int qs_process_lockflash(game_t *g)
                             }
 
                             q->last_gradeup_timestamp = g->frame_counter;
-                            cs->assets->gradeup->play();
+                            cs->assets->gradeup->play(cs);
 
                             if(q->section == 5)
                             {
@@ -2602,7 +2602,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play();
+                                    cs->assets->gradeup->play(cs);
                                 }
 
                                 if(q->playback)
@@ -2618,7 +2618,7 @@ int qs_process_lockflash(game_t *g)
                             break;
                     }
 
-                    cs->assets->newsection->play();
+                    cs->assets->newsection->play(cs);
                     if(q->section < 13)
                     {
                         cs->bg = (&cs->assets->bg0 + q->section)->tex;
@@ -2641,7 +2641,7 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G2_DEATH:
                         q->grade = GRADE_GM;
                         q->last_gradeup_timestamp = g->frame_counter;
-                        cs->assets->gradeup->play();
+                        cs->assets->gradeup->play(cs);
                         if(q->playback)
                             qrs_end_playback(g);
                         else if(q->recording)
@@ -2662,7 +2662,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->grade = GRADE_GM;
                             q->last_gradeup_timestamp = g->frame_counter;
-                            cs->assets->gradeup->play();
+                            cs->assets->gradeup->play(cs);
                         }
 
                         if(q->playback)
@@ -3641,7 +3641,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
             if(ts >= 18)
                 ts -= 18;
             Sfx* sfx = cs->assets->pieces[ts % 7];
-            sfx->play();
+            sfx->play(cs);
         }
     }
 

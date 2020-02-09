@@ -53,7 +53,7 @@ namespace Shiro {
         /**
          * Plays the sound effect. Returns true if the sound effect was played.
          */
-        bool play();
+        bool play(coreState* cs);
 
         int volume;
 
