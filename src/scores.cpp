@@ -59,7 +59,7 @@ void scoredb_init(struct scoredb *s, const char *filename)
         ret = sqlite3_exec(s->db, createTableSql, NULL, NULL, NULL);
         check(ret == 0, "Could not create scores table");
 
-        log_info("Opened scoredb %s", filename);
+        printf("Opened scoredb %s\n", filename);
 
         // TODO: Create a view with human-readable data
     }
@@ -106,7 +106,7 @@ void scoredb_create_player(struct scoredb *s, struct player *out_player, const c
         int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(s->db));
 
-        log_info("Player \"%s\" is in players table", playerName);
+        printf("Player \"%s\" is in players table\n", playerName);
 
         sqlite3_finalize(sql);
 
@@ -190,7 +190,7 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(s->db));
 
-        log_info("Wrote replay (%" PRIu32 "): %s", static_cast<uint32_t>(replayLen), replayDescriptor);
+        printf("Wrote replay (%" PRIu32 "): %s\n", static_cast<uint32_t>(replayLen), replayDescriptor);
     }
     catch (const logic_error& error) {
     }

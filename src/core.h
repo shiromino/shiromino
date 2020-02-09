@@ -45,24 +45,10 @@ enum gameDisplayMode
     game_display_bare
 };
 
-struct bindings
-{
-    SDL_Keycode left;
-    SDL_Keycode right;
-    SDL_Keycode up;
-    SDL_Keycode down;
-    SDL_Keycode start;
-    SDL_Keycode a;
-    SDL_Keycode b;
-    SDL_Keycode c;
-    SDL_Keycode d;
-    SDL_Keycode escape;
-};
-
-class Keybinds {
+class KeyBinds {
 public:
-    Keybinds();
-    Keybinds(const int playerNum);
+    KeyBinds();
+    KeyBinds(const int playerNum);
 
     bool read(PDINI::INI& ini, const std::string sectionName);
 
@@ -76,6 +62,44 @@ public:
     SDL_Keycode c;
     SDL_Keycode d;
     SDL_Keycode escape;
+};
+
+class JoyBinds {
+public:
+    JoyBinds();
+
+    bool read(PDINI::INI& ini, const std::string sectionName);
+
+    std::string name;
+    int joyIndex;
+    SDL_JoystickID joyID;
+
+    struct Buttons {
+        Buttons();
+
+        int left;
+        int right;
+        int up;
+        int down;
+        int start;
+        int a;
+        int b;
+        int c;
+        int d;
+        int escape;
+    } buttons;
+
+    struct Axes {
+        Axes();
+
+        int x;
+        int right;
+
+        int y;
+        int down;
+    } axes;
+
+    int hatIndex;
 };
 
 typedef enum {
@@ -128,31 +152,15 @@ struct assetdb
 #undef SFX_ARRAY
 };
 
-struct settings
-{
-    struct bindings *keybinds;
-
-    float video_scale;
-    bool video_stretch;
-    bool fullscreen;
-
-    int master_volume;
-    int sfx_volume;
-    int mus_volume;
-
-    char *home_path;
-
-    const char *player_name;
-};
-
 class Settings {
 public:
     Settings();
 
     bool read(const std::string filename);
 
-    Keybinds keybinds;
-    // TODO: Conbinds conbinds;
+    KeyBinds keyBinds;
+    JoyBinds joyBinds;
+    // TODO: XInputBinds xInputBinds;
 
     float videoScale;
     int videoStretch;

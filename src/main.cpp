@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
         }
 
         if (settings->read(iniFilename)) {
-            log_info("Using one or more default settings\n");
+            printf("Using one or more default settings\n");
         }
 
         iniFilename = callingPath + slash + iniFilename;
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
         // check(access(argv[1], F_OK) == 0, "File does not exist");
 
         if (settings->read(argv[1])) {
-            log_info("Using one or more default settings\n");
+            printf("Using one or more default settings\n");
         }
 
         cs.iniFilename = (char*)malloc(strlen(argv[1]) + 1);

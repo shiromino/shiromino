@@ -30,29 +30,35 @@ if(${PKG_CONFIG_FOUND})
         SDL2_image
         SDL2_mixer
         sqlite3)
-elseif(${VCPKG_TOOLCHAIN})
+else()
     find_package(sdl2 REQUIRED)
     find_package(sdl2-image REQUIRED)
     find_package(sdl2-mixer REQUIRED)
     find_package(sqlite3 REQUIRED)
-    # vcpkg doesn't automatically copy over the OGG/Vorbis libraries needed to
-    # play OGG files with SDL_mixer, so they have to be explicitly added as
-    # dependencies to Shiromino to work around that bug.
-    find_package(ogg REQUIRED)
-    find_library(VORBIS_LIBRARY vorbis)
-    find_library(VORBISFILE_LIBRARY vorbisfile)
+    if(${VCPKG_TOOLCHAIN})
+        # vcpkg doesn't automatically copy over the OGG/Vorbis libraries needed
+        # to play OGG files with SDL_mixer, so they have to be explicitly added
+        # as dependencies to Shiromino to work around that bug.
+        find_package(ogg REQUIRED)
+        find_library(VORBIS_LIBRARY vorbis)
+        find_library(VORBISFILE_LIBRARY vorbisfile)
+        set(LIBRARIES
+            SDL2::SDL2 SDL2::SDL2main
+            SDL2::SDL2_image
+            SDL2::SDL2_mixer
+            SQLite::SQLite3
+            ${OGG_LIBARIES}
+            ${VORBIS_LIBRARY}
+            ${VORBISFILE_LIBRARY})
 
-    set(LIBRARIES
-        SDL2::SDL2 SDL2::SDL2main
-        SDL2::SDL2_image
-        SDL2::SDL2_mixer
-        SQLite::SQLite3
-        ${OGG_LIBARIES}
-        ${VORBIS_LIBRARY}
-        ${VORBISFILE_LIBRARY})
-
-    add_compile_definitions(VCPKG_TOOLCHAIN)
-#else()
+        add_compile_definitions(VCPKG_TOOLCHAIN)
+    else()
+        set(LIBRARIES
+            SDL2::SDL2 SDL2::SDL2main
+            SDL2::SDL2_image
+            SDL2::SDL2_mixer
+            SQLite::SQLite3)
+    endif()
 # TODO: Other platforms; macOS for sure.
 endif()
 

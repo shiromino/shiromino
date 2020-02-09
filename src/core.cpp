@@ -125,20 +125,128 @@ static long framedelay(Uint64 ticks_elap, double fps)
         return 1;
 }
 
-/* <constants> */
+static array<string, 10> KeyBindNames = {
+    "LEFT",
+    "RIGHT",
+    "UP",
+    "DOWN",
+    "START",
+    "A",
+    "B",
+    "C",
+    "D",
+    "ESCAPE"
+};
 
-struct bindings defaultkeybinds[2] = {
-    {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN, SDLK_RETURN, SDLK_f, SDLK_d, SDLK_s, SDLK_a, SDLK_ESCAPE},
+JoyBinds::JoyBinds() : name(""), joyIndex(-1), joyID(-1), hatIndex(-1) {}
 
-    {SDLK_j, SDLK_l, SDLK_i, SDLK_k, SDLK_TAB, SDLK_r, SDLK_e, SDLK_w, SDLK_q, SDLK_F11}};
+bool JoyBinds::read(INI& ini, const string sectionName) {
+    bool defaultUsed = false;
 
-struct settings defaultsettings = {&defaultkeybinds[0], 1, true, false, 50, 100, 100, NULL};
+    if (!ini.get(sectionName, "JOYNAME", name) && !ini.get(sectionName, "JOYINDEX", joyIndex)) {
+        // When no joystick name nor index is set in the INI, just disable
+        // joystick input completely.
+        name = "";
+        joyIndex = -1;
+        return defaultUsed;
+    }
 
-/* </constants> */
+    // A joystick was selected; joystick axes and hat settings have defaults,
+    // but buttons don't.
 
-Keybinds::Keybinds() : Keybinds(0) {}
+    unsigned buttonGets = 0u;
+    buttonGets += ini.get(sectionName, "BUTTONLEFT", buttons.left) && buttons.left >= 0;
+    buttonGets += ini.get(sectionName, "BUTTONRIGHT", buttons.right) && buttons.right >= 0;
+    buttonGets += ini.get(sectionName, "BUTTONUP", buttons.up) && buttons.up >= 0;
+    buttonGets += ini.get(sectionName, "BUTTONDOWN", buttons.down) && buttons.down >= 0;
+    buttonGets += ini.get(sectionName, "BUTTONSTART", buttons.start) ? buttons.start >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTONA", buttons.a) ? buttons.a >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTONB", buttons.b) ? buttons.b >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTONC", buttons.c) ? buttons.c >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTOND", buttons.d) ? buttons.d >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTONESCAPE", buttons.escape) ? buttons.escape >= 0 : 0u;
+    if (buttonGets != 10u) {
+        defaultUsed = true;
+    }
 
-Keybinds::Keybinds(int playerNum) {
+    unsigned axisGets = 0u;
+    axisGets += ini.get(sectionName, "AXISX", axes.x) && axes.x >= 0;
+    axisGets += ini.get(sectionName, "AXISY", axes.y) && axes.y >= 0;
+    if (axisGets == 0u) {
+        axes.x = 0;
+        axes.right = 1;
+        axes.y = 1;
+        axes.down = 1;
+        defaultUsed = true;
+    }
+    else {
+        if (axes.x >= 0) {
+            string axisDirection = "";
+            if (ini.get(sectionName, "AXISRIGHT", axisDirection)) {
+                if (axisDirection == "+") {
+                    axes.right = 1;
+                }
+                else if (axisDirection == "-") {
+                    axes.right = -1;
+                }
+            }
+            if (axes.right == 0) {
+                axes.right = 1;
+                defaultUsed = true;
+            }
+        }
+        else {
+            axes.x = 0;
+            axes.right = 1;
+            defaultUsed = true;
+        }
+
+        if (axes.y >= 0) {
+            string axisDirection = "";
+            if (ini.get(sectionName, "AXISDOWN", axisDirection)) {
+                if (axisDirection == "+") {
+                    axes.down = 1;
+                }
+                else if (axisDirection == "-") {
+                    axes.down = -1;
+                }
+            }
+            if (axes.down == 0) {
+                axes.down = 1;
+                defaultUsed = true;
+            }
+        }
+        else {
+            axes.y = 1;
+            axes.down = 1;
+            defaultUsed = true;
+        }
+
+        // Use default axis numbers if the user accidentally makes them
+        // identical.
+        if (axes.x == axes.y) {
+            axes.x = 0;
+            axes.y = 1;
+        }
+    }
+
+    if (!ini.get(sectionName, "HATINDEX", hatIndex) || hatIndex < 0) {
+        hatIndex = 0;
+        defaultUsed = true;
+    }
+}
+
+JoyBinds::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), a(-1), b(-1), c(-1), d(-1), start(-1), escape(-1) {}
+JoyBinds::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
+
+KeyBinds::KeyBinds() : KeyBinds(0) {}
+
+/**
+ * We have to guarantee some default control option for fresh installs, so
+ * keyboard is the best option. Other inputs, like joysticks, don't have any
+ * defaults set.
+ */
+KeyBinds::KeyBinds(int playerNum) {
     switch (playerNum) {
     default:
     case 0:
@@ -169,27 +277,14 @@ Keybinds::Keybinds(int playerNum) {
     }
 }
 
-static array<string, 10> keybindNames = {
-    "LEFT",
-    "RIGHT",
-    "UP",
-    "DOWN",
-    "START",
-    "A",
-    "B",
-    "C",
-    "D",
-    "ESCAPE"
-};
-
-bool Keybinds::read(INI& ini, const string sectionName) {
+bool KeyBinds::read(INI& ini, const string sectionName) {
     bool defaultUsed = false;
     SDL_Keycode* const keycodes[] = {&left, &right, &up, &down, &start, &a, &b, &c, &d, &escape};
     SDL_Keycode* const* keycode = keycodes;
-    for (const auto keybindName : keybindNames) {
+    for (const auto keyBindName : KeyBindNames) {
         string keyName;
-        if (!ini.get(sectionName, keybindName, keyName) || SDL_GetKeyFromName(keyName.c_str()) == SDLK_UNKNOWN) {
-            log_warn("Binding for %s is invalid", keybindName.c_str());
+        if (!ini.get(sectionName, keyBindName, keyName) || SDL_GetKeyFromName(keyName.c_str()) == SDLK_UNKNOWN) {
+            log_warn("Binding for %s is invalid", keyBindName.c_str());
             defaultUsed = true;
         }
         else {
@@ -214,14 +309,20 @@ bool Settings::read(string filename) {
     INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
-        log_warn("Error reading configuation INI \"%s\" on line %" PRIu64, filename.c_str(), (uint64_t)readStatus.second);
+        fprintf(stderr, "Error reading configuation INI \"%s\" on line %" PRIu64, filename.c_str(), (uint64_t)readStatus.second);
     }
     if (!readStatus.first) {
-        log_warn("Failed opening configuration INI \"%s\"", filename.c_str());
+        fprintf(stderr, "Failed opening configuration INI \"%s\"", filename.c_str());
         return true;
     }
 
-    bool defaultUsed = keybinds.read(ini, "P1CONTROLS");
+    // [P1KEYBINDS]
+    bool defaultUsed = this->keyBinds.read(ini, "P1KEYBINDS");
+
+    // [P1JOYBINDS]
+    if (!this->joyBinds.read(ini, "P1JOYBINDS")) {
+        defaultUsed = true;
+    }
 
     // [PATHS]
     string basePath;
@@ -233,12 +334,6 @@ bool Settings::read(string filename) {
     }
     else {
         this->basePath = basePath;
-    }
-
-    // TODO: Add support for player 2.
-    // [P1CONTROLS]
-    if (this->keybinds.read(ini, "P1CONTROLS")) {
-        defaultUsed = true;
     }
 
     // [AUDIO]
@@ -318,26 +413,6 @@ int is_up_input_repeat(coreState *cs, int delay)
 int is_down_input_repeat(coreState *cs, int delay)
 {
     return cs->keys.down && cs->hold_dir == DAS_DOWN && cs->hold_time >= delay;
-}
-
-struct bindings *bindings_copy(struct bindings *src)
-{
-    if(!src)
-        return NULL;
-
-    struct bindings *b = (struct bindings *)malloc(sizeof(struct bindings));
-    b->left = src->left;
-    b->right = src->right;
-    b->up = src->up;
-    b->down = src->down;
-    b->start = src->start;
-    b->a = src->a;
-    b->b = src->b;
-    b->c = src->c;
-    b->d = src->d;
-    b->escape = src->escape;
-
-    return b;
 }
 
 static string make_path(const char *base, const char *subdir, const char *name, const char *ext)
@@ -642,22 +717,58 @@ int init(coreState *cs, Settings* settings)
         Mix_AllocateChannels(32);
         Mix_Volume(-1, (cs->sfx_volume * cs->master_volume) / 100);
 
-        if(SDL_NumJoysticks() > 0)
-        {
-            cs->joystick = SDL_JoystickOpen(0);
+        if (SDL_NumJoysticks()) {
+            const int numJoysticks = SDL_NumJoysticks();
+            for (int i = 0; i < numJoysticks; i++) {
+                SDL_Joystick* joystick;
+                if (joystick = SDL_JoystickOpen(i)) {
+                    printf("Attached joystick: \"%s\" at index %d\n", SDL_JoystickName(joystick), i);
+                    SDL_JoystickClose(joystick);
+                }
+                else {
+                    printf("Joystick index %d not attached\n", i);
+                }
+            }
 
-            if(cs->joystick)
-            {
-                printf("Opened Joystick 0\n");
-                printf("Name: %s\n", SDL_JoystickNameForIndex(0));
-                printf("Number of Axes: %d\n", SDL_JoystickNumAxes(cs->joystick));
-                printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(cs->joystick));
-                printf("Number of Balls: %d\n", SDL_JoystickNumBalls(cs->joystick));
+            cs->joystick = nullptr;
+            if (cs->settings->joyBinds.name != "") {
+                const int numJoysticks = SDL_NumJoysticks();
+                for (int i = 0; i < numJoysticks; i++) {
+                    if (cs->joystick = SDL_JoystickOpen(i)) {
+                        if (SDL_JoystickName(cs->joystick) == cs->settings->joyBinds.name) {
+                            cs->settings->joyBinds.joyIndex = i;
+                            cs->settings->joyBinds.joyID = SDL_JoystickInstanceID(cs->joystick);
+                            break;
+                        }
+                        else {
+                            SDL_JoystickClose(cs->joystick);
+                            cs->joystick = nullptr;
+                        }
+                    }
+                }
             }
-            else
-            {
-                printf("Couldn't open Joystick 0\n");
+
+            if (!cs->joystick && cs->settings->joyBinds.joyIndex >= 0 && cs->settings->joyBinds.joyIndex < SDL_NumJoysticks()) {
+                if (cs->joystick = SDL_JoystickOpen(cs->settings->joyBinds.joyIndex)) {
+                    cs->settings->joyBinds.joyID = SDL_JoystickInstanceID(cs->joystick);
+                }
             }
+
+            if (cs->settings->joyBinds.joyIndex >= 0 && cs->joystick) {
+                printf("Opened joystick\n");
+                printf("Name: %s\n", SDL_JoystickNameForIndex(cs->settings->joyBinds.joyIndex));
+                printf("Index: %d\n", cs->settings->joyBinds.joyIndex);
+                printf("Number of buttons: %d\n", SDL_JoystickNumButtons(cs->joystick));
+                printf("Number of axes: %d\n", SDL_JoystickNumAxes(cs->joystick));
+                printf("Number of hats: %d\n", SDL_JoystickNumHats(cs->joystick));
+            }
+            else {
+                cs->joystick = nullptr;
+                printf("No joysticks were opened\n");
+            }
+        }
+        else {
+            printf("No joysticks are attached\n");
         }
 
         cs->screen.w = cs->settings->videoScale * 640;
@@ -1018,11 +1129,11 @@ int procevents(coreState *cs, GuiWindow& wind)
 
     struct keyflags *k = NULL;
     //struct keyflags joyflags{0};
-    SDL_Joystick *joy = cs->joystick;
 
     SDL_Event event;
     SDL_Keycode kc;
-    Keybinds& kb = cs->settings->keybinds;
+    KeyBinds& kb = cs->settings->keyBinds;
+    JoyBinds& jb = cs->settings->joyBinds;
 
     Uint8 rc = 0;
 
@@ -1097,48 +1208,38 @@ int procevents(coreState *cs, GuiWindow& wind)
         //printf("Handling SDL event\n");
         //cs->screenManager->handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y});
 
-        switch(event.type)
-        {
+        switch (event.type) {
             case SDL_QUIT:
                 return 1;
 
             case SDL_JOYAXISMOTION:
                 k = &cs->keys_raw;
 
-                if(event.jaxis.which == 0)
-                {
-                    if(event.jaxis.axis == 0) // x axis
-                    {
-                        if(event.jaxis.value < -JOYSTICK_DEAD_ZONE)
-                        {
-                            k->left = 1;
-                            k->right = 0;
-                        }
-                        else if(event.jaxis.value > JOYSTICK_DEAD_ZONE)
-                        {
+                if (event.jaxis.which == jb.joyID) {
+                    if (event.jaxis.axis == jb.axes.x) {
+                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * jb.axes.right) {
                             k->right = 1;
                             k->left = 0;
                         }
-                        else
-                        {
+                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -jb.axes.right) {
+                            k->left = 1;
+                            k->right = 0;
+                        }
+                        else {
                             k->right = 0;
                             k->left = 0;
                         }
                     }
-                    else if(event.jaxis.axis == 1) // y axis
-                    {
-                        if(event.jaxis.value < -JOYSTICK_DEAD_ZONE)
-                        {
-                            k->up = 1;
-                            k->down = 0;
-                        }
-                        else if(event.jaxis.value > JOYSTICK_DEAD_ZONE)
-                        {
+                    else if (event.jaxis.axis == jb.axes.y) {
+                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * jb.axes.down) {
                             k->down = 1;
                             k->up = 0;
                         }
-                        else
-                        {
+                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -jb.axes.down) {
+                            k->up = 1;
+                            k->down = 0;
+                        }
+                        else {
                             k->up = 0;
                             k->down = 0;
                         }
@@ -1150,37 +1251,28 @@ int procevents(coreState *cs, GuiWindow& wind)
             case SDL_JOYHATMOTION:
                 k = &cs->keys_raw;
 
-                if(event.jhat.which == 0)
-                {
-                    if(event.jhat.hat == 0)
-                    {
-                        if(event.jhat.value == SDL_HAT_LEFT)
-                        {
-                            k->left = 1;
-                            k->right = 0;
-                        }
-                        else if(event.jhat.value == SDL_HAT_RIGHT)
-                        {
-                            k->right = 1;
-                            k->left = 0;
-                        }
-                        else if(event.jhat.value == SDL_HAT_UP)
-                        {
-                            k->up = 1;
-                            k->down = 0;
-                        }
-                        else if(event.jhat.value == SDL_HAT_DOWN)
-                        {
-                            k->down = 1;
-                            k->up = 0;
-                        }
-                        else
-                        {
-                            k->right = 0;
-                            k->left = 0;
-                            k->up = 0;
-                            k->down = 0;
-                        }
+                if (event.jhat.which == jb.joyID && event.jhat.hat == jb.hatIndex) {
+                    if (event.jhat.value == SDL_HAT_LEFT) {
+                        k->left = 1;
+                        k->right = 0;
+                    }
+                    else if (event.jhat.value == SDL_HAT_RIGHT) {
+                        k->right = 1;
+                        k->left = 0;
+                    }
+                    else if (event.jhat.value == SDL_HAT_UP) {
+                        k->up = 1;
+                        k->down = 0;
+                    }
+                    else if (event.jhat.value == SDL_HAT_DOWN) {
+                        k->down = 1;
+                        k->up = 0;
+                    }
+                    else {
+                        k->right = 0;
+                        k->left = 0;
+                        k->up = 0;
+                        k->down = 0;
                     }
                 }
 
@@ -1189,32 +1281,24 @@ int procevents(coreState *cs, GuiWindow& wind)
             case SDL_JOYBUTTONDOWN:
             case SDL_JOYBUTTONUP:
                 k = &cs->keys_raw;
-                if(joy)
-                {
-                    rc = SDL_JoystickGetButton(joy, 0);
-                    if(!rc)
-                        k->a = 0;
-                    if(rc && k->a == 0)
-                        k->a = 1;
+                if (event.jbutton.which == jb.joyID) {
+                    #define CHECK_BUTTON(name) \
+                    if (event.jbutton.button == jb.buttons.name) { \
+                        k->name = event.type == SDL_JOYBUTTONDOWN; \
+                    }
 
-                    rc = SDL_JoystickGetButton(joy, 3);
-                    if(!rc)
-                        k->b = 0;
-                    if(rc && k->b == 0)
-                        k->b = 1;
+                    CHECK_BUTTON(left);
+                    CHECK_BUTTON(right);
+                    CHECK_BUTTON(up);
+                    CHECK_BUTTON(down);
+                    CHECK_BUTTON(start);
+                    CHECK_BUTTON(a);
+                    CHECK_BUTTON(b);
+                    CHECK_BUTTON(c);
+                    CHECK_BUTTON(d);
+                    CHECK_BUTTON(escape);
 
-                    rc = SDL_JoystickGetButton(joy, 5);
-                    if(!rc)
-                        k->c = 0;
-                    if(rc && k->c == 0)
-                        k->c = 1;
-
-                    rc = SDL_JoystickGetButton(joy, 4);
-                    if(!rc)
-                        k->d = 0;
-                    if(rc && k->d == 0)
-                        k->d = 1;
-                    // TODO: Add all buttons here.
+                    #undef CHECK_BUTTON
                 }
 
                 break;
@@ -1653,6 +1737,7 @@ int procevents(coreState *cs, GuiWindow& wind)
     }
 
     /*
+        SDL_Joystick *joy = cs->joystick;
         const uint8_t *keystates = SDL_GetKeyboardState(NULL);
 
         if (cs->settings->keybinds) {
