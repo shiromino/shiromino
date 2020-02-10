@@ -165,6 +165,7 @@ public:
     float videoScale;
     int videoStretch;
     int fullscreen;
+    int vsync;
 
     int masterVolume;
     int sfxVolume;

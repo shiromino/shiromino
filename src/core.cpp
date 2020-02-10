@@ -63,8 +63,10 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
     LARGE_INTEGER waitTime = { .QuadPart = -((LONGLONG)req->tv_sec * 10000000ll + (LONGLONG)req->tv_nsec / 100ll) };
     const HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
     if (timer) {
+        // Signal after waiting for the requested time, but if the signal took
+        // too long, use millisecond precision with WaitForSingleObject.
         SetWaitableTimer(timer, &waitTime, 0, NULL, NULL, 0);
-        WaitForSingleObject(timer, INFINITE);
+        WaitForSingleObject(timer, waitTime.QuadPart / 10000);
         CloseHandle(timer);
         return 0;
     }
@@ -299,6 +301,7 @@ Settings::Settings() :
     videoScale(1.0f),
     videoStretch(1),
     fullscreen(0),
+    vsync(0),
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),
@@ -381,6 +384,14 @@ bool Settings::read(string filename) {
     }
     else {
         this->fullscreen = fullscreen;
+    }
+
+    int vsync;
+    if (!ini.get("SCREEN", "VSYNC", vsync)) {
+        defaultUsed = true;
+    }
+    else {
+        this->vsync = vsync;
     }
 
     // [ACCOUNT]
@@ -707,6 +718,9 @@ int init(coreState *cs, Settings* settings)
               "SDL_Init: Error: %s\n",
               SDL_GetError());
         check(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem: Error: %s\n", SDL_GetError());
+        if (SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH) != 0) {
+            printf("Failed to set high thread priority; continuing without changing thread priority\n");
+        }
         check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG,
             "IMG_Init: Failed to initialize PNG support: %s\n",
             IMG_GetError());  // IMG_GetError() not necessarily reliable here
@@ -783,7 +797,7 @@ int init(coreState *cs, Settings* settings)
         cs->screen.window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, windowFlags);
         check(cs->screen.window != NULL, "SDL_CreateWindow: Error: %s\n", SDL_GetError());
         cs->screen.renderer =
-            SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+            SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | (settings->vsync ? SDL_RENDERER_PRESENTVSYNC : 0));
         check(cs->screen.renderer != NULL, "SDL_CreateRenderer: Error: %s\n", SDL_GetError());
 
         SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_BLEND);
