@@ -26,10 +26,10 @@ if(${PKG_CONFIG_FOUND})
     pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
     pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
     set(LIBRARIES
-        SDL2
-        SDL2_image
-        SDL2_mixer
-        sqlite3)
+	${SDL2_LIBRARIES}
+	${SDL2_image_LIBRARIES}
+	${SDL2_mixer_LIBRARIES}
+	${sqlite3_LIBRARIES})
 else()
     find_package(sdl2 REQUIRED)
     find_package(sdl2-image REQUIRED)
@@ -161,6 +161,11 @@ elseif(${PKG_CONFIG_FOUND})
         ${SDL2_image_CFLAGS_OTHER}
         ${SDL2_mixer_CFLAGS_OTHER}
         ${sqlite3_CFLAGS_OTHER})
+    target_link_directories(Shiromino PUBLIC
+        ${SDL2_LINK_LIBRARIES}
+        ${SDL2_image_LINK_LIBRARIES}
+        ${SDL2_mixer_LINK_LIBRARIES}
+        ${sqlite3_LINK_LIBRARIES})
     set(INCLUDE_DIRS
         ${SDL2_INCLUDE_DIRS}
         ${SDL2_image_INCLUDE_DIRS}
