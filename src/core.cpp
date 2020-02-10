@@ -97,16 +97,19 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
 // needs tweaks to be more accurate.
 static long framedelay(Uint64 ticks_elap, double fps)
 {
+    const Uint64 freq = SDL_GetPerformanceFrequency();
+    const double start = (double)SDL_GetPerformanceCounter() / freq;
     if(fps < 1 || fps > 240)
         return FRAMEDELAY_ERR;
 
     struct timespec t = {0, 0};
-    double sec_elap = (double)(ticks_elap) / SDL_GetPerformanceFrequency();
+    double sec_elap = (double)(ticks_elap) / freq;
     double spf = (1 / fps);
 
     if(sec_elap < spf)
     {
         t.tv_nsec = (long)((spf - sec_elap) * 1000000000ll);
+#if 0
 
         struct timespec rem;
         if(nanosleep(&t, &rem))
@@ -115,6 +118,10 @@ static long framedelay(Uint64 ticks_elap, double fps)
             log_err("nanosleep() returned failure during frame length calculation");
             return FRAMEDELAY_ERR;
         }
+#else
+        const double end = start + spf - sec_elap;
+        for (double timestamp = start; timestamp < end; timestamp = (double)SDL_GetPerformanceCounter() / freq);
+#endif
     }
     else
     {
