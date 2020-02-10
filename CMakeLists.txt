@@ -151,8 +151,21 @@ if(${VCPKG_TOOLCHAIN})
     # added.
     find_path(INCLUDE_DIRS sqlite3.h)
 elseif(${PKG_CONFIG_FOUND})
-    target_compile_options(Shiromino PUBLIC ${SDL2_CFLAGS_OTHER} ${SDL2_IMAGE_CFLAGS_OTHER} ${SDL2_MIXER_CFLAGS_OTHER} ${SQLITE3_CFLAGS_OTHER})
-    set(INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS} ${SQLITE3_INCLUDE_DIRS})
+    target_compile_options(Shiromino PUBLIC
+        ${SDL2_CFLAGS}
+        ${SDL2_image_CFLAGS}
+        ${SDL2_mixer_CFLAGS}
+        ${sqlite3_CFLAGS}
+
+        ${SDL2_CFLAGS_OTHER}
+        ${SDL2_image_CFLAGS_OTHER}
+        ${SDL2_mixer_CFLAGS_OTHER}
+        ${sqlite3_CFLAGS_OTHER})
+    set(INCLUDE_DIRS
+        ${SDL2_INCLUDE_DIRS}
+        ${SDL2_image_INCLUDE_DIRS}
+        ${SDL2_mixer_INCLUDE_DIRS}
+        ${sqlite3_INCLUDE_DIRS})
 endif()
 
 target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${INCLUDE_DIRS})
