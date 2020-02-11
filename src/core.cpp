@@ -109,7 +109,7 @@ static long framedelay(Uint64 ticks_elap, double fps)
     if(sec_elap < spf)
     {
         t.tv_nsec = (long)((spf - sec_elap) * 1000000000ll);
-#if 0
+#ifndef BUSYLOOP_DELAY
 
         struct timespec rem;
         if(nanosleep(&t, &rem))
