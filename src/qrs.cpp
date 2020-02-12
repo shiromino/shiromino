@@ -1255,7 +1255,7 @@ int qrs_irs(game_t *g)
         p->orient = 0;
     else if(direction)
     {
-        g->origin->assets->prerotate->play(g->origin);
+        g->origin->assets->prerotate->play(*g->origin->settings);
     }
 
     return 0;
@@ -1475,7 +1475,7 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
 
             if(p->state & PSFALL && grav != 28 * 256)
             {
-                g->origin->assets->land->play(g->origin);
+                g->origin->assets->land->play(*g->origin->settings);
             }
             p->state &= ~PSFALL;
             p->state |= PSLOCK;
@@ -1528,7 +1528,7 @@ int qrs_lock(game_t *g, qrs_player *p)
 
     p->state &= ~(PSLOCK | PSFALL);
     // p->state |= PSPRELOCKFLASH1;
-    g->origin->assets->lock->play(g->origin);
+    g->origin->assets->lock->play(*g->origin->settings);
 
     return 0;
 }

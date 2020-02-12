@@ -6,12 +6,15 @@
  */
 #pragma once
 
+#include "Settings.hpp"
 #include <string>
 #include "SDL_mixer.h"
 
 struct coreState;
 
 namespace Shiro {
+    // TODO: Allow selecting playback channel?
+
     /**
      * Manages loading and playback of a music track.
      */
@@ -30,11 +33,18 @@ namespace Shiro {
         bool load(std::string filenameNoExt);
 
         /**
-         * Plays the music track. Returns true if the music track was played.
+         * Plays the music track. Returns true if the music track was played;
+         * playback only fails if no music track is loaded. The master and
+         * music volume settings will scale the volume the music track plays
+         * at; if they're both 100%, Music::volume will be the played volume.
          */
-        bool play(coreState* cs);
+        bool play(Settings& settings);
 
-        int volume;
+        /**
+         * The volume of the music track when played. This is a percentage,
+         * with 100.0f being max volume.
+         */
+        float volume;
 
     private:
         Mix_Music *data;
@@ -57,14 +67,21 @@ namespace Shiro {
         bool load(std::string filenameNoExt);
 
         /**
-         * Plays the sound effect. Returns true if the sound effect was played.
+         * Plays the sound effect. Returns true if the sound effect was played;
+         * playback only fails if no sound effect is loaded. The master and
+         * sound effect volume settings will scale the volume the sound effect
+         * plays at; if they're both 100%, Sfx::volume will be the played
+         * volume.
          */
-        bool play(coreState* cs);
+        bool play(Settings& settings);
 
-        int volume;
+        /**
+         * The volume of the sound effect when played. This is a percentage,
+         * with 100.0f being max volume.
+         */
+        float volume;
 
     private:
-        std::string filename;
         Mix_Chunk *data;
     };
 }

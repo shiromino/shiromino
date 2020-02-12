@@ -5,14 +5,13 @@
  * directory for the full text of the license.
  */
 #include "Audio.hpp"
-#include "core.h"
 #include "SDL_mixer.h"
 #include "Config.hpp"
 
 using namespace Shiro;
 using namespace std;
 
-Music::Music() : volume(0), data(nullptr) {
+Music::Music() : volume(0.0f), data(nullptr) {
 }
 
 Music::~Music() {
@@ -37,18 +36,18 @@ bool Music::load(string filenameNoExt) {
     return data != nullptr;
 }
 
-bool Music::play(coreState* cs) {
+bool Music::play(Settings& settings) {
     if (!data) {
         return false;
     }
 
-    Mix_VolumeMusic(static_cast<int>(volume * (cs->mus_volume / 100.0f) * (cs->master_volume / 100.0f)));
+    Mix_VolumeMusic(static_cast<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.musicVolume / 100.0f) * (settings.masterVolume / 100.0f)));
     Mix_PlayMusic(data, -1);
 
     return true;
 }
 
-Sfx::Sfx() : volume(0), data(nullptr) {}
+Sfx::Sfx() : volume(0.0f), data(nullptr) {}
 
 Sfx::~Sfx() {
     if (data) {
@@ -62,20 +61,17 @@ bool Sfx::load(string filenameNoExt) {
 
     string path = filenameNoExt + ".wav";
     data = Mix_LoadWAV(path.c_str());
-    filename = path;
 
     return data != nullptr;
 }
 
-bool Sfx::play(coreState* cs) {
+bool Sfx::play(Settings& settings) {
     if(!data) {
         return false;
     }
 
-    Mix_VolumeChunk(data, static_cast<int>(volume * (cs->sfx_volume / 100.0f) * (cs->master_volume / 100.0f)));
-    if(Mix_PlayChannel(-1, data, 0) < 0) {
-        printf("Mix_PlayChannel() error: %s\n", Mix_GetError());
-    }
+    Mix_VolumeChunk(data, static_cast<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.sfxVolume / 100.0f) * (settings.masterVolume / 100.0f)));
+    Mix_PlayChannel(-1, data, 0);
 
     return true;
 }

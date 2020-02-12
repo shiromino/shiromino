@@ -18,6 +18,7 @@
 #endif
 // #include "tests.h"
 
+using namespace Shiro;
 using namespace std;
 
 bool file_exists(const char *filename)

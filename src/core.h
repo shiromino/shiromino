@@ -23,7 +23,7 @@
 #include "SDL_mixer.h"
 #include "SGUIL/SGUIL.hpp"
 #include "GuiScreenManager.hpp"
-#include "PDINI.hpp"
+#include "Settings.hpp"
 
 #include "grid.h"
 #include "gfx_structures.h"
@@ -43,63 +43,6 @@ enum gameDisplayMode
     game_display_detailed,
     game_display_centered,
     game_display_bare
-};
-
-class KeyBinds {
-public:
-    KeyBinds();
-    KeyBinds(const int playerNum);
-
-    bool read(PDINI::INI& ini, const std::string sectionName);
-
-    SDL_Keycode left;
-    SDL_Keycode right;
-    SDL_Keycode up;
-    SDL_Keycode down;
-    SDL_Keycode start;
-    SDL_Keycode a;
-    SDL_Keycode b;
-    SDL_Keycode c;
-    SDL_Keycode d;
-    SDL_Keycode escape;
-};
-
-class JoyBinds {
-public:
-    JoyBinds();
-
-    bool read(PDINI::INI& ini, const std::string sectionName);
-
-    std::string name;
-    int joyIndex;
-    SDL_JoystickID joyID;
-
-    struct Buttons {
-        Buttons();
-
-        int left;
-        int right;
-        int up;
-        int down;
-        int start;
-        int a;
-        int b;
-        int c;
-        int d;
-        int escape;
-    } buttons;
-
-    struct Axes {
-        Axes();
-
-        int x;
-        int right;
-
-        int y;
-        int down;
-    } axes;
-
-    int hatIndex;
 };
 
 typedef enum {
@@ -151,31 +94,6 @@ struct assetdb
 #undef DEF_ARRAY
 #undef SFX_ARRAY
 };
-
-class Settings {
-public:
-    Settings();
-
-    bool read(const std::string filename);
-
-    KeyBinds keyBinds;
-    JoyBinds joyBinds;
-    // TODO: XInputBinds xInputBinds;
-
-    float videoScale;
-    int videoStretch;
-    int fullscreen;
-    int vsync;
-
-    int masterVolume;
-    int sfxVolume;
-    int musicVolume;
-
-    std::string basePath;
-
-    std::string playerName;
-};
-
 
 typedef struct game game_t;
 
@@ -230,7 +148,7 @@ struct coreState
     char *iniFilename;
     char *calling_path;
 
-    Settings* settings;
+    Shiro::Settings* settings;
     struct assetdb *assets;
     SDL_Texture *bg;
     SDL_Texture *bg_old;
@@ -261,10 +179,6 @@ struct coreState
     int logical_mouse_y;
     int mouse_left_down;
     int mouse_right_down;
-
-    int master_volume;
-    int sfx_volume;
-    int mus_volume;
 
     int menu_input_override;
     int button_emergency_override;
@@ -323,7 +237,6 @@ protected:
 };
 
 extern struct bindings defaultkeybinds[2];
-extern struct settings defaultsettings;
 
 extern BindableVariables bindables;
 
@@ -340,7 +253,7 @@ void coreState_destroy(coreState *cs);
 gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier);
 int load_files(coreState *cs);
 
-int init(coreState *cs, Settings*s);
+int init(coreState *cs, Shiro::Settings* s);
 void quit(coreState *cs);
 
 int run(coreState *cs);

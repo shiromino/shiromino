@@ -85,6 +85,7 @@ set(SOURCES
     src/replay.cpp
     src/rotation_tables.cpp
     src/scores.cpp
+    src/Settings.cpp
     src/ShiroPhysoMino.cpp
     src/SPM_Randomizer.cpp
     src/SPM_Spec.cpp
@@ -126,6 +127,7 @@ set(HEADERS
     src/replay.h
     src/rotation_tables.h
     src/scores.h
+    src/Settings.hpp
     src/sfx.h
     src/ShiroPhysoMino.hpp
     src/SPM_Randomizer.hpp
