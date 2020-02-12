@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2020 Brandon McGriff
+ *
+ * Licensed under the MIT license; see the LICENSE-src file at the top level
+ * directory for the full text of the license.
+ */
 #include "Audio.hpp"
 #include "core.h"
 #include "SDL_mixer.h"
@@ -66,8 +72,6 @@ bool Sfx::play(coreState* cs) {
         return false;
     }
 
-    // Mix_VolumeChunk(data, printf(((float)(nz->settings->sfx_volume) / 100.0) * 128.0));
-    Mix_VolumeChunk(data, volume);
     Mix_VolumeChunk(data, static_cast<int>(volume * (cs->sfx_volume / 100.0f) * (cs->master_volume / 100.0f)));
     if(Mix_PlayChannel(-1, data, 0) < 0) {
         printf("Mix_PlayChannel() error: %s\n", Mix_GetError());

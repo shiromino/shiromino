@@ -1,7 +1,6 @@
 /**
  * This library is public domain; its author disclaims any copyright to it.
  */
-
 #pragma once
 
 #include <fstream>

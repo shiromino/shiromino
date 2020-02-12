@@ -2,7 +2,6 @@
 
 #include "Config.hpp"
 #include "Debug.hpp"
-#include "file_io.h"
 #include "gfx.h"
 #include "gfx_structures.h"
 
@@ -626,15 +625,7 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
     font->isValid = true;
 }
 
-static int load_asset_volume(coreState *cs, const char *filename)
-{
-    string path = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".cfg");
-    vector<string> lines = split_file(path.c_str());
-
-    return get_asset_volume(lines, string{filename});
-}
-
-static void load_sfx(coreState* cs, Sfx** s, const char* filename)
+static void load_sfx(coreState* cs, INI& ini, Sfx** s, const char* filename)
 {
     string path = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
     *s = new Sfx();
@@ -642,10 +633,16 @@ static void load_sfx(coreState* cs, Sfx** s, const char* filename)
         log_warn("Failed to load sfx '%s'", filename);
     }
 
-    (*s)->volume = load_asset_volume(cs, filename);
+    int volume;
+    if (!ini.get("", filename, volume) || volume < 0 || volume > 100) {
+        (*s)->volume = MIX_MAX_VOLUME;
+    }
+    else {
+        (*s)->volume = (MIX_MAX_VOLUME * volume) / 100;
+    }
 }
 
-static void load_music(coreState* cs, Music** m, const char* filename)
+static void load_music(coreState* cs, INI& ini, Music** m, const char* filename)
 {
     string path = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
     *m = new Music();
@@ -653,7 +650,13 @@ static void load_music(coreState* cs, Music** m, const char* filename)
         log_warn("Failed to load music '%s'", filename);
     }
 
-    (*m)->volume = load_asset_volume(cs, filename);
+    int volume;
+    if (!ini.get("", filename, volume) || volume < 0 || volume > 100) {
+        (*m)->volume = MIX_MAX_VOLUME;
+    }
+    else {
+        (*m)->volume = (MIX_MAX_VOLUME * volume) / 100;
+    }
 }
 
 int load_files(coreState *cs)
@@ -674,15 +677,21 @@ int load_files(coreState *cs)
 
         // audio assets
 
-#define MUSIC(name, i) load_music(cs, &cs->assets->name[i], #name #i);
+    {
+        INI ini;
+        string audioINIPath = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".ini");
+        ini.read(audioINIPath);
+
+#define MUSIC(name, i) load_music(cs, ini, &cs->assets->name[i], #name #i);
 #include "music.h"
 #undef MUSIC
 
-#define SFX(name) load_sfx(cs, &cs->assets->name, #name);
-#define SFX_ARRAY(name, i) load_sfx(cs, &cs->assets->name[i], #name #i);
+#define SFX(name) load_sfx(cs, ini, &cs->assets->name, #name);
+#define SFX_ARRAY(name, i) load_sfx(cs, ini, &cs->assets->name[i], #name #i);
 #include "sfx.h"
 #undef SFX_ARRAY
 #undef SFX
+    }
 
     /*
     #ifdef ENABLE_ANIM_BG

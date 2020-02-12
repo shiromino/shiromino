@@ -5,7 +5,6 @@
 #include <string>
 
 #include "core.h"
-#include "file_io.h"
 #include "grid.h"
 #include "piecedef.h"
 #include "qrs.h"

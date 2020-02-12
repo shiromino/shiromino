@@ -1,6 +1,21 @@
 Shiromino Version history
 ===========================
 
+0.1
+{
+    New Features:
+        + Joystick input is now fully configurable; no joystick input is enabled by default
+        + Vertical sync option added; off by default
+
+    Changes/Removed Features:
+        * Build system changed to CMake; the old Makefile is no longer available
+        * Change to an INI file loader, replacing the CFG loader; game.cfg is now game.ini, audio/volume.cfg is now audio/volume.ini
+
+    Bug Fixes:
+        * Preview sounds now play
+        * Sound volume settings for individual music tracks and sound effects works now
+}
+
 beta3-pre2
 {
     New Features:

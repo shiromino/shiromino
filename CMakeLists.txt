@@ -68,7 +68,6 @@ set(SOURCES
     src/Audio.cpp
     src/bstrlib.cpp
     src/core.cpp
-    src/file_io.cpp
     src/game_menu.cpp
     src/game_qs.cpp
     src/gfx.cpp
@@ -104,7 +103,6 @@ set(HEADERS
     src/bstrlib.h
     src/core.h
     src/Debug.hpp
-    src/file_io.h
     src/fonts.h
     src/game_menu.h
     src/game_qs.h

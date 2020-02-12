@@ -11,7 +11,6 @@
 #include <time.h>
 
 #include "core.h"
-#include "file_io.h"
 #include "game_menu.h"
 #include "game_qs.h"
 #include "gfx.h"

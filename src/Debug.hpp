@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2020 Brandon McGriff
+ *
+ * Licensed under the MIT license; see the LICENSE file at the top level
+ * directory for the full text of the license.
+ */
 // TODO: Go over the code, changing uses of "goto error;" to handle true/false
 // values of check* macros.
 #pragma once
