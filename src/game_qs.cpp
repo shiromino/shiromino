@@ -81,8 +81,8 @@ static qrs_timings qs_curve[QS_CURVE_MAX] =
     {700, 20 * 256, 32, 8, 16, 16, 6},
     {800, 20 * 256, 30, 8, 12, 12, 6},
     {900, 20 * 256, 27, 8, 12, 12, 6},
-    {1000, 20 * 256, 25, 7, 10, 10, 4},
-    {1100, 20 * 256, 22, 7, 8, 8, 4}
+    {1000, 20 * 256, 22, 7, 10, 10, 4},
+    {1100, 20 * 256, 20, 7, 8, 8, 4}
 };
 
 static qrs_timings g1_master_curve[G1_MASTER_CURVE_MAX] =
@@ -927,8 +927,8 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         {
             if(q->level >= 1000)
             {
-                double amount = pow(1.025, q->level - 1000);
-                histrand_set_difficulty(q->randomizer, 45.0 + (amount > 45.0 ? 45.0 : amount));
+                double amount = pow(1.0192, q->level - 1000);
+                histrand_set_difficulty(q->randomizer, 29.0 + (amount > 21.0 ? 21.0 : amount));
             }
         }
     }
@@ -1733,8 +1733,8 @@ int qs_game_frame(game_t *g)
         if(q->level >= 1000)
         {
             // histrand_set_difficulty(q->randomizer, 5.0 + 0.2 * (q->level - 1000));
-            double amount = pow(1.025, q->level - 1000);
-            histrand_set_difficulty(q->randomizer, 45.0 + (amount > 45.0 ? 45.0 : amount));
+            double amount = pow(1.0192, q->level - 1000);
+            histrand_set_difficulty(q->randomizer, 29.0 + (amount > 21.0 ? 21.0 : amount));
         }
 
         // for testing
@@ -2395,7 +2395,7 @@ int qs_process_lockflash(game_t *g)
                         case MODE_PENTOMINO:
                             if(q->section == 5)
                             {
-                                if(q->score < 40000 || q->timer->time > 5 * 60 * 60 + 45 * 60)
+                                if(q->score < 50000 || q->timer->time > 5 * 60 * 60 + 30 * 60)
                                 {
                                     q->mroll_unlocked = false;
                                 }
@@ -2404,7 +2404,7 @@ int qs_process_lockflash(game_t *g)
                             }
                             else if(q->section == 10)
                             {
-                                if(q->timer->time > 11 * 60 * 60)
+                                if(q->timer->time > 10 * 60 * 60)
                                 {
                                     q->section--;
 
@@ -2431,7 +2431,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->level = 1200;
 
-                                if(q->score < 150000)
+                                if(q->score < 126000)
                                     q->mroll_unlocked = false;
 
                                 if(q->mroll_unlocked)

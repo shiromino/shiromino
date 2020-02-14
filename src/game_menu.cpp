@@ -1300,7 +1300,7 @@ int mload_main(game_t *g, int val)
     m->x = 4 * 16;
     m->y = 27 * 16;
 
-    d->menu[14] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.2"));
+    d->menu[14] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.3"));
     m = d->menu[14];
     m->x = 638 - (19 * 15);
     m->y = 2;
