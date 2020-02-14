@@ -120,7 +120,6 @@ set(HEADERS
     src/music.h
     src/PDINI.hpp
     src/piecedef.h
-    src/player.h
     src/qrs.h
     src/QRS.hpp
     src/random.h

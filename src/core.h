@@ -30,7 +30,18 @@
 #include "Audio.hpp"
 
 #include "scores.h"
-#include "player.h"
+
+struct player
+{
+    int playerId;
+
+    const unsigned char *name;
+
+    int tetroCount;
+    int pentoCount;
+
+    int tetrisCount;
+};
 
 enum {
     MODE_INVALID,
