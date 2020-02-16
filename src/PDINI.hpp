@@ -60,7 +60,7 @@ namespace PDINI {
 
             // Comments or empty lines:
             // ; example comment
-            const std::regex commentOrEmptyRegex("\\s*(?=;.*|)");
+            const std::regex commentOrEmptyRegex("\\s*(;.*|)");
 
             // Sections, which can have comments:
             // [example_section]
@@ -101,6 +101,7 @@ namespace PDINI {
                 }
 
                 if (!matched && readStatus.second == 0) {
+                    printf("%zu: %s\n", invalidLineNum, line.c_str());
                     readStatus.second = invalidLineNum;
                 }
             }
