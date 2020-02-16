@@ -985,27 +985,30 @@ int procevents(coreState *cs, GuiWindow& wind)
                 k = &cs->keys_raw;
 
                 if (event.jhat.which == jb.joyID && event.jhat.hat == jb.hatIndex) {
-                    if (event.jhat.value == SDL_HAT_LEFT) {
-                        k->left = 1;
+                    if (event.jhat.value == SDL_HAT_CENTERED) {
                         k->right = 0;
-                    }
-                    else if (event.jhat.value == SDL_HAT_RIGHT) {
-                        k->right = 1;
                         k->left = 0;
-                    }
-                    else if (event.jhat.value == SDL_HAT_UP) {
-                        k->up = 1;
-                        k->down = 0;
-                    }
-                    else if (event.jhat.value == SDL_HAT_DOWN) {
-                        k->down = 1;
                         k->up = 0;
+                        k->down = 0;
                     }
                     else {
-                        k->right = 0;
-                        k->left = 0;
-                        k->up = 0;
-                        k->down = 0;
+                        if ((event.jhat.value & (SDL_HAT_LEFT | SDL_HAT_RIGHT)) != (SDL_HAT_LEFT | SDL_HAT_RIGHT)) {
+                            k->left = !!(event.jhat.value & SDL_HAT_LEFT);
+                            k->right = !!(event.jhat.value & SDL_HAT_RIGHT);
+                        }
+                        else {
+                            k->left = 0;
+                            k->right = 0;
+                        }
+
+                        if ((event.jhat.value & (SDL_HAT_UP | SDL_HAT_DOWN)) != (SDL_HAT_UP | SDL_HAT_DOWN)) {
+                            k->up = !!(event.jhat.value & SDL_HAT_UP);
+                            k->down = !!(event.jhat.value & SDL_HAT_DOWN);
+                        }
+                        else {
+                            k->up = 0;
+                            k->down = 0;
+                        }
                     }
                 }
 
