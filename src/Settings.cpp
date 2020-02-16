@@ -193,10 +193,10 @@ bool Settings::read(string filename) {
     INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
-        fprintf(stderr, "Error reading configuation INI \"%s\" on line %" PRIu64, filename.c_str(), (uint64_t)readStatus.second);
+        fprintf(stderr, "Error reading configuation INI \"%s\" on line %zu\n", filename.c_str(), readStatus.second);
     }
     if (!readStatus.first) {
-        fprintf(stderr, "Failed opening configuration INI \"%s\"", filename.c_str());
+        fprintf(stderr, "Failed opening configuration INI \"%s\"\n", filename.c_str());
         return true;
     }
 

@@ -190,7 +190,7 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(s->db));
 
-        printf("Wrote replay (%" PRIu32 "): %s\n", static_cast<uint32_t>(replayLen), replayDescriptor);
+        printf("Wrote replay (%zu): %s\n", replayLen, replayDescriptor);
     }
     catch (const logic_error& error) {
     }

@@ -65,7 +65,7 @@ namespace PDINI {
             // Sections, which can have comments:
             // [example_section]
             // [example_section] ; comment
-            const std::regex sectionRegex("^\\s*\\[\\s*([_a-zA-Z][_a-zA-Z0-9]*|)\\s*\\]\\s*(?=;.*|)$");
+            const std::regex sectionRegex("^\\s*\\[\\s*([_a-zA-Z][_a-zA-Z0-9]*|)\\s*\\]\\s*(;.*|)$");
 
             // Key-value pairs; text after a semicolon is not parsed as a
             // comment:
@@ -104,7 +104,6 @@ namespace PDINI {
                     readStatus.second = invalidLineNum;
                 }
             }
-            printf("readStatus.first == %s\n", !file.fail() ? "true" : "false");
             return readStatus;
         }
 
