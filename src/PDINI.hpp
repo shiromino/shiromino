@@ -9,94 +9,112 @@
 #include <unordered_map>
 #include <utility>
 #include <sstream>
+#include <locale>
 
 namespace PDINI {
     /**
-     * Read, modify, and write INI files. Section and key names are
-     * case-sensitive. Section names, key names, and values when provided as
-     * arguments to member functions must not have leading nor trailing white
-     * space. Section and key names must be identifiers, like in C++, that
-     * start with an underscore or an alphabetic character, then zero or more
-     * underscore/alphanumeric characters. The null section contains all keys
-     * at the head of the INI, before any section definitions, or keys after a
-     * "[]" section; to use the null section with member functions, use "" as
-     * the section name.
+     * Read, modify, and write INI files. Section names, key names, and values
+     * when provided as arguments to member functions must not have leading nor
+     * trailing white space. Section and key names must be identifiers, like in
+     * C++, that start with an underscore or an alphabetic character, then zero
+     * or more underscore/alphanumeric characters. The null section contains
+     * all keys at the head of the INI, before any section definitions, or keys
+     * after a "[]" section; to use the null section with member functions, use
+     * "" as the section name.
      */
     class INI {
     public:
         /**
+         * Construct the INI class using the default case-insensitive matching
+         * for section and key names.
+         */
+        INI::INI() : INI(true) {}
+
+        /**
+         * Construct the INI class using an explicit setting for case
+         * sensitivity matching for section and key names.
+         */
+        INI::INI(bool caseInsenstive) : caseInsenstive(caseInsenstive) {}
+
+        /**
          * Read an INI file. All the key-value pairs are read in an INI, even
          * if invalid lines are encountered. Overwrites previous key-value
          * pairs. When the same key is used multiple times in one or more
-         * sections, the last key-value pair in the last section is used.
-         * Doesn't erase previous key-value pairs already stored, so you can
-         * use this for multiple INI files, accumulating all the key-value
-         * pairs. The first value of the returned pair is true if there was no
-         * error opening the INI file, otherwise is false. The second value of
-         * the returned pair contains the number of lines successfully read up
-         * to and including the first invalid line; if no invalid lines were
-         * read, the second value is 0.
+         * sections of the same name, the last key-value pair in the last
+         * section is used. Doesn't erase previous key-value pairs already
+         * stored, so you can use this for multiple INI files, accumulating all
+         * the key-value pairs. The first value of the returned pair is true if
+         * there was no error opening the INI file. The second value of the
+         * returned pair contains the number of lines successfully read up to
+         * and including the first invalid line; if no invalid lines were read,
+         * the second value is 0.
          */
         std::pair<bool, std::size_t> read(const std::string filename) {
             std::ifstream file(filename);
 
             if (file.fail()) {
-                return { false, 0 };
+                return {false, 0};
             }
 
             std::string line;
 
-            const std::regex emptyRegex("\\s*");
-
-            // Comments:
+            // Comments or empty lines:
             // ; example comment
-            const std::regex commentRegex("\\s*;.*");
+            const std::regex commentOrEmptyRegex("\\s*(?=;.*|)");
 
-            // Sections:
+            // Sections, which can have comments:
             // [example_section]
-            const std::regex sectionRegex("^\\s*\\[\\s*([_a-zA-Z][_a-zA-Z0-9]*|)\\s*\\]\\s*$");
+            // [example_section] ; comment
+            const std::regex sectionRegex("^\\s*\\[\\s*([_a-zA-Z][_a-zA-Z0-9]*|)\\s*\\]\\s*(?=;.*|)$");
 
-            // Key-value pairs:
-            // example = key-value pair
+            // Key-value pairs; text after a semicolon is not parsed as a
+            // comment:
+            // example_key = example value ; this text after the semicolon isn't a comment, and the space(s) before the semicolon, the semicolon, and text after the semicolon will be part of the value
             const std::regex keyValueRegex("^\\s*([_a-zA-Z][_a-zA-Z0-9]*)\\s*=\\s*(.*[^\\s]|)");
 
-            // Key-value pairs at the head of the INI, before any sections, go into the
-            // "null section", whose name is the empty string. The null section can
-            // also be explicitly used, via a "[]" section line.
+            // Key-value pairs at the head of the INI, before any sections, go
+            // into the "null section", whose name is the empty string. The
+            // null section can also be explicitly used, via an empty "[]"
+            // section line.
             std::string sectionName("");
 
             std::pair<bool, std::size_t> readStatus(true, 0);
             for (std::size_t invalidLineNum = 1; getline(file, line); invalidLineNum++) {
-                std::smatch matches;
-                bool matched = true;
-
-                if (regex_match(line, emptyRegex)) {
+                if (regex_match(line, commentOrEmptyRegex)) {
                     continue;
                 }
-                else if (regex_search(line, matches, keyValueRegex)) {
+
+                bool matched = true;
+                std::smatch matches;
+                if (regex_search(line, matches, keyValueRegex)) {
                     if (matches[2] != "") {
-                        sections[sectionName][matches[1]] = matches[2];
+                        sections[sectionName][toName(matches[1])] = matches[2];
+                        rawKeyNames[toName(matches[1])] = matches[1];
                     }
                 }
                 else if (regex_search(line, matches, sectionRegex)) {
-                    sectionName = matches[1];
+                    sectionName = toName(matches[1]);
+                    rawSectionNames[toName(matches[1])] = matches[1];
                 }
                 else {
-                    matched = regex_match(line, commentRegex);
+                    matched = false;
                 }
 
                 if (!matched && readStatus.second == 0) {
                     readStatus.second = invalidLineNum;
                 }
             }
+            printf("readStatus.first == %s\n", !file.fail() ? "true" : "false");
             return readStatus;
         }
 
         /**
          * Writes the INI to a file, truncating the file if it already existed.
          * Sections with no keys won't be written. If an INI was previously
-         * read, its comments aren't kept when writing. Returns true if the
-         * file was written successfully, otherwise false.
+         * read, its comments aren't kept when writing. All section and key
+         * names will be written as they were originally represented in INI
+         * files that were read, or the names originally used to set values.
+         * Returns true if the file was written successfully, otherwise false.
          */
         bool write(const std::string filename) {
             std::ofstream file(filename);
@@ -109,8 +127,8 @@ namespace PDINI {
             decltype(sections)::node_type nullHandle;
             bool moveBackNull = false;
             if (sections.count("") && sections[""].size()) {
-                for (auto keyValue : sections[""]) {
-                    file << keyValue.first << " = " << keyValue.second << '\n';
+                for (const auto& keyValue : sections[""]) {
+                    file << rawKeyNames[keyValue.first] << " = " << keyValue.second << '\n';
                 }
                 if (sections.size() > 1) {
                     nullHandle = sections.extract("");
@@ -122,15 +140,15 @@ namespace PDINI {
             // Write non-null sections.
             if (sections.size()) {
                 const auto section = *sections.begin();
-                file << "[" << section.first << "]" << '\n';
-                for (auto keyValue : section.second) {
-                    file << keyValue.first << " = " << keyValue.second << '\n';
+                file << "[" << rawSectionNames[section.first] << "]" << '\n';
+                for (const auto& keyValue : section.second) {
+                    file << rawKeyNames[keyValue.first] << " = " << keyValue.second << '\n';
                 }
                 decltype(sections)::node_type firstHandle = sections.extract(sections.begin());
-                for (auto section : sections) {
-                    file << "\n[" << section.first << "]" << '\n';
-                    for (auto keyValue : section.second) {
-                        file << keyValue.first << " = " << keyValue.second << '\n';
+                for (const auto& section : sections) {
+                    file << "\n[" << rawSectionNames[section.first] << "]" << '\n';
+                    for (const auto& keyValue : section.second) {
+                        file << rawKeyNames[keyValue.first] << " = " << keyValue.second << '\n';
                     }
                 }
                 sections.insert(move(firstHandle));
@@ -189,8 +207,10 @@ namespace PDINI {
          * doesn't modify the value argument.
          */
         bool get(const std::string sectionName, const std::string keyName, std::string& value) {
-            if (sections.count(sectionName) && sections[sectionName].count(keyName)) {
-                value = sections[sectionName][keyName];
+            const std::string realSectionName = toName(sectionName);
+            const std::string realKeyName = toName(keyName);
+            if (sections.count(realSectionName) && sections[realSectionName].count(realKeyName)) {
+                value = sections[realSectionName][realKeyName];
                 return true;
             }
             else {
@@ -211,7 +231,7 @@ namespace PDINI {
             std::ostringstream stream;
             stream.setf(flags);
             stream << std::move(value);
-            set(std::move(sectionName), std::move(keyName), std::move(stream.str()));
+            set(sectionName, keyName, stream.str());
         }
 
         /**
@@ -235,14 +255,20 @@ namespace PDINI {
         void set(const std::string sectionName, const std::string keyName, const std::string value) {
             const std::regex nameRegex("[_a-zA-Z][_a-zA-Z0-9]*");
             const std::regex valueRegex("(?!\\s+).*[^\\s]");
-            if (regex_match(sectionName, nameRegex) && regex_match(keyName, nameRegex) && regex_match(value, valueRegex)) {
+            const std::string realSectionName = toName(sectionName);
+            const std::string realKeyName = toName(keyName);
+            if (regex_match(keyName, nameRegex) && regex_match(keyName, nameRegex) && regex_match(value, valueRegex)) {
                 if (value != "") {
-                    sections[sectionName][keyName] = value;
+                    sections[realSectionName][realKeyName] = value;
+                    rawSectionNames[realSectionName] = sectionName;
+                    rawKeyNames[realKeyName] = keyName;
                 }
                 else {
-                    sections[sectionName].erase(keyName);
-                    if (!sections[sectionName].size()) {
-                        sections.erase(sectionName);
+                    sections[realSectionName].erase(realKeyName);
+                    rawKeyNames.erase(realKeyName);
+                    if (!sections[realSectionName].size()) {
+                        sections.erase(realSectionName);
+                        rawSectionNames.erase(realSectionName);
                     }
                 }
             }
@@ -254,12 +280,34 @@ namespace PDINI {
          */
         void removeSection(const std::string sectionName) {
             const std::regex nameRegex("[_a-zA-Z][_a-zA-Z0-9]*");
+            const std::string realSectionName = toName(sectionName);
             if (regex_match(sectionName, nameRegex) && sections.count(sectionName)) {
-                sections.erase(sectionName);
+                sections.erase(realSectionName);
+                rawSectionNames.erase(realSectionName);
             }
         }
 
     private:
+        /**
+         * Converts raw name strings to all uppercase if the INI class was
+         * created to match names case insensitively.
+         */
+        std::string toName(const std::string rawName) {
+            if (caseInsenstive) {
+                std::string convertedName = rawName;
+                for (auto& c : convertedName) {
+                    c = std::toupper(c);
+                }
+                return convertedName;
+            }
+            else {
+                return rawName;
+            }
+        }
+
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> sections;
+        std::unordered_map<std::string, std::string> rawSectionNames;
+        std::unordered_map<std::string, std::string> rawKeyNames;
+        const bool caseInsenstive;
     };
 }

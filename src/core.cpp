@@ -396,7 +396,7 @@ int load_files(coreState *cs)
         // audio assets
 
     {
-        INI ini;
+        INI ini(true);
         string audioINIPath = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".ini");
         ini.read(audioINIPath);
 
