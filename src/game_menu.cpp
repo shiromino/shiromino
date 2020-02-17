@@ -830,10 +830,14 @@ int menu_input(game_t *g)
             {
                 if(d1->action)
                 {
-                    if(d1->action(g, d1->val))
+                    int quitStatus = d1->action(g, d1->val);
+                    if(quitStatus == 1)
                     {
                         printf("Received quit signal, shutting down.\n");
                         return 1;
+                    }
+                    else if (quitStatus == 2) {
+                        return 2;
                     }
 
                     return 0;
@@ -1093,11 +1097,11 @@ int mload_main(game_t *g, int val)
     cs->bg = cs->assets->bg_temp.tex;
     cs->bg_old = cs->bg;
 
-    d->menu = (struct menu_opt **)malloc(15 * sizeof(struct menu_opt *));
+    d->menu = (struct menu_opt **)malloc(16 * sizeof(struct menu_opt *));
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 15;
+    d->numopts = 16;
     d->title = bfromcstr("MAIN MENU");
     d->x = 4 * 16;
     d->y = 3 * 16;
@@ -1292,16 +1296,24 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu[13] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
+    d->menu[13] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("NEW MODES"));
     m = d->menu[13];
+    d1 = (struct action_opt_data*)m->data;
+    d1->action = menu_action_new_modes;
+    d1->val = 0;
+    m->x = 4 * 16;
+    m->y = 26 * 16;
+
+    d->menu[14] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
+    m = d->menu[14];
     d1 = (struct action_opt_data *)m->data;
     d1->action = menu_action_quit;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 27 * 16;
 
-    d->menu[14] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.3"));
-    m = d->menu[14];
+    d->menu[15] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.3"));
+    m = d->menu[15];
     m->x = 638 - (19 * 15);
     m->y = 2;
     m->label_text_rgba = 0x808080A0;
@@ -1949,6 +1961,10 @@ int mload_replay(game_t *g, int val)
 }
 
 int menu_action_quit(game_t *g, int val) { return 1; }
+
+int menu_action_new_modes(game_t* g, int val) {
+    return 2;
+}
 
 int menu_is_practice(game_t *g)
 {

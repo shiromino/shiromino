@@ -678,6 +678,7 @@ void quit(coreState *cs)
 
 int run(coreState *cs)
 {
+    int procStatus = 0;
     if(!cs)
         return -1;
 
@@ -772,7 +773,8 @@ int run(coreState *cs)
         // menu is processed if: either there's no game, or menu overrides existing game
         if(cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0))
         {
-            if(procgame(cs->menu, !cs->button_emergency_override))
+            procStatus = procgame(cs->menu, !cs->button_emergency_override);
+            if(procStatus)
             {
                 cs->menu->quit(cs->menu);
                 free(cs->menu);
@@ -852,7 +854,10 @@ int run(coreState *cs)
         // printf("Frame elapsed.\n");
     }
 
-    return 0;
+    if (procStatus != 2)
+        return 0;
+    else
+        return 2;
 }
 
 int procevents(coreState *cs, GuiWindow& wind)
@@ -1575,8 +1580,10 @@ int procgame(game_t *g, int input_enabled)
 
     if(g->input && input_enabled)
     {
-        if(g->input(g))
-            return 1;
+        int inputStatus = g->input(g);
+        if (inputStatus) {
+            return inputStatus;
+        }
     }
 
     Uint64 benchmark = SDL_GetPerformanceCounter();
