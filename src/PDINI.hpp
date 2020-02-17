@@ -28,13 +28,13 @@ namespace PDINI {
          * Construct the INI class using the default case-insensitive matching
          * for section and key names.
          */
-        INI::INI() : INI(true) {}
+        INI() : INI(true) {}
 
         /**
          * Construct the INI class using an explicit setting for case
          * sensitivity matching for section and key names.
          */
-        INI::INI(bool caseInsenstive) : caseInsenstive(caseInsenstive) {}
+        INI(bool caseInsenstive) : caseInsenstive(caseInsenstive) {}
 
         /**
          * Read an INI file. All the key-value pairs are read in an INI, even
