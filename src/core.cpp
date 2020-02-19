@@ -876,7 +876,7 @@ int run(coreState *cs)
             }
         }
         if (!cs->settings->vsync) {
-            SDL_Delay(1u);
+            SDL_Delay(cs->settings->frameDelay);
         }
 
 #if 0

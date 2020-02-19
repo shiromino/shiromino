@@ -185,6 +185,7 @@ Settings::Settings() :
     videoStretch(1),
     fullscreen(0),
     vsync(0),
+    frameDelay(1),
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),
@@ -274,6 +275,17 @@ bool Settings::read(string filename) {
     }
     else {
         this->vsync = vsync;
+    }
+
+    int frameDelay;
+    if (!ini.get("SCREEN", "FRAMEDELAY", frameDelay)) {
+        defaultUsed = true;
+    }
+    else if (frameDelay >= 0) {
+        this->frameDelay = frameDelay;
+    }
+    else {
+        defaultUsed = true;
     }
 
     // [ACCOUNT]
