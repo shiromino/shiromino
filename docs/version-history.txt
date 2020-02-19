@@ -6,6 +6,7 @@ Shiromino Version history
     New Features:
         + Joystick input is now fully configurable; no joystick input is enabled by default
         + Vertical sync option added; off by default
+        + Frame delay setting added; set to 1ms by default. Only applies when not using vertical sync
 
     Changes/Removed Features:
         * Build system changed to CMake; the old Makefile is no longer available
@@ -14,6 +15,7 @@ Shiromino Version history
     Bug Fixes:
         * Preview sounds now play
         * Sound volume settings for individual music tracks and sound effects works now
+        * Frame timing now guaranteed to be perfect over time, regardless of mode; individual frames might be off a bit, depending on vertical sync and frame delay settings
 }
 
 beta3-pre2
