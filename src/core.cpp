@@ -725,7 +725,9 @@ int run(coreState *cs)
     double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
     double startTime = currentTime;
     double timeAccumulator = 0.0;
-    //double timeFromFrames = 0.0;
+#ifdef DEBUG_FRAME_TIMING
+    double timeFromFrames = 0.0;
+#endif
     while(running)
     {
         double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
@@ -742,7 +744,7 @@ int run(coreState *cs)
             double frameTime = 1.0 / cs->fps;
             timeAccumulator >= frameTime;
             frameTime = 1.0 / cs->fps, timeAccumulator -= frameTime, cs->frames++, newFrames++
-#if 0
+#ifdef DEBUG_FRAME_TIMING
             , timeFromFrames += frameTime, printf(" real: %f\nframe: %f\n\n", static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime, timeFromFrames)
 #endif
             )
@@ -866,11 +868,11 @@ int run(coreState *cs)
 
             for (int i = 0; i < cs->gfx_animations_max; i++) {
                 if (cs->gfx_animations[i]) {
-                    if (cs->gfx_animations[i]->counter < static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier * cs->gfx_animations[i]->num_frames) + newFrames) {
-                        cs->gfx_animations[i]->counter += newFrames;
+                    if (cs->gfx_animations[i]->counter + newFrames < static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier * cs->gfx_animations[i]->num_frames)) {
+                       cs->gfx_animations[i]->counter += newFrames;
                     }
                     else {
-                        cs->gfx_animations[i]->counter = static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier* cs->gfx_animations[i]->num_frames);
+                        cs->gfx_animations[i]->counter = static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier * cs->gfx_animations[i]->num_frames);
                     }
                 }
             }

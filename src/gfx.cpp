@@ -509,7 +509,7 @@ int gfx_drawanimations(coreState *cs, int type)
         }
 
         int framenum = a->counter / a->frame_multiplier;
-        t = (a->first_frame + framenum)->tex;
+        t = a->first_frame[framenum].tex;
         if(!t)
             printf("NULL texture on frame %d\n", framenum);
 
