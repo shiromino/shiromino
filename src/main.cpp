@@ -137,18 +137,20 @@ int main(int argc, char** argv) {
                 return 1;
             }
 
-            int status = run(&cs);
+            {
+                int status = run(&cs);
 
-            quit(&cs);
-            coreState_destroy(&cs);
+                quit(&cs);
+                coreState_destroy(&cs);
 
-            if (status == 2) {
-                printf("Switching to new modes.\n");
-                newModes = true;
-                continue;
-            }
-            else {
-                break;
+                if (status == 2) {
+                    printf("Switching to new modes.\n");
+                    newModes = true;
+                    continue;
+                }
+                else {
+                    break;
+                }
             }
 
         error:

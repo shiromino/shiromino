@@ -202,12 +202,12 @@ struct coreState
     gameDisplayMode displayMode;
     bool motionBlur;
 
-    long double avg_sleep_ms;
-    long double avg_sleep_ms_recent;
+    //long double avg_sleep_ms;
+    //long double avg_sleep_ms_recent;
     long frames;
 
-    long double avg_sleep_ms_recent_array[RECENT_FRAMES];
-    int recent_frame_overload;
+    //long double avg_sleep_ms_recent_array[RECENT_FRAMES];
+    //int recent_frame_overload;
 
     struct scoredb scores;
     // struct scoredb archive;

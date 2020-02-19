@@ -305,7 +305,7 @@ int gfx_drawbg(coreState *cs)
             }
 
             SDL_SetTextureColorMod(cs->bg_old, r, g, b);
-            SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
+            //SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
         }
         else
         {
@@ -333,7 +333,7 @@ int gfx_drawbg(coreState *cs)
             }
 
             SDL_SetTextureColorMod(cs->bg, r, g, b);
-            SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
+            //SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
         }
     }
     else
@@ -341,7 +341,7 @@ int gfx_drawbg(coreState *cs)
         if(!cs->bg)
             return 0;
 
-        SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
+        //SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
     }
 
     return 0;
@@ -384,7 +384,7 @@ int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int 
     m->flags = flags;
     m->font = font;
     m->fmt = fmt;
-    m->counter = counter;
+    m->counter = counter + 1;
     m->delete_check = delete_check;
 
     cs->gfx_messages_max++;
@@ -430,7 +430,6 @@ int gfx_drawmessages(coreState *cs, int type)
         }
 
         gfx_drawtext(cs, m->text, m->x, m->y, m->font, m->fmt);
-        m->counter--;
     }
 
     if(n == cs->gfx_messages_max)
@@ -523,8 +522,6 @@ int gfx_drawanimations(coreState *cs, int type)
         SDL_RenderCopy(cs->screen.renderer, t, NULL, &dest);
         SDL_SetTextureAlphaMod(t, 255);
         SDL_SetTextureColorMod(t, 255, 255, 255);
-
-        a->counter++;
     }
 
     if(n == cs->gfx_animations_max)
@@ -613,7 +610,6 @@ int gfx_drawbuttons(coreState *cs, int type)
             if(b->clicked)
             {
                 src.x = 362;
-                b->clicked--;
             }
             else
                 src.x = 298;
@@ -621,7 +617,6 @@ int gfx_drawbuttons(coreState *cs, int type)
         else if(b->clicked)
         {
             src.x = 362;
-            b->clicked--;
         }
         else
             src.x = 330;

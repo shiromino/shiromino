@@ -141,8 +141,10 @@ int gfx_drawqs(game_t *g)
     int y_bkp = 0;
     int s_bkp = 0;
 
+#if 0
     double mspf = 1000.0 * (1.0 / cs->fps);
     int cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent) / mspf));
+#endif
 
     string text_level = "LEVEL";
     string level = strtools::format("%d", q->level);
@@ -159,9 +161,11 @@ int gfx_drawqs(game_t *g)
     string undo = "UNDO";
     string redo = "REDO";
     // string columns = "0123456789AB";
+#if 0
     string avg_sleep_ms = strtools::format("%LF", cs->avg_sleep_ms_recent);
     string ctp_str = strtools::format("%d%%", cpu_time_percentage);
     string ctp_overload_str;
+#endif
 
     string undo_len;
     string redo_len;
@@ -742,7 +746,7 @@ int gfx_drawqs(game_t *g)
                           RGBA_DEFAULT);
         }
 
-        if((q->p1->state & (PSFALL | PSLOCK)) && !(q->p1->state & PSPRELOCKED))
+        if((q->p1->state & (PSFALL | PSLOCK)) && !(q->p1->state & PSPRELOCKED) && pd_current)
         {
             if(!(pd_current->flags & PDBRACKETS))
             {
@@ -812,6 +816,7 @@ int gfx_drawqs(game_t *g)
     fmt.rgba = 0x7070D0FF;
     // gfx_drawtext(cs, ctp_str, 640 - 16 + 16 * (1 - ctp_str->slen), 2, monofont_square, &fmt);
 
+#if 0
     if(cs->recent_frame_overload >= 0)
     {
         cpu_time_percentage = (int)(100.0 * ((mspf - cs->avg_sleep_ms_recent_array[cs->recent_frame_overload]) / mspf));
@@ -820,6 +825,7 @@ int gfx_drawqs(game_t *g)
         fmt.rgba = 0xB00000FF;
         gfx_drawtext(cs, ctp_overload_str, 640 - 16 + 16 * (1 - ctp_overload_str.length()), 2, monofont_square, &fmt);
     }
+#endif
 
     return 0;
 }

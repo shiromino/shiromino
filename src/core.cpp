@@ -31,7 +31,7 @@
 #include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
-#define PENTOMINO_C_REVISION_STRING "rev 1.2"
+#define PENTOMINO_C_REVISION_STRING "rev 1.3"
 
 using namespace Shiro;
 using namespace std;
@@ -48,6 +48,7 @@ BindableVariables bindables;
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#if 0
 // TODO: Check Windows docs, and see if setting errno to EFAULT might make
 // sense somewhere here. The EINTR case might be wrong, too.
 // TODO: Add more granular waits for the seconds portion, then precise waiting
@@ -84,6 +85,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
         return -1;
     }
 }
+#endif
 
 #define S_ISDIR(flags) ((flags) & S_IFDIR)
 #else
@@ -92,8 +94,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
 #include <unistd.h> // For chdir
 #endif
 
-// TODO: Analyze frame timing, and see whether it's already accurate enough, or
-// needs tweaks to be more accurate.
+#if 0
 static long framedelay(Uint64 ticks_elap, double fps)
 {
     const Uint64 freq = SDL_GetPerformanceFrequency();
@@ -119,7 +120,7 @@ static long framedelay(Uint64 ticks_elap, double fps)
         }
 #else
         const double end = start + spf - sec_elap;
-        for (double timestamp = start; timestamp < end; timestamp = (double)SDL_GetPerformanceCounter() / freq);
+        for (double newTime = start; newTime < end; newTime = (double)SDL_GetPerformanceCounter() / freq);
 #endif
     }
     else
@@ -132,6 +133,7 @@ static long framedelay(Uint64 ticks_elap, double fps)
     else
         return 1;
 }
+#endif
 
 int is_left_input_repeat(coreState *cs, int delay)
 {
@@ -300,16 +302,18 @@ void coreState_initialize(coreState *cs)
     cs->motionBlur = false;
     cs->pracdata_mirror = NULL;
 
-    cs->avg_sleep_ms = 0;
-    cs->avg_sleep_ms_recent = 0;
+    //cs->avg_sleep_ms = 0;
+    //cs->avg_sleep_ms_recent = 0;
     cs->frames = 0;
 
+#if 0
     for(i = 0; i < RECENT_FRAMES; i++)
     {
         cs->avg_sleep_ms_recent_array[i] = 0;
     }
 
     cs->recent_frame_overload = -1;
+#endif
 }
 
 void coreState_destroy(coreState *cs)
@@ -718,100 +722,172 @@ int run(coreState *cs)
     //cs->p1game = qs_game_create(cs, 0, MODE_PENTOMINO, NO_REPLAY);
     //cs->p1game->init(cs->p1game);
 
+    double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
+    double startTime = currentTime;
+    double timeAccumulator = 0.0;
+    //double timeFromFrames = 0.0;
     while(running)
     {
-        Uint64 timestamp = SDL_GetPerformanceCounter();
+        double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
+        double frameTime = newTime - currentTime;
+        if (frameTime > 0.25) {
+            frameTime = 0.25;
+        }
+        currentTime = newTime;
 
-        // TODO: Rearrange the input->draw loop
-        cs->prev_keys_raw = cs->keys_raw;
-        cs->prev_keys = cs->keys;
+        timeAccumulator += frameTime;
 
-        if(procevents(cs, wind))
+        unsigned newFrames = 0u;
+        for (
+            double frameTime = 1.0 / cs->fps;
+            timeAccumulator >= frameTime;
+            frameTime = 1.0 / cs->fps, timeAccumulator -= frameTime, cs->frames++, newFrames++
+#if 0
+            , timeFromFrames += frameTime, printf(" real: %f\nframe: %f\n\n", static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime, timeFromFrames)
+#endif
+            )
         {
-            return 1;
+            // TODO: Rearrange the input->draw loop
+            cs->prev_keys_raw = cs->keys_raw;
+            cs->prev_keys = cs->keys;
+
+            if(procevents(cs, wind))
+            {
+                return 1;
+            }
+
+            handle_replay_input(cs);
+
+            update_input_repeat(cs);
+            update_pressed(cs);
+
+            gfx_buttons_input(cs);
+
+            /*
+            SPMgame.input();
+            SPMgame.frame();
+            SPMgame.draw();
+            */
+
+            if (cs->p1game) {
+                if (procgame(cs->p1game, !cs->button_emergency_override)) {
+                    cs->p1game->quit(cs->p1game);
+                    free(cs->p1game);
+                    cs->p1game = NULL;
+
+                    cs->bg = cs->assets->bg_temp.tex;
+                    break;
+                }
+            }
+            if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
+                procStatus = procgame(cs->menu, !cs->button_emergency_override);
+                if (procStatus) {
+                    cs->menu->quit(cs->menu);
+                    free(cs->menu);
+
+                    cs->menu = NULL;
+
+                    if (!cs->p1game)
+                        running = 0;
+                }
+
+                // if(!((!cs->button_emergency_override && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)))) printf("Not
+                // processing menu input\n");
+            }
+
+            // Just update the background colormod; actual drawing is done
+            // below.
+            gfx_drawbg(cs);
+
+            //wind.draw();
+
+            if(!cs->menu && !cs->p1game)
+            {
+                running = false;
+            }
         }
 
-        handle_replay_input(cs);
+        SDL_RenderClear(cs->screen.renderer);
 
-        update_input_repeat(cs);
-        update_pressed(cs);
+        Uint8 r = 0u, g = 0u, b = 0u;
+        if (cs->bg != cs->bg_old) {
+            if (cs->bg_old) {
+                SDL_GetTextureColorMod(cs->bg_old, &r, &g, &b);
+            }
 
-        gfx_buttons_input(cs);
+            if (r && cs->bg_old) {
+                SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
+            }
+            else if (cs->bg) {
+                SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
+            }
+        }
+        else if (cs->bg) {
+            SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
+        }
+
+        // SDL_SetRenderTarget(cs->screen.renderer, NULL);
+
+        if (cs->p1game) {
+            cs->p1game->draw(cs->p1game);
+            cs->p1game->frame_counter++;
+        }
+        else if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
+            cs->menu->draw(cs->menu);
+            cs->menu->frame_counter++;
+        }
 
         // SDL_SetRenderTarget(cs->screen.renderer, NULL);
         // SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 255);
-        SDL_RenderClear(cs->screen.renderer);
-        gfx_drawbg(cs);
-
-        /*
-        SPMgame.input();
-        SPMgame.frame();
-        SPMgame.draw();
-        */
-
-
-        if(cs->p1game)
-        {
-            if(procgame(cs->p1game, !cs->button_emergency_override))
-            {
-                cs->p1game->quit(cs->p1game);
-                free(cs->p1game);
-                cs->p1game = NULL;
-
-                cs->bg = cs->assets->bg_temp.tex;
-            }
-        }
-        else
-        {
-            //cs->screenManager->drawScreen();
-        }
-
-        //wind.draw();
-
-        // process menus, graphics, and framerate
-
-        // menu is processed if: either there's no game, or menu overrides existing game
-        if(cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0))
-        {
-            procStatus = procgame(cs->menu, !cs->button_emergency_override);
-            if(procStatus)
-            {
-                cs->menu->quit(cs->menu);
-                free(cs->menu);
-
-                cs->menu = NULL;
-
-                if(!cs->p1game)
-                    running = 0;
-            }
-
-            // if(!((!cs->button_emergency_override && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)))) printf("Not
-            // processing menu input\n");
-        }
-
-        if(!cs->menu && !cs->p1game)
-        {
-            running = false;
-        }
-
-
-        // SDL_SetRenderTarget(cs->screen.renderer, NULL);
 
         gfx_drawbuttons(cs, 0);
         gfx_drawmessages(cs, 0);
         gfx_drawanimations(cs, 0);
 
-        if(cs->button_emergency_override)
+        if (cs->button_emergency_override)
             gfx_draw_emergency_bg_darken(cs);
 
         gfx_drawbuttons(cs, EMERGENCY_OVERRIDE);
         gfx_drawmessages(cs, EMERGENCY_OVERRIDE);
         gfx_drawanimations(cs, EMERGENCY_OVERRIDE);
-
         SDL_RenderPresent(cs->screen.renderer);
 
-        timestamp = SDL_GetPerformanceCounter() - timestamp;
-        long sleep_ns = framedelay(timestamp, cs->fps);
+        if (newFrames > 0u) {
+            for (int i = 0; i < cs->gfx_messages_max; i++) {
+                if (cs->gfx_messages[i] && cs->gfx_messages[i]->counter) {
+                    if (cs->gfx_messages[i]->counter > newFrames) {
+                        cs->gfx_messages[i]->counter -= newFrames;
+                    }
+                    else {
+                        cs->gfx_messages[i]->counter = 0u;
+                    }
+                }
+            }
+
+            for (int i = 0; i < cs->gfx_animations_max; i++) {
+                if (cs->gfx_animations[i]) {
+                    if (cs->gfx_animations[i]->counter < static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier * cs->gfx_animations[i]->num_frames) + newFrames) {
+                        cs->gfx_animations[i]->counter += newFrames;
+                    }
+                    else {
+                        cs->gfx_animations[i]->counter = static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier* cs->gfx_animations[i]->num_frames);
+                    }
+                }
+            }
+        }
+        if (!cs->settings->vsync) {
+            SDL_Delay(1u);
+        }
+
+#if 0
+        {
+            //cs->screenManager->drawScreen();
+        }
+#endif
+        // TODO: Reimplement lag percentage display with the new fixed timestep code.
+#if 0
+        newTime = SDL_GetPerformanceCounter() - newTime;
+        long sleep_ns = framedelay(newTime, cs->fps);
 
         if(sleep_ns == FRAMEDELAY_ERR)
             return 1;
@@ -852,6 +928,7 @@ int run(coreState *cs)
         cs->avg_sleep_ms_recent /= (cs->frames < RECENT_FRAMES ? cs->frames : RECENT_FRAMES);
 
         // printf("Frame elapsed.\n");
+#endif
     }
 
     if (procStatus != 2)
@@ -1597,14 +1674,6 @@ int procgame(game_t *g, int input_enabled)
     benchmark = SDL_GetPerformanceCounter() - benchmark;
     //   printf("%fms\n", (double)(benchmark) * 1000 / (double)SDL_GetPerformanceFrequency());
 
-    if(g->draw)
-    {
-        if(g->draw(g))
-            return 1;
-    }
-
-    g->frame_counter++;
-
     return 0;
 }
 
@@ -1775,7 +1844,10 @@ int gfx_buttons_input(coreState *cs)
                 b->action(cs, b->data);
             }
 
-            b->clicked = 3;
+            b->clicked = 4;
+        }
+        if (b->clicked) {
+            b->clicked--;
         }
 
         if(b->delete_check && (!b->clicked || b->flags & BUTTON_EMERGENCY))
