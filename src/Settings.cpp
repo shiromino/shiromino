@@ -186,6 +186,7 @@ Settings::Settings() :
     fullscreen(0),
     vsync(0),
     frameDelay(1),
+    vsyncTimestep(0),
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),

@@ -7,6 +7,8 @@ Shiromino Version history
         + Joystick input is now fully configurable; no joystick input is enabled by default
         + Vertical sync option added; off by default
         + Frame delay setting added; set to 1ms by default. Only applies when not using vertical sync
+        + "Vsync timestep" setting added; disabled by default. Allows forcing game frame rate to be in step with display refresh rate when vsync and vsync timestep are both enabled.
+        + The G1, G2, and G3 modes now all run at the FPS of the original games they're based on
 
     Changes/Removed Features:
         * Build system changed to CMake; the old Makefile is no longer available
