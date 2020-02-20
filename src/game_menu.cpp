@@ -1079,7 +1079,7 @@ int mload_main(game_t *g, int val)
     struct game_multiopt_data *d6 = NULL;
     int i = 0;
 
-    request_fps(cs, 60);
+    request_fps(cs, MENU_FPS);
 
     if(d->menu_id == MENU_ID_MAIN)
     {

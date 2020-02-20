@@ -615,7 +615,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     q->max_floorkicks = 2;
     q->lock_on_rotate = 0;
 
-    request_fps(cs, 60);
+    request_fps(cs, PENTOMINO_FPS);
     q->game_type = 0;
     q->mode_type = MODE_PENTOMINO;
 
@@ -721,6 +721,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         q->special_irs = 0;
         q->lock_protect = 0;
         q->piecepool[QRS_I4]->flags |= PDNOWKICK;
+        request_fps(cs, G1_FPS);
     }
 
     if(flags & SIMULATE_G2)
@@ -2793,7 +2794,7 @@ int qs_update_pracdata(coreState *cs)
             q->piecepool[QRS_I4]->flags &= ~PDNOWKICK;
             q->tetromino_only = 0;
             q->pentomino_only = 0;
-            request_fps(cs, 60);
+            request_fps(cs, PENTOMINO_FPS);
             break;
         case SIMULATE_G1:
             q->num_previews = 1;
@@ -2808,7 +2809,7 @@ int qs_update_pracdata(coreState *cs)
             q->piecepool[QRS_I4]->flags |= PDNOWKICK;
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, 60);
+            request_fps(cs, G1_FPS);
             break;
         case SIMULATE_G2:
             q->num_previews = 1;
@@ -2838,7 +2839,7 @@ int qs_update_pracdata(coreState *cs)
             q->piecepool[QRS_I4]->flags &= ~PDNOWKICK;
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, 60);
+            request_fps(cs, G3_FPS);
             break;
         default:
             break;

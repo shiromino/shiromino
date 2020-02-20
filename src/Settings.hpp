@@ -79,6 +79,7 @@ namespace Shiro {
         int fullscreen;
         int vsync;
         int frameDelay;
+        int vsyncTimestep;
 
         int masterVolume;
         int sfxVolume;

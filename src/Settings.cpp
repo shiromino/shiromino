@@ -266,7 +266,7 @@ bool Settings::read(string filename) {
         defaultUsed = true;
     }
     else {
-        this->fullscreen = fullscreen;
+        this->fullscreen = !!fullscreen;
     }
 
     int vsync;
@@ -274,18 +274,23 @@ bool Settings::read(string filename) {
         defaultUsed = true;
     }
     else {
-        this->vsync = vsync;
+        this->vsync = !!vsync;
     }
 
     int frameDelay;
-    if (!ini.get("SCREEN", "FRAMEDELAY", frameDelay)) {
+    if (!ini.get("SCREEN", "FRAMEDELAY", frameDelay) || frameDelay < 0) {
         defaultUsed = true;
-    }
-    else if (frameDelay >= 0) {
-        this->frameDelay = frameDelay;
     }
     else {
+        this->frameDelay = frameDelay;
+    }
+
+    int vsyncTimestep;
+    if (!ini.get("SCREEN", "VSYNCTIMESTEP", vsyncTimestep)) {
         defaultUsed = true;
+    }
+    else {
+        this->vsyncTimestep = !!vsyncTimestep;
     }
 
     // [ACCOUNT]

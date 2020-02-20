@@ -6,8 +6,11 @@
 #define SIMULATE_G3    0x0040
 #define BIG_MODE       0x8000
 
-#define FPS            60.0
-#define G2_FPS         61.68
+#define MENU_FPS       60.00
+#define PENTOMINO_FPS  60.00
+#define G1_FPS         59.84
+#define G2_FPS         (57272700.0 / 8.0 / 443.0 / 262.0)
+#define G3_FPS         59.94
 
 #define RECENT_FRAMES 60
 #define FRAMEDELAY_ERR 0

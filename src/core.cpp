@@ -223,7 +223,7 @@ void coreState_initialize(coreState *cs)
 {
     int i = 0;
 
-    cs->fps = FPS;
+    cs->fps = MENU_FPS;
     // cs->keyquit = SDLK_F11;
     cs->text_editing = 0;
     cs->text_insert = NULL;
@@ -725,28 +725,31 @@ int run(coreState *cs)
     double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
     double startTime = currentTime;
     double timeAccumulator = 0.0;
+    // Due to limitations in SDL's display refresh rate reporting, frame timing
+    // debugging can't be made to display the correct timing information when
+    // vsync and vsyncTimestep are enabled.
+//#define DEBUG_FRAME_TIMING
 #ifdef DEBUG_FRAME_TIMING
     double timeFromFrames = 0.0;
 #endif
     while(running)
     {
         double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
-        double frameTime = newTime - currentTime;
-        if (frameTime > 0.25) {
-            frameTime = 0.25;
+        double renderFrameTime = newTime - currentTime;
+        if (renderFrameTime > 0.25) {
+            renderFrameTime = 0.25;
         }
         currentTime = newTime;
 
-        timeAccumulator += frameTime;
+        timeAccumulator += renderFrameTime;
 
         unsigned newFrames = 0u;
         for (
-            double frameTime = 1.0 / cs->fps;
-            timeAccumulator >= frameTime;
-            frameTime = 1.0 / cs->fps, timeAccumulator -= frameTime, cs->frames++, newFrames++
-#ifdef DEBUG_FRAME_TIMING
-            , timeFromFrames += frameTime, printf(" real: %f\nframe: %f\n\n", static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime, timeFromFrames)
-#endif
+            double gameFrameTime = 1.0 / cs->fps;
+            timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync);
+            timeAccumulator -= gameFrameTime,
+            newFrames++,
+            cs->frames++
             )
         {
             // TODO: Rearrange the input->draw loop
@@ -806,6 +809,17 @@ int run(coreState *cs)
             if(!cs->menu && !cs->p1game)
             {
                 running = false;
+            }
+
+            gameFrameTime = 1.0 / cs->fps;
+#ifdef DEBUG_FRAME_TIMING
+            timeFromFrames += gameFrameTime;
+            printf(" real: %f\nframe: %f\n\n", static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime, timeFromFrames);
+#endif
+            if (cs->settings->vsyncTimestep && cs->settings->vsync) {
+                newFrames = 1u;
+                cs->frames++;
+                break;
             }
         }
 
@@ -1900,7 +1914,7 @@ int request_fps(coreState *cs, double fps)
 {
     if(!cs)
         return -1;
-    if(fps != FPS && fps != G2_FPS)
+    if(fps != 60.00 && fps != G1_FPS && fps != G2_FPS && fps != G3_FPS)
         return 1;
 
     cs->fps = fps;
