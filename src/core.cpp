@@ -746,7 +746,7 @@ int run(coreState *cs)
         unsigned newFrames = 0u;
         for (
             double gameFrameTime = 1.0 / cs->fps;
-            timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync);
+            timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
             timeAccumulator -= gameFrameTime,
             newFrames++,
             cs->frames++
@@ -816,10 +816,8 @@ int run(coreState *cs)
             timeFromFrames += gameFrameTime;
             printf(" real: %f\nframe: %f\n\n", static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime, timeFromFrames);
 #endif
-            if (cs->settings->vsyncTimestep && cs->settings->vsync) {
-                newFrames = 1u;
-                cs->frames++;
-                break;
+            if (cs->settings->vsync && cs->settings->vsyncTimestep) {
+                timeAccumulator = 0.0;
             }
         }
 
