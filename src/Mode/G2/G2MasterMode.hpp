@@ -8,9 +8,7 @@
 
 namespace Shiro {
     namespace Mode {
-        namespace Pentomino {
-            class C {
-            };
-        }
+        class G2MasterMode {
+        };
     }
 }

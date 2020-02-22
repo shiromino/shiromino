@@ -78,6 +78,7 @@ set(SOURCES
     src/GuiGridCanvas.cpp
     src/GuiScreenManager.cpp
     src/main.cpp
+    src/Mode/BaseMode.cpp
     src/MultiEditor.cpp
     src/piecedef.cpp
     src/qrs.cpp
@@ -116,10 +117,12 @@ set(HEADERS
     src/GuiGridCanvas.hpp
     src/GuiScreenManager.hpp
     src/images.h
+    src/Mode/BaseMode.hpp
     src/MultiEditor.hpp
     src/music.h
     src/PDINI.hpp
     src/piecedef.h
+    src/Player/BasePlayer.hpp
     src/qrs.h
     src/QRS.hpp
     src/random.h

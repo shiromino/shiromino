@@ -6,14 +6,9 @@
  */
 #pragma once
 
-#include <cstdint>
-
 namespace Shiro {
     namespace Mode {
-        /**
-         * Base class of all game modes.
-         */
-        class BaseMode {
+        class PentominoCMode {
         };
     }
 }

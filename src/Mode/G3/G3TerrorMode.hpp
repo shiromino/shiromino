@@ -6,13 +6,9 @@
  */
 #pragma once
 
-#include "Modes/BaseMode.hpp"
-
 namespace Shiro {
     namespace Mode {
-        namespace G0 {
-            class Marathon {
-            };
-        }
+        class G3TerrorMode {
+        };
     }
 }

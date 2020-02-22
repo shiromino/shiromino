@@ -8,9 +8,7 @@
 
 namespace Shiro {
     namespace Mode {
-        namespace G2 {
-            class Master {
-            };
-        }
+        class G1MasterMode {
+        };
     }
 }
