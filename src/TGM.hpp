@@ -239,7 +239,7 @@ struct TGM_Mode
     int numPlayers;
     std::vector<SPM_offset> playerSpawnOffsets;
 
-    std::vector<std::unique_ptr<TGM_LevelEvent>>
+    //std::vector<std::unique_ptr<TGM_LevelEvent>>
     // TODO: music list, garbage speed updates, garbage on/off, invisible on/off, etc.
     // have a list of LevelEvents
 
@@ -254,7 +254,7 @@ struct TGM_Mode
     bool enableLevelStops;
 
     bool overrideFieldSize;
-    grid_t *startingField;
+    Shiro::Grid *startingField;
 };
 
 struct TGM_Stage
@@ -262,7 +262,7 @@ struct TGM_Stage
     int index;
     std::string name;
 
-    grid_t *startingField;
+    Shiro::Grid *startingField;
 };
 
 struct Staged_TGM_Mode

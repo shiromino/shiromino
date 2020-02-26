@@ -1,5 +1,4 @@
-#ifndef _shirophysomino_hpp
-#define _shirophysomino_hpp
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -19,7 +18,7 @@ public:
 protected:
     SPM_Spec *spec;
 
-    grid_t *field;
+    Shiro::Grid *field;
     GuiPoint fieldPos;
 
     nz_timer *timer;
@@ -74,7 +73,7 @@ public:
 
         player.randomizer = new G3_Randomizer;
 
-        field = grid_create(spec->fieldW, spec->fieldH);
+        field = new Shiro::Grid(spec->fieldW, spec->fieldH);
         fieldPos = {48, 60};
         timer = nz_timer_create(60);
         rep = NULL;
@@ -98,5 +97,3 @@ private:
 
     SPM_Player player;
 };
-
-#endif // _shirophysomino_hpp

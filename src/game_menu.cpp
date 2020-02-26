@@ -1296,10 +1296,10 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu[13] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("NEW MODES"));
+    d->menu[13] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("LUA MODES"));
     m = d->menu[13];
     d1 = (struct action_opt_data*)m->data;
-    d1->action = menu_action_new_modes;
+    d1->action = menu_action_lua_modes;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 26 * 16;
@@ -1962,7 +1962,7 @@ int mload_replay(game_t *g, int val)
 
 int menu_action_quit(game_t *g, int val) { return 1; }
 
-int menu_action_new_modes(game_t* g, int val) {
+int menu_action_lua_modes(game_t* g, int val) {
     return 2;
 }
 

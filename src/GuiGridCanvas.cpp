@@ -6,12 +6,11 @@
 #include "SDL.h"
 #include "SGUIL/SGUIL.hpp"
 
-#include "grid.h"
-
+using namespace Shiro;
 using namespace std;
 
-GuiGridCanvas::GuiGridCanvas(int ID, grid_t *grid, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
-    : grid(grid), paletteVar(paletteVar), paletteTex(paletteTex), cellW(cellW), cellH(cellH)
+GuiGridCanvas::GuiGridCanvas(int ID, Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
+    : cells(cells), paletteVar(paletteVar), paletteTex(paletteTex), cellW(cellW), cellH(cellH)
 {
     this->relativeDestRect = relativeDestRect;
     this->ID = ID;
@@ -48,9 +47,9 @@ void GuiGridCanvas::draw()
 
     Gui_DrawBorder(relativeDestRect, 1, GUI_RGBA_DEFAULT);
 
-    for(int i = 0; i < grid->w; i++)
+    for(int i = 0; i < cells->getWidth(); i++)
     {
-        for(int j = 0; j < grid->h; j++)
+        for(int j = 0; j < cells->getHeight(); j++)
         {
             vector<unsigned int> paletteList;
             GuiVirtualPoint point = {i, j};
@@ -59,11 +58,11 @@ void GuiGridCanvas::draw()
 
             if(clipboardMoveMode && clipboard)
             {
-                if(i >= cellUnderMouse.x && j >= cellUnderMouse.y && i < cellUnderMouse.x + clipboard->w && j < cellUnderMouse.y + clipboard->h)
+                if(i >= cellUnderMouse.x && j >= cellUnderMouse.y && i < cellUnderMouse.x + clipboard->getWidth() && j < cellUnderMouse.y + clipboard->getHeight())
                 {
                     int x = i - cellUnderMouse.x;
                     int y = j - cellUnderMouse.y;
-                    val = gridgetcell(clipboard, x, y);
+                    val = clipboard->getCell(x, y);
                 }
             }
 
@@ -124,9 +123,9 @@ void GuiGridCanvas::draw()
             greaterY = swp;
         }
 
-        grid_rect rect = {lesserX, lesserY, (greaterX - lesserX) + 1, (greaterY - lesserY) + 1};
+        GridRect rect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
 
-        SDL_Rect selectionRect = SDL_Rect{relativeDestRect.x + (rect.x * (int)cellW), relativeDestRect.y + (rect.y * (int)cellH), rect.w * (int)cellW, rect.h * (int)cellH};
+        SDL_Rect selectionRect = SDL_Rect{relativeDestRect.x + (rect.x * (int)cellW), relativeDestRect.y + (rect.y * (int)cellH), (int)(rect.width * cellW), (int)(rect.height * cellH)};
 
         rgba_t v = 0x9090FF9F;
 
@@ -281,8 +280,8 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
             {
                 selectionVertex1.x = 0;
                 selectionVertex1.y = 0;
-                selectionVertex2.x = grid->w - 1;
-                selectionVertex2.y = grid->h - 1;
+                selectionVertex2.x = cells->getWidth() - 1;
+                selectionVertex2.y = cells->getHeight() - 1;
                 selection = true;
             }
 
@@ -410,20 +409,20 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
                 greaterY = swp;
             }
 
-            grid_rect selectionRect = {lesserX, lesserY, (greaterX - lesserX) + 1, (greaterY - lesserY) + 1};
+            GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
 
             if(paletteValMap.size() <= (std::size_t)num + 1)
             {
                 makeBackup();
 
-                gridfillrect(grid, &selectionRect, num + 1);
+                cells->fill(selectionRect, num + 1);
                 selection = false;
             }
             else if(!paletteValMap[(std::size_t)num + 1].isFlag)
             {
                 makeBackup();
 
-                gridfillrect(grid, &selectionRect, paletteValMap[(std::size_t)num + 1].mappedVal);
+                cells->fill(selectionRect, paletteValMap[(std::size_t)num + 1].mappedVal);
                 selection = false;
             }
         }
@@ -436,11 +435,11 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
 
 void GuiGridCanvas::makeBackup()
 {
-    undoBuffer.push_back(gridcpy(grid, NULL));
+    undoBuffer.push_back(new Grid(*cells));
 
     for(auto r : redoBuffer)
     {
-        grid_destroy(r);
+        delete r;
     }
 
     redoBuffer.clear();
@@ -453,8 +452,8 @@ void GuiGridCanvas::undo()
         return;
     }
 
-    redoBuffer.push_back(gridcpy(grid, NULL));
-    grid = undoBuffer.back();
+    redoBuffer.push_back(new Grid(*cells));
+    cells = undoBuffer.back();
     undoBuffer.pop_back();
 }
 
@@ -465,8 +464,8 @@ void GuiGridCanvas::redo()
         return;
     }
 
-    undoBuffer.push_back(gridcpy(grid, NULL));
-    grid = redoBuffer.back();
+    undoBuffer.push_back(new Grid(*cells));
+    cells = redoBuffer.back();
     redoBuffer.pop_back();
 }
 
@@ -474,12 +473,12 @@ void GuiGridCanvas::clearUndo()
 {
     for(auto u : undoBuffer)
     {
-        grid_destroy(u);
+        delete u;
     }
 
     for(auto r : redoBuffer)
     {
-        grid_destroy(r);
+        delete r;
     }
 
     undoBuffer.clear();
@@ -490,7 +489,7 @@ void GuiGridCanvas::copySelection()
 {
     if(clipboard)
     {
-        grid_destroy(clipboard);
+        delete clipboard;
     }
 
     int lesserX = selectionVertex1.x;
@@ -512,15 +511,15 @@ void GuiGridCanvas::copySelection()
         greaterY = swp;
     }
 
-    grid_rect selectionRect = {lesserX, lesserY, (greaterX - lesserX) + 1, (greaterY - lesserY) + 1};
-    clipboard = gridfromsrcrect(grid, selectionRect);
+    GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+    clipboard = new Grid(*cells, selectionRect);
 }
 
 void GuiGridCanvas::cutSelection()
 {
     if(clipboard)
     {
-        grid_destroy(clipboard);
+        delete clipboard;
     }
 
     int lesserX = selectionVertex1.x;
@@ -542,16 +541,16 @@ void GuiGridCanvas::cutSelection()
         greaterY = swp;
     }
 
-    grid_rect selectionRect = {lesserX, lesserY, (greaterX - lesserX) + 1, (greaterY - lesserY) + 1};
-    clipboard = gridfromsrcrect(grid, selectionRect);
+    GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+    clipboard = new Grid(*cells, selectionRect);
 
     if(paletteValMap.size() == 0)
     {
-        gridfillrect(grid, &selectionRect, 0);
+        cells->fill(selectionRect, 0);
     }
     else
     {
-        gridfillrect(grid, &selectionRect, paletteValMap[0].mappedVal);
+        cells->fill(selectionRect, paletteValMap[0].mappedVal);
     }
 }
 
@@ -562,19 +561,19 @@ void GuiGridCanvas::pasteSelection()
         return;
     }
 
-    grid_rect dest = {cellUnderMouse.x, cellUnderMouse.y, clipboard->w, clipboard->h};
-    gridcpyrect(clipboard, grid, NULL, &dest);
+    GridRect dest = {cellUnderMouse.x, cellUnderMouse.y, clipboard->getWidth(), clipboard->getHeight()};
+    cells->copyRect(*clipboard, { 0, 0, clipboard->getWidth(), clipboard->getHeight() }, dest);
 }
 
 void GuiGridCanvas::eraseCell(GuiVirtualPoint& point)
 {
     if(paletteValMap.size() == 0)
     {
-        gridsetcell(grid, point.x, point.y, 0);
+        cells->cell(point.x, point.y) = 0;
     }
     else
     {
-        gridsetcell(grid, point.x, point.y, paletteValMap[0].mappedVal);
+        cells->cell(point.x, point.y) = paletteValMap[0].mappedVal;
     }
 }
 
@@ -582,25 +581,25 @@ void GuiGridCanvas::fillCell(GuiVirtualPoint& point)
 {
     if(paletteValMap.size() <= paletteSelection)
     {
-        gridsetcell(grid, point.x, point.y, paletteSelection + 1);
+        cells->cell(point.x, point.y) = paletteSelection + 1;
     }
     else
     {
         if(paletteValMap[(std::size_t)paletteSelection + 1].isFlag && (getCell(point) != paletteValMap[0].mappedVal))
         // only allow xor if the cell isn't empty
         {
-            gridxorcell(grid, point.x, point.y, paletteValMap[(std::size_t)paletteSelection + 1].mappedVal);
+            cells->xorCell(point.x, point.y, paletteValMap[(size_t)paletteSelection + 1].mappedVal);
         }
         else
         {
-            gridsetcell(grid, point.x, point.y, paletteValMap[(std::size_t)paletteSelection + 1].mappedVal);
+            cells->cell(point.x, point.y) = paletteValMap[(size_t)paletteSelection + 1].mappedVal;
         }
     }
 }
 
 int GuiGridCanvas::getCell(GuiVirtualPoint& point)
 {
-    return gridgetcell(grid, point.x, point.y);
+    return cells->getCell(point.x, point.y);
 }
 
 void GuiGridCanvas::fillCellPaletteListFromMappedVal(int mappedVal, std::vector<unsigned int>& paletteList)

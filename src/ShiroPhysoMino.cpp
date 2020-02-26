@@ -9,11 +9,12 @@
 #include "SPM_Spec.hpp"
 #include "SPM_Randomizer.hpp"
 
+using namespace Shiro;
 using namespace std;
 
 ShiroPhysoMino::~ShiroPhysoMino()
 {
-    grid_destroy(field);
+    delete field;
     nz_timer_destroy(timer);
 }
 
@@ -242,19 +243,18 @@ int TestSPM::draw()
     SDL_Rect dest = {fieldPos.x, fieldPos.y, blockW, blockH};
     SDL_SetRenderDrawColor(cs.screen.renderer, 255, 255, 255, 180);
 
-    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * field->w, blockH * spec->visualFieldH};
+    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * field->getWidth(), blockH * spec->visualFieldH};
     Gui_DrawBorder(fieldRect, 1, GUI_RGBA_DEFAULT);
 
-    for(int i = 0; i < field->w; i++)
+    for(int i = 0; i < field->getWidth(); i++)
     {
         for(int j = 0; j < spec->visualFieldH; j++)
         {
-            int gridY = j + field->h - spec->visualFieldH;
+            int gridY = j + field->getHeight() - spec->visualFieldH;
             dest.x = fieldPos.x + (i * blockW);
             dest.y = fieldPos.y + (j * blockH);
 
-            if(gridgetcell(field, i, gridY) > 0)
-            {
+            if (field->getCell(i, gridY) > 0) {
                 SDL_RenderFillRect(cs.screen.renderer, &dest);
             }
         }
@@ -264,18 +264,17 @@ int TestSPM::draw()
 
     if(player.mino && player.playPhase == spm_player_control)
     {
-        grid_t *m = player.mino->currentRotationTable();
-        for(int i = 0; i < m->w; i++)
+        Grid m = player.mino->currentRotationTable();
+        for(int i = 0; i < m.getWidth(); i++)
         {
-            for(int j = 0; j < m->h; j++)
+            for(int j = 0; j < m.getHeight(); j++)
             {
                 int gridX = i + player.mino->position.x;
                 int gridY = j + player.mino->position.y;
 
-                if(gridY >= (field->h - spec->visualFieldH) && gridgetcell(m, i, j))
-                {
+                if (gridY >= (field->getHeight() - spec->visualFieldH) && m.getCell(i, j)) {
                     dest.x = fieldPos.x + (gridX * blockW);
-                    dest.y = fieldPos.y - ((field->h - spec->visualFieldH) * blockH) + (gridY * blockH);
+                    dest.y = fieldPos.y - ((field->getHeight() - spec->visualFieldH) * blockH) + (gridY * blockH);
                     dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
                     SDL_RenderFillRect(cs.screen.renderer, &dest);
                 }
@@ -293,13 +292,12 @@ int TestSPM::draw()
     {
         if(p)
         {
-            grid_t *m = p->currentRotationTable();
-            for(int i = 0; i < m->w; i++)
+            Grid m = p->currentRotationTable();
+            for(int i = 0; i < m.getWidth(); i++)
             {
-                for(int j = 0; j < m->h; j++)
+                for(int j = 0; j < m.getHeight(); j++)
                 {
-                    if(gridgetcell(m, i, j))
-                    {
+                    if (m.getCell(i, j)) {
                         dest.x = fieldPos.x + (3 * 16) + (n * 5 * 16) + (i * 16);
                         dest.y = fieldPos.y - 54 + (j * 16);
                         SDL_RenderFillRect(cs.screen.renderer, &dest);
@@ -367,7 +365,7 @@ bool TestSPM::lockDelayExpired(SPM_Player& p)
     spec->imprintMino(field, *p.mino);
     p.mino->physicState = spm_physic_locked;
 
-    int n = spec->checkAndClearLines(field, field->h);
+    int n = spec->checkAndClearLines(field, field->getHeight());
 
     if(n)
     {
@@ -468,6 +466,6 @@ ActivatedPolyomino *TestSPM::activateMino(SPM_minoID ID)
         return NULL;
     }
 
-    ActivatedPolyomino *ap = new ActivatedPolyomino{*(spec->minoList[ID]), ID, spec->spawnPositions[ID]};
+    ActivatedPolyomino *ap = new ActivatedPolyomino{spec->minoList[ID], ID, spec->spawnPositions[ID]};
     return ap;
 }

@@ -8,11 +8,12 @@
 #include "game_qs.h"
 #include "gfx.h"
 #include "gfx_structures.h"
-#include "grid.h"
+#include "Grid.hpp"
 #include "piecedef.h"
 #include "qrs.h"
 #include "timer.h"
 
+using namespace Shiro;
 using namespace std;
 
 /*
@@ -684,7 +685,7 @@ int gfx_drawbuttons(coreState *cs, int type)
     return 0;
 }
 
-int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned int flags, int x, int y)
+int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int flags, int x, int y)
 {
     if(!cs || !field)
         return -1;
@@ -816,7 +817,8 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
             /*if(use_deltas && !gridgetcell(q->field_deltas, i, j))
                 continue;*/
 
-            c = gridgetcell(field, i, j);
+            //c = gridgetcell(field, i, j);
+            c = field->getCell(i, j);
             if(c == GRID_OOB)
                 return 1;
 
@@ -834,11 +836,11 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                 }
                 else if(c == QRS_FIELD_W_LIMITER)
                 {
-                    if(!(IS_INBOUNDS(gridgetcell(field, i - 1, j))) && !(IS_INBOUNDS(gridgetcell(field, i + 1, j))))
+                    if(!(IS_INBOUNDS(field->getCell(i - 1, j))) && !(IS_INBOUNDS(field->getCell(i + 1, j))))
                         src.x = 27 * 16;
-                    else if((IS_INBOUNDS(gridgetcell(field, i - 1, j))) && !(IS_INBOUNDS(gridgetcell(field, i + 1, j))))
+                    else if((IS_INBOUNDS(field->getCell(i - 1, j))) && !(IS_INBOUNDS(field->getCell(i + 1, j))))
                         src.x = 28 * 16;
-                    else if(!(IS_INBOUNDS(gridgetcell(field, i - 1, j))) && (IS_INBOUNDS(gridgetcell(field, i + 1, j))))
+                    else if(!(IS_INBOUNDS(field->getCell(i - 1, j))) && (IS_INBOUNDS(field->getCell(i + 1, j))))
                         src.x = 29 * 16;
                 }
                 else if(c & QRS_PIECE_BRACKETS)
@@ -946,7 +948,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
 
                         SDL_Rect outlineRect = {.x = dest.x, .y = dest.y, .w = cellSize, .h = 2};
 
-                        c = gridgetcell(field, i, j - 1); // above
+                        c = field->getCell(i, j - 1); // above
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
@@ -960,7 +962,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             }
                         }
 
-                        c = gridgetcell(field, i - 1, j); // left
+                        c = field->getCell(i - 1, j); // left
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
@@ -974,7 +976,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             }
                         }
 
-                        c = gridgetcell(field, i + 1, j); // right
+                        c = field->getCell(i + 1, j); // right
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x + cellSize - 2;
@@ -988,7 +990,7 @@ int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned i
                             }
                         }
 
-                        c = gridgetcell(field, i, j + 1); // below
+                        c = field->getCell(i, j + 1); // below
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
@@ -1360,7 +1362,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
     return 0;
 }
 
-int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
+int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
 {
     if(!cs || !pd)
         return -1;
@@ -1407,18 +1409,18 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
     bstring piece_bstr = bfromcstr("A");
     piece_bstr->data[0] = pd->qrs_id + 'A';
 
-    grid_t *g = NULL;
+    Grid *g = NULL;
 
     int i = 0;
     int j = 0;
-    int w = pd->rotation_tables[0]->w;
-    int h = pd->rotation_tables[0]->h;
+    int w = pd->rotation_tables[0].getWidth();
+    int h = pd->rotation_tables[0].getWidth();
     int c = 0;
 
     int cell_x = 0;
     int cell_y = 0;
 
-    g = pd->rotation_tables[orient & 3];
+    g = &pd->rotation_tables[orient & 3];
     src.x = pd->qrs_id * (size == 8 ? 8 : 16);
     if(flags & DRAWPIECE_JEWELED)
     {
@@ -1436,7 +1438,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
     {
         for(j = 0; j < h; j++)
         {
-            if(gridgetcell(g, i, j) && (y + (j * size) > (field_y + 16) || flags & DRAWPIECE_PREVIEW))
+            if(g->getCell(i, j) && (y + (j * size) > (field_y + 16) || flags & DRAWPIECE_PREVIEW))
             {
                 dest.x = x + 16 + ((i - 1) * size);
 
@@ -1465,13 +1467,13 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                     cell_x = (x - field_x - 16) / size + i;
                     cell_y = (y - field_y - 32) / size + j + QRS_FIELD_H - 20;
 
-                    if(gridgetcell(field, cell_x, cell_y) > 0 || flags & DRAWPIECE_PREVIEW)
+                    if(field->getCell(cell_x, cell_y) > 0 || flags & DRAWPIECE_PREVIEW)
                     {
                         SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
 
                         if(!(flags & DRAWPIECE_PREVIEW))
                         {
-                            c = gridgetcell(field, cell_x, cell_y - 1); // above, left, right, below
+                            c = field->getCell(cell_x, cell_y - 1); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 0;
@@ -1480,7 +1482,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
-                            c = gridgetcell(field, cell_x - 1, cell_y); // above, left, right, below
+                            c = field->getCell(cell_x - 1, cell_y); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 16;
@@ -1489,7 +1491,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
-                            c = gridgetcell(field, cell_x + 1, cell_y); // above, left, right, below
+                            c = field->getCell(cell_x + 1, cell_y); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 32;
@@ -1498,7 +1500,7 @@ int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, pieced
                                 SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
-                            c = gridgetcell(field, cell_x, cell_y + 1); // above, left, right, below
+                            c = field->getCell(cell_x, cell_y + 1); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 48;

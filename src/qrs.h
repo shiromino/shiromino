@@ -1,5 +1,4 @@
-#ifndef _qrs_h
-#define _qrs_h
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -7,7 +6,7 @@
 
 #include "core.h"
 #include "piecedef.h"
-#include "grid.h"
+#include "Grid.hpp"
 #include "timer.h"
 
 #define MAX_SECTIONS 30
@@ -160,9 +159,11 @@ extern const char *qrs_piece_names[25];
 
 typedef uint8_t piece_id;
 
-typedef struct
-{
-    int level;
+struct QRS_Timings {
+    QRS_Timings();
+    QRS_Timings(unsigned level, int grav, int lock, int das, int are, int lineare, int lineclear);
+
+    unsigned level;
 
     int grav;
     int lock;
@@ -170,10 +171,11 @@ typedef struct
     int are;
     int lineare;
     int lineclear;
-} qrs_timings;
+};
 
-typedef struct
-{
+struct QRS_Counters {
+    QRS_Counters();
+
     int init;
 
     int lock;
@@ -182,21 +184,21 @@ typedef struct
     int lineclear;
     unsigned int floorkicks;
     int hold_flash;
-} qrs_counters;
+};
 
-typedef struct
+struct qrs_player
 {
-    piecedef *def;
-    qrs_timings *speeds;
+    piecedef* def;
+    QRS_Timings* speeds;
     unsigned int state;        // rename?
 
     int x;
     int y;
-    int *old_xs;
-    int *old_ys;
+    int* old_xs;
+    int* old_ys;
     int num_olds;
     int orient;
-} qrs_player;
+};
 
 struct pracdata
 {
@@ -212,13 +214,11 @@ struct pracdata
     std::size_t usr_seq_len;
     std::size_t usr_seq_expand_len;
 
-    grid_t **usr_field_undo;
-    grid_t **usr_field_redo;
-    std::size_t usr_field_undo_len;
-    std::size_t usr_field_redo_len;
+    std::vector<Shiro::Grid> usr_field_undo;
+    std::vector<Shiro::Grid> usr_field_redo;
     bool field_edit_in_progress;
 
-    grid_t *usr_field;
+    Shiro::Grid usr_field;
     int palette_selection;
     int field_selection;
     int field_selection_vertex1_x;
@@ -226,7 +226,7 @@ struct pracdata
     int field_selection_vertex2_x;
     int field_selection_vertex2_y;
 
-    qrs_timings *usr_timings;
+    QRS_Timings *usr_timings;
 
     int paused;
     bool grid_lines_shown;
@@ -241,19 +241,19 @@ struct pracdata
     long randomizer_seed;
 };
 
-typedef struct
+struct qrsdata
 {
     piecedef **piecepool;
     struct randomizer *randomizer;
     struct pracdata *pracdata;
     struct replay *replay;
     std::ifstream credits;
-    grid_t *garbage;
+    Shiro::Grid garbage;
     piece_id *piece_seq;
 
     nz_timer *timer;
     qrs_player *p1;
-    qrs_counters *p1counters;
+    QRS_Counters *p1counters;
     piecedef *previews[4];
     piecedef *hold;
 
@@ -297,7 +297,7 @@ typedef struct
     unsigned int state_flags;    // things like invisible mode, bracket mode, etc. go here
 
     int piece_seq_index;
-    int garbage_row_index;    // which row of the garbage grid to spawn next
+    int garbage_row_index;    // which row of the garbage cells to spawn next
     int playback_index;        // equivalent to number of frames that input has been handled in the game so far
 
     // increments for each piece that doesnt clear lines (shirase: for each piece spawned & decrements for each line cleared)
@@ -312,7 +312,7 @@ typedef struct
     int credit_roll_counter;
     int credit_roll_lineclears;
 
-    int level;
+    unsigned level;
     int section;
     double rank;
 
@@ -365,7 +365,7 @@ typedef struct
     int speed_curve_index;
     int music;
     //int history[10];    // 0, 1, 2, 3, 4, 5 are in the past; 6 is the current piece; 7, 8, 9 are previews
-} qrsdata;
+};
 
 const std::string get_qrspiece_name(int n);
 
@@ -375,9 +375,9 @@ void pracdata_destroy(struct pracdata *d);
 piecedef **qrspool_create();
 piecedef *qrspiece_cpy(piecedef **piecepool, int index);
 
-grid_t *qrsfield_create();
-int qrsfield_set_w(grid_t *field, int w);
-int qrsfield_clear(grid_t *field);
+Shiro::Grid* qrsfield_create();
+int qrsfield_set_w(Shiro::Grid* field, int w);
+int qrsfield_clear(Shiro::Grid* field);
 
 int ufu_not_exists(coreState *cs);
 
@@ -410,7 +410,8 @@ int qrs_hold(game_t *g, qrs_player *p);
 
 int qrs_fall(game_t *g, qrs_player *p, int grav);
 int qrs_lock(game_t *g, qrs_player *p);
-int qrs_chkcollision(game_t *g, qrs_player *p);
+bool qrs_chkcollision(game_t& g, qrs_player& p);
+bool qrs_chkcollision(game_t& g, qrs_player& p, std::pair<int, int>& pos);
 int qrs_isonground(game_t *g, qrs_player *p);
 
 int qrs_lineclear(game_t *g, qrs_player *p);
@@ -418,5 +419,3 @@ int qrs_dropfield(game_t *g);
 int qrs_spawn_garbage(game_t *g, unsigned int flags);
 
 void qrs_embiggen(piecedef *p);
-
-#endif

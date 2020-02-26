@@ -1,11 +1,12 @@
 #include "SDL.h"
-#include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
 #include <string>
+#include <utility>
 
 #include "core.h"
-#include "grid.h"
+#include "Grid.hpp"
 #include "piecedef.h"
 #include "qrs.h"
 #include "random.h"
@@ -20,10 +21,33 @@
 
 #include "rotation_tables.h"
 
+using namespace Shiro;
 using namespace std;
 
 const char *qrspiece_names[25] = {"I", "J", "L",  "X",  "S", "Z",       "N",  "G",  "U",  "T", "Fa", "Fb", "P",
                                   "Q", "W", "Ya", "Yb", "V", /**/ "I4", "T4", "J4", "L4", "O", "S4", "Z4"};
+
+/* */
+
+QRS_Timings::QRS_Timings() : QRS_Timings(0u, 4, 30, 14, 30, 30, 40) {}
+
+QRS_Timings::QRS_Timings(unsigned level, int grav, int lock, int das, int are, int lineare, int lineclear) :
+    level(level),
+    grav(grav),
+    lock(lock),
+    das(das),
+    are(are),
+    lineare(lineare),
+    lineclear(lineclear) {}
+
+QRS_Counters::QRS_Counters() :
+    init(0),
+    lock(0),
+    are(0),
+    lineare(0),
+    lineclear(0),
+    floorkicks(0u),
+    hold_flash(0) {}
 
 const string get_qrspiece_name(int n)
 {
@@ -32,8 +56,6 @@ const string get_qrspiece_name(int n)
 
     return {qrspiece_names[n]};
 }
-
-/* */
 
 void qrsdata_destroy(qrsdata *q)
 {
@@ -47,8 +69,8 @@ void qrsdata_destroy(qrsdata *q)
     nz_timer_destroy(q->timer);
     // if(q->p1->def) piecedef_destroy(q->p1->def);
     free(q->p1);
-    free(q->p1counters);
-    free(q->piecepool);
+    delete q->p1counters;
+    delete[] q->piecepool;
 
     if(q->replay)
     {
@@ -58,48 +80,24 @@ void qrsdata_destroy(qrsdata *q)
     free(q);
 }
 
-void pracdata_destroy(struct pracdata *d)
+void pracdata_destroy(pracdata *d)
 {
     if(!d)
         return;
 
     int i = 0;
 
-    if(d->usr_field_undo)
-    {
-        for(i = 0; i < d->usr_field_undo_len; i++)
-        {
-            if(d->usr_field_undo[i])
-                grid_destroy(d->usr_field_undo[i]);
-        }
-
-        free(d->usr_field_undo);
+    if (d->usr_timings) {
+        delete d->usr_timings;
     }
-
-    if(d->usr_field_redo)
-    {
-        for(i = 0; i < d->usr_field_redo_len; i++)
-        {
-            if(d->usr_field_redo[i])
-                grid_destroy(d->usr_field_redo[i]);
-        }
-
-        free(d->usr_field_redo);
-    }
-
-    if(d->usr_field)
-        grid_destroy(d->usr_field);
-
-    if(d->usr_timings)
-        free(d->usr_timings);
 }
 
-struct pracdata *pracdata_cpy(struct pracdata *d)
+pracdata *pracdata_cpy(pracdata *d)
 {
     if(!d)
         return NULL;
 
-    struct pracdata *cpy = (struct pracdata *)malloc(sizeof(struct pracdata));
+    pracdata *cpy = (pracdata *)malloc(sizeof(pracdata));
     int i = 0;
 
     for(i = 0; i < d->usr_seq_len; i++)
@@ -115,25 +113,12 @@ struct pracdata *pracdata_cpy(struct pracdata *d)
     cpy->usr_seq_len = d->usr_seq_len;
     cpy->usr_seq_expand_len = d->usr_seq_expand_len;
 
-    cpy->usr_field_undo = (grid_t **)malloc(d->usr_field_undo_len * sizeof(grid_t *));
-    cpy->usr_field_redo = (grid_t **)malloc(d->usr_field_redo_len * sizeof(grid_t *));
-
-    for(i = 0; i < d->usr_field_undo_len; i++)
-    {
-        cpy->usr_field_undo[i] = gridcpy(d->usr_field_undo[i], NULL);
-    }
-
-    for(i = 0; i < d->usr_field_redo_len; i++)
-    {
-        cpy->usr_field_redo[i] = gridcpy(d->usr_field_redo[i], NULL);
-    }
-
-    cpy->usr_field_undo_len = d->usr_field_undo_len;
-    cpy->usr_field_redo_len = d->usr_field_redo_len;
+    cpy->usr_field_undo = d->usr_field_undo;
+    cpy->usr_field_redo = d->usr_field_redo;
 
     cpy->field_edit_in_progress = 0;
 
-    cpy->usr_field = gridcpy(d->usr_field, NULL);
+    cpy->usr_field = d->usr_field;
 
     cpy->palette_selection = QRS_PIECE_GARBAGE;
     cpy->field_selection = d->field_selection;
@@ -142,14 +127,16 @@ struct pracdata *pracdata_cpy(struct pracdata *d)
     cpy->field_selection_vertex2_x = d->field_selection_vertex2_x;
     cpy->field_selection_vertex2_y = d->field_selection_vertex2_y;
 
-    cpy->usr_timings = (qrs_timings *)malloc(sizeof(qrs_timings));
+    cpy->usr_timings = new QRS_Timings(*d->usr_timings);
     cpy->usr_timings->level = 0;
+    /*
     cpy->usr_timings->grav = d->usr_timings->grav;
     cpy->usr_timings->lock = d->usr_timings->lock;
     cpy->usr_timings->are = d->usr_timings->are;
     cpy->usr_timings->lineare = d->usr_timings->lineare;
     cpy->usr_timings->das = d->usr_timings->das;
     cpy->usr_timings->lineclear = d->usr_timings->lineclear;
+    */
 
     cpy->hist_index = 0;
     cpy->paused = QRS_FIELD_EDIT;
@@ -166,12 +153,10 @@ struct pracdata *pracdata_cpy(struct pracdata *d)
 
 piecedef **qrspool_create()
 {
-    piecedef **pool = (piecedef **)malloc(25 * sizeof(piecedef *));
+    piecedef** pool = new piecedef * [25];
     int i = 0;
     int j = 0;
     int n = 5;
-
-    int *arr = NULL;
 
     for(i = 0; i < 25; i++)
     {
@@ -180,7 +165,7 @@ piecedef **qrspool_create()
             n = 4;
         }
 
-        pool[i] = (piecedef *)malloc(sizeof(piecedef));
+        pool[i] = new piecedef;
         pool[i]->qrs_id = i;
         pool[i]->flags = 0;
         pool[i]->anchorx = ANCHORX_QRS;
@@ -188,16 +173,12 @@ piecedef **qrspool_create()
 
         for(j = 0; j < 4; j++)
         {
-            if(n == 5)
-            {
-                arr = (int *)(qrspent_yx_rotation_tables[i][j]);
+            if (n == 5) {
+                pool[i]->rotation_tables[j] = qrspent_yx_rotation_tables[i][j];
             }
-            else
-            {
-                arr = (int *)(qrstet_yx_rotation_tables[i - 18][j]);
+            else if (n == 4) {
+                pool[i]->rotation_tables[j] = qrstet_yx_rotation_tables[i - 18][j];
             }
-
-            pool[i]->rotation_tables[j] = grid_from_1d_int_array(arr, n, n);
         }
 
         if(!(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L ||
@@ -228,14 +209,12 @@ piecedef *qrspiece_cpy(piecedef **piecepool, int index)
     return piecedef_cpy(piecepool[index]);
 }
 
-grid_t *qrsfield_create()
+Grid *qrsfield_create()
 {
-    grid_t *g = grid_create(QRS_FIELD_W, QRS_FIELD_H);
-
-    return g;
+    return new Grid(QRS_FIELD_W, QRS_FIELD_H);
 }
 
-int qrsfield_set_w(grid_t *field, int w)
+int qrsfield_set_w(Grid *field, int w)
 {
     if(w % 2 || w < 4 || w > 12 || !field)
         return 1;
@@ -243,12 +222,13 @@ int qrsfield_set_w(grid_t *field, int w)
     int i = 0;
     int j = 0;
 
-    for(i = 0; i < field->w; i++)
+    for(i = 0; i < field->getWidth(); i++)
     {
-        for(j = 0; j < field->h; j++)
+        for(j = 0; j < field->getHeight(); j++)
         {
-            if(gridgetcell(field, i, j) == QRS_FIELD_W_LIMITER)
-                gridsetcell(field, i, j, 0);
+            if (field->getCell(i, j) == QRS_FIELD_W_LIMITER) {
+                field->setCell(i, j, 0);
+            }
         }
     }
 
@@ -256,15 +236,15 @@ int qrsfield_set_w(grid_t *field, int w)
     {
         for(j = 0; j < QRS_FIELD_H; j++)
         {
-            gridsetcell(field, i, j, QRS_FIELD_W_LIMITER);
-            gridsetcell(field, QRS_FIELD_W - i - 1, j, QRS_FIELD_W_LIMITER);
+            field->setCell(i, j, QRS_FIELD_W_LIMITER);
+            field->setCell(QRS_FIELD_W - i - 1, j, QRS_FIELD_W_LIMITER);
         }
     }
 
     return 0;
 }
 
-int qrsfield_clear(grid_t *field) { return 0; }
+int qrsfield_clear(Grid *field) { return 0; }
 
 int ufu_not_exists(coreState *cs)
 {
@@ -275,7 +255,7 @@ int ufu_not_exists(coreState *cs)
     if(!q)
         return 1;
 
-    if((q->pracdata->usr_field_undo_len || q->pracdata->usr_field_redo_len) && q->pracdata->paused == QRS_FIELD_EDIT)
+    if((q->pracdata->usr_field_undo.size() || q->pracdata->usr_field_redo.size()) && q->pracdata->paused == QRS_FIELD_EDIT)
         return 0;
     else
         return 1;
@@ -283,117 +263,55 @@ int ufu_not_exists(coreState *cs)
     return 1;
 }
 
-int usr_field_bkp(coreState *cs, struct pracdata *d)
-{
-    if(!d)
-    {
+int usr_field_bkp(coreState *cs, pracdata *d) {
+    if (!d) {
         return 1;
     }
 
-    int i = 0;
-
-    if(!d->usr_field_undo)
-    {
-        d->usr_field_undo = (grid_t **)malloc(sizeof(grid_t *));
-        d->usr_field_undo[0] = gridcpy(d->usr_field, NULL);
-        d->usr_field_undo_len = 1;
+    if (!d->usr_field_undo.size()) {
         gfx_createbutton(
             cs, "CLEAR UNDO", QRS_FIELD_X + (16 * 16) - 6, QRS_FIELD_Y + 23 * 16 + 8 - 6, 0, push_undo_clear_confirm, ufu_not_exists, NULL, 0xC0C0FFFF);
     }
-    else
-    {
-        d->usr_field_undo_len++;
-        d->usr_field_undo = (grid_t **)realloc(d->usr_field_undo, d->usr_field_undo_len * sizeof(grid_t *));
-        d->usr_field_undo[d->usr_field_undo_len - 1] = gridcpy(d->usr_field, NULL);
-    }
+    d->usr_field_undo.push_back(d->usr_field);
 
-    if(d->usr_field_redo)
-    {
-        for(i = 0; i < d->usr_field_redo_len; i++)
-        {
-            grid_destroy(d->usr_field_redo[i]);
-        }
-
-        free(d->usr_field_redo);
-        d->usr_field_redo = NULL;
-        d->usr_field_redo_len = 0;
-    }
+    d->usr_field_redo.clear();
 
     return 0;
 }
 
-int usr_field_undo(coreState *cs, struct pracdata *d)
+int usr_field_undo(coreState *cs, pracdata *d)
 {
-    if(!d)
+    if (!d) {
         return 1;
+    }
 
-    if(!d->usr_field_undo)
+    if (!d->usr_field_undo.size()) {
         return 0;
-
-    if(!d->usr_field_redo)
-    {
-        d->usr_field_redo = (grid_t **)malloc(sizeof(grid_t *));
-        d->usr_field_redo[0] = gridcpy(d->usr_field, NULL);
-        d->usr_field_redo_len = 1;
-    }
-    else
-    {
-        d->usr_field_redo_len++;
-        d->usr_field_redo = (grid_t **)realloc(d->usr_field_redo, d->usr_field_redo_len * sizeof(grid_t *));
-        d->usr_field_redo[d->usr_field_redo_len - 1] = gridcpy(d->usr_field, NULL);
     }
 
-    d->usr_field_undo_len--;
-    d->usr_field = d->usr_field_undo[d->usr_field_undo_len];
+    d->usr_field_redo.push_back(d->usr_field);
 
-    if(!d->usr_field_undo_len)
-    {
-        free(d->usr_field_undo);
-        d->usr_field_undo = NULL;
-    }
-    else
-    {
-        d->usr_field_undo = (grid_t **)realloc(d->usr_field_undo, d->usr_field_undo_len * sizeof(grid_t *));
-    }
+    d->usr_field = d->usr_field_undo.back();
+    d->usr_field_undo.pop_back();
 
     return 0;
 }
 
-int usr_field_redo(coreState *cs, struct pracdata *d)
+int usr_field_redo(coreState *cs, pracdata *d)
 {
     if(!d)
     {
         return 1;
     }
 
-    if(!d->usr_field_redo)
+    if (!d->usr_field_redo.size()) {
         return 0;
-
-    if(!d->usr_field_undo)
-    {
-        d->usr_field_undo = (grid_t **)malloc(sizeof(grid_t *));
-        d->usr_field_undo[0] = gridcpy(d->usr_field, NULL);
-        d->usr_field_undo_len = 1;
-    }
-    else
-    {
-        d->usr_field_undo_len++;
-        d->usr_field_undo = (grid_t **)realloc(d->usr_field_undo, d->usr_field_undo_len * sizeof(grid_t *));
-        d->usr_field_undo[d->usr_field_undo_len - 1] = gridcpy(d->usr_field, NULL);
     }
 
-    d->usr_field_redo_len--;
-    d->usr_field = d->usr_field_redo[d->usr_field_redo_len];
+    d->usr_field_undo.push_back(d->usr_field);
 
-    if(!d->usr_field_redo_len)
-    {
-        free(d->usr_field_redo);
-        d->usr_field_redo = NULL;
-    }
-    else
-    {
-        d->usr_field_redo = (grid_t **)realloc(d->usr_field_redo, d->usr_field_redo_len * sizeof(grid_t *));
-    }
+    d->usr_field = d->usr_field_redo.back();
+    d->usr_field_redo.pop_back();
 
     return 0;
 }
@@ -437,31 +355,9 @@ int undo_clear_confirm_no(coreState *cs, void *data)
 int usr_field_undo_clear(coreState *cs, void *data)
 {
     qrsdata *q = (qrsdata *)cs->p1game->data;
-    int i = 0;
 
-    if(q->pracdata->usr_field_undo)
-    {
-        for(i = 0; i < q->pracdata->usr_field_undo_len; i++)
-        {
-            grid_destroy(q->pracdata->usr_field_undo[i]);
-        }
-
-        free(q->pracdata->usr_field_undo);
-        q->pracdata->usr_field_undo = NULL;
-        q->pracdata->usr_field_undo_len = 0;
-    }
-
-    if(q->pracdata->usr_field_redo)
-    {
-        for(i = 0; i < q->pracdata->usr_field_redo_len; i++)
-        {
-            grid_destroy(q->pracdata->usr_field_redo[i]);
-        }
-
-        free(q->pracdata->usr_field_redo);
-        q->pracdata->usr_field_redo = NULL;
-        q->pracdata->usr_field_redo_len = 0;
-    }
+    q->pracdata->usr_field_undo.clear();
+    q->pracdata->usr_field_redo.clear();
 
     return 0;
 }
@@ -472,7 +368,7 @@ int qrs_input(game_t *g)
     struct keyflags *k = NULL;
 
     qrsdata *q = (qrsdata *)g->data;
-    struct pracdata *d = q->pracdata;
+    pracdata *d = q->pracdata;
     qrs_player *p = q->p1;
 
     int i = 0;
@@ -612,7 +508,7 @@ int qrs_input(game_t *g)
                     }
                     else if(cs->mouse_left_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
-                        if(gridgetcell(d->usr_field, cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
+                        if(d->usr_field.getCell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
                         {
                             if(d->palette_selection != QRS_PIECE_GEM)
                             {
@@ -620,15 +516,15 @@ int qrs_input(game_t *g)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 4, d->palette_selection);
+                                d->usr_field.cell(cell_x, cell_y + 4) = d->palette_selection;
                             }
-                            else if(gridgetcell(d->usr_field, cell_x, cell_y + 4) > 0)
+                            else if(d->usr_field.getCell(cell_x, cell_y + 4) > 0)
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 4, gridgetcell(d->usr_field, cell_x, cell_y + 4) | QRS_PIECE_GEM);
+                                d->usr_field.cell(cell_x, cell_y + 4) |= QRS_PIECE_GEM;
                             }
                         }
                     }
@@ -645,13 +541,13 @@ int qrs_input(game_t *g)
                     }
                     else if(cs->mouse_right_down && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
-                        if(gridgetcell(d->usr_field, cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
+                        if(d->usr_field.cell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
                         {
                             if(!d->field_edit_in_progress)
                                 usr_field_bkp(cs, d);
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 4, 0);
+                            d->usr_field.cell(cell_x, cell_y + 4) = 0;
                         }
                     }
                 }
@@ -688,13 +584,13 @@ int qrs_input(game_t *g)
                             {
                                 if(i >= 0 && i < 12 && j >= 0 && j < 20)
                                 {
-                                    if(gridgetcell(d->usr_field, i, j + 4) != QRS_FIELD_W_LIMITER)
+                                    if(d->usr_field.getCell(i, j + 4) != QRS_FIELD_W_LIMITER)
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
                                         d->field_edit_in_progress = 1;
                                         edit_action_occurred = 1;
-                                        gridsetcell(d->usr_field, i, j + 4, 0);
+                                        d->usr_field.cell(i, j + 4) = 0;
                                     }
                                 }
                             }
@@ -791,17 +687,17 @@ int qrs_input(game_t *g)
                     {
                         if(i >= 0 && i < 12 && j >= 0 && j < 20)
                         {
-                            if(gridgetcell(d->usr_field, i, j + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                            if(d->usr_field.getCell(i, j + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                             {
                                 if(SDL_GetModState() & KMOD_SHIFT)
                                 {
-                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 4)))
+                                    if(IS_STACK(d->usr_field.getCell(i, j + 4)))
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
                                         d->field_edit_in_progress = 1;
                                         edit_action_occurred = 1;
-                                        gridsetcell(d->usr_field, i, j + 4, c);
+                                        d->usr_field.cell(i, j + 4) = c;
                                     }
                                 }
                                 else
@@ -810,20 +706,20 @@ int qrs_input(game_t *g)
                                         usr_field_bkp(cs, d);
                                     d->field_edit_in_progress = 1;
                                     edit_action_occurred = 1;
-                                    gridsetcell(d->usr_field, i, j + 4, c);
+                                    d->usr_field.cell(i, j + 4) = c;
                                 }
                             }
-                            else if(gridgetcell(d->usr_field, i, j + 4) > 0 && c == QRS_PIECE_GEM)
+                            else if(d->usr_field.getCell(i, j + 4) > 0 && c == QRS_PIECE_GEM)
                             {
                                 if(SDL_GetModState() & KMOD_SHIFT)
                                 {
-                                    if(IS_STACK(gridgetcell(d->usr_field, i, j + 4)))
+                                    if(IS_STACK(d->usr_field.getCell(i, j + 4)))
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
                                         d->field_edit_in_progress = 1;
                                         edit_action_occurred = 1;
-                                        gridsetcell(d->usr_field, i, j + 4, gridgetcell(d->usr_field, i, j + 4) | c);
+                                        d->usr_field.cell(i, j + 4) |= c;
                                     }
                                 }
                                 else
@@ -832,7 +728,7 @@ int qrs_input(game_t *g)
                                         usr_field_bkp(cs, d);
                                     d->field_edit_in_progress = 1;
                                     edit_action_occurred = 1;
-                                    gridsetcell(d->usr_field, i, j + 4, gridgetcell(d->usr_field, i, j + 4) | c);
+                                    d->usr_field.cell(i, j + 4) |= c;
                                 }
                             }
                         }
@@ -845,17 +741,17 @@ int qrs_input(game_t *g)
             {
                 if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                 {
-                    if(gridgetcell(d->usr_field, cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                    if(d->usr_field.getCell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                     {
                         if(SDL_GetModState() & KMOD_SHIFT)
                         {
-                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 4)))
+                            if(IS_STACK(d->usr_field.getCell(cell_x, cell_y + 4)))
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 4, c);
+                                d->usr_field.cell(cell_x, cell_y + 4) = c;
                             }
                         }
                         else
@@ -864,20 +760,20 @@ int qrs_input(game_t *g)
                                 usr_field_bkp(cs, d);
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 4, c);
+                            d->usr_field.cell(cell_x, cell_y + 4) = c;
                         }
                     }
-                    else if(gridgetcell(d->usr_field, cell_x, cell_y + 4) > 0 && c == QRS_PIECE_GEM)
+                    else if(d->usr_field.getCell(cell_x, cell_y + 4) > 0 && c == QRS_PIECE_GEM)
                     {
                         if(SDL_GetModState() & KMOD_SHIFT)
                         {
-                            if(IS_STACK(gridgetcell(d->usr_field, cell_x, cell_y + 4)))
+                            if(IS_STACK(d->usr_field.getCell(cell_x, cell_y + 4)))
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
                                 d->field_edit_in_progress = 1;
                                 edit_action_occurred = 1;
-                                gridsetcell(d->usr_field, cell_x, cell_y + 4, gridgetcell(d->usr_field, cell_x, cell_y + 4) | c);
+                                d->usr_field.cell(cell_x, cell_y + 4) |= c;
                             }
                         }
                         else
@@ -886,7 +782,7 @@ int qrs_input(game_t *g)
                                 usr_field_bkp(cs, d);
                             d->field_edit_in_progress = 1;
                             edit_action_occurred = 1;
-                            gridsetcell(d->usr_field, cell_x, cell_y + 4, gridgetcell(d->usr_field, cell_x, cell_y + 4) | c);
+                            d->usr_field.cell(cell_x, cell_y + 4) |= c;
                         }
                     }
                 }
@@ -1148,7 +1044,7 @@ int qrs_move(game_t *g, qrs_player *p, int offset)
     int bkp_x = p->x;
     p->x += offset;
 
-    if(qrs_chkcollision(g, p))
+    if(qrs_chkcollision(*g, *p))
     {
         p->x = bkp_x;
         return 1;
@@ -1169,7 +1065,7 @@ int qrs_rotate(game_t *g, qrs_player *p, int direction)
 
     p->orient = (p->orient + direction) & 3;
 
-    if(qrs_chkcollision(g, p))
+    if(qrs_chkcollision(*g, *p))
     {
         if(p->def->flags & PDPREFERWKICK)
         {
@@ -1251,7 +1147,7 @@ int qrs_irs(game_t *g)
     }
 
     p->orient = direction;
-    if(qrs_chkcollision(g, p))
+    if(qrs_chkcollision(*g, *p))
         p->orient = 0;
     else if(direction)
     {
@@ -1268,7 +1164,9 @@ int qrs_wallkick(game_t *g, qrs_player *p)
 
     piece_id c = p->def->qrs_id;
     int o = p->orient;
-    int x = gridpostox(p->def->rotation_tables[0], qrs_chkcollision(g, p) - 1);
+    pair<int, int> pos;
+    qrs_chkcollision(*g, *p, pos);
+    int x = pos.first;
     // printf("Trying to kick with collision at x = %d\n", x);
 
     if(p->def->flags & PDNOWKICK)
@@ -1309,7 +1207,7 @@ int qrs_wallkick(game_t *g, qrs_player *p)
     {
         if(qrs_move(g, p, MOVE_LEFT))
         {
-            if(p->def->rotation_tables[0]->w == 4 && c != QRS_I4)
+            if(p->def->rotation_tables[0].getWidth() == 4 && c != QRS_I4)
                 return 1;
             if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
                 return 1;
@@ -1414,7 +1312,7 @@ int qrs_floorkick(game_t *g, qrs_player *p)
 
     p->y -= 256;
 
-    if(qrs_chkcollision(g, p))
+    if(qrs_chkcollision(*g, *p))
     {
         if(p->def->flags & PDONECELLFLOORKICKS)
         {
@@ -1423,7 +1321,7 @@ int qrs_floorkick(game_t *g, qrs_player *p)
         }
 
         p->y -= 256;
-        if(qrs_chkcollision(g, p))
+        if(qrs_chkcollision(*g, *p))
         {
             p->y = bkp_y;
             return 1;
@@ -1447,7 +1345,7 @@ int qrs_ceilingkick(game_t *g, qrs_player *p)
     }
 
     p->y += 256;
-    if(qrs_chkcollision(g, p))
+    if(qrs_chkcollision(*g, *p))
     {
         p->y = bkp_y;
         return 1;
@@ -1469,7 +1367,7 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
     while(p->y < (bkp_y + grav))
     {
         p->y += 256;
-        if(qrs_chkcollision(g, p))
+        if(qrs_chkcollision(*g, *p))
         {
             p->y -= (256 + (p->y & 255));
 
@@ -1495,34 +1393,27 @@ int qrs_lock(game_t *g, qrs_player *p)
         return -1;
 
     qrsdata *q = (qrsdata *)g->data;
-    grid_t *d = p->def->rotation_tables[p->orient];
-    grid_t *f = g->field;
+    Grid *d = &p->def->rotation_tables[p->orient];
+    Grid *f = g->field;
 
     int i = 0;
     int ax = ANCHORX_QRS;
     int ay = ANCHORY_QRS;
     piece_id c = p->def->qrs_id;
-    int s = d->w * d->h;
 
-    for(i = 0; i < s; i++)
-    {
-        int from_x = gridpostox(d, i);
-        int from_y = gridpostoy(d, i);
-        int to_x = (p->x - ax) + from_x;
-        int to_y = (YTOROW(p->y) - ay) + from_y;
+    for (size_t from_y = 0, to_y = YTOROW(p->y) - ay; from_y < d->getHeight(); from_y++, to_y++) {
+        for (size_t from_x = 0, to_x = p->x - ax; from_x < d->getWidth(); from_x++, to_x++) {
+            if (d->getCell(from_x, from_y)) {
+                int value = c + 1;
+                if (p->def->flags & PDBRACKETS) {
+                    value |= QRS_PIECE_BRACKETS;
+                }
+                if (q->state_flags & GAMESTATE_FADING) {
+                    SET_PIECE_FADE_COUNTER(value, q->piece_fade_rate);
+                }
 
-        if(gridgetcell(d, from_x, from_y))
-        {
-            int value = c + 1;
-            if(p->def->flags & PDBRACKETS)
-                value |= QRS_PIECE_BRACKETS;
-
-            if(q->state_flags & GAMESTATE_FADING)
-            {
-                SET_PIECE_FADE_COUNTER(value, q->piece_fade_rate);
+                f->cell(to_x, to_y) = value;
             }
-
-            gridsetcell(f, to_x, to_y, value);
         }
     }
 
@@ -1533,46 +1424,31 @@ int qrs_lock(game_t *g, qrs_player *p)
     return 0;
 }
 
-int qrs_chkcollision(game_t *g, qrs_player *p)
-{
-    if(!g || !p)
-        return -1;
+bool qrs_chkcollision(game_t& g, qrs_player& p) {
+    pair<int, int> pos;
+    return qrs_chkcollision(g, p, pos);
+}
 
-    grid_t *d = p->def->rotation_tables[p->orient];
-    grid_t *f = g->field;
+bool qrs_chkcollision(game_t& g, qrs_player& p, pair<int, int>& pos) {
+    Grid *d = &p.def->rotation_tables[p.orient];
+    Grid *f = g.field;
     int d_x = 0;
     int d_y = 0;
-    int d_val = 0;
+    //int d_val = 0;
     int f_x = 0;
     int f_y = 0;
-    int f_val = 0;
-    int i = 0;
-    int s = d->w * d->h;
+    //int f_val = 0;
 
-    for(i = 0; i < s; i++)
-    {
-        d_x = gridpostox(d, i);
-        d_y = gridpostoy(d, i);
-        f_x = p->x - p->def->anchorx + d_x;
-        f_y = YTOROW(p->y) - p->def->anchory + d_y;
-
-        d_val = gridgetcell(d, d_x, d_y);
-        f_val = gridgetcell(f, f_x, f_y);
-
-        // printf("Checking piecedef val %d against %d at position %d (field y = %d)\n", d_val, f_val, i, f_y);
-
-        if(d_val && f_val)
-        {
-            // gridgetcell returns 8128 on out of bounds, so it will default to collision = true
-
-            // the +1 slightly confuses things, but is required for cases where the collision is at position = 0
-            // this way we don't return 0 (== no collision) when there in fact was a collision
-            // TODO put in a macro for QRS_COLLISION_FALSE, set it to some non-zero value
-            return i + 1;
+    for (d_y = 0, f_y = YTOROW(p.y) - p.def->anchory; d_y < d->getHeight(); d_y++, f_y++) {
+        for (d_x = 0, f_x = p.x - p.def->anchory; d_x < d->getWidth(); d_x++, f_x++) {
+            if (d->getCell(d_x, d_y) && f->getCell(f_x, f_y)) {
+                pos = pair(d_x, d_y);
+                return true;
+            }
         }
     }
 
-    return 0;
+    return false;
 }
 
 int qrs_isonground(game_t *g, qrs_player *p)
@@ -1582,7 +1458,7 @@ int qrs_isonground(game_t *g, qrs_player *p)
 
     p->y += 256;
 
-    if(qrs_chkcollision(g, p))
+    if(qrs_chkcollision(*g, *p))
     {
         p->y -= 256;
         return 1;
@@ -1617,7 +1493,7 @@ int qrs_lineclear(game_t *g, qrs_player *p)
         int startX = 0;
         j = 0;
 
-        while(gridgetcell(g->field, j, i) == QRS_WALL)
+        while(g->field->getCell(j, i) == QRS_WALL)
         {
             startX++;
             j++;
@@ -1625,7 +1501,7 @@ int qrs_lineclear(game_t *g, qrs_player *p)
 
         for(; j < startX + q->field_w; j++)
         {
-            int cell = gridgetcell(g->field, j, i);
+            int cell = g->field->getCell(j, i);
 
             if(cell && cell != QRS_WALL)
             {
@@ -1653,7 +1529,7 @@ int qrs_lineclear(game_t *g, qrs_player *p)
 
             for(j = startX; j < startX + q->field_w; j++)
             {
-                gridsetcell(g->field, j, i, -2);
+                g->field->cell(j, i) = -2;
             }
 
             if(gem)
@@ -1672,7 +1548,7 @@ int qrs_dropfield(game_t *g)
         return -1;
 
     qrsdata *q = (qrsdata *)g->data;
-    grid_t *field = g->field;
+    Grid *field = g->field;
 
     int i = 0;
     int j = 0;
@@ -1680,12 +1556,12 @@ int qrs_dropfield(game_t *g)
 
     for(i = QRS_FIELD_H - 1; i > 0; i--)
     {
-        while(gridgetcell(field, 4, i - n) == -2)
+        while(field->getCell(4, i - n) == -2)
             n++;
 
         if(i - n >= 0)
         {
-            gridrowcpy(field, NULL, i - n, i);
+            field->copyRow(i - n, i);
         }
         else
         {
@@ -1693,16 +1569,16 @@ int qrs_dropfield(game_t *g)
             {
                 for(j = 0; j < q->field_w; j++)
                 {
-                    gridsetcell(field, j, i, 0);
+                    field->cell(j, i) = 0;
                 }
 
-                gridsetcell(field, j, i, QRS_WALL);
+                field->cell(j, i) = QRS_WALL;
             }
             else
             {
                 for(j = (QRS_FIELD_W - q->field_w) / 2; j < (QRS_FIELD_W / 2 + q->field_w / 2); j++)
                 {
-                    gridsetcell(field, j, i, 0);
+                    field->cell(j, i) = 0;
                 }
             }
         }
@@ -1716,7 +1592,7 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     qrsdata *q = (qrsdata *)g->data;
     int i = 0;
 
-    if(q->garbage)
+    if(!q->garbage.getWidth() || !q->garbage.getHeight())
     {
         // TODO
     }
@@ -1724,20 +1600,20 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     {
         for(i = 0; i < QRS_FIELD_H - 1; i++)
         {
-            gridrowcpy(g->field, NULL, i + 1, i);
+            g->field->copyRow(i + 1, i);
         }
 
-        gridrowcpy(g->field, NULL, QRS_FIELD_H - 2, QRS_FIELD_H - 1);
+        g->field->copyRow(QRS_FIELD_H - 2, QRS_FIELD_H - 1);
         for(i = 0; i < QRS_FIELD_W; i++)
         {
-            if(gridgetcell(g->field, i, QRS_FIELD_H - 2) == QRS_FIELD_W_LIMITER)
+            if(g->field->getCell(i, QRS_FIELD_H - 2) == QRS_FIELD_W_LIMITER)
             {
                 continue;
             }
 
-            if(gridgetcell(g->field, i, QRS_FIELD_H - 2))
+            if(g->field->getCell(i, QRS_FIELD_H - 2))
             {
-                gridsetcell(g->field, i, QRS_FIELD_H - 1, QRS_PIECE_GARBAGE);
+                g->field->cell(i, QRS_FIELD_H - 1) = QRS_PIECE_GARBAGE;
             }
         }
     }
@@ -1755,22 +1631,14 @@ void qrs_embiggen(piecedef *p)
     int ys[5] = {-1, -1, -1, -1, -1};
     int k = 0;
 
-    gridsetw(p->rotation_tables[0], p->rotation_tables[0]->w + 1);
-    gridseth(p->rotation_tables[0], p->rotation_tables[0]->h + 1);
-    gridsetw(p->rotation_tables[1], p->rotation_tables[1]->w + 1);
-    gridseth(p->rotation_tables[1], p->rotation_tables[1]->h + 1);
-    gridsetw(p->rotation_tables[2], p->rotation_tables[2]->w + 1);
-    gridseth(p->rotation_tables[2], p->rotation_tables[2]->h + 1);
-    gridsetw(p->rotation_tables[3], p->rotation_tables[3]->w + 1);
-    gridseth(p->rotation_tables[3], p->rotation_tables[3]->h + 1);
-
-    for(int r = 0; r < 4; r++)
+    for(int r = 0; r < p->rotation_tables.size(); r++)
     {
-        for(int i = 0; i < p->rotation_tables[r]->w; i++)
+        p->rotation_tables[0].resize(p->rotation_tables[r].getWidth() + 1, p->rotation_tables[r].getHeight() + 1);
+        for(int i = 0; i < p->rotation_tables[r].getWidth(); i++)
         {
-            for(int j = 0; j < p->rotation_tables[r]->h; j++)
+            for(int j = 0; j < p->rotation_tables[r].getHeight(); j++)
             {
-                if(gridgetcell(p->rotation_tables[r], i, j))
+                if(p->rotation_tables[r].getCell(i, j))
                 {
                     xs[k] = i;
                     ys[k] = j;
@@ -1793,7 +1661,7 @@ switchStatement:
         switch(direction)
         {
             case 0:
-                if(ys[index] == 0 || gridgetcell(p->rotation_tables[r], xs[index], ys[index] - 1))
+                if(ys[index] == 0 || p->rotation_tables[r].getCell(xs[index], ys[index] - 1))
                 {
                     direction++;
                     tries++;
@@ -1801,13 +1669,13 @@ switchStatement:
                 }
                 else
                 {
-                    gridsetcell(p->rotation_tables[r], xs[index], ys[index] - 1, 1);
+                    p->rotation_tables[r].cell(xs[index], ys[index] - 1) = 1;
                 }
 
                 break;
 
             case 1:
-                if(xs[index] == (p->rotation_tables[r]->w - 1) || gridgetcell(p->rotation_tables[r], xs[index] + 1, ys[index]))
+                if(xs[index] == (p->rotation_tables[r].getWidth() - 1) || p->rotation_tables[r].getCell(xs[index] + 1, ys[index]))
                 {
                     direction++;
                     tries++;
@@ -1815,13 +1683,13 @@ switchStatement:
                 }
                 else
                 {
-                    gridsetcell(p->rotation_tables[r], xs[index] + 1, ys[index], 1);
+                    p->rotation_tables[r].cell(xs[index] + 1, ys[index]) = 1;
                 }
 
                 break;
 
             case 2:
-                if(ys[index] == (p->rotation_tables[r]->h - 1) || gridgetcell(p->rotation_tables[r], xs[index], ys[index] + 1))
+                if(ys[index] == p->rotation_tables[r].getHeight() - 1 || p->rotation_tables[r].getCell(xs[index], ys[index] + 1))
                 {
                     direction++;
                     tries++;
@@ -1829,13 +1697,13 @@ switchStatement:
                 }
                 else
                 {
-                    gridsetcell(p->rotation_tables[r], xs[index], ys[index] + 1, 1);
+                    p->rotation_tables[r].cell(xs[index], ys[index] + 1) = 1;
                 }
 
                 break;
 
             case 3:
-                if(xs[index] == 0 || gridgetcell(p->rotation_tables[r], xs[index] - 1, ys[index]))
+                if(xs[index] == 0 || p->rotation_tables[r].getCell(xs[index] - 1, ys[index]))
                 {
                     direction = 0;
                     tries++;
@@ -1843,7 +1711,7 @@ switchStatement:
                 }
                 else
                 {
-                    gridsetcell(p->rotation_tables[r], xs[index] - 1, ys[index], 1);
+                    p->rotation_tables[r].cell(xs[index] - 1, ys[index]) = 1;
                 }
 
                 break;

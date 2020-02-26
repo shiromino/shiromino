@@ -3,19 +3,18 @@
 #include <vector>
 #include "SDL.h"
 
-#include "grid.h"
-
+using namespace Shiro;
 using namespace std;
 
-void gfx_drawCodedGrid(SDL_Renderer *renderer, grid_t *grid, SDL_Texture *paletteTex, SDL_Point position,
+void gfx_drawCodedGrid(SDL_Renderer *renderer, Grid *cells, SDL_Texture *paletteTex, SDL_Point position,
     int cellW, int cellH, vector<paletteMapEntry>& paletteValMap)
 {
-    for(int i = 0; i < grid->w; i++)
+    for(int i = 0; i < cells->getWidth(); i++)
     {
-        for(int j = 0; j < grid->h; j++)
+        for(int j = 0; j < cells->getHeight(); j++)
         {
             vector<unsigned int> paletteList;
-            int val = gridgetcell(grid, i, j);
+            int val = cells->getCell(i, j);
 
             int destX = position.x + (i * cellW);
             int destY = position.y + (j * cellH);

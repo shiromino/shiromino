@@ -8,7 +8,7 @@
 #include <string>
 
 #include "core.h"
-#include "grid.h"
+#include "Grid.hpp"
 #include "timer.h"
 #include "piecedef.h"
 #include "gfx_structures.h"
@@ -99,13 +99,13 @@ int gfx_drawanimations(coreState *cs, int type);
 int gfx_createbutton(coreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(coreState *, void *), int (*delete_check)(coreState *), void *data, Uint32 rgba);
 int gfx_drawbuttons(coreState *cs, int type);
 
-int gfx_drawqrsfield(coreState *cs, grid_t *field, unsigned int mode, unsigned int flags, int x, int y);
+int gfx_drawqrsfield(coreState *cs, Shiro::Grid *field, unsigned int mode, unsigned int flags, int x, int y);
 int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
 
 int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawpiece(coreState *cs, grid_t *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
+int gfx_drawpiece(coreState *cs, Shiro::Grid *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
 int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba);
 
 #endif

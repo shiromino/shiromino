@@ -1,12 +1,17 @@
 #include "rotation_tables.h"
 
-#define O 1
-#define _ 0
+using namespace std;
 
-int qrspent_yx_rotation_tables[18][4][5][5] =
+#define O true
+#define _ false
+
+const array<array<array<array<bool, 5>, 5>, 4>, 18> qrspent_yx_rotation_tables =
 {
+    array<array<array<bool, 5>, 5>, 4>
     { // I
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, O},
@@ -15,6 +20,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -23,6 +29,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, O},
@@ -31,6 +38,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -40,7 +48,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // J
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -49,6 +59,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -57,6 +68,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, _, _, _, _},
@@ -65,6 +77,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, O, O, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -74,7 +87,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // L
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -83,6 +98,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {O, O, _, _, _},
             {_, O, _, _, _},
             {_, O, _, _, _},
@@ -91,6 +107,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, _, _, O, _},
@@ -99,6 +116,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, O, _, _, _},
             {_, O, _, _, _},
             {_, O, _, _, _},
@@ -108,7 +126,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // X
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -117,6 +137,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -125,6 +146,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -133,6 +155,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -142,7 +165,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // S
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -151,6 +176,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -159,6 +185,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -167,6 +194,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -176,7 +204,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // Z
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -185,6 +215,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, _, _, _},
@@ -193,6 +224,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -201,6 +233,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, _, _, _},
@@ -210,7 +243,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // N
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, _, _},
@@ -219,6 +254,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -227,6 +263,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, _, _, _},
@@ -235,6 +272,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -244,7 +282,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // G
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, O, _},
@@ -253,6 +293,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, O, _, _, _},
             {_, O, O, _, _},
             {_, _, O, _, _},
@@ -261,6 +302,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, _, O, O, _},
@@ -269,6 +311,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, O, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -278,7 +321,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // U
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, _, _},
@@ -287,6 +332,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, _, _, _},
@@ -295,6 +341,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, _, O, _, _},
@@ -303,6 +350,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -312,7 +360,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // T
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, O, _, _},
             {_, O, _, _, _},
@@ -321,6 +371,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -329,6 +380,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {_, O, _, _, _},
@@ -337,6 +389,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -346,7 +399,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // Fa
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -355,6 +410,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {O, O, _, _, _},
@@ -363,6 +419,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -371,6 +428,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -380,7 +438,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // Fb
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -389,6 +449,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, _, _, _},
@@ -397,6 +458,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -405,6 +467,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, O, _, _},
@@ -414,7 +477,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // P
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, _, _},
@@ -423,6 +488,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -431,6 +497,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, _, _},
@@ -439,6 +506,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, O, _, _},
@@ -448,7 +516,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // Q
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, O, _},
@@ -457,6 +527,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, O, _, _},
@@ -465,6 +536,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, _, _},
@@ -473,6 +545,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -482,7 +555,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // W
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, O, _, _},
@@ -491,6 +566,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -499,6 +575,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, _, _, _},
@@ -507,6 +584,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {O, O, _, _, _},
@@ -516,7 +594,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // Ya
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -525,6 +605,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, O, O, _, _},
             {_, _, O, _, _},
@@ -533,6 +614,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, _, O, _, _},
@@ -541,6 +623,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, O, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -550,7 +633,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // Yb
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -559,6 +644,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -567,6 +653,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, _, _, _},
@@ -575,6 +662,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, O, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -584,7 +672,9 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     },
 
     { // V
+        array<array<bool, 5>, 5>
         { // FLAT
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, O, _, _},
             {O, _, _, _, _},
@@ -593,6 +683,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, O, O, _, _},
             {_, _, O, _, _},
@@ -601,6 +692,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // FLIP
+            array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -609,6 +701,7 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
         },
 
         { // CCW
+            array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, _, _, _, _},
@@ -618,10 +711,13 @@ int qrspent_yx_rotation_tables[18][4][5][5] =
     }
 };
 
-int qrstet_yx_rotation_tables[7][4][4][4] =
+const std::array<std::array<std::array<std::array<bool, 4>, 4>, 4>, 7> qrstet_yx_rotation_tables =
 {
+    std::array<std::array<std::array<bool, 4>, 4>, 4>
     { // I4
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, O, O},
             {_, _, _, _},
@@ -629,6 +725,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {_, _, O, _},
             {_, _, O, _},
             {_, _, O, _},
@@ -636,6 +733,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, O, O},
             {_, _, _, _},
@@ -643,6 +741,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {_, _, O, _},
             {_, _, O, _},
             {_, _, O, _},
@@ -651,7 +750,9 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
     },
 
     { // T4
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, O, _},
             {_, O, _, _},
@@ -659,6 +760,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {_, O, _, _},
             {O, O, _, _},
             {_, O, _, _},
@@ -666,6 +768,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, _, _},
             {O, O, O, _},
@@ -673,6 +776,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {_, O, _, _},
             {_, O, O, _},
             {_, O, _, _},
@@ -681,7 +785,9 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
     },
 
     { // J4
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, O, _},
             {_, _, O, _},
@@ -689,6 +795,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {_, O, _, _},
             {_, O, _, _},
             {O, O, _, _},
@@ -696,6 +803,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {O, _, _, _},
             {O, O, O, _},
@@ -703,6 +811,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {_, O, O, _},
             {_, O, _, _},
             {_, O, _, _},
@@ -711,7 +820,9 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
     },
 
     { // L4
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, O, _},
             {O, _, _, _},
@@ -719,6 +830,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {O, O, _, _},
             {_, O, _, _},
             {_, O, _, _},
@@ -726,6 +838,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {_, _, O, _},
             {O, O, O, _},
@@ -733,6 +846,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {_, O, _, _},
             {_, O, _, _},
             {_, O, O, _},
@@ -741,7 +855,9 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
     },
 
     { // O
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, O, _},
             {_, O, O, _},
@@ -749,6 +865,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, O, _},
             {_, O, O, _},
@@ -756,6 +873,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, O, _},
             {_, O, O, _},
@@ -763,6 +881,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, O, _},
             {_, O, O, _},
@@ -771,7 +890,9 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
     },
 
     { // S4
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, O, _},
             {O, O, _, _},
@@ -779,6 +900,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {O, _, _, _},
             {O, O, _, _},
             {_, O, _, _},
@@ -786,6 +908,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {_, O, O, _},
             {O, O, _, _},
@@ -793,6 +916,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {O, _, _, _},
             {O, O, _, _},
             {_, O, _, _},
@@ -801,7 +925,9 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
     },
 
     { // Z4
+        std::array<std::array<bool, 4>, 4>
         { // FLAT
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, _, _},
             {_, O, O, _},
@@ -809,6 +935,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CW
+            std::array<bool, 4>
             {_, _, O, _},
             {_, O, O, _},
             {_, O, _, _},
@@ -816,6 +943,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // FLIP
+            std::array<bool, 4>
             {_, _, _, _},
             {O, O, _, _},
             {_, O, O, _},
@@ -823,6 +951,7 @@ int qrstet_yx_rotation_tables[7][4][4][4] =
         },
 
         { // CCW
+            std::array<bool, 4>
             {_, _, O, _},
             {_, O, O, _},
             {_, O, _, _},

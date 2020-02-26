@@ -192,13 +192,13 @@ int gfx_drawqs(game_t *g)
     {
         if(q->pracdata->paused == QRS_FIELD_EDIT)
         {
-            gfx_drawqrsfield(cs, q->pracdata->usr_field, MODE_PENTOMINO, DRAWFIELD_GRID | DRAWFIELD_NO_OUTLINE, x, y);
+            gfx_drawqrsfield(cs, &q->pracdata->usr_field, MODE_PENTOMINO, DRAWFIELD_GRID | DRAWFIELD_NO_OUTLINE, x, y);
             if(q->pracdata->field_selection)
                 gfx_drawfield_selection(g, q->pracdata);
 
-            if(q->pracdata->usr_field_undo_len)
+            if(q->pracdata->usr_field_undo.size())
             {
-                undo_len = strtools::format("%d", q->pracdata->usr_field_undo_len);
+                undo_len = strtools::format("%d", q->pracdata->usr_field_undo.size());
 
                 gfx_drawtext(cs, undo, QRS_FIELD_X + 32, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
                 gfx_drawtext(cs, undo_len, QRS_FIELD_X + 32, QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
@@ -211,9 +211,9 @@ int gfx_drawqs(game_t *g)
                 SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
             }
 
-            if(q->pracdata->usr_field_redo_len)
+            if(q->pracdata->usr_field_redo.size())
             {
-                redo_len = strtools::format("%d", q->pracdata->usr_field_redo_len);
+                redo_len = strtools::format("%d", q->pracdata->usr_field_redo.size());
 
                 gfx_drawtext(cs, redo, QRS_FIELD_X + 9 * 16, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
                 gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 - 16 * (redo_len.length()), QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
@@ -846,7 +846,7 @@ int gfx_qs_lineclear(game_t *g, int row)
 
     for(i = (QRS_FIELD_W - q->field_w) / 2; i < (QRS_FIELD_W + q->field_w) / 2; i += 2)
     {
-        c = gridgetcell(g->field, i, row);
+        c = g->field->getCell(i, row);
         if((c == 0) || (c & QRS_PIECE_BRACKETS))
         {
             continue;
@@ -1101,8 +1101,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
         {
             if(i >= 0 && i < 12 && j >= 0 && j < 20)
             {
-                if(gridgetcell(d->usr_field, i, j + 2) != QRS_FIELD_W_LIMITER)
-                {
+                if (d->usr_field.getCell(i, j + 2) != QRS_FIELD_W_LIMITER) {
                     dest.x = q->field_x + 16 * (i + 1);
                     dest.y = QRS_FIELD_Y + 16 * (j + 2);
 

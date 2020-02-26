@@ -5,7 +5,7 @@
 #include "SDL.h"
 #include "SGUIL/SGUIL.hpp"
 
-#include "grid.h"
+#include "Grid.hpp"
 
 struct paletteMapEntry
 {
@@ -18,11 +18,11 @@ struct paletteMapEntry
 class GuiGridCanvas : public GuiInteractable
 {
 public:
-    GuiGridCanvas(int ID, grid_t *grid, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect);
+    GuiGridCanvas(int ID, Shiro::Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect);
 
-    GuiGridCanvas(int ID, grid_t *grid, BindableInt& paletteVar, SDL_Texture *paletteTex, std::vector<paletteMapEntry>& paletteValMap,
+    GuiGridCanvas(int ID, Shiro::Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, std::vector<paletteMapEntry>& paletteValMap,
         unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
-        : GuiGridCanvas(ID, grid, paletteVar, paletteTex, cellW, cellH, relativeDestRect)
+        : GuiGridCanvas(ID, cells, paletteVar, paletteTex, cellW, cellH, relativeDestRect)
     {
         this->paletteValMap = paletteValMap;
     }
@@ -31,17 +31,17 @@ public:
     {
         for(auto g : undoBuffer)
         {
-            grid_destroy(g);
+            delete g;
         }
 
         for(auto g : redoBuffer)
         {
-            grid_destroy(g);
+            delete g;
         }
 
         if(clipboard)
         {
-            grid_destroy(clipboard);
+            delete clipboard;
         }
     }
 
@@ -91,21 +91,21 @@ public:
 
     void fillCellPaletteListFromMappedVal(int mappedVal, std::vector<unsigned int>& paletteList);
 
-    //virtual void erase(unsigned int pos) { gridsetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos), 0); }
-    //virtual void set(unsigned int pos) { gridsetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos), paletteSelection + 1); }
-    //virtual int get(unsigned int pos) { return gridgetcell(grid, gridpostox(grid, pos), gridpostoy(grid, pos)) - 1; }
+    //virtual void erase(unsigned int pos) { gridsetcell(cells, gridpostox(cells, pos), gridpostoy(cells, pos), 0); }
+    //virtual void set(unsigned int pos) { gridsetcell(cells, gridpostox(cells, pos), gridpostoy(cells, pos), paletteSelection + 1); }
+    //virtual int get(unsigned int pos) { return gridgetcell(cells, gridpostox(cells, pos), gridpostoy(cells, pos)) - 1; }
 
 protected:
-    // grid_t *translatedGrid; // the true underlying grid being edited, with all its coded values
+    // Shiro::Grid *translatedGrid; // the true underlying cells being edited, with all its coded values
 
-    grid_t *grid;
-    grid_t *clipboard;
+    Shiro::Grid *cells;
+    Shiro::Grid *clipboard;
     SDL_Texture *paletteTex;
     unsigned int cellW;
     unsigned int cellH;
 
-    std::vector<grid_t *> undoBuffer;
-    std::vector<grid_t *> redoBuffer;
+    std::vector<Shiro::Grid *> undoBuffer;
+    std::vector<Shiro::Grid *> redoBuffer;
 
     BindableInt& paletteVar;
     std::vector<paletteMapEntry> paletteValMap;

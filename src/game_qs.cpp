@@ -61,127 +61,127 @@ static int g1_grade_score_reqs[17] =
     120000 // S9
 };
 
-static qrs_timings qs_curve[QS_CURVE_MAX] =
+static QRS_Timings qs_curve[QS_CURVE_MAX] =
 {
-    {0, 4, 40, 12, 25, 25, 12},
-    {100, 16, 40, 12, 25, 25, 12},
-    {120, 32, 40, 12, 25, 25, 12},
-    {140, 48, 40, 12, 25, 25, 12},
-    {160, 64, 40, 12, 25, 25, 12},
-    {180, 96, 40, 12, 25, 25, 12},
-    {200, 128, 45, 12, 25, 25, 12},
-    {250, 192, 45, 12, 25, 25, 12},
-    {300, 256, 45, 12, 25, 25, 12},
-    {400, 512, 45, 12, 25, 25, 12},
-    {450, 768, 45, 12, 25, 25, 12},
-    {480, 5 * 256, 45, 12, 25, 25, 12},
+    {0u, 4, 40, 12, 25, 25, 12},
+    {100u, 16, 40, 12, 25, 25, 12},
+    {120u, 32, 40, 12, 25, 25, 12},
+    {140u, 48, 40, 12, 25, 25, 12},
+    {160u, 64, 40, 12, 25, 25, 12},
+    {180u, 96, 40, 12, 25, 25, 12},
+    {200u, 128, 45, 12, 25, 25, 12},
+    {250u, 192, 45, 12, 25, 25, 12},
+    {300u, 256, 45, 12, 25, 25, 12},
+    {400u, 512, 45, 12, 25, 25, 12},
+    {450u, 768, 45, 12, 25, 25, 12},
+    {480u, 5 * 256, 45, 12, 25, 25, 12},
 
-    {500, 20 * 256, 40, 10, 20, 16, 12},
-    {600, 20 * 256, 36, 10, 18, 16, 8},
-    {700, 20 * 256, 32, 8, 16, 16, 6},
-    {800, 20 * 256, 30, 8, 12, 12, 6},
-    {900, 20 * 256, 27, 8, 12, 12, 6},
-    {1000, 20 * 256, 22, 7, 10, 10, 4},
-    {1100, 20 * 256, 20, 7, 8, 8, 4}
+    {500u, 20 * 256, 40, 10, 20, 16, 12},
+    {600u, 20 * 256, 36, 10, 18, 16, 8},
+    {700u, 20 * 256, 32, 8, 16, 16, 6},
+    {800u, 20 * 256, 30, 8, 12, 12, 6},
+    {900u, 20 * 256, 27, 8, 12, 12, 6},
+    {1000u, 20 * 256, 22, 7, 10, 10, 4},
+    {1100u, 20 * 256, 20, 7, 8, 8, 4}
 };
 
-static qrs_timings g1_master_curve[G1_MASTER_CURVE_MAX] =
+static QRS_Timings g1_master_curve[G1_MASTER_CURVE_MAX] =
 {
-    {0, 4, 30, 14, 30, 30, 41},
-    {30, 6, 30, 14, 30, 30, 41},
-    {35, 8, 30, 14, 30, 30, 41},
-    {40, 10, 30, 14, 30, 30, 41},
-    {50, 12, 30, 14, 30, 30, 41},
-    {60, 16, 30, 14, 30, 30, 41},
-    {70, 32, 30, 14, 30, 30, 41},
-    {80, 48, 30, 14, 30, 30, 41},
-    {90, 64, 30, 14, 30, 30, 41},
-    {100, 80, 30, 14, 30, 30, 41},
-    {120, 96, 30, 14, 30, 30, 41},
-    {140, 112, 30, 14, 30, 30, 41},
-    {160, 128, 30, 14, 30, 30, 41},
-    {170, 144, 30, 14, 30, 30, 41},
-    {200, 4, 30, 14, 30, 30, 41},
-    {220, 32, 30, 14, 30, 30, 41},
-    {230, 64, 30, 14, 30, 30, 41},
-    {233, 96, 30, 14, 30, 30, 41},
-    {236, 128, 30, 14, 30, 30, 41},
-    {239, 160, 30, 14, 30, 30, 41},
-    {243, 192, 30, 14, 30, 30, 41},
-    {247, 224, 30, 14, 30, 30, 41},
-    {251, 256, 30, 14, 30, 30, 41},
-    {300, 512, 30, 14, 30, 30, 41},
-    {330, 768, 30, 14, 30, 30, 41},
-    {360, 1024, 30, 14, 30, 30, 41},
-    {400, 1280, 30, 14, 30, 30, 41},
-    {420, 1024, 30, 14, 30, 30, 41},
-    {450, 768, 30, 14, 30, 30, 41},
-    {500, 5120, 30, 14, 30, 30, 41}
+    {0u, 4, 30, 14, 30, 30, 41},
+    {30u, 6, 30, 14, 30, 30, 41},
+    {35u, 8, 30, 14, 30, 30, 41},
+    {40u, 10, 30, 14, 30, 30, 41},
+    {50u, 12, 30, 14, 30, 30, 41},
+    {60u, 16, 30, 14, 30, 30, 41},
+    {70u, 32, 30, 14, 30, 30, 41},
+    {80u, 48, 30, 14, 30, 30, 41},
+    {90u, 64, 30, 14, 30, 30, 41},
+    {100u, 80, 30, 14, 30, 30, 41},
+    {120u, 96, 30, 14, 30, 30, 41},
+    {140u, 112, 30, 14, 30, 30, 41},
+    {160u, 128, 30, 14, 30, 30, 41},
+    {170u, 144, 30, 14, 30, 30, 41},
+    {200u, 4, 30, 14, 30, 30, 41},
+    {220u, 32, 30, 14, 30, 30, 41},
+    {230u, 64, 30, 14, 30, 30, 41},
+    {233u, 96, 30, 14, 30, 30, 41},
+    {236u, 128, 30, 14, 30, 30, 41},
+    {239u, 160, 30, 14, 30, 30, 41},
+    {243u, 192, 30, 14, 30, 30, 41},
+    {247u, 224, 30, 14, 30, 30, 41},
+    {251u, 256, 30, 14, 30, 30, 41},
+    {300u, 512, 30, 14, 30, 30, 41},
+    {330u, 768, 30, 14, 30, 30, 41},
+    {360u, 1024, 30, 14, 30, 30, 41},
+    {400u, 1280, 30, 14, 30, 30, 41},
+    {420u, 1024, 30, 14, 30, 30, 41},
+    {450u, 768, 30, 14, 30, 30, 41},
+    {500u, 5120, 30, 14, 30, 30, 41}
 };
 
-static qrs_timings g2_master_curve[G2_MASTER_CURVE_MAX] =
+static QRS_Timings g2_master_curve[G2_MASTER_CURVE_MAX] =
 {
-    {0, 4, 30, 14, 25, 25, 40},
-    {30, 6, 30, 14, 25, 25, 40},
-    {35, 8, 30, 14, 25, 25, 40},
-    {40, 10, 30, 14, 25, 25, 40},
-    {50, 12, 30, 14, 25, 25, 40},
-    {60, 16, 30, 14, 25, 25, 40},
-    {70, 32, 30, 14, 25, 25, 40},
-    {80, 48, 30, 14, 25, 25, 40},
-    {90, 64, 30, 14, 25, 25, 40},
-    {100, 80, 30, 14, 25, 25, 40},
-    {120, 96, 30, 14, 25, 25, 40},
-    {140, 112, 30, 14, 25, 25, 40},
-    {160, 128, 30, 14, 25, 25, 40},
-    {170, 144, 30, 14, 25, 25, 40},
-    {200, 4, 30, 14, 25, 25, 40},
-    {220, 32, 30, 14, 25, 25, 40},
-    {230, 64, 30, 14, 25, 25, 40},
-    {233, 96, 30, 14, 25, 25, 40},
-    {236, 128, 30, 14, 25, 25, 40},
-    {239, 160, 30, 14, 25, 25, 40},
-    {243, 192, 30, 14, 25, 25, 40},
-    {247, 224, 30, 14, 25, 25, 40},
-    {251, 256, 30, 14, 25, 25, 40},
-    {300, 512, 30, 14, 25, 25, 40},
-    {330, 768, 30, 14, 25, 25, 40},
-    {360, 1024, 30, 14, 25, 25, 40},
-    {400, 1280, 30, 14, 25, 25, 40},
-    {420, 1024, 30, 14, 25, 25, 40},
-    {450, 768, 30, 14, 25, 25, 40},
-    {500, 5120, 30, 8, 25, 25, 25},
-    {601, 5120, 30, 8, 25, 16, 16},
-    {701, 5120, 30, 8, 16, 12, 12},
-    {801, 5120, 30, 8, 12, 6, 6},
-    {900, 5120, 30, 6, 12, 6, 6},
-    {901, 5120, 17, 6, 12, 6, 6}
+    {0u, 4, 30, 14, 25, 25, 40},
+    {30u, 6, 30, 14, 25, 25, 40},
+    {35u, 8, 30, 14, 25, 25, 40},
+    {40u, 10, 30, 14, 25, 25, 40},
+    {50u, 12, 30, 14, 25, 25, 40},
+    {60u, 16, 30, 14, 25, 25, 40},
+    {70u, 32, 30, 14, 25, 25, 40},
+    {80u, 48, 30, 14, 25, 25, 40},
+    {90u, 64, 30, 14, 25, 25, 40},
+    {100u, 80, 30, 14, 25, 25, 40},
+    {120u, 96, 30, 14, 25, 25, 40},
+    {140u, 112, 30, 14, 25, 25, 40},
+    {160u, 128, 30, 14, 25, 25, 40},
+    {170u, 144, 30, 14, 25, 25, 40},
+    {200u, 4, 30, 14, 25, 25, 40},
+    {220u, 32, 30, 14, 25, 25, 40},
+    {230u, 64, 30, 14, 25, 25, 40},
+    {233u, 96, 30, 14, 25, 25, 40},
+    {236u, 128, 30, 14, 25, 25, 40},
+    {239u, 160, 30, 14, 25, 25, 40},
+    {243u, 192, 30, 14, 25, 25, 40},
+    {247u, 224, 30, 14, 25, 25, 40},
+    {251u, 256, 30, 14, 25, 25, 40},
+    {300u, 512, 30, 14, 25, 25, 40},
+    {330u, 768, 30, 14, 25, 25, 40},
+    {360u, 1024, 30, 14, 25, 25, 40},
+    {400u, 1280, 30, 14, 25, 25, 40},
+    {420u, 1024, 30, 14, 25, 25, 40},
+    {450u, 768, 30, 14, 25, 25, 40},
+    {500u, 5120, 30, 8, 25, 25, 25},
+    {601u, 5120, 30, 8, 25, 16, 16},
+    {701u, 5120, 30, 8, 16, 12, 12},
+    {801u, 5120, 30, 8, 12, 6, 6},
+    {900u, 5120, 30, 6, 12, 6, 6},
+    {901u, 5120, 17, 6, 12, 6, 6}
 };
 
-static qrs_timings g2_death_curve[G2_DEATH_CURVE_MAX] =
+static QRS_Timings g2_death_curve[G2_DEATH_CURVE_MAX] =
 {
-    {0, 5120, 30, 10, 16, 12, 12},
-    {101, 5120, 26, 10, 12, 6, 6},
-    {200, 5120, 26, 9, 12, 6, 6},
-    {201, 5120, 22, 9, 12, 6, 6},
-    {300, 5120, 22, 8, 12, 6, 6},
-    {301, 5120, 18, 8, 6, 6, 6},
-    {400, 5120, 18, 6, 6, 6, 6},
-    {401, 5120, 15, 6, 5, 5, 5},
-    {500, 5120, 15, 6, 4, 4, 4}
+    {0u, 5120, 30, 10, 16, 12, 12},
+    {101u, 5120, 26, 10, 12, 6, 6},
+    {200u, 5120, 26, 9, 12, 6, 6},
+    {201u, 5120, 22, 9, 12, 6, 6},
+    {300u, 5120, 22, 8, 12, 6, 6},
+    {301u, 5120, 18, 8, 6, 6, 6},
+    {400u, 5120, 18, 6, 6, 6, 6},
+    {401u, 5120, 15, 6, 5, 5, 5},
+    {500u, 5120, 15, 6, 4, 4, 4}
 };
 
-static qrs_timings g3_terror_curve[G3_TERROR_CURVE_MAX] =
+static QRS_Timings g3_terror_curve[G3_TERROR_CURVE_MAX] =
 {
-    {0, 5120, 18, 8, 10, 6, 6},
-    {100, 5120, 18, 6, 10, 5, 5},
-    {200, 5120, 17, 6, 10, 4, 4},
-    {300, 5120, 15, 6, 4, 4, 4},
-    {500, 5120, 13, 4, 4, 3, 3},
-    {600, 5120, 12, 4, 4, 3, 3},
-    {1100, 5120, 10, 4, 4, 3, 3},
-    {1200, 5120, 8, 4, 4, 3, 3},
-    {1300, 5120, 15, 4, 4, 4, 6}
+    {0u, 5120, 18, 8, 10, 6, 6},
+    {100u, 5120, 18, 6, 10, 5, 5},
+    {200u, 5120, 17, 6, 10, 4, 4},
+    {300u, 5120, 15, 6, 4, 4, 4},
+    {500u, 5120, 13, 4, 4, 3, 3},
+    {600u, 5120, 12, 4, 4, 3, 3},
+    {1100u, 5120, 10, 4, 4, 3, 3},
+    {1200u, 5120, 8, 4, 4, 3, 3},
+    {1300u, 5120, 15, 4, 4, 4, 6}
 };
 
 // TODO
@@ -499,7 +499,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     qrs_player *p = NULL;
 
     g->origin = cs;
-    g->field = qrsfield_create();
+    g->field = new Grid(QRS_FIELD_W, QRS_FIELD_H);
 
     g->init = qs_game_init;
     g->quit = qs_game_quit;
@@ -534,14 +534,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     }
     p->orient = FLAT;
 
-    q->p1counters = (qrs_counters *)malloc(sizeof(qrs_counters));
-    q->p1counters->init = 0;
-    q->p1counters->lock = 0;
-    q->p1counters->are = 0;
-    q->p1counters->lineare = 0;
-    q->p1counters->lineclear = 0;
-    q->p1counters->floorkicks = 0;
-    q->p1counters->hold_flash = 0;
+    q->p1counters = new QRS_Counters;
 
     q->randomizer = NULL;
 
@@ -551,11 +544,11 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         if(!q->replay)
         {
             free(q->p1);
-            free(q->p1counters);
+            delete q->p1counters;
             nz_timer_destroy(q->timer);
-            free(q->piecepool);
+            delete[] q->piecepool;
             free(q);
-            grid_destroy(g->field);
+            delete g->field;
             free(g);
 
             return NULL;
@@ -576,10 +569,9 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     q->is_practice = 0;
 
     // q->field_tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 12*16, 20*16);
-    // q->previous_field = NULL;
-    // q->field_deltas = qrsfield_create();
+    // q->previous_field.clear();
+    // q->field_deltas = Grid(QRS_FIELD_W, QRS_FIELD_H);
 
-    q->garbage = NULL;
     q->garbage_row_index = 0;
     q->garbage_counter = 0;
     q->garbage_delay = 0;
@@ -833,15 +825,15 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
 
         int w = q->field_w / 2;
 
-        gridfillrect(g->field, NULL, 0);
+        g->field->fill(0);
         for(int i = 0; i <= w; i++)
         {
-            gridsetcell(g->field, i, QRS_FIELD_H - 10, QRS_WALL);
+            g->field->cell(i, QRS_FIELD_H - 10) = QRS_WALL;
         }
 
         for(int j = QRS_FIELD_H - 10; j >= 0; j--)
         {
-            gridsetcell(g->field, w, j, QRS_WALL);
+            g->field->cell(w, j) = QRS_WALL;
         }
 
         q->field_w = w;
@@ -853,19 +845,17 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
 
         if(!cs->pracdata_mirror)
         {
-            q->pracdata = (struct pracdata *)malloc(sizeof(struct pracdata));
+            q->pracdata = new pracdata;
 
             q->pracdata->field_w = 10;
             q->pracdata->game_type = SIMULATE_G2;
             // q->pracdata->long_history = NULL;   // unused at the moment
             q->pracdata->usr_seq_expand_len = 0;
             q->pracdata->usr_seq_len = 0;
-            q->pracdata->usr_field_undo = NULL;
-            q->pracdata->usr_field_redo = NULL;
-            q->pracdata->usr_field_undo_len = 0;
-            q->pracdata->usr_field_redo_len = 0;
+            q->pracdata->usr_field_undo.clear();
+            q->pracdata->usr_field_redo.clear();
             q->pracdata->field_edit_in_progress = 0;
-            q->pracdata->usr_field = qrsfield_create();
+            q->pracdata->usr_field = Grid(QRS_FIELD_W, QRS_FIELD_H);
             q->pracdata->palette_selection = -5;
             q->pracdata->field_selection = 0;
             q->pracdata->field_selection_vertex1_x = 0;
@@ -874,11 +864,12 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
             q->pracdata->field_selection_vertex2_y = 0;
             if(flags & TETROMINO_ONLY)
             {
-                qrsfield_set_w(q->pracdata->usr_field, 10);
+                qrsfield_set_w(&q->pracdata->usr_field, 10);
                 q->field_w = 10;
             }
 
-            q->pracdata->usr_timings = (qrs_timings *)malloc(sizeof(qrs_timings));
+            q->pracdata->usr_timings = new QRS_Timings;
+            /*
             q->pracdata->usr_timings->level = 0;
             q->pracdata->usr_timings->are = 30;
             q->pracdata->usr_timings->grav = 4;
@@ -886,6 +877,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
             q->pracdata->usr_timings->das = 14;
             q->pracdata->usr_timings->lineare = 30;
             q->pracdata->usr_timings->lineclear = 40;
+            */
             q->pracdata->hist_index = 0;
             q->pracdata->paused = QRS_FIELD_EDIT;
             q->pracdata->grid_lines_shown = 0;
@@ -1076,7 +1068,7 @@ int qs_game_pracinit(game_t *g, int val)
     g = cs->p1game;
     qrsdata *q = (qrsdata *)g->data;
     qrs_player *p = q->p1;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     struct randomizer *qrand = q->randomizer;
     piece_id next1_id, next2_id, next3_id, next4_id;
@@ -1090,13 +1082,13 @@ int qs_game_pracinit(game_t *g, int val)
     q->randomizer_seed = *(qrand->seedp);
     q->using_gems = false;
 
-    gridcpy(q->pracdata->usr_field, g->field);
+    q->pracdata->usr_field = *g->field;
 
-    for(i = 0; i < g->field->w; i++)
+    for(i = 0; i < g->field->getWidth(); i++)
     {
-        for(j = 0; j < g->field->h; j++)
+        for(j = 0; j < g->field->getHeight(); j++)
         {
-            cell = gridgetcell(g->field, i, j);
+            cell = g->field->getCell(i, j);
             if(cell < 0 || cell == GRID_OOB)
                 continue;
 
@@ -1213,8 +1205,9 @@ int qs_game_quit(game_t *g)
 
     qrsdata *q = (qrsdata *)g->data;
 
-    if(g->field)
-        grid_destroy(g->field);
+    if (g->field) {
+        delete g->field;
+    }
 
     if(q)
         qrsdata_destroy(q);
@@ -1238,7 +1231,7 @@ int qs_game_frame(game_t *g)
     qrsdata *q = (qrsdata *)(g->data);
 
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     if(q->pracdata)
     {
@@ -1323,7 +1316,7 @@ int qs_game_frame(game_t *g)
         qs_initnext(g, q->p1, 0);
         qrs_proc_initials(g);
 
-        if(qrs_chkcollision(g, q->p1))
+        if(qrs_chkcollision(*g, *q->p1))
         {
             qrs_lock(g, q->p1);
             (*s) = PSINACTIVE;
@@ -1421,7 +1414,7 @@ int qs_game_frame(game_t *g)
         else if(q->stack_anim_counter % 3 == 1)
         {
             int row = QRS_FIELD_H - 1 - (q->stack_anim_counter / 3);
-            int start_i = (g->field->w - q->field_w) / 2;
+            int start_i = (g->field->getWidth() - q->field_w) / 2;
 
             if(q->state_flags & GAMESTATE_BIGMODE)
             {
@@ -1430,9 +1423,8 @@ int qs_game_frame(game_t *g)
 
             for(int i = start_i; i < start_i + q->field_w; i++)
             {
-                if(gridgetcell(g->field, i, row) && (gridgetcell(g->field, i, row) != QRS_WALL))
-                {
-                    gridsetcell(g->field, i, row, QRS_PIECE_GARBAGE);
+                if (g->field->getCell(i, row) && g->field->getCell(i, row) != QRS_WALL) {
+                    g->field->cell(i, row) = QRS_PIECE_GARBAGE;
                 }
             }
         }
@@ -1446,7 +1438,7 @@ int qs_game_frame(game_t *g)
             if(q->stack_anim_counter == 5 * 20)
             {
                 // just zeroing out the last two (invisible) rows
-                int start_i = (g->field->w - q->field_w) / 2;
+                int start_i = (g->field->getWidth() - q->field_w) / 2;
 
                 if(q->state_flags & GAMESTATE_BIGMODE)
                 {
@@ -1455,8 +1447,8 @@ int qs_game_frame(game_t *g)
 
                 for(int i = start_i; i < start_i + q->field_w; i++)
                 {
-                    gridsetcell(g->field, i, 0, 0);
-                    gridsetcell(g->field, i, 1, 0);
+                    g->field->cell(i, 0) = 0;
+                    g->field->cell(i, 1) = 0;
                 }
             }
             else if(q->stack_anim_counter == (5 * 20) + 30)
@@ -1484,15 +1476,15 @@ int qs_game_frame(game_t *g)
 
                     int w = q->field_w / 2;
 
-                    gridfillrect(g->field, NULL, 0);
+                    g->field->fill(0);
                     for(int i = 0; i <= w; i++)
                     {
-                        gridsetcell(g->field, i, QRS_FIELD_H - 10, QRS_WALL);
+                        g->field->cell(i, QRS_FIELD_H - 10) = QRS_WALL;
                     }
 
                     for(int j = QRS_FIELD_H - 10; j >= 0; j--)
                     {
-                        gridsetcell(g->field, w, j, QRS_WALL);
+                        g->field->cell(w, j) = QRS_WALL;
                     }
 
                     q->field_w = w;
@@ -1505,7 +1497,7 @@ int qs_game_frame(game_t *g)
         else if(q->stack_anim_counter % 5 == 1)
         {
             int row = QRS_FIELD_H - 1 - (q->stack_anim_counter / 5);
-            int start_i = (g->field->w - q->field_w) / 2;
+            int start_i = (g->field->getWidth() - q->field_w) / 2;
 
             if(q->state_flags & GAMESTATE_BIGMODE)
             {
@@ -1516,7 +1508,7 @@ int qs_game_frame(game_t *g)
 
             for(int i = start_i; i < start_i + q->field_w; i++)
             {
-                gridsetcell(g->field, i, row, 0);
+                g->field->cell(i, row) = 0;
             }
         }
     }
@@ -1626,11 +1618,11 @@ int qs_game_frame(game_t *g)
         int fade_counter = 0;
         int val = 0;
 
-        for(int i = 0; i < g->field->w; i++)
+        for(int i = 0; i < g->field->getWidth(); i++)
         {
-            for(int j = 0; j < g->field->h; j++)
+            for(int j = 0; j < g->field->getHeight(); j++)
             {
-                val = gridgetcell(g->field, i, j);
+                val = g->field->getCell(i, j);
                 if(val == QRS_WALL || val < 0)
                     continue;
 
@@ -1640,7 +1632,7 @@ int qs_game_frame(game_t *g)
                 {
                     fade_counter--;
                     SET_PIECE_FADE_COUNTER(val, fade_counter);
-                    gridsetcell(g->field, i, j, val);
+                    g->field->cell(i, j) = val;
                 }
             }
         }
@@ -1665,8 +1657,7 @@ int qs_game_frame(game_t *g)
 
     if(!q->pracdata && q->is_recovering && q->game_type == 0)
     {
-        if(grid_cells_filled(g->field) <= 85)
-        {
+        if (g->field->cellsFilled() <= 85) {
             q->recoveries++;
             q->last_medal_re_timestamp = g->frame_counter;
             q->is_recovering = 0;
@@ -1693,8 +1684,9 @@ int qs_game_frame(game_t *g)
             }
         }
     }
-    else if(grid_cells_filled(g->field) >= 170)
+    else if (g->field->cellsFilled() >= 170) {
         q->is_recovering = 1;
+    }
 
     if(!q->pracdata && q->mode_type == MODE_G3_TERROR)
     {
@@ -1755,7 +1747,7 @@ static int qs_are_expired(game_t *g)
 {
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     q->lastclear = 0;
     if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS))
@@ -1800,7 +1792,7 @@ static int qs_are_expired(game_t *g)
 
     qrs_proc_initials(g);
 
-    if(qrs_chkcollision(g, q->p1))
+    if(qrs_chkcollision(*g, *q->p1))
     {
         qrs_lock(g, q->p1);
         (*s) = PSINACTIVE;
@@ -1847,7 +1839,7 @@ int qs_process_are(game_t *g)
     // coreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     if((*s) & PSLOCKFLASH4)
         (*s) &= ~PSLOCKFLASH4;
@@ -1900,7 +1892,7 @@ int qs_process_lineare(game_t *g)
     // coreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     if((*s) & PSLINEARE)
     {
@@ -1921,7 +1913,7 @@ int qs_process_lineclear(game_t *g)
     coreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     if((*s) & PSLINECLEAR)
     {
@@ -1970,7 +1962,7 @@ int qs_process_lock(game_t *g)
     // coreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     if((*s) & PSLOCK && q->lock_on_rotate == 2)
     {
@@ -2033,7 +2025,7 @@ int qs_process_fall(game_t *g)
     // coreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
-    qrs_counters *c = q->p1counters;
+    QRS_Counters *c = q->p1counters;
 
     int row = 0;
 
@@ -2112,9 +2104,9 @@ int qs_process_lockflash(game_t *g)
             q->combo += 2 * n - 2;
             bool bravo = false;
 
-            int cells = grid_cells_filled(g->field);
+            int cells = (int)g->field->cellsFilled();
             // slightly convoluted calculation, need to do this to account for the QRS_WALL blocks on the sides
-            if(cells == (g->field->w * g->field->h) - (q->field_w * QRS_FIELD_H))
+            if(cells == (g->field->getWidth() * g->field->getHeight()) - (q->field_w * QRS_FIELD_H))
                 bravo = true;
 
             switch(n)
@@ -2754,7 +2746,7 @@ int qs_update_pracdata(coreState *cs)
         return 1;
 
     qrsdata *q = (qrsdata *)cs->p1game->data;
-    struct pracdata *d = q->pracdata;
+    pracdata *d = q->pracdata;
     menudata *md = (menudata *)cs->menu->data;
     string seqStr;
     char name_str[3] = {0, 0, 0};
@@ -3232,13 +3224,13 @@ end_sequence_proc:
     /**/
 
     qrsfield_set_w(cs->p1game->field, q->field_w);
-    qrsfield_set_w(q->pracdata->usr_field, q->field_w);
+    qrsfield_set_w(&q->pracdata->usr_field, q->field_w);
 
-    for(i = 0; i < d->usr_field_undo_len; i++)
-        qrsfield_set_w(q->pracdata->usr_field_undo[i], q->field_w);
+    for(i = 0; i < d->usr_field_undo.size(); i++)
+        qrsfield_set_w(&q->pracdata->usr_field_undo[i], q->field_w);
 
-    for(i = 0; i < d->usr_field_redo_len; i++)
-        qrsfield_set_w(q->pracdata->usr_field_redo[i], q->field_w);
+    for(i = 0; i < d->usr_field_redo.size(); i++)
+        qrsfield_set_w(&q->pracdata->usr_field_redo[i], q->field_w);
 
     d->field_selection = 0;
 
@@ -3318,7 +3310,7 @@ end_sequence_proc:
 }
 
 // TODO: clean this function up, especially the parser + expander, and use more established terminology
-int qs_get_usrseq_elem(struct pracdata *d, std::size_t index)
+int qs_get_usrseq_elem(pracdata *d, std::size_t index)
 {
     int *seq = d->usr_sequence;
     int expand[4000];
@@ -3567,11 +3559,11 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if(q->using_gems)
     {
         bool gems_in_field = false;
-        for(i = 0; i < g->field->w; i++)
+        for(i = 0; i < g->field->getWidth(); i++)
         {
-            for(j = 0; j < g->field->h; j++)
+            for(j = 0; j < g->field->getHeight(); j++)
             {
-                cell = gridgetcell(g->field, i, j);
+                cell = g->field->getCell(i, j);
                 if(cell < 0 || cell == GRID_OOB)
                     continue;
 

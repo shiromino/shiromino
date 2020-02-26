@@ -692,7 +692,7 @@ int run(coreState *cs)
     int windH = 460;
     SDL_Rect gridRect = {16, 44, windW - 32, windH - 60};
 
-    grid_t *g = grid_create(gridRect.w / 16, gridRect.h / 16);
+    Grid* g = new Grid(gridRect.w / 16, gridRect.h / 16);
     SDL_Texture *paletteTex = cs->assets->tets_bright_qs.tex;
 
     BindableInt paletteVar {"paletteVar", 0, 25};

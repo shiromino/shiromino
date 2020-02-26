@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "SGUIL/SGUIL.hpp"
-#include "grid.h"
+#include "Grid.hpp"
 #include "qrs.h"
 
 #define USRSEQ_MAX 2000
@@ -69,13 +69,13 @@ public:
     int usr_seq_len;
     int usr_seq_expand_len;
 
-    std::vector<grid_t *> usr_field_undo;
-    std::vector<grid_t *> usr_field_redo;
+    std::vector<Shiro::Grid *> usr_field_undo;
+    std::vector<Shiro::Grid *> usr_field_redo;
     int usr_field_undo_len;
     int usr_field_redo_len;
     //bool field_edit_in_progress;
 
-    grid_t *usr_field;
+    Shiro::Grid *usr_field;
     //int palette_selection;
     //int field_selection;
     //int field_selection_vertex1_x;
@@ -83,7 +83,7 @@ public:
     //int field_selection_vertex2_x;
     //int field_selection_vertex2_y;
 
-    qrs_timings *usr_timings;
+    QRS_Timings *usr_timings;
 
     bool paused;
     //bool grid_lines_shown;

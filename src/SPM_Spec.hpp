@@ -1,5 +1,4 @@
-#ifndef _spm_spec_hpp
-#define _spm_spec_hpp
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -7,7 +6,7 @@
 
 #include "core.h"
 #include "random.h"
-#include "grid.h"
+#include "Grid.hpp"
 #include "rotation_tables.h"
 
 #define SPM_SUBUNIT_SCALE 65536
@@ -247,53 +246,33 @@ struct SPM_frameCounters
     // int holdFlash;
 };
 
-class Polyomino
-{
+// TODO: Templatize the 2D dimensions of the rotations.
+class Polyomino {
 public:
-    Polyomino()
-    {
-        for(int i = 0; i < 4; i++)
-        {
-            rotationTables[i] = NULL;
-        }
-    }
+    Polyomino() {}
 
-    Polyomino(std::vector<int *>& tableArrs, unsigned int size)
-    {
-        for(int i = 0; i < 4; i++)
-        {
-            rotationTables[i] = grid_from_1d_int_array(tableArrs[i], size, size);
-        }
-    }
-
-    virtual ~Polyomino()
-    {
-        for(auto g : rotationTables)
-        {
-            grid_destroy(g);
+    template<const std::size_t rotationWidth, const std::size_t rotationHeight>
+    Polyomino(const std::array<std::array<std::array<bool, rotationWidth>, rotationHeight>, 4>& rotationTables) {
+        for (int i = 0; i < 4; i++) {
+            this->rotationTables[i] = rotationTables[i];
         }
     }
 
     virtual void draw() {}
 
-    grid_t *rotationTables[4]; // these grids technically don't have to be the same size
+    std::array<Shiro::Grid, 4> rotationTables; // these grids technically don't have to be the same size
 };
 
-class ActivatedPolyomino : public Polyomino
-{
+class ActivatedPolyomino : public Polyomino {
 public:
     ActivatedPolyomino(Polyomino& p, SPM_minoID ID, SPM_point position)
-        : ID(ID), position(position), physicState(spm_physic_absent), orientation(spm_flat)
-    {
-        for(int i = 0; i < 4; i++)
-        {
-            this->rotationTables[i] = gridcpy(p.rotationTables[i], NULL);
-        }
+        : ID(ID), position(position), physicState(spm_physic_absent), orientation(spm_flat) {
+        rotationTables = p.rotationTables;
     }
 
-    grid_t *currentRotationTable()
+    const Shiro::Grid& currentRotationTable()
     {
-        return rotationTables[static_cast<int>(orientation)];
+        return rotationTables[static_cast<std::size_t>(orientation)];
     }
 
     virtual int codedCellValue()
@@ -321,31 +300,24 @@ public:
 class SPM_Spec
 {
 public:
-    virtual ~SPM_Spec()
-    {
-        for(auto p : minoList)
-        {
-            delete p;
-        }
-    }
+    virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino);
+    virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino, std::pair<int, int>& pos);
+    virtual bool isGrounded(Shiro::Grid *field, ActivatedPolyomino& mino);
 
-    virtual int checkCollision(grid_t *field, ActivatedPolyomino& mino);
-    virtual bool isGrounded(grid_t *field, ActivatedPolyomino& mino);
+    virtual bool checkedShift(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_offset offset);
+    virtual bool checkedRotate(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_orientation dir);
+    virtual int checkedFall(Shiro::Grid *field, ActivatedPolyomino& mino, int subY);
 
-    virtual bool checkedShift(grid_t *field, ActivatedPolyomino& mino, SPM_offset offset);
-    virtual bool checkedRotate(grid_t *field, ActivatedPolyomino& mino, SPM_orientation dir);
-    virtual int checkedFall(grid_t *field, ActivatedPolyomino& mino, int subY);
-
-    virtual void imprintMino(grid_t *field, ActivatedPolyomino& mino);
-    virtual int checkAndClearLines(grid_t *field, int bound);
-    virtual void dropField(grid_t *field);
+    virtual void imprintMino(Shiro::Grid *field, ActivatedPolyomino& mino);
+    virtual int checkAndClearLines(Shiro::Grid *field, int bound);
+    virtual void dropField(Shiro::Grid *field);
 
     int fieldW;
     int fieldH;
     int visualFieldH;
 
     std::vector<SPM_point> spawnPositions;
-    std::vector<Polyomino *> minoList;
+    std::vector<Polyomino> minoList;
 
     // TODO: no reset vs. step reset vs. move reset, as well as possibility for other options?
 
@@ -357,24 +329,11 @@ public:
     bool hardDropLock;
 };
 
-class SPM_TestSpec : public SPM_Spec
-{
+class SPM_TestSpec : public SPM_Spec {
 public:
-    SPM_TestSpec()
-    {
-        std::vector<int *> tableArrs;
-
-        for(int i = 0; i < 7; i++)
-        {
-            tableArrs.clear();
-
-            for(int j = 0; j < 4; j++)
-            {
-                tableArrs.push_back( (int *)(qrstet_yx_rotation_tables[i][j]) );
-            }
-
-            Polyomino *p = new Polyomino{tableArrs, 4};
-            minoList.push_back(p);
+    SPM_TestSpec() {
+        for (int i = 0; i < 7; i++) {
+            minoList.push_back(qrstet_yx_rotation_tables[i]);
 
             spawnPositions.push_back( {3, 2} );
         }
@@ -391,5 +350,3 @@ public:
         hardDropLock = false;
     }
 };
-
-#endif

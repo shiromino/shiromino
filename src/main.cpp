@@ -33,7 +33,7 @@ bool file_exists(const char *filename)
 #undef main
 #endif
 int main(int argc, char** argv) {
-    bool newModes = false;
+    bool luaModes = false;
     bool running = true;
 
 #ifdef VCPKG_TOOLCHAIN
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 #endif
 
     while (running) {
-        if (newModes) {
+        if (luaModes) {
             running = false;
         }
         else {
@@ -144,8 +144,8 @@ int main(int argc, char** argv) {
                 coreState_destroy(&cs);
 
                 if (status == 2) {
-                    printf("Switching to new modes.\n");
-                    newModes = true;
+                    printf("Opening Lua modes menu.\n");
+                    luaModes = true;
                     continue;
                 }
                 else {

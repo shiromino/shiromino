@@ -28,7 +28,7 @@
 #include "GuiScreenManager.hpp"
 #include "Settings.hpp"
 
-#include "grid.h"
+#include "Grid.hpp"
 #include "gfx_structures.h"
 #include "Audio.hpp"
 
@@ -229,7 +229,7 @@ struct game
     unsigned long frame_counter;
 
     coreState *origin;
-    grid_t *field;
+    Shiro::Grid *field;
     void *data;
 };
 

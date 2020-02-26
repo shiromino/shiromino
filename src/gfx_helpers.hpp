@@ -4,7 +4,7 @@
 #include <vector>
 #include "SDL.h"
 
-#include "grid.h"
+#include "Grid.hpp"
 
 struct paletteMapEntry
 {
@@ -14,7 +14,7 @@ struct paletteMapEntry
     bool isFlag;
 };
 
-void gfx_drawCodedGrid(SDL_Renderer *renderer, grid_t *grid, SDL_Texture *paletteTex, SDL_Point position,
+void gfx_drawCodedGrid(SDL_Renderer *renderer, Shiro::Grid *cells, SDL_Texture *paletteTex, SDL_Point position,
     int cellW, int cellH, std::vector<paletteMapEntry>& paletteValMap);
 
 

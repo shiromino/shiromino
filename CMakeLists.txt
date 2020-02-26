@@ -74,7 +74,7 @@ set(SOURCES
     src/gfx_helpers.cpp
     src/gfx_menu.cpp
     src/gfx_qs.cpp
-    src/grid.cpp
+    src/Grid.cpp
     src/GuiGridCanvas.cpp
     src/GuiScreenManager.cpp
     src/main.cpp
@@ -113,7 +113,7 @@ set(HEADERS
     src/gfx_menu.h
     src/gfx_qs.h
     src/gfx_structures.h
-    src/grid.h
+    src/Grid.hpp
     src/GuiGridCanvas.hpp
     src/GuiScreenManager.hpp
     src/images.h

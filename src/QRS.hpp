@@ -79,50 +79,26 @@ public:
     QRS(QRS_variant variant, bool doubles)
         : variant(variant)
     {
-        std::vector<int *> tableArrs;
-
-        if(variant == qrs_variant_P)
-        {
-            for(int i = 0; i < 18; i++)
-            {
-                tableArrs.clear();
-
-                for(int j = 0; j < 4; j++)
-                {
-                    tableArrs.push_back( (int *)(qrspent_yx_rotation_tables[i][j]) );
-                }
-
-                Polyomino *p = new Polyomino{tableArrs, 5};
-                minoList.push_back(p);
-
-                spawnPositions.push_back({4, 1});
+        if (variant == qrs_variant_P) {
+            for (size_t i = 0; i < 18; i++) {
+                minoList.push_back(qrspent_yx_rotation_tables[i]);
+                spawnPositions.push_back({ 4, 1 });
             }
 
-            for(int i = 0; i < 7; i++)
-            {
-                spawnPositions.push_back({4, 2});
+            for (size_t i = 0; i < 7; i++) {
+                spawnPositions.push_back({ 4, 2 });
             }
         }
-        else
-        {
-            for(int i = 0; i < 7; i++)
-            {
-                spawnPositions.push_back({3, 2});
+        else {
+            for (size_t i = 0; i < 7; i++) {
+                spawnPositions.push_back({ 3, 2 });
             }
         }
 
-        for(int i = 0; i < 7; i++)
-        {
-            tableArrs.clear();
-
-            for(int j = 0; j < 4; j++)
-            {
-                tableArrs.push_back( (int *)(qrstet_yx_rotation_tables[i][j]) );
-            }
-
-            Polyomino *p = new Polyomino{tableArrs, 4};
-            minoList.push_back(p);
+        for (size_t i = 0; i < qrstet_yx_rotation_tables.size(); i++) {
+            minoList.push_back(qrstet_yx_rotation_tables[i]);
         }
+
 
         allowHardDrop = true;
 
@@ -168,9 +144,11 @@ public:
     // TODO: move sfx_play() calls from SPM_Spec functions to ShiroPhysoMino functions! TODO checkedFall, imprintMino, dropField(?)
     // using defaults for: everything other than checkedRotate lol
 
-    bool wallkick(grid_t *field, ActivatedPolyomino& mino)
+    bool wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
     {
-        int x = gridpostox(mino.currentRotationTable(), checkCollision(field, mino) - 1);
+        std::pair<int, int> pos;
+        checkCollision(field, mino, pos);
+        int x = pos.first;
         SPM_orientation o = mino.orientation;
         SPM_minoID shiftedID = mino.ID;
 
@@ -271,7 +249,7 @@ public:
         return true;
     }
 
-    bool floorkick(grid_t *field, ActivatedPolyomino& mino)
+    bool floorkick(Shiro::Grid *field, ActivatedPolyomino& mino)
     {
         if(variant == qrs_variant_G1 || variant == qrs_variant_G2)
         {
@@ -336,7 +314,7 @@ public:
         return checkedShift(field, mino, {0, -2});
     }
 
-    virtual bool checkedRotate(grid_t *field, ActivatedPolyomino& mino, SPM_orientation dir) override
+    virtual bool checkedRotate(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_orientation dir) override
     {
         SPM_orientation old = mino.orientation;
 

@@ -1,8 +1,9 @@
 #ifndef _piecedef_h
 #define _piecedef_h
 
-#include "grid.h"
-#include <stdint.h>
+#include "Grid.hpp"
+#include <array>
+#include <cstdint>
 
 #define PDNOWKICK           0x00000001
 #define PDNOFKICK           0x00000002
@@ -22,7 +23,7 @@ typedef struct
     unsigned int flags;
     int anchorx;
     int anchory;
-    grid_t *rotation_tables[4]; // these grids technically don't have to be the same size
+    std::array<Shiro::Grid, 4> rotation_tables; // these grids technically don't have to be the same size
 } piecedef;
 
 piecedef *piecedef_create();
