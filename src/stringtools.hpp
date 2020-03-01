@@ -15,7 +15,7 @@ namespace strtools
 template<typename ... Args>
 inline std::string format(const std::string& formatStr, Args ... args)
 {
-    size_t size = std::snprintf(nullptr, 0, formatStr.c_str(), args ... ) + 1; // Extra space for '\0'
+    size_t size = (size_t)std::snprintf(nullptr, 0, formatStr.c_str(), args ... ) + 1; // Extra space for '\0'
 
     std::unique_ptr<char[]> buf {new char[size]};
     std::snprintf(buf.get(), size, formatStr.c_str(), args ... );

@@ -487,7 +487,7 @@ public:
 		return displayNameForValue(value);
 	}
 
-	std::string displayNameForValue(int val) const
+	std::string displayNameForValue(size_t val) const
 	{
 		assert(val >= 0 && val < values.size());
 		return values[val];

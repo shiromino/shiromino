@@ -1263,7 +1263,7 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
                     if(fmt->wrap_length < lines->entry[linefeeds]->slen - last_wrap_line_pos)
                         dest.x = x;
                     else
-                        dest.x = x + (font->char_w / 2) * (fmt->wrap_length - (lines->entry[linefeeds]->slen - last_wrap_line_pos));
+                        dest.x = (int)(x + (font->char_w / 2) * (fmt->wrap_length - (lines->entry[linefeeds]->slen - last_wrap_line_pos)));
 
                     break;
             }
@@ -1413,8 +1413,8 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
 
     int i = 0;
     int j = 0;
-    int w = pd->rotation_tables[0].getWidth();
-    int h = pd->rotation_tables[0].getWidth();
+    size_t w = pd->rotation_tables[0].getWidth();
+    size_t h = pd->rotation_tables[0].getWidth();
     int c = 0;
 
     int cell_x = 0;

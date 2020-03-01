@@ -367,7 +367,7 @@ struct qrsdata
     //int history[10];    // 0, 1, 2, 3, 4, 5 are in the past; 6 is the current piece; 7, 8, 9 are previews
 };
 
-const std::string get_qrspiece_name(int n);
+const std::string get_qrspiece_name(std::size_t n);
 
 void qrsdata_destroy(qrsdata *q);
 void pracdata_destroy(struct pracdata *d);

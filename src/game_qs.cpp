@@ -274,16 +274,16 @@ int grade_point_decays[32] =
 
 float g2_grade_point_combo_table[10][4] =
 {
-    {1.0, 1.0, 1.0, 1.0},
-    {1.2, 1.4, 1.5, 1.0},
-    {1.2, 1.5, 1.8, 1.0},
-    {1.4, 1.6, 2.0, 1.0},
-    {1.4, 1.7, 2.2, 1.0},
-    {1.4, 1.8, 2.3, 1.0},
-    {1.4, 1.9, 2.4, 1.0},
-    {1.5, 2.0, 2.5, 1.0},
-    {1.5, 2.1, 2.6, 1.0},
-    {2.0, 2.5, 3.0, 1.0}
+    {1.0f, 1.0f, 1.0f, 1.0f},
+    {1.2f, 1.4f, 1.5f, 1.0f},
+    {1.2f, 1.5f, 1.8f, 1.0f},
+    {1.4f, 1.6f, 2.0f, 1.0f},
+    {1.4f, 1.7f, 2.2f, 1.0f},
+    {1.4f, 1.8f, 2.3f, 1.0f},
+    {1.4f, 1.9f, 2.4f, 1.0f},
+    {1.5f, 2.0f, 2.5f, 1.0f},
+    {1.5f, 2.1f, 2.6f, 1.0f},
+    {2.0f, 2.5f, 3.0f, 1.0f}
 };
 // clang-format on
 
@@ -1414,7 +1414,7 @@ int qs_game_frame(game_t *g)
         else if(q->stack_anim_counter % 3 == 1)
         {
             int row = QRS_FIELD_H - 1 - (q->stack_anim_counter / 3);
-            int start_i = (g->field->getWidth() - q->field_w) / 2;
+            int start_i = static_cast<int>((g->field->getWidth() - q->field_w) / 2);
 
             if(q->state_flags & GAMESTATE_BIGMODE)
             {
@@ -1438,7 +1438,7 @@ int qs_game_frame(game_t *g)
             if(q->stack_anim_counter == 5 * 20)
             {
                 // just zeroing out the last two (invisible) rows
-                int start_i = (g->field->getWidth() - q->field_w) / 2;
+                int start_i = static_cast<int>((g->field->getWidth() - q->field_w) / 2);
 
                 if(q->state_flags & GAMESTATE_BIGMODE)
                 {
@@ -1497,7 +1497,7 @@ int qs_game_frame(game_t *g)
         else if(q->stack_anim_counter % 5 == 1)
         {
             int row = QRS_FIELD_H - 1 - (q->stack_anim_counter / 5);
-            int start_i = (g->field->getWidth() - q->field_w) / 2;
+            int start_i = static_cast<int>((g->field->getWidth() - q->field_w) / 2);
 
             if(q->state_flags & GAMESTATE_BIGMODE)
             {
@@ -3193,7 +3193,7 @@ int qs_update_pracdata(coreState *cs)
             continue;
         found:
             num++;
-            piece_seq[num - 1] = t;
+            piece_seq[num - 1] = (int)t;
 
             if(rpt_start)
             {

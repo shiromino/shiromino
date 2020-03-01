@@ -49,7 +49,7 @@ QRS_Counters::QRS_Counters() :
     floorkicks(0u),
     hold_flash(0) {}
 
-const string get_qrspiece_name(int n)
+const string get_qrspiece_name(size_t n)
 {
     if(n < 0 || n > 24)
         return {};
@@ -1412,7 +1412,7 @@ int qrs_lock(game_t *g, qrs_player *p)
                     SET_PIECE_FADE_COUNTER(value, q->piece_fade_rate);
                 }
 
-                f->cell(to_x, to_y) = value;
+                f->cell((int)to_x, (int)to_y) = value;
             }
         }
     }

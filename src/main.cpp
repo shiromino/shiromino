@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
             strcpy(cs.calling_path, path);
 
             g123_seeds_init();
-            srand(time(0));
+            srand((unsigned int)time(0));
 #if 0
             g2_output_seed_syncs();
             goto error;

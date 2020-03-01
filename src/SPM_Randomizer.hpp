@@ -179,9 +179,9 @@ public:
 
     SPM_minoID mostDroughtedPiece()
     {
-        unsigned int i = 0;
-        unsigned int n = 0;
-        unsigned int maxi = 0;
+        size_t i = 0;
+        int n = 0;
+        size_t maxi = 0;
 
         for(i = 0; i < 7; i++)
         {

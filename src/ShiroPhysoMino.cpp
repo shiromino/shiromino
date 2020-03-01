@@ -24,7 +24,7 @@ int TestSPM::init()
     {
         player.randomizer->init(0);
 
-        for(int i = 0; i < spec->numPreviews; i++)
+        for(unsigned int i = 0u; i < spec->numPreviews; i++)
         {
             SPM_minoID t = player.randomizer->pull();
             player.previews.push_back(activateMino(t));
@@ -243,14 +243,14 @@ int TestSPM::draw()
     SDL_Rect dest = {fieldPos.x, fieldPos.y, blockW, blockH};
     SDL_SetRenderDrawColor(cs.screen.renderer, 255, 255, 255, 180);
 
-    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * field->getWidth(), blockH * spec->visualFieldH};
+    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * static_cast<int>(field->getWidth()), blockH * spec->visualFieldH};
     Gui_DrawBorder(fieldRect, 1, GUI_RGBA_DEFAULT);
 
     for(int i = 0; i < field->getWidth(); i++)
     {
         for(int j = 0; j < spec->visualFieldH; j++)
         {
-            int gridY = j + field->getHeight() - spec->visualFieldH;
+            size_t gridY = j + field->getHeight() - spec->visualFieldH;
             dest.x = fieldPos.x + (i * blockW);
             dest.y = fieldPos.y + (j * blockH);
 
@@ -274,7 +274,7 @@ int TestSPM::draw()
 
                 if (gridY >= (field->getHeight() - spec->visualFieldH) && m.getCell(i, j)) {
                     dest.x = fieldPos.x + (gridX * blockW);
-                    dest.y = fieldPos.y - ((field->getHeight() - spec->visualFieldH) * blockH) + (gridY * blockH);
+                    dest.y = fieldPos.y - ((static_cast<int>(field->getHeight()) - spec->visualFieldH) * blockH) + (gridY * blockH);
                     dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
                     SDL_RenderFillRect(cs.screen.renderer, &dest);
                 }
@@ -365,7 +365,7 @@ bool TestSPM::lockDelayExpired(SPM_Player& p)
     spec->imprintMino(field, *p.mino);
     p.mino->physicState = spm_physic_locked;
 
-    int n = spec->checkAndClearLines(field, field->getHeight());
+    int n = spec->checkAndClearLines(field, static_cast<int>(field->getHeight()));
 
     if(n)
     {
@@ -422,7 +422,7 @@ bool TestSPM::initNextMino(SPM_Player& p)
     {
         p.mino = p.previews[0];
 
-        for(int i = 0; i < p.previews.size() - 1; i++)
+        for(size_t i = 0; i < p.previews.size() - 1; i++)
         {
             p.previews[i] = p.previews[i + 1];
         }

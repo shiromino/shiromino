@@ -16,7 +16,7 @@ GuiGridCanvas::GuiGridCanvas(int ID, Grid *cells, BindableInt& paletteVar, SDL_T
     this->ID = ID;
 
     readPaletteSelection(&paletteVar);
-    paletteSize = get<1>(paletteVar.getRange());
+    paletteSize = (unsigned)get<1>(paletteVar.getRange());
 
     function<void(BindableVariable *)> membFunc = [=](BindableVariable *bv) { this->readPaletteSelection(bv); };
 
@@ -270,7 +270,7 @@ void GuiGridCanvas::mouseReleased(int x, int y, Uint8 button)
 
 void GuiGridCanvas::keyPressed(SDL_Keycode kc)
 {
-    int num = 0;
+    unsigned num = 0;
     bool pressedNumber = false;
 
     switch(kc)
@@ -280,8 +280,8 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
             {
                 selectionVertex1.x = 0;
                 selectionVertex1.y = 0;
-                selectionVertex2.x = cells->getWidth() - 1;
-                selectionVertex2.y = cells->getHeight() - 1;
+                selectionVertex2.x = (int)cells->getWidth() - 1;
+                selectionVertex2.y = (int)cells->getHeight() - 1;
                 selection = true;
             }
 

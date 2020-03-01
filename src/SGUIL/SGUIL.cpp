@@ -280,7 +280,7 @@ void Gui_DrawBorder(SDL_Rect& rect, int width, rgba_t rgba)
 void Gui_GenerateTextPositionalValues(string& text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox,
     vector<pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
 {
-    Gui_GenerateTextPositionalValuesPartial(text, 0, text.length(), fmt, font, destBox, values, horizontalScroll, verticalScroll);
+    Gui_GenerateTextPositionalValuesPartial(text, 0, (unsigned)text.length(), fmt, font, destBox, values, horizontalScroll, verticalScroll);
 }
 
 void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
@@ -308,8 +308,8 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
     values.clear();
     values.reserve(text.length());
 
-    unsigned int currentX = destBox.x;
-    unsigned int currentY = destBox.y;
+    int currentX = destBox.x;
+    int currentY = destBox.y;
 
     for(unsigned int i = pos; i < text.length() && i < pos + len; i++)
     {
@@ -395,7 +395,7 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
 void Gui_DrawText_PV(string text, TextFormat *fmt, BitFont& font, vector<pair<int, int>>& positionalValues,
     unsigned int scrollPosX, unsigned int scrollPosY)
 {
-    Gui_DrawTextPartial_PV(text, 0, text.length(), fmt, font, positionalValues, scrollPosX, scrollPosY);
+    Gui_DrawTextPartial_PV(text, 0, (unsigned)text.length(), fmt, font, positionalValues, scrollPosX, scrollPosY);
 }
 
 void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, TextFormat *fmt,

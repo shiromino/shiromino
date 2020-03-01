@@ -117,7 +117,7 @@ piece_id ars_to_qrs_id(piece_id t)
 
 void g123_seeds_init()
 {
-    uint32_t s = time(0);
+    unsigned s = (unsigned)time(0);
     srand(s);
 
     s = rand();
@@ -454,7 +454,7 @@ int pento_randomizer_init(struct randomizer *r, uint32_t *seed)
         pento_seed = *seed;
     }
 
-    for(int j = 0; j < r->num_pieces; j++)
+    for(unsigned j = 0; j < r->num_pieces; j++)
     {
         d->drought_times[j] = pento_read_rand(r->seedp) % 30;
     }
@@ -1073,9 +1073,9 @@ rngstate g2_state_init_randomize(rngstate s)
 
 piece_id g3_most_droughted_piece(int *histogram)
 {
-    unsigned int i = 0;
-    unsigned int n = 0;
-    unsigned int maxi = 0;
+    size_t i = 0;
+    int n = 0;
+    size_t maxi = 0;
 
     for(i = 0; i < 7; i++)
     {

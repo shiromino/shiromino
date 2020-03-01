@@ -146,7 +146,7 @@ void SPM_Spec::dropField(Grid *field)
 {
     int n = 0;
 
-    for(int i = field->getHeight() - 1; i >= 0; i--)
+    for(int i = (int)field->getHeight() - 1; i >= 0; i--)
     {
         while (field->getCell(0, i - n) == SPM_CELL_CLEARED) {
             n++;

@@ -523,8 +523,8 @@ int init(coreState *cs, Settings* settings)
             printf("No joysticks are attached\n");
         }
 
-        cs->screen.w = cs->settings->videoScale * 640;
-        cs->screen.h = cs->settings->videoScale * 480;
+        cs->screen.w = cs->settings->videoScale * 640u;
+        cs->screen.h = cs->settings->videoScale * 480u;
         unsigned int w = cs->screen.w;
         unsigned int h = cs->screen.h;
         name = cs->screen.name;

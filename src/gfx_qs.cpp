@@ -216,7 +216,7 @@ int gfx_drawqs(game_t *g)
                 redo_len = strtools::format("%d", q->pracdata->usr_field_redo.size());
 
                 gfx_drawtext(cs, redo, QRS_FIELD_X + 9 * 16, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
-                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 - 16 * (redo_len.length()), QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
+                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 - 16 * (int)redo_len.length(), QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
 
                 src.x = 16 * 16;
                 src.y = 64;

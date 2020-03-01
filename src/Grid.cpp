@@ -12,21 +12,21 @@ Grid::Grid(const size_t width, const size_t height) :
 
 Grid::Grid(const Grid& srcGrid, const GridRect& srcRect) {
     int startX = srcRect.x;
-    int endX = srcRect.x + srcRect.width;
+    int endX = static_cast<int>(srcRect.x + srcRect.width);
     int startY = srcRect.y;
-    int endY = srcRect.y + srcRect.height;
+    int endY = static_cast<int>(srcRect.y + srcRect.height);
 
     if(startX < 0) {
         startX = 0;
     }
     if(endX > srcGrid.width) {
-        endX = srcGrid.width;
+        endX = static_cast<int>(srcGrid.width);
     }
     if(startY < 0) {
         startY = 0;
     }
     if(endY > srcGrid.height) {
-        endY = srcGrid.height;
+        endY = static_cast<int>(srcGrid.height);
     }
     if (startX >= srcGrid.width || startY < 0) {
         this->width = 0;
@@ -34,8 +34,8 @@ Grid::Grid(const Grid& srcGrid, const GridRect& srcRect) {
         return;
     }
 
-    this->width = endX - startX;
-    this->height = endY - startY;
+    this->width = (long)endX - startX;
+    this->height = (long)endY - startY;
     this->cells = vector<vector<int>>(this->height, vector<int>(this->width));
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
@@ -100,9 +100,9 @@ void Grid::fill(const int value) {
 
 void Grid::fill(const GridRect& rect, const int value) {
     int startX = rect.x;
-    int endX = rect.x + rect.width;
+    int endX = static_cast<int>(rect.x + rect.width);
     int startY = rect.y;
-    int endY = rect.y + rect.height;
+    int endY = static_cast<int>(rect.y + rect.height);
 
     if(startX < 0)
     {
@@ -110,7 +110,7 @@ void Grid::fill(const GridRect& rect, const int value) {
     }
     if(endX > this->width)
     {
-        endX = this->width;
+        endX = static_cast<int>(this->width);
     }
     if(startY < 0)
     {
@@ -118,7 +118,7 @@ void Grid::fill(const GridRect& rect, const int value) {
     }
     if(endY > this->height)
     {
-        endY = this->height;
+        endY = static_cast<int>(this->height);
     }
 
     for (int y = startY; y < endY; y++) {
@@ -133,42 +133,42 @@ void Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const GridRect
     GridRect defaultDstRect(dstRect.width, dstRect.height);
 
     int srcStartX = srcRect.x;
-    int srcEndX = srcRect.x + srcRect.width;
+    int srcEndX = static_cast<int>(srcRect.x + srcRect.width);
     int srcStartY = srcRect.y;
-    int srcEndY = srcRect.y + srcRect.height;
+    int srcEndY = static_cast<int>(srcRect.y + srcRect.height);
 
     if (srcStartX < 0) {
         srcStartX = 0;
     }
     if (srcEndX > srcGrid.width) {
-        srcEndX = srcGrid.width;
+        srcEndX = static_cast<int>(srcGrid.width);
     }
     if (srcStartY < 0) {
         srcStartY = 0;
     }
     if (srcEndY > srcGrid.height) {
-        srcEndY = srcGrid.height;
+        srcEndY = static_cast<int>(srcGrid.height);
     }
     if (srcStartX >= srcGrid.width || srcStartY < 0) {
         return;
     }
 
     int dstStartX = dstRect.x;
-    int dstEndX = dstRect.x + dstRect.width;
+    int dstEndX = static_cast<int>(dstRect.x + dstRect.width);
     int dstStartY = dstRect.y;
-    int dstEndY = dstRect.y + dstRect.height;
+    int dstEndY = static_cast<int>(dstRect.y + dstRect.height);
 
     if (dstStartX < 0) {
         dstStartX = 0;
     }
     if (dstEndX > this->width) {
-        dstEndX = this->width;
+        dstEndX = static_cast<int>(this->width);
     }
     if (dstStartY < 0) {
         dstStartY = 0;
     }
     if (dstEndY > this->height) {
-        dstEndY = this->height;
+        dstEndY = static_cast<int>(this->height);
     }
     if (dstStartX >= this->width || dstStartY < 0) {
         return;

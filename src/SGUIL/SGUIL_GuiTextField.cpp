@@ -161,7 +161,7 @@ void GuiTextField::draw()
 
         Gui_DrawTextPartial_PV(value, 0, start, &fmt, font, textPositionalValues, scrollPosX, scrollPosY);
         Gui_DrawTextPartial_PV(value, start, end - start, &selectionFmt, font, textPositionalValues, scrollPosX, scrollPosY);
-        Gui_DrawTextPartial_PV(value, end, value.length() - end, &fmt, font, textPositionalValues, scrollPosX, scrollPosY);
+        Gui_DrawTextPartial_PV(value, end, (unsigned)value.length() - end, &fmt, font, textPositionalValues, scrollPosX, scrollPosY);
     }
 
     bool cursorBlinkOn = false;
@@ -482,7 +482,7 @@ unsigned int GuiTextField::shiftCursor(int offset)
 {
     unsigned int oldcursor = cursor;
 
-    if(abs(offset) > cursor && offset < 0)
+    if((unsigned)abs(offset) > cursor && offset < 0)
     {
         cursor = 0;
     } else
@@ -490,7 +490,7 @@ unsigned int GuiTextField::shiftCursor(int offset)
         cursor += offset;
         if(cursor > value.length())
         {
-            cursor = value.length();
+            cursor = (unsigned)value.length();
         }
     }
 
@@ -518,7 +518,7 @@ bool GuiTextField::textInsert(string s)
         var->set(value);
     }
 
-    cursor += s.length();
+    cursor += (unsigned)s.length();
     selectionStart = selectionEnd = cursor;
 
     lastEventTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
@@ -551,7 +551,7 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
 
     if(end > value.length())
     {
-        end = value.length();
+        end = (unsigned)value.length();
     }
 
     value.erase(start, end - start);
@@ -571,7 +571,7 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
 
         if(cursor > value.length())
         {
-            cursor = value.length();
+            cursor = (unsigned)value.length();
         }
     }
 

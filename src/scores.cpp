@@ -101,7 +101,7 @@ void scoredb_create_player(struct scoredb *s, struct player *out_player, const c
         while (playerName[playerNameLength] != '\0' && ++playerNameLength < MAX_PLAYER_NAME_LENGTH);
 
         check(playerName != NULL && playerNameLength > 0, "Player name is invalid");
-        check_bind(s->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, playerNameLength, SQLITE_STATIC));
+        check_bind(s->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
 
         int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(s->db));
@@ -117,7 +117,7 @@ void scoredb_create_player(struct scoredb *s, struct player *out_player, const c
 
         check(sqlite3_prepare_v2(s->db, selectPlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(s->db));
 
-        check_bind(s->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, playerNameLength, SQLITE_STATIC));
+        check_bind(s->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
 
         ret = sqlite3_step(sql);
         check(ret == SQLITE_ROW, "Could not get player \"%s\" from players table: %s", playerName, sqlite3_errmsg(s->db));
@@ -185,7 +185,7 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
         check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":startLevel"), r->starting_level));
         check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":level"),      r->ending_level));
         check_bind(s->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":time"),       r->time));
-        check_bind(s->db, sqlite3_bind_blob(sql, sqlite3_bind_parameter_index(sql, ":replay"),     replayData, replayLen, SQLITE_STATIC));
+        check_bind(s->db, sqlite3_bind_blob(sql, sqlite3_bind_parameter_index(sql, ":replay"),     replayData, (int)replayLen, SQLITE_STATIC));
 
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(s->db));
