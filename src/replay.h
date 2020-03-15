@@ -26,7 +26,7 @@ struct replay
     unsigned int mode_flags;
     long seed;
     int grade;
-    long time;
+    uint64_t time;
     int starting_level;
     int ending_level;
 

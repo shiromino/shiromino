@@ -11,7 +11,7 @@
 #include "qrs.h"
 #include "random.h"
 #include "replay.h"
-#include "timer.h"
+#include "Timer.hpp"
 
 #include "game_menu.h" // questionable dependency - TODO look into these
 #include "game_qs.h"   // questionable dependency
@@ -66,7 +66,6 @@ void qrsdata_destroy(qrsdata *q)
 
     for(i = 0; i < 25; i++)
         piecedef_destroy(q->piecepool[i]);
-    nz_timer_destroy(q->timer);
     // if(q->p1->def) piecedef_destroy(q->p1->def);
     free(q->p1);
     delete q->p1counters;
@@ -985,7 +984,7 @@ int qrs_end_record(game_t *g)
 {
     qrsdata *q = (qrsdata *)g->data;
 
-    q->replay->time = q->timer->time;
+    q->replay->time = q->timer;
     q->replay->ending_level = q->level;
     q->replay->grade = q->grade;
 

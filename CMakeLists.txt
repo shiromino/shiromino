@@ -90,7 +90,7 @@ set(SOURCES
     src/ShiroPhysoMino.cpp
     src/SPM_Randomizer.cpp
     src/SPM_Spec.cpp
-    src/timer.cpp
+    src/Timer.cpp
 
     src/SGUIL/SGUIL_GuiButton.cpp
     src/SGUIL/SGUIL_GuiDropDownList.cpp
@@ -136,7 +136,7 @@ set(HEADERS
     src/SPM_Spec.hpp
     src/stringtools.hpp
     src/TGM.hpp
-    src/timer.h
+    src/Timer.hpp
 
     src/SGUIL/SGUIL.hpp
 

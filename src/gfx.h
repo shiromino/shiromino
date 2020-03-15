@@ -9,7 +9,7 @@
 
 #include "core.h"
 #include "Grid.hpp"
-#include "timer.h"
+#include "Timer.hpp"
 #include "piecedef.h"
 #include "gfx_structures.h"
 
@@ -106,6 +106,6 @@ int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *fo
 int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawpiece(coreState *cs, Shiro::Grid *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
-int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba);
+int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba);
 
 #endif

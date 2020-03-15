@@ -16,7 +16,7 @@
 #include "gfx_qs.h"
 #include "qrs.h"
 #include "random.h"
-#include "timer.h"
+#include "Timer.hpp"
 
 #include "replay.h"
 
@@ -516,7 +516,7 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
     q->mode_flags = flags;
 
     q->piecepool = qrspool_create();
-    q->timer = nz_timer_create(60);
+    q->timer = Timer(60.0);
     q->p1 = (qrs_player *)malloc(sizeof(qrs_player));
     p = q->p1;
     p->def = NULL;
@@ -545,7 +545,6 @@ game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_
         {
             free(q->p1);
             delete q->p1counters;
-            nz_timer_destroy(q->timer);
             delete[] q->piecepool;
             free(q);
             delete g->field;
@@ -1103,7 +1102,7 @@ int qs_game_pracinit(game_t *g, int val)
     c->lineare = 0;
     c->lineclear = 0;
     c->floorkicks = 0;
-    q->timer->time = 0;
+    q->timer.time = 0;
 
     q->p1->speeds = q->pracdata->usr_timings;
     if(q->pracdata->usr_timings->lock < 0)
@@ -1737,8 +1736,8 @@ int qs_game_frame(game_t *g)
     if(q->levelstop_time)
         q->levelstop_time++;
 
-    if(!(q->state_flags & GAMESTATE_CREDITS))
-        timeinc(q->timer);
+    if (!(q->state_flags & GAMESTATE_CREDITS))
+        q->timer++;
 
     return 0;
 }
@@ -2375,8 +2374,8 @@ int qs_process_lockflash(game_t *g)
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
-                q->section_times[q->section] = q->timer->time - q->cur_section_timestamp;
-                q->cur_section_timestamp = q->timer->time;
+                q->section_times[q->section] = q->timer.time - q->cur_section_timestamp;
+                q->cur_section_timestamp = q->timer.time;
                 q->section++;
 
                 q->levelstop_time = 0;
@@ -2388,7 +2387,7 @@ int qs_process_lockflash(game_t *g)
                         case MODE_PENTOMINO:
                             if(q->section == 5)
                             {
-                                if(q->score < 50000 || q->timer->time > 5 * 60 * 60 + 30 * 60)
+                                if(q->score < 50000 || q->timer.time > 5 * 60 * 60 + 30 * 60)
                                 {
                                     q->mroll_unlocked = false;
                                 }
@@ -2397,7 +2396,7 @@ int qs_process_lockflash(game_t *g)
                             }
                             else if(q->section == 10)
                             {
-                                if(q->timer->time > 10 * 60 * 60)
+                                if(q->timer.time > 10 * 60 * 60)
                                 {
                                     q->section--;
 
@@ -2447,7 +2446,7 @@ int qs_process_lockflash(game_t *g)
                             if(q->level >= 999)
                             {
                                 q->level = 999;
-                                if(q->timer->time > 525 * 60 || q->grade < GRADE_S9)
+                                if(q->timer.time > 525 * 60 || q->grade < GRADE_S9)
                                     q->mroll_unlocked = false;
                             }
 
@@ -2500,7 +2499,7 @@ int qs_process_lockflash(game_t *g)
                         case MODE_G2_DEATH:
                             if(q->section == 5)
                             {
-                                if(q->timer->time > G2_DEATH_TORIKAN)
+                                if(q->timer.time > G2_DEATH_TORIKAN)
                                 {
                                     q->section--;
 
@@ -2547,7 +2546,7 @@ int qs_process_lockflash(game_t *g)
 
                             if(q->section == 5)
                             {
-                                if(q->timer->time > G3_TERROR_TORIKAN)
+                                if(q->timer.time > G3_TERROR_TORIKAN)
                                 {
                                     if(q->playback)
                                         qrs_end_playback(g);
@@ -2558,7 +2557,7 @@ int qs_process_lockflash(game_t *g)
                             }
                             else if(q->section == 10)
                             {
-                                if(q->timer->time > 2 * G3_TERROR_TORIKAN)
+                                if(q->timer.time > 2 * G3_TERROR_TORIKAN)
                                 {
                                     q->section--;
 
@@ -2579,16 +2578,16 @@ int qs_process_lockflash(game_t *g)
                         case MODE_G1_20G:
                         case MODE_G1_MASTER:
                             // checking "mroll" requirements (actually just GM reqs)
-                            if(q->section == 3 && (q->timer->time > (4 * 60 * 60 + 15 * 60) || q->score < 12000))
+                            if(q->section == 3 && (q->timer.time > (4 * 60 * 60 + 15 * 60) || q->score < 12000))
                                 q->mroll_unlocked = false;
 
-                            if(q->section == 5 && (q->timer->time > (7 * 60 * 60 + 30 * 60) || q->score < 40000))
+                            if(q->section == 5 && (q->timer.time > (7 * 60 * 60 + 30 * 60) || q->score < 40000))
                                 q->mroll_unlocked = false;
 
                             if(q->level >= 999)
                             {
                                 q->level = 999;
-                                if(q->timer->time >= (13 * 60 * 60 + 30 * 60) || q->score < 126000)
+                                if(q->timer.time >= (13 * 60 * 60 + 30 * 60) || q->score < 126000)
                                     q->mroll_unlocked = false;
 
                                 if(q->mroll_unlocked)
@@ -2623,7 +2622,7 @@ int qs_process_lockflash(game_t *g)
                 switch(q->mode_type)
                 {
                     case MODE_G2_MASTER:
-                        if(q->timer->time > 525 * 60 || q->grade < GRADE_S9)
+                        if(q->timer.time > 525 * 60 || q->grade < GRADE_S9)
                             q->mroll_unlocked = false;
 
                         if(q->section_times[9] > (q->section_times[8]) + 2 * 60)
@@ -2648,7 +2647,7 @@ int qs_process_lockflash(game_t *g)
 
                     case MODE_G1_20G:
                     case MODE_G1_MASTER:
-                        if(q->timer->time >= (13 * 60 * 60 + 30 * 60) || q->score < 126000)
+                        if(q->timer.time >= (13 * 60 * 60 + 30 * 60) || q->score < 126000)
                             q->mroll_unlocked = false;
 
                         if(q->mroll_unlocked)

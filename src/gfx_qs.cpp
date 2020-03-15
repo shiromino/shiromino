@@ -10,7 +10,7 @@
 #include "gfx_qs.h"
 #include "qrs.h"
 #include "random.h"
-#include "timer.h"
+#include "Timer.hpp"
 
 using namespace std;
 
@@ -307,7 +307,7 @@ int gfx_drawqs(game_t *g)
             }
 
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
-            gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
+            gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
             gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT);
 
             goto active_game_drawing;
@@ -323,12 +323,12 @@ int gfx_drawqs(game_t *g)
         if(q->p1->speeds->grav >= 20 * 256)
         {
             if(cs->frames % 4 == 3)
-                gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
+                gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
             else
-                gfx_drawtimer(cs, q->timer, x + 32, 0xE0E030FF);
+                gfx_drawtimer(cs, &q->timer, x + 32, 0xE0E030FF);
         }
         else
-            gfx_drawtimer(cs, q->timer, x + 32, RGBA_DEFAULT);
+            gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
 
         if(cs->displayMode == game_display_detailed)
         {

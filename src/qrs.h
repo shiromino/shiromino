@@ -7,7 +7,7 @@
 #include "core.h"
 #include "piecedef.h"
 #include "Grid.hpp"
-#include "timer.h"
+#include "Timer.hpp"
 
 #define MAX_SECTIONS 30
 
@@ -251,7 +251,7 @@ struct qrsdata
     Shiro::Grid garbage;
     piece_id *piece_seq;
 
-    nz_timer *timer;
+    Shiro::Timer timer;
     qrs_player *p1;
     QRS_Counters *p1counters;
     piecedef *previews[4];

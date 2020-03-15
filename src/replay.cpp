@@ -2,9 +2,11 @@
 
 #include "game_qs.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+using namespace Shiro;
 
 // clang-format off
 enum packed_input_mask {
@@ -76,8 +78,7 @@ void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
             break;
     }
 
-    nz_timer *t = nz_timer_create(60);
-    t->time = r->time;
+    Timer t(60.0, r->time);
 
     char dateBuffer[REPLAY_DESCRIPTOR_BUF_SIZE];
     struct tm *ts = localtime(&r->date);
@@ -90,9 +91,9 @@ void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
              modeStringBuffer,
              r->starting_level,
              r->ending_level,
-             timegetmin(t),
-             timegetsec(t) % 60,
-             timegetmsec(t) / 10,
+             t.min(),//timegetmin(t),
+             t.sec() % 60,//timegetsec(t) % 60,
+             t.csec(),//timegetmsec(t) / 10,
              dateBuffer);
 }
 

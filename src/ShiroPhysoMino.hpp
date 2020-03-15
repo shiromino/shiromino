@@ -21,7 +21,7 @@ protected:
     Shiro::Grid *field;
     GuiPoint fieldPos;
 
-    nz_timer *timer;
+    Shiro::Timer* timer;
 
     replay *rep;
     bool playback;
@@ -75,7 +75,7 @@ public:
 
         field = new Shiro::Grid(spec->fieldW, spec->fieldH);
         fieldPos = {48, 60};
-        timer = nz_timer_create(60);
+        timer = new Shiro::Timer(60.0);
         rep = NULL;
         playback = false;
         playbackIndex = 0;

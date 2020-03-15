@@ -11,7 +11,7 @@
 #include "Grid.hpp"
 #include "piecedef.h"
 #include "qrs.h"
-#include "timer.h"
+#include "Timer.hpp"
 
 using namespace Shiro;
 using namespace std;
@@ -1537,7 +1537,7 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
     return 0;
 }
 
-int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba)
+int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba)
 {
     SDL_Texture *font = cs->assets->font.tex;
     qrsdata *q = (qrsdata *)cs->p1game->data;
@@ -1546,9 +1546,9 @@ int gfx_drawtimer(coreState *cs, nz_timer *t, int x, Uint32 rgba)
     SDL_Rect src = {.x = 0, .y = 96, .w = 20, .h = 32};
     SDL_Rect dest = {.x = x, .y = 26 * 16 + 8 - QRS_FIELD_Y + y, .w = 20, .h = 32};
 
-    int min = timegetmin(t);
-    int sec = timegetsec(t) % 60;
-    int csec = (timegetmsec(t) / 10) % 100; // centiseconds
+    int min = t->min();
+    int sec = t->sec() % 60;
+    int csec = t->csec() % 100; // centiseconds
 
     int i = 0;
     // int n = 0;

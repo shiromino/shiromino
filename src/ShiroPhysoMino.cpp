@@ -15,7 +15,7 @@ using namespace std;
 ShiroPhysoMino::~ShiroPhysoMino()
 {
     delete field;
-    nz_timer_destroy(timer);
+    delete timer;
 }
 
 int TestSPM::init()

@@ -1,82 +1,43 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdint>
 
-#include "timer.h"
+#include "Timer.hpp"
 
-nz_timer *nz_timer_create(int fps)
-{
-    if(fps < 0 || fps > 1000)
-        return NULL;
+using namespace Shiro;
 
-    nz_timer *t = (nz_timer *)malloc(sizeof(nz_timer));
+Timer::Timer() : fps(60.0), time(0) {}
+Timer::Timer(double fps) : fps(fps), time(0) {}
+Timer::Timer(double fps, uint64_t time) : fps(fps), time(time) {}
 
-    t->time = 0;
-    t->fps = fps;
+Timer::operator uint64_t() { return time; }
 
-    return t;
-}
-
-void nz_timer_destroy(nz_timer *t) { free(t); }
-
-int timeinc(nz_timer *t)
-{
-    if(t->time >= TIMEMAX)
-        return 1;
-
-    t->time++;
-    return 0;
-}
-
-int timedec(nz_timer *t)
-{
-    if(t->time <= (long)(0l - TIMEMAX))
-        return 1;
-
-    t->time--;
-    return 0;
-}
-/*
-int timeset(nz_timer *t, long timenew)
-{
-    if(timenew > TIMEMAX || timenew < (long)(0l - TIMEMAX))
-        return 1;
-
-    t->time = timenew;
-
-    return 0;
-}
-*/
-int timegethr(nz_timer *t)
-{
-    int hr = (t->time / t->fps) / 3600;
-
-    return hr;
-}
-
-int timegetmin(nz_timer *t)
-{
-    int min = (t->time / t->fps) / 60;
-
-    return min;
-}
-
-int timegetsec(nz_timer *t)
-{
-    int sec = t->time / t->fps;
-
-    return sec;
-}
-
-int timegetmsec(nz_timer *t)
-{
-    int f = 0;
-    if(t->fps == 60)
-    {
-        f = t->time % 60;
-        return ((f / 6) * 100) + ((((f % 6) * 5) / 3) * 10);
+Timer& Timer::operator++() {
+    if (time < UINT64_MAX) {
+        time++;
     }
-
-    int msec = (int)(((double)(t->time) / (double)(t->fps)) * 1000);
-
-    return msec;
+    return Timer(*this);
 }
+
+Timer Timer::operator++(int) {
+    Timer result(*this);
+    ++(*this);
+    return result;
+}
+
+Timer& Timer::operator--() {
+    if (time > 0) {
+        time--;
+    }
+    return Timer(*this);
+}
+
+Timer Timer::operator--(int) {
+    Timer result(*this);
+    --(*this);
+    return result;
+}
+
+uint64_t Timer::hr() { return (time / fps) / 3600.0; }
+uint64_t Timer::min() { return (time / fps) / 60.0; }
+uint64_t Timer::sec() { return time / fps; }
+uint64_t Timer::csec() { return (time / fps) * 100.0; }
+uint64_t Timer::msec() { return (time / fps) * 1000.0; }
