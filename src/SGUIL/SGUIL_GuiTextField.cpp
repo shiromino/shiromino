@@ -161,7 +161,7 @@ void GuiTextField::draw()
 
         Gui_DrawTextPartial_PV(value, 0, start, &fmt, font, textPositionalValues, scrollPosX, scrollPosY);
         Gui_DrawTextPartial_PV(value, start, end - start, &selectionFmt, font, textPositionalValues, scrollPosX, scrollPosY);
-        Gui_DrawTextPartial_PV(value, end, (unsigned)value.length() - end, &fmt, font, textPositionalValues, scrollPosX, scrollPosY);
+        Gui_DrawTextPartial_PV(value, end, (unsigned)value.size() - end, &fmt, font, textPositionalValues, scrollPosX, scrollPosY);
     }
 
     bool cursorBlinkOn = false;
@@ -333,7 +333,7 @@ void GuiTextField::keyPressed(SDL_Keycode kc)
         case SDLK_a:
             if(SDL_GetModState() & KMOD_CTRL)
             {
-                shiftCursor((int)(value.length() - cursor));
+                shiftCursor((int)(value.size() - cursor));
                 selectionStart = 0;
                 selectionEnd = cursor;
             }
@@ -370,7 +370,7 @@ void GuiTextField::keyPressed(SDL_Keycode kc)
             break;
 
         case SDLK_END:
-            shiftCursor((int)(value.length() - cursor));
+            shiftCursor((int)(value.size() - cursor));
             break;
 
         case SDLK_BACKSPACE:
@@ -388,7 +388,7 @@ void GuiTextField::keyPressed(SDL_Keycode kc)
             if(selectionStart != selectionEnd)
             {
                 textDelete();
-            } else if(cursor < value.length())
+            } else if(cursor < value.size())
             {
                 textDelete(cursor, cursor + 1);
             }
@@ -488,9 +488,9 @@ unsigned int GuiTextField::shiftCursor(int offset)
     } else
     {
         cursor += offset;
-        if(cursor > value.length())
+        if(cursor > value.size())
         {
-            cursor = (unsigned)value.length();
+            cursor = (unsigned)value.size();
         }
     }
 
@@ -518,7 +518,7 @@ bool GuiTextField::textInsert(string s)
         var->set(value);
     }
 
-    cursor += (unsigned)s.length();
+    cursor += (unsigned)s.size();
     selectionStart = selectionEnd = cursor;
 
     lastEventTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
@@ -549,9 +549,9 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
         start = 0;
     }
 
-    if(end > value.length())
+    if(end > value.size())
     {
-        end = (unsigned)value.length();
+        end = (unsigned)value.size();
     }
 
     value.erase(start, end - start);
@@ -569,9 +569,9 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
             cursor = start;
         }
 
-        if(cursor > value.length())
+        if(cursor > value.size())
         {
-            cursor = (unsigned)value.length();
+            cursor = (unsigned)value.size();
         }
     }
 

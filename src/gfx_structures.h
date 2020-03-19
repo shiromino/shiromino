@@ -1,7 +1,5 @@
-#ifndef _gfx_structures_h
-#define _gfx_structures_h
+#pragma once
 
-#include "bstrlib.h"
 #include "SDL.h"
 #include <string>
 
@@ -21,16 +19,14 @@ void img_destroy(gfx_image *img);
 
 enum text_alignment { ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER };
 
-typedef struct
-{
+struct png_monofont {
     SDL_Texture *sheet;
     SDL_Texture *outline_sheet;
     unsigned int char_w;
     unsigned int char_h;
-} png_monofont;
+};
 
-struct text_formatting
-{
+struct text_formatting {
     Uint32 rgba;
     Uint32 outline_rgba;
     // Uint32 background_rgba;
@@ -44,9 +40,8 @@ struct text_formatting
     std::size_t wrap_length;
 };
 
-typedef struct
-{
-    bstring text;
+struct gfx_message {
+    std::string text;
     int x;
     int y;
     unsigned int flags;
@@ -54,10 +49,9 @@ typedef struct
     struct text_formatting *fmt;
     unsigned int counter;
     int (*delete_check)(coreState *);
-} gfx_message;
+};
 
-typedef struct
-{
+struct gfx_animation {
     gfx_image *first_frame;
     int x;
     int y;
@@ -66,11 +60,10 @@ typedef struct
     int frame_multiplier;
     unsigned int counter;
     Uint32 rgba_mod;
-} gfx_animation;
+};
 
-typedef struct
-{
-    bstring text;
+struct gfx_button {
+    std::string text;
     int x;
     int y;
     int w;
@@ -82,6 +75,4 @@ typedef struct
     int (*delete_check)(coreState *);
     void *data;
     Uint32 text_rgba_mod;
-} gfx_button;
-
-#endif
+};

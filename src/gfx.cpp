@@ -1,6 +1,7 @@
-#include "bstrlib.h"
 #include "SDL.h"
 #include "SDL_image.h"
+#include <string>
+#include <vector>
 #include <cmath>
 #include <cstdio>
 
@@ -105,39 +106,6 @@ struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 
     return fmt;
 }
 
-void gfx_message_destroy(gfx_message *m)
-{
-    if(!m)
-        return;
-
-    if(m->text)
-        bdestroy(m->text);
-
-    if(m->fmt)
-        free(m->fmt);
-
-    free(m);
-}
-
-void gfx_animation_destroy(gfx_animation *a)
-{
-    if(!a)
-        return;
-
-    free(a);
-}
-
-void gfx_button_destroy(gfx_button *b)
-{
-    if(!b)
-        return;
-
-    if(b->text)
-        bdestroy(b->text);
-
-    free(b);
-}
-
 int gfx_init(coreState *cs)
 {
     monofont_tiny = (png_monofont *)malloc(sizeof(png_monofont));
@@ -178,42 +146,9 @@ void gfx_quit(coreState *cs)
 {
     int i = 0;
 
-    if(cs->gfx_messages)
-    {
-        for(i = 0; i < cs->gfx_messages_max; i++)
-        {
-            if(cs->gfx_messages[i])
-                gfx_message_destroy(cs->gfx_messages[i]);
-        }
-
-        free(cs->gfx_messages);
-    }
-
-    if(cs->gfx_animations)
-    {
-        for(i = 0; i < cs->gfx_animations_max; i++)
-        {
-            if(cs->gfx_animations[i])
-                gfx_animation_destroy(cs->gfx_animations[i]);
-        }
-
-        free(cs->gfx_animations);
-    }
-
-    if(cs->gfx_buttons)
-    {
-        for(i = 0; i < cs->gfx_buttons_max; i++)
-        {
-            if(cs->gfx_buttons[i])
-                gfx_button_destroy(cs->gfx_buttons[i]);
-        }
-
-        free(cs->gfx_buttons);
-    }
-
-    cs->gfx_messages = NULL;
-    cs->gfx_animations = NULL;
-    cs->gfx_buttons = NULL;
+    cs->gfx_messages.clear();
+    cs->gfx_animations.clear();
+    cs->gfx_buttons.clear();
     cs->gfx_messages_max = 0;
     cs->gfx_animations_max = 0;
     cs->gfx_buttons_max = 0;
@@ -242,7 +177,7 @@ int gfx_drawbg(coreState *cs)
 {
     // SDL_Texture *bg_darken = (asset_by_name(cs, "bg_darken"))->data;
     // SDL_Texture *anim_bg_frame = NULL;
-    // bstring asset_name = NULL;
+    // string asset_name;
     Uint8 r = 0;
     Uint8 g = 0;
     Uint8 b = 0;
@@ -378,20 +313,18 @@ int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int 
     if(!text)
         return -1;
 
-    gfx_message *m = (gfx_message *)malloc(sizeof(gfx_message));
-    m->text = bfromcstr(text);
-    m->x = x;
-    m->y = y;
-    m->flags = flags;
-    m->font = font;
-    m->fmt = fmt;
-    m->counter = counter + 1;
-    m->delete_check = delete_check;
+    gfx_message m;
+    m.text = text;
+    m.x = x;
+    m.y = y;
+    m.flags = flags;
+    m.font = font;
+    m.fmt = fmt;
+    m.counter = counter + 1;
+    m.delete_check = delete_check;
 
     cs->gfx_messages_max++;
-    cs->gfx_messages = (gfx_message **)realloc(cs->gfx_messages, cs->gfx_messages_max * sizeof(gfx_message *));
-
-    cs->gfx_messages[cs->gfx_messages_max - 1] = m;
+    cs->gfx_messages.push_back(m);
 
     return 0;
 }
@@ -401,43 +334,34 @@ int gfx_drawmessages(coreState *cs, int type)
     if(!cs)
         return -1;
 
-    if(!cs->gfx_messages)
+    if(!cs->gfx_messages.size())
         return 0;
 
-    int i = 0;
-    int n = 0;
-    gfx_message *m = NULL;
-
-    for(i = 0; i < cs->gfx_messages_max; i++)
-    {
-        if(!cs->gfx_messages[i])
-        {
-            n++;
+    // TODO: This is terribly inelegant; refactor completely.
+    size_t i = 0;
+    vector<size_t> toErase;
+    for (auto it = cs->gfx_messages.begin(), end = cs->gfx_messages.end(); it != end; it++, i++) {
+        gfx_message& m = *it;
+        if (type == EMERGENCY_OVERRIDE && !(m.flags & MESSAGE_EMERGENCY)) {
+            continue;
+        }
+        if (type == 0 && (m.flags & MESSAGE_EMERGENCY)) {
             continue;
         }
 
-        m = cs->gfx_messages[i];
-
-        if(type == EMERGENCY_OVERRIDE && !(m->flags & MESSAGE_EMERGENCY))
-            continue;
-        if(type == 0 && (m->flags & MESSAGE_EMERGENCY))
-            continue;
-
-        if(!m->counter || (m->delete_check && m->delete_check(cs)))
-        {
-            gfx_message_destroy(m);
-            cs->gfx_messages[i] = NULL;
+        if (!m.counter || (m.delete_check && m.delete_check(cs))) {
+            toErase.push_back(i);
+            cs->gfx_messages_max--;
             continue;
         }
 
-        gfx_drawtext(cs, m->text, m->x, m->y, m->font, m->fmt);
+        gfx_drawtext(cs, m.text, m.x, m.y, m.font, m.fmt);
     }
-
-    if(n == cs->gfx_messages_max)
-    {
-        free(cs->gfx_messages);
-        cs->gfx_messages = NULL;
-        cs->gfx_messages_max = 0;
+    if (toErase.size()) {
+        size_t i = toErase.size() - 1;
+        do {
+            cs->gfx_messages.erase(cs->gfx_messages.begin() + toErase[i]);
+        } while (i-- > 0);
     }
 
     return 0;
@@ -445,30 +369,18 @@ int gfx_drawmessages(coreState *cs, int type)
 
 int gfx_pushanimation(coreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba)
 {
-    gfx_animation *a = (gfx_animation *)malloc(sizeof(gfx_animation));
-    a->first_frame = first_frame;
-    a->x = x;
-    a->y = y;
-    a->flags = 0;
-    a->num_frames = num_frames;
-    a->frame_multiplier = frame_multiplier;
-    a->rgba_mod = rgba;
-    a->counter = 0;
-
-    int i = 0;
-    for(i = 0; i < cs->gfx_animations_max; i++)
-    {
-        if(cs->gfx_animations[i] == NULL)
-        {
-            cs->gfx_animations[i] = a;
-            return 0;
-        }
-    }
+    gfx_animation a;
+    a.first_frame = first_frame;
+    a.x = x;
+    a.y = y;
+    a.flags = 0;
+    a.num_frames = num_frames;
+    a.frame_multiplier = frame_multiplier;
+    a.rgba_mod = rgba;
+    a.counter = 0;
 
     cs->gfx_animations_max++;
-    cs->gfx_animations = (gfx_animation **)realloc(cs->gfx_animations, cs->gfx_animations_max * sizeof(gfx_animation *));
-
-    cs->gfx_animations[cs->gfx_animations_max - 1] = a;
+    cs->gfx_animations.push_back(a);
 
     return 0;
 }
@@ -478,58 +390,51 @@ int gfx_drawanimations(coreState *cs, int type)
     if(!cs)
         return -1;
 
-    if(!cs->gfx_animations)
+    if(!cs->gfx_animations.size())
         return 0;
 
-    int i = 0;
     int n = 0;
-    gfx_animation *a = NULL;
     SDL_Rect dest = {.x = 0, .y = 0, .w = 0, .h = 0};
     SDL_Texture *t = NULL;
 
-    for(i = 0; i < cs->gfx_animations_max; i++)
-    {
-        if(!cs->gfx_animations[i])
+    // TODO: This is terribly inelegant; refactor completely.
+    size_t i = 0;
+    vector<size_t> toErase;
+    for (auto it = cs->gfx_animations.begin(); it != cs->gfx_animations.end(); it++, i++) {
+        gfx_animation& a = cs->gfx_animations[i];
+
+        if(type == EMERGENCY_OVERRIDE && !(a.flags & ANIMATION_EMERGENCY))
+            continue;
+        if(type == 0 && (a.flags & ANIMATION_EMERGENCY))
+            continue;
+
+        if(a.counter == (unsigned int)(a.frame_multiplier * a.num_frames))
         {
-            n++;
+            toErase.push_back(i);
+            cs->gfx_animations_max--;
             continue;
         }
 
-        a = cs->gfx_animations[i];
-
-        if(type == EMERGENCY_OVERRIDE && !(a->flags & ANIMATION_EMERGENCY))
-            continue;
-        if(type == 0 && (a->flags & ANIMATION_EMERGENCY))
-            continue;
-
-        if(a->counter == (unsigned int)(a->frame_multiplier * a->num_frames))
-        {
-            gfx_animation_destroy(a);
-            cs->gfx_animations[i] = NULL;
-            continue;
-        }
-
-        int framenum = a->counter / a->frame_multiplier;
-        t = a->first_frame[framenum].tex;
+        int framenum = a.counter / a.frame_multiplier;
+        t = a.first_frame[framenum].tex;
         if(!t)
             printf("NULL texture on frame %d\n", framenum);
 
-        dest.x = a->x;
-        dest.y = a->y;
+        dest.x = a.x;
+        dest.y = a.y;
         SDL_QueryTexture(t, NULL, NULL, &dest.w, &dest.h);
 
-        SDL_SetTextureColorMod(t, R(a->rgba_mod), G(a->rgba_mod), B(a->rgba_mod));
-        SDL_SetTextureAlphaMod(t, A(a->rgba_mod));
+        SDL_SetTextureColorMod(t, R(a.rgba_mod), G(a.rgba_mod), B(a.rgba_mod));
+        SDL_SetTextureAlphaMod(t, A(a.rgba_mod));
         SDL_RenderCopy(cs->screen.renderer, t, NULL, &dest);
         SDL_SetTextureAlphaMod(t, 255);
         SDL_SetTextureColorMod(t, 255, 255, 255);
     }
-
-    if(n == cs->gfx_animations_max)
-    {
-        free(cs->gfx_animations);
-        cs->gfx_animations = NULL;
-        cs->gfx_animations_max = 0;
+    if (toErase.size()) {
+        size_t i = toErase.size() - 1;
+        do {
+            cs->gfx_animations.erase(cs->gfx_animations.begin() + toErase[i]);
+        } while (i-- > 0);
     }
 
     return 0;
@@ -543,24 +448,23 @@ int gfx_createbutton(coreState *cs, const char *text, int x, int y, unsigned int
     if(!text)
         return -1;
 
-    gfx_button *b = (gfx_button *)malloc(sizeof(gfx_button));
-    b->text = bfromcstr(text);
-    b->x = x;
-    b->y = y;
-    b->w = 2 * 6 + 16 * (b->text->slen);
-    b->h = 28;
-    b->flags = flags;
-    b->highlighted = 0;
-    b->clicked = 0;
-    b->action = action;
-    b->delete_check = delete_check;
-    b->data = data;
-    b->text_rgba_mod = rgba;
+    gfx_button b;
+    b.text = text;
+    b.x = x;
+    b.y = y;
+    b.w = 2 * 6 + 16 * (b.text.size());
+    b.h = 28;
+    b.flags = flags;
+    b.highlighted = 0;
+    b.clicked = 0;
+    b.action = action;
+    b.delete_check = delete_check;
+    b.data = data;
+    b.text_rgba_mod = rgba;
 
     cs->gfx_buttons_max++;
-    cs->gfx_buttons = (gfx_button **)realloc(cs->gfx_buttons, cs->gfx_buttons_max * sizeof(gfx_button *));
-
-    cs->gfx_buttons[cs->gfx_buttons_max - 1] = b;
+    cs->gfx_buttons.resize(cs->gfx_buttons_max);
+    cs->gfx_buttons.push_back(b);
 
     return 0;
 }
@@ -570,13 +474,11 @@ int gfx_drawbuttons(coreState *cs, int type)
     if(!cs)
         return -1;
 
-    if(!cs->gfx_buttons)
+    if(!cs->gfx_buttons.size())
         return 0;
 
-    int i = 0;
     int j = 0;
     int n = 0;
-    gfx_button *b = NULL;
     SDL_Texture *font = cs->assets->font.tex;
     // SDL_Texture *font_no_outline = cs->assets->font_no_outline.tex;
     SDL_Rect src = {.x = 0, .y = 0, .w = 6, .h = 28};
@@ -591,31 +493,24 @@ int gfx_drawbuttons(coreState *cs, int type)
                                   .align = ALIGN_LEFT,
                                   .wrap_length = 0};
 
-    for(i = 0; i < cs->gfx_buttons_max; i++)
-    {
-        if(!cs->gfx_buttons[i])
+    for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
+        gfx_button& b = *it;
+
+        if(type == EMERGENCY_OVERRIDE && !(b.flags & BUTTON_EMERGENCY))
+            continue;
+        if(type == 0 && (b.flags & BUTTON_EMERGENCY))
+            continue;
+
+        if(b.highlighted)
         {
-            n++;
-            continue;
-        }
-
-        b = cs->gfx_buttons[i];
-
-        if(type == EMERGENCY_OVERRIDE && !(b->flags & BUTTON_EMERGENCY))
-            continue;
-        if(type == 0 && (b->flags & BUTTON_EMERGENCY))
-            continue;
-
-        if(b->highlighted)
-        {
-            if(b->clicked)
+            if(b.clicked)
             {
                 src.x = 362;
             }
             else
                 src.x = 298;
         }
-        else if(b->clicked)
+        else if(b.clicked)
         {
             src.x = 362;
         }
@@ -625,13 +520,13 @@ int gfx_drawbuttons(coreState *cs, int type)
         src.w = 6;
         dest.w = 6;
         src.y = 26;
-        dest.x = b->x;
-        dest.y = b->y;
+        dest.x = b.x;
+        dest.y = b.y;
 
-        if(b->highlighted)
+        if(b.highlighted)
         {
-            SDL_SetTextureColorMod(font, R(b->text_rgba_mod), G(b->text_rgba_mod), B(b->text_rgba_mod));
-            SDL_SetTextureAlphaMod(font, A(b->text_rgba_mod));
+            SDL_SetTextureColorMod(font, R(b.text_rgba_mod), G(b.text_rgba_mod), B(b.text_rgba_mod));
+            SDL_SetTextureAlphaMod(font, A(b.text_rgba_mod));
         }
 
         SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
@@ -641,7 +536,7 @@ int gfx_drawbuttons(coreState *cs, int type)
         src.w = 16;
         dest.w = 16;
 
-        for(j = 0; j < b->text->slen; j++)
+        for(j = 0; j < b.text.size(); j++)
         {
             if(j)
                 dest.x += 16;
@@ -659,7 +554,7 @@ int gfx_drawbuttons(coreState *cs, int type)
         SDL_SetTextureColorMod(font, 255, 255, 255);
         SDL_SetTextureAlphaMod(font, 255);
 
-        if(b->highlighted || b->clicked)
+        if(b.highlighted || b.clicked)
         {
             fmt.outlined = false;
             fmt.shadow = true;
@@ -669,18 +564,13 @@ int gfx_drawbuttons(coreState *cs, int type)
         {
             fmt.outlined = true;
             fmt.shadow = false;
-            fmt.rgba = b->text_rgba_mod;
+            fmt.rgba = b.text_rgba_mod;
         }
 
-        gfx_drawtext(cs, b->text, b->x + 6, b->y + 6, monofont_square, &fmt);
+        gfx_drawtext(cs, b.text, b.x + 6, b.y + 6, monofont_square, &fmt);
     }
 
-    if(n == cs->gfx_buttons_max)
-    {
-        free(cs->gfx_buttons);
-        cs->gfx_buttons = NULL;
-        cs->gfx_buttons_max = 0;
-    }
+    cs->gfx_buttons.clear();
 
     return 0;
 }
@@ -711,7 +601,7 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
     int c = 0;
     // int outline = 0;
 
-    bstring piece_bstr = bfromcstr("A");
+    string piece_str = "A";
 
     int z = cs->p1game->frame_counter;
 
@@ -899,9 +789,9 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
                     dest.x += 16;
                 }
 
-                // piece_bstr->data[0] = c + 'A' - 1;
+                // piece_str[0] = c + 'A' - 1;
 
-                // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[c-1] * 0x100) + 0xFF); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                // gfx_drawtext(cs, piece_str, dest.x, dest.y, (gfx_piece_colors[c-1] * 0x100) + 0xFF); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                 if(!(flags & DRAWFIELD_INVISIBLE) || (c == QRS_FIELD_W_LIMITER))
                 {
                     // this stuff should be handled more elegantly, without needing access to the qrsdata
@@ -1019,8 +909,6 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
        SDL_RenderCopy(cs->screen.renderer, q->field_tex, NULL, &field_dest);
     }*/
 
-    bdestroy(piece_bstr);
-
     SDL_SetTextureColorMod(misc, 255, 255, 255);
     SDL_SetTextureAlphaMod(misc, 255);
 
@@ -1039,10 +927,10 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
     SDL_Rect src = {0, 80, 16, 16};
     SDL_Rect dest = {0, y, 16, 16};
 
-    bstring text_a = bfromcstr("A");
-    bstring text_b = bfromcstr("B");
-    bstring text_c = bfromcstr("C");
-    bstring text_d = bfromcstr("D");
+    string text_a = "A";
+    string text_b = "B";
+    string text_c = "C";
+    string text_d = "D";
 
     struct text_formatting fmt = {.rgba = RGBA_DEFAULT,
                                   .outline_rgba = RGBA_OUTLINE_DEFAULT,
@@ -1135,36 +1023,20 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 
     gfx_drawtext(cs, text_d, x + 112, y, monofont_square, &fmt);
 
-    bdestroy(text_a);
-    bdestroy(text_b);
-    bdestroy(text_c);
-    bdestroy(text_d);
-
     SDL_SetTextureColorMod(font, 255, 255, 255);
     SDL_SetTextureAlphaMod(font, 255);
 
     return 0;
 }
 
-int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext(coreState *cs, string text, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
-    bstring b = bfromcstr(text.c_str());
-    int rc = gfx_drawtext(cs, b, x, y, font, fmt);
-    bdestroy(b);
-    return rc;
+    return gfx_drawtext_partial(cs, text, 0, text.size(), x, y, font, fmt);
 }
 
-int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
-    if(!text)
-        return -1;
-
-    return gfx_drawtext_partial(cs, text, 0, text->slen, x, y, font, fmt);
-}
-
-int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
-{
-    if(!cs || !text)
+    if(!cs || text == "")
         return -1;
 
     if(!font)
@@ -1200,14 +1072,23 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
     std::size_t last_wrap_line_pos = 0;
     std::size_t last_wrap_pos = 0;
 
-    struct bstrList *lines = bsplit(text, '\n');
+    vector<string> lines;
+    {
+        string textSubstr = text;
+        string::size_type pos = 0;
+        do {
+            pos = textSubstr.find('\n');
+            lines.push_back(textSubstr.substr(0, pos));
+            textSubstr.erase(0, pos + 1);
+        } while (pos != string::npos);
+    }
 
     bool using_target_tex = false;
 
     if(SDL_GetRenderTarget(cs->screen.renderer) != NULL)
         using_target_tex = true;
 
-    for(i = pos; i < text->slen && i < len; i++)
+    for(i = pos; i < text.size() && i < len; i++)
     {
         if(i == 0)
         {
@@ -1219,22 +1100,22 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
                     break;
 
                 case ALIGN_RIGHT:
-                    dest.x = x - (fmt->size_multiplier * (float)font->char_w) * (lines->entry[0]->slen);
+                    dest.x = x - (fmt->size_multiplier * (float)font->char_w) * lines[0].size();
                     break;
 
                 case ALIGN_CENTER:
-                    if(fmt->wrap_length < lines->entry[0]->slen - last_wrap_line_pos)
+                    if(fmt->wrap_length < lines[0].size() - last_wrap_line_pos)
                         dest.x = x;
                     else
-                        dest.x = x + (fmt->size_multiplier * (float)font->char_w / 2.0) * (fmt->wrap_length - (lines->entry[0]->slen - last_wrap_line_pos));
+                        dest.x = x + (fmt->size_multiplier * (float)font->char_w / 2.0) * (fmt->wrap_length - (lines[0].size() - last_wrap_line_pos));
 
                     break;
             }
         }
 
-        if((fmt->wrap_length && i != 0 && (i - last_wrap_pos) % fmt->wrap_length == 0) || text->data[i] == '\n')
+        if((fmt->wrap_length && i != 0 && (i - last_wrap_pos) % fmt->wrap_length == 0) || text[i] == '\n')
         {
-            if(text->data[i] == '\n')
+            if(text[i] == '\n')
             {
                 linefeeds++;
                 last_wrap_line_pos = i - last_wrap_pos + last_wrap_line_pos;
@@ -1256,19 +1137,19 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
                     break;
 
                 case ALIGN_RIGHT:
-                    dest.x = x - (font->char_w) * (lines->entry[linefeeds]->slen);
+                    dest.x = x - (font->char_w) * lines[linefeeds].size();
                     break;
 
                 case ALIGN_CENTER:
-                    if(fmt->wrap_length < lines->entry[linefeeds]->slen - last_wrap_line_pos)
+                    if(fmt->wrap_length < lines[linefeeds].size() - last_wrap_line_pos)
                         dest.x = x;
                     else
-                        dest.x = (int)(x + (font->char_w / 2) * (fmt->wrap_length - (lines->entry[linefeeds]->slen - last_wrap_line_pos)));
+                        dest.x = (int)(x + (font->char_w / 2) * (fmt->wrap_length - (lines[linefeeds].size() - last_wrap_line_pos)));
 
                     break;
             }
 
-            if(text->data[i] == '\n')
+            if(text[i] == '\n')
                 continue;
         }
 
@@ -1295,8 +1176,8 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
             SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba));
         }
 
-        src.x = font->char_w * (text->data[i] % 32);
-        src.y = font->char_h * ((int)(text->data[i] / 32) - 1);
+        src.x = font->char_w * (text[i] % 32);
+        src.y = font->char_h * ((int)(text[i] / 32) - 1);
         if(src.y < 0)
         {
             src.x = 31 * font->char_w;
@@ -1346,9 +1227,6 @@ int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, i
 
         dest.x += fmt->size_multiplier * (float)font->char_w;
     }
-
-    if(lines)
-        bstrListDestroy(lines);
 
     SDL_SetTextureColorMod(font->sheet, 255, 255, 255);
     SDL_SetTextureAlphaMod(font->sheet, 255);
@@ -1406,8 +1284,8 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
     SDL_Rect src = {.x = 0, .y = 0, .w = (size == 8 ? 8 : 16), .h = (size == 8 ? 8 : 16)};
     SDL_Rect dest = {.x = 0, .y = 0, .w = size, .h = size};
 
-    bstring piece_bstr = bfromcstr("A");
-    piece_bstr->data[0] = pd->qrs_id + 'A';
+    string piece_str = "A";
+    piece_str[0] = pd->qrs_id + 'A';
 
     Grid *g = NULL;
 
@@ -1515,7 +1393,7 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
                 }
                 else
                 {
-                    // gfx_drawtext(cs, piece_bstr, dest.x, dest.y, (gfx_piece_colors[pd->qrs_id] * 0x100) + A(rgba)); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
+                    // gfx_drawtext(cs, piece_str, dest.x, dest.y, (gfx_piece_colors[pd->qrs_id] * 0x100) + A(rgba)); //SDL_RenderCopy(cs->screen.renderer, tets, &src, &dest);
                     if(flags & DRAWPIECE_JEWELED)
                     {
                         SDL_RenderCopy(cs->screen.renderer, tets_jeweled, &src, &dest);
@@ -1531,8 +1409,6 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
 
     SDL_SetTextureColorMod(tets, 255, 255, 255);
     SDL_SetTextureAlphaMod(tets, 255);
-
-    bdestroy(piece_bstr);
 
     return 0;
 }

@@ -485,7 +485,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
     char name_strbuf[3] = {0, 0, 0};
     string name_str;
 
-    for(i = 0; i < usr_seq_str.length(); i++)
+    for(i = 0; i < usr_seq_str.size(); i++)
     {
         c = usr_seq_str[i];
         if((c < 'A' || c > 'Z') && !(c == '*' || c == '(' || c == ')'))
@@ -493,7 +493,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
             if(rpt_count)
             {
                 k = 0;
-                while(k < 4 && i < usr_seq_str.length() && usr_seq_str[i] >= '0' && usr_seq_str[i] <= '9')
+                while(k < 4 && i < usr_seq_str.size() && usr_seq_str[i] >= '0' && usr_seq_str[i] <= '9')
                 {
                     rpt_count_strbuf[k] = usr_seq_str[i];
                     rpt_count_strbuf[k + 1] = '\0';
@@ -525,7 +525,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
         {
             num++;
 
-            if(i < usr_seq_str.length() - 1)
+            if(i < usr_seq_str.size() - 1)
             {
                 if(c == 'I' && usr_seq_str[i + 1] == 'N' && usr_seq_str[i + 2] == 'F')
                 {

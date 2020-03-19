@@ -171,9 +171,9 @@ struct coreState
     //gfx_animation *anim_bg;
     //gfx_animation *anim_bg_old;
 
-    gfx_message **gfx_messages;
-    gfx_animation **gfx_animations;
-    gfx_button **gfx_buttons;
+    std::vector<gfx_message> gfx_messages;
+    std::vector<gfx_animation> gfx_animations;
+    std::vector<gfx_button> gfx_buttons;
     int gfx_messages_max;
     int gfx_animations_max;
     int gfx_buttons_max;

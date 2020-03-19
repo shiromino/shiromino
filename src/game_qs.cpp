@@ -7,7 +7,6 @@
 #include <ctime>
 #include <string>
 #include <fstream>
-#include "bstr_to_std.hpp"
 
 #include "core.h"
 #include "game_menu.h"
@@ -2840,11 +2839,10 @@ int qs_update_pracdata(coreState *cs)
 
     // and now for the hackiest check ever to see if we need to update the usr_seq
 
-    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1]->type == MENU_TEXTINPUT)
+    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1].type == MENU_TEXTINPUT)
     {
-        bstring bstr_ = bstrcpy(((struct text_opt_data *)(md->menu[md->numopts - 1]->data))->text);
-        seqStr = bstr_to_std(bstr_);
-        for(i = 0; i < seqStr.length(); i++)
+        string seqStr = ((struct text_opt_data*)(md->menu[md->numopts - 1].data))->text;
+        for(i = 0; i < seqStr.size(); i++)
         {
             c = seqStr[i];
             if((c < 'A' || c > 'Z') && !(c == '*' || c == '(' || c == ')'))
@@ -2852,7 +2850,7 @@ int qs_update_pracdata(coreState *cs)
                 if(rpt_count)
                 {
                     k = 0;
-                    while(k < 4 && i < seqStr.length() && seqStr[i] >= '0' && seqStr[i] <= '9')
+                    while(k < 4 && i < seqStr.size() && seqStr[i] >= '0' && seqStr[i] <= '9')
                     {
                         rpt_count_strbuf[k] = seqStr[i];
                         rpt_count_strbuf[k + 1] = '\0';
@@ -2884,7 +2882,7 @@ int qs_update_pracdata(coreState *cs)
             {
                 num++;
 
-                if(i < seqStr.length() - 1)
+                if(i < seqStr.size() - 1)
                 {
                     if(c == 'I' && seqStr[i + 1] == 'N' && seqStr[i + 2] == 'F')
                     {

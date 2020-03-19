@@ -280,7 +280,7 @@ void Gui_DrawBorder(SDL_Rect& rect, int width, rgba_t rgba)
 void Gui_GenerateTextPositionalValues(string& text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox,
     vector<pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
 {
-    Gui_GenerateTextPositionalValuesPartial(text, 0, (unsigned)text.length(), fmt, font, destBox, values, horizontalScroll, verticalScroll);
+    Gui_GenerateTextPositionalValuesPartial(text, 0, (unsigned)text.size(), fmt, font, destBox, values, horizontalScroll, verticalScroll);
 }
 
 void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
@@ -306,12 +306,12 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
     int lastWrapPos = 0;
 
     values.clear();
-    values.reserve(text.length());
+    values.reserve(text.size());
 
     int currentX = destBox.x;
     int currentY = destBox.y;
 
-    for(unsigned int i = pos; i < text.length() && i < pos + len; i++)
+    for(unsigned int i = pos; i < text.size() && i < pos + len; i++)
     {
         if(i == 0 ||
            (fmt->wrapLen != 0 && (i - lastWrapPos) == fmt->wrapLen) ||
@@ -351,9 +351,9 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
                     break;
 
                 case enumAlignment::right:
-                    if(lines[linefeeds].length() - lastWrapLinePos < width)
+                    if(lines[linefeeds].size() - lastWrapLinePos < width)
                     {
-                        currentX = destBox.x + destBox.w - (int)((float)font.charW * fmt->sizeMult * (float)(lines[linefeeds].length() - lastWrapLinePos));
+                        currentX = destBox.x + destBox.w - (int)((float)font.charW * fmt->sizeMult * (float)(lines[linefeeds].size() - lastWrapLinePos));
                     } else
                     {
                         currentX = destBox.x + destBox.w - (int)(width * font.charW * fmt->sizeMult);
@@ -362,9 +362,9 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
                     break;
 
                 case enumAlignment::center:
-                    if(lines[linefeeds].length() - lastWrapLinePos < width)
+                    if(lines[linefeeds].size() - lastWrapLinePos < width)
                     {
-                        currentX = destBox.x + (fmt->sizeMult * (float)font.charW / 2.0) * (width - (lines[linefeeds].length() - lastWrapLinePos));
+                        currentX = destBox.x + (fmt->sizeMult * (float)font.charW / 2.0) * (width - (lines[linefeeds].size() - lastWrapLinePos));
                     } else
                     {
                         currentX = destBox.x;
@@ -395,7 +395,7 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
 void Gui_DrawText_PV(string text, TextFormat *fmt, BitFont& font, vector<pair<int, int>>& positionalValues,
     unsigned int scrollPosX, unsigned int scrollPosY)
 {
-    Gui_DrawTextPartial_PV(text, 0, (unsigned)text.length(), fmt, font, positionalValues, scrollPosX, scrollPosY);
+    Gui_DrawTextPartial_PV(text, 0, (unsigned)text.size(), fmt, font, positionalValues, scrollPosX, scrollPosY);
 }
 
 void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, TextFormat *fmt,

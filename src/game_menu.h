@@ -1,9 +1,9 @@
-#ifndef _game_menu_h
-#define _game_menu_h
+#pragma once
 
-#include "bstrlib.h"
+#include <string>
+#include <vector>
+
 #include "core.h"
-#include <stdbool.h>
 
 #define MENU_PRACTICE_NUMOPTS 15
 
@@ -34,7 +34,7 @@ struct menu_opt
     int type;
     int (*value_update_callback)(coreState *cs);
     int render_update;
-    bstring label;
+    std::string label;
     int x;
     int y;
     int value_x;
@@ -46,6 +46,7 @@ struct menu_opt
     unsigned int value_text_rgba;
 
     void *data;
+    void (*deleteData)(void* data);
 };
 
 struct action_opt_data
@@ -61,7 +62,7 @@ struct multi_opt_data
 
     int *param;
     int *vals;
-    bstring *labels;
+    std::vector<std::string> labels;
 };
 
 struct text_opt_data
@@ -73,13 +74,13 @@ struct text_opt_data
     int leftmost_position;
     int visible_chars;
 
-    bstring text;
+    std::string text;
 };
 
 struct toggle_opt_data
 {
     bool *param;
-    bstring labels[2];
+    std::string labels[2];
 };
 
 struct game_opt_data
@@ -94,7 +95,7 @@ struct game_multiopt_data
     int mode;
     int num;
     int selection;
-    bstring *labels;
+    std::vector<std::string> labels;
 
     struct game_args *args; // array of argument lists. so each argument list is an array of (void *), which can be
                             // dereferenced and filled with..
@@ -113,7 +114,7 @@ struct metagame_opt_data
 
 typedef struct
 {
-    struct menu_opt **menu;
+    std::vector<menu_opt> menu;
     int menu_id;
 
     struct
@@ -140,15 +141,15 @@ typedef struct
     int page_text_x;
     int page_text_y;
 
-    bstring title;
+    std::string title;
     int x;
     int y;
 } menudata;
 
-struct menu_opt *std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, bstring label);
+struct menu_opt std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, std::string label);
 
-struct menu_opt *menu_opt_create(int type, int (*value_update_callback)(coreState *cs), bstring label);
-void menu_opt_destroy(struct menu_opt *m);
+struct menu_opt menu_opt_create(int type, int (*value_update_callback)(coreState *cs), std::string label);
+void menu_opt_destroy(struct menu_opt& m);
 
 int menu_text_toggle(coreState *cs);
 int menu_text_insert(coreState *cs, char *);
@@ -179,5 +180,3 @@ int menu_action_quit(game_t *g, int val);
 int menu_action_lua_modes(game_t* g, int val);
 int menu_is_practice(game_t *g);
 int menu_is_main(game_t *g);
-
-#endif

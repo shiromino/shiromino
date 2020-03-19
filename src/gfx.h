@@ -1,9 +1,6 @@
-#ifndef _gfx_h
-#define _gfx_h
+#pragma once
 
-#include <stdlib.h>
-#include <stdbool.h>
-#include "bstrlib.h"
+#include <cstdlib>
 #include "SDL.h"
 #include <string>
 
@@ -73,9 +70,6 @@ extern png_monofont *monofont_square;
 extern png_monofont *monofont_fixedsys;
 
 struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
-void gfx_message_destroy(gfx_message *m);
-void gfx_animation_destroy(gfx_animation *a);
-void gfx_button_destroy(gfx_button *b);
 
 int gfx_init(coreState *cs);
 void gfx_quit(coreState *cs);
@@ -103,9 +97,6 @@ int gfx_drawqrsfield(coreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
 
 int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawtext(coreState *cs, bstring text, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawtext_partial(coreState *cs, bstring text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
+int gfx_drawtext_partial(coreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawpiece(coreState *cs, Shiro::Grid *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
 int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba);
-
-#endif

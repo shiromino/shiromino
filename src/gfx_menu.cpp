@@ -1,13 +1,14 @@
-#include "bstrlib.h"
 #include "SDL.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "core.h"
 #include "game_menu.h"
 
 #include "gfx.h"
 #include "gfx_menu.h"
+
+using namespace std;
 
 int gfx_drawmenu(game_t *g)
 {
@@ -34,8 +35,8 @@ int gfx_drawmenu(game_t *g)
     struct text_opt_data *d7 = NULL;
     struct toggle_opt_data *d8 = NULL;
 
-    bstring textinput_display = NULL;
-    bstring page_bstr = NULL;
+    string textinput_display;
+    string page_str;
 
     int i = 0;
     int j = 0;
@@ -50,12 +51,13 @@ int gfx_drawmenu(game_t *g)
 
     if(d->is_paged)
     {
-        page_bstr = bformat("PAGE %d/%d", d->page + 1, ((d->numopts - 1) / d->page_length) + 1);
+        stringstream ss;
+        ss << "PAGE " << d->page + 1 << "/" << ((d->numopts - 1) / d->page_length) + 1;
+        page_str = ss.str();
         fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
 
-        gfx_drawtext(cs, page_bstr, d->page_text_x, d->page_text_y, monofont_square, fmt);
+        gfx_drawtext(cs, page_str, d->page_text_x, d->page_text_y, monofont_square, fmt);
 
-        bdestroy(page_bstr);
         free(fmt);
         fmt = NULL;
 
@@ -65,10 +67,10 @@ int gfx_drawmenu(game_t *g)
             final_opt = d->numopts - 1;
     }
 
-    if(!d->menu)
+    if(!d->menu.size())
         return 0;
 
-    if(d->title)
+    if(d->title != "")
     {
         if(menu_is_main(g))
         {
@@ -92,259 +94,192 @@ int gfx_drawmenu(game_t *g)
 
     for(i = initial_opt; i <= final_opt; i++)
     {
-        if(d->menu[i])
+        m = &d->menu[i];
+        if(d->use_target_tex && !m->render_update)
+            continue;
+        else if(d->use_target_tex && i == initial_opt)
         {
-            m = d->menu[i];
-            if(d->use_target_tex && !m->render_update)
-                continue;
-            else if(d->use_target_tex && i == initial_opt)
-            {
-                SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
-                SDL_RenderClear(g->origin->screen.renderer);
-            }
+            SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
+            SDL_RenderClear(g->origin->screen.renderer);
+        }
 
-            fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
+        fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
+        monofont = monofont_square;
+
+        if(m->label_text_flags & DRAWTEXT_THIN_FONT)
+            monofont = monofont_thin;
+        if(m->label_text_flags & DRAWTEXT_SMALL_FONT)
+            monofont = monofont_small;
+        if(m->label_text_flags & DRAWTEXT_TINY_FONT)
+            monofont = monofont_tiny;
+        if(m->label_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+            monofont = monofont_fixedsys;
+
+        if(i == d->selection)
+        {
+            fmt->rgba = 0x9090FFFF;
+            fmt->outline_rgba = 0x2020AFFF;
+            fmt->shadow = true;
+        }
+
+        gfx_drawtext(cs, m->label, m->x, m->y, monofont, fmt);
+
+        free(fmt);
+        fmt = NULL;
+
+        if(m->type == MENU_MULTIOPT)
+        {
+            d2 = (struct multi_opt_data *)m->data;
+            fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
             monofont = monofont_square;
 
-            if(m->label_text_flags & DRAWTEXT_THIN_FONT)
+            if(m->value_text_flags & DRAWTEXT_THIN_FONT)
                 monofont = monofont_thin;
-            if(m->label_text_flags & DRAWTEXT_SMALL_FONT)
+            if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
                 monofont = monofont_small;
-            if(m->label_text_flags & DRAWTEXT_TINY_FONT)
+            if(m->value_text_flags & DRAWTEXT_TINY_FONT)
                 monofont = monofont_tiny;
-            if(m->label_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+            if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                 monofont = monofont_fixedsys;
 
-            if(i == d->selection)
-            {
-                fmt->rgba = 0x9090FFFF;
-                fmt->outline_rgba = 0x2020AFFF;
-                fmt->shadow = true;
-            }
-
-            gfx_drawtext(cs, m->label, m->x, m->y, monofont, fmt);
+            gfx_drawtext(cs, d2->labels[d2->selection], m->value_x, m->value_y, monofont, fmt);
 
             free(fmt);
             fmt = NULL;
 
-            if(m->type == MENU_MULTIOPT)
+            if(m->value_text_flags & DRAWTEXT_VALUE_BAR)
             {
-                d2 = (struct multi_opt_data *)m->data;
-                fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
-                monofont = monofont_square;
+                barsrc.x = 14 * 16;
+                bardest.x = m->value_x;
+                baroutlinedest.x = bardest.x;
+                bardest.y = m->value_y + 1;
+                baroutlinedest.y = m->value_y;
+                SDL_RenderCopy(cs->screen.renderer, font, &baroutlinesrc, &baroutlinedest);
 
-                if(m->value_text_flags & DRAWTEXT_THIN_FONT)
-                    monofont = monofont_thin;
-                if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
-                    monofont = monofont_small;
-                if(m->value_text_flags & DRAWTEXT_TINY_FONT)
-                    monofont = monofont_tiny;
-                if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
-                    monofont = monofont_fixedsys;
-
-                gfx_drawtext(cs, d2->labels[d2->selection], m->value_x, m->value_y, monofont, fmt);
-
-                free(fmt);
-                fmt = NULL;
-
-                if(m->value_text_flags & DRAWTEXT_VALUE_BAR)
+                if(d2->selection > 0)
                 {
-                    barsrc.x = 14 * 16;
-                    bardest.x = m->value_x;
-                    baroutlinedest.x = bardest.x;
-                    bardest.y = m->value_y + 1;
-                    baroutlinedest.y = m->value_y;
-                    SDL_RenderCopy(cs->screen.renderer, font, &baroutlinesrc, &baroutlinedest);
-
-                    if(d2->selection > 0)
+                    barsrc.x += 1;
+                    bardest.x += 1;
+                    barsrc.w = 1;
+                    bardest.w = 1;
+                    for(j = 0; j < d2->selection; j++)
                     {
-                        barsrc.x += 1;
+                        mod = (200 * (85 - j)) / 100;
+                        if(mod < 0)
+                            mod = 0;
+
+                        if((i % 3) == 1)
+                            SDL_SetTextureColorMod(font, 255, mod, mod);
+                        else if((i % 3) == 2)
+                            SDL_SetTextureColorMod(font, mod, 255, mod);
+                        else if((i % 3) == 0)
+                            SDL_SetTextureColorMod(font, mod, mod, 255);
+
+                        SDL_RenderCopy(cs->screen.renderer, font, &barsrc, &bardest);
                         bardest.x += 1;
-                        barsrc.w = 1;
-                        bardest.w = 1;
-                        for(j = 0; j < d2->selection; j++)
-                        {
-                            mod = (200 * (85 - j)) / 100;
-                            if(mod < 0)
-                                mod = 0;
-
-                            if((i % 3) == 1)
-                                SDL_SetTextureColorMod(font, 255, mod, mod);
-                            else if((i % 3) == 2)
-                                SDL_SetTextureColorMod(font, mod, 255, mod);
-                            else if((i % 3) == 0)
-                                SDL_SetTextureColorMod(font, mod, mod, 255);
-
-                            SDL_RenderCopy(cs->screen.renderer, font, &barsrc, &bardest);
-                            bardest.x += 1;
-                        }
-
-                        SDL_SetTextureColorMod(font, 255, 255, 255);
                     }
+
+                    SDL_SetTextureColorMod(font, 255, 255, 255);
                 }
             }
+        }
 
-            if(m->type == MENU_GAME_MULTIOPT)
+        if(m->type == MENU_GAME_MULTIOPT)
+        {
+            d3 = (struct game_multiopt_data *)m->data;
+            if(d3->labels.size())
             {
-                d3 = (struct game_multiopt_data *)m->data;
-                if(d3->labels)
+                if(d3->labels[d3->selection] != "")
                 {
-                    if(d3->labels[d3->selection])
-                    {
-                        fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
-                        monofont = monofont_square;
+                    fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+                    monofont = monofont_square;
 
-                        if(m->value_text_flags & DRAWTEXT_THIN_FONT)
-                            monofont = monofont_thin;
-                        if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
-                            monofont = monofont_small;
-                        if(m->value_text_flags & DRAWTEXT_TINY_FONT)
-                            monofont = monofont_tiny;
-                        if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
-                            monofont = monofont_fixedsys;
+                    if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                        monofont = monofont_thin;
+                    if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+                        monofont = monofont_small;
+                    if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+                        monofont = monofont_tiny;
+                    if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+                        monofont = monofont_fixedsys;
 
-                        gfx_drawtext(cs, d3->labels[d3->selection], m->value_x, m->value_y, monofont, fmt);
+                    gfx_drawtext(cs, d3->labels[d3->selection], m->value_x, m->value_y, monofont, fmt);
 
-                        free(fmt);
-                        fmt = NULL;
-                    }
+                    free(fmt);
+                    fmt = NULL;
                 }
             }
+        }
 
-            if(m->type == MENU_TEXTINPUT)
+        if(m->type == MENU_TEXTINPUT)
+        {
+            d7 = (struct text_opt_data *)m->data;
+
+            if(d7->text != "")
             {
-                d7 = (struct text_opt_data *)m->data;
+                textinput_display = d7->text.substr(d7->leftmost_position);
+                if (textinput_display != "" && textinput_display.size() > d7->visible_chars)
+                    textinput_display.resize(d7->visible_chars);
+                    //btrunc(textinput_display, d7->visible_chars);
 
-                if(d7->text)
+                if(d7->selection)
                 {
-                    if(d7->text->data && d7->text->slen)
+                    SDL_SetTextureColorMod(font, 255, 255, 255);
+                    SDL_SetTextureAlphaMod(font, 255);
+                    src.x = 17 * 16 - 1;
+                    src.y = 32 - 1;
+                    src.h = 18;
+                    src.w = (m->value_text_flags & DRAWTEXT_THIN_FONT ? 15 : 18);
+                    dest.w = src.w;
+                    dest.h = 18;
+                    dest.y = m->value_y + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 1 : 0);
+                    for(k = 0; k < (d7->text.size() - d7->leftmost_position) && k < d7->visible_chars; k++)
                     {
-                        textinput_display = blk2bstr(&d7->text->data[d7->leftmost_position], d7->text->slen - d7->leftmost_position);
-                        if(textinput_display && textinput_display->slen > d7->visible_chars)
-                            btrunc(textinput_display, d7->visible_chars);
+                        dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * (k)-1;
 
-                        if(d7->selection)
-                        {
-                            SDL_SetTextureColorMod(font, 255, 255, 255);
-                            SDL_SetTextureAlphaMod(font, 255);
-                            src.x = 17 * 16 - 1;
-                            src.y = 32 - 1;
-                            src.h = 18;
-                            src.w = (m->value_text_flags & DRAWTEXT_THIN_FONT ? 15 : 18);
-                            dest.w = src.w;
-                            dest.h = 18;
-                            dest.y = m->value_y + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 1 : 0);
-                            for(k = 0; k < (d7->text->slen - d7->leftmost_position) && k < d7->visible_chars; k++)
-                            {
-                                dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * (k)-1;
-
-                                if(SDL_RenderCopy(cs->screen.renderer, font, &src, &dest))
-                                    printf("%s\n", SDL_GetError());
-                            }
-
-                            src.h = 16;
-                            src.w = 16;
-                            dest.w = 16;
-                            dest.h = 16;
-                        }
-
-                        if(d7->leftmost_position > 0)
-                        {
-                            src.x = 64;
-                            src.y = 80;
-                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                            {
-                                dest.x = m->value_x - ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars) - 16;
-                            }
-                            else
-                            {
-                                dest.x = m->value_x - 16;
-                            }
-                            dest.y = m->value_y + 1;
-
-                            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
-                        }
-
-                        if(d7->leftmost_position < d7->text->slen - d7->visible_chars)
-                        {
-                            src.x = 80;
-                            src.y = 80;
-                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                            {
-                                dest.x = m->value_x;
-                            }
-                            else
-                            {
-                                dest.x = m->value_x + ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars);
-                            }
-                            dest.y = m->value_y + 1;
-
-                            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
-                        }
-
-                        fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
-                        monofont = monofont_square;
-
-                        if(m->value_text_flags & DRAWTEXT_THIN_FONT)
-                            monofont = monofont_thin;
-                        if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
-                            monofont = monofont_small;
-                        if(m->value_text_flags & DRAWTEXT_TINY_FONT)
-                            monofont = monofont_tiny;
-                        if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
-                            monofont = monofont_fixedsys;
-
-                        gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, fmt);
-
-                        free(fmt);
-                        fmt = NULL;
+                        if(SDL_RenderCopy(cs->screen.renderer, font, &src, &dest))
+                            printf("%s\n", SDL_GetError());
                     }
 
-                    if(d7->active)
-                    {
-                        if(m->value_text_flags & DRAWTEXT_THIN_FONT)
-                        {
-                            src.x = 15 * 13;
-                            src.y = 2 * 18;
-                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                                dest.x = m->value_x - 13 * ((d7->text->slen > d7->visible_chars ? d7->visible_chars : d7->text->slen)) +
-                                         13 * (d7->position - d7->leftmost_position);
-                            else
-                                dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
-                            dest.y = m->value_y + 18;
-
-                            src.w = 13;
-                            dest.w = 13;
-                            src.h = 18;
-                            dest.h = 18;
-
-                            SDL_RenderCopy(cs->screen.renderer, font_thin, &src, &dest);
-
-                            src.w = 16;
-                            dest.w = 16;
-                            src.h = 16;
-                            dest.h = 16;
-                        }
-                        else
-                        {
-                            src.x = 15 * 16;
-                            src.y = 32;
-                            if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                                dest.x = m->value_x - 16 * ((d7->text->slen > d7->visible_chars ? d7->visible_chars : d7->text->slen)) +
-                                         16 * (d7->position - d7->leftmost_position);
-                            else
-                                dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
-                            dest.y = m->value_y + 16;
-
-                            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
-                        }
-                    }
+                    src.h = 16;
+                    src.w = 16;
+                    dest.w = 16;
+                    dest.h = 16;
                 }
-            }
 
-            if(m->type == MENU_TOGGLE)
-            {
-                d8 = (struct toggle_opt_data *)m->data;
+                if(d7->leftmost_position > 0)
+                {
+                    src.x = 64;
+                    src.y = 80;
+                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                    {
+                        dest.x = m->value_x - ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars) - 16;
+                    }
+                    else
+                    {
+                        dest.x = m->value_x - 16;
+                    }
+                    dest.y = m->value_y + 1;
+
+                    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                }
+
+                if(d7->leftmost_position < d7->text.size() - d7->visible_chars)
+                {
+                    src.x = 80;
+                    src.y = 80;
+                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                    {
+                        dest.x = m->value_x;
+                    }
+                    else
+                    {
+                        dest.x = m->value_x + ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars);
+                    }
+                    dest.y = m->value_y + 1;
+
+                    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                }
 
                 fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
                 monofont = monofont_square;
@@ -358,14 +293,76 @@ int gfx_drawmenu(game_t *g)
                 if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                     monofont = monofont_fixedsys;
 
-                if(*(d8->param))
-                    gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, monofont, fmt);
-                else
-                    gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, monofont, fmt);
+                gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, fmt);
 
                 free(fmt);
                 fmt = NULL;
+
+                if(d7->active)
+                {
+                    if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                    {
+                        src.x = 15 * 13;
+                        src.y = 2 * 18;
+                        if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                            dest.x = m->value_x - 13 * ((d7->text.size() > d7->visible_chars ? d7->visible_chars : d7->text.size())) +
+                                     13 * (d7->position - d7->leftmost_position);
+                        else
+                            dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
+                        dest.y = m->value_y + 18;
+
+                        src.w = 13;
+                        dest.w = 13;
+                        src.h = 18;
+                        dest.h = 18;
+
+                        SDL_RenderCopy(cs->screen.renderer, font_thin, &src, &dest);
+
+                        src.w = 16;
+                        dest.w = 16;
+                        src.h = 16;
+                        dest.h = 16;
+                    }
+                    else
+                    {
+                        src.x = 15 * 16;
+                        src.y = 32;
+                        if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                            dest.x = m->value_x - 16 * ((d7->text.size() > d7->visible_chars ? d7->visible_chars : d7->text.size())) +
+                                     16 * (d7->position - d7->leftmost_position);
+                        else
+                            dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
+                        dest.y = m->value_y + 16;
+
+                        SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                    }
+                }
             }
+        }
+
+        if(m->type == MENU_TOGGLE)
+        {
+            d8 = (struct toggle_opt_data *)m->data;
+
+            fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+            monofont = monofont_square;
+
+            if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                monofont = monofont_thin;
+            if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+                monofont = monofont_small;
+            if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+                monofont = monofont_tiny;
+            if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+                monofont = monofont_fixedsys;
+
+            if(*(d8->param))
+                gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, monofont, fmt);
+            else
+                gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, monofont, fmt);
+
+            free(fmt);
+            fmt = NULL;
         }
     }
 
@@ -376,7 +373,7 @@ int gfx_drawmenu(game_t *g)
     {
         for(i = 0; i < d->numopts; i++)
         {
-            d->menu[i]->render_update = 0;
+            d->menu[i].render_update = 0;
         }
 
         SDL_RenderCopy(cs->screen.renderer, d->target_tex, NULL, NULL);

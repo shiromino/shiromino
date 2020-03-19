@@ -4,11 +4,11 @@
     menus
 */
 
-#include "bstrlib.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+// TODO: Change malloc/free of structs containing std::string to new/delete.
+
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #include "core.h"
 #include "game_menu.h"
@@ -18,25 +18,26 @@
 #include "qrs.h"
 #include "replay.h"
 
-struct menu_opt *std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, bstring label)
+using namespace std;
+using namespace Shiro;
+
+struct menu_opt std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, string label)
 {
-    struct menu_opt *m = menu_opt_create(MENU_GAME_MULTIOPT, NULL, label);
-    struct game_multiopt_data *d6 = (struct game_multiopt_data *)m->data;
-    int i = 0;
+    struct menu_opt m = menu_opt_create(MENU_GAME_MULTIOPT, NULL, label);
+    struct game_multiopt_data *d6 = (struct game_multiopt_data *)m.data;
 
     d6->mode = QUINTESSE;
     d6->num = num_sections;
     d6->selection = 0;
-    d6->labels = (bstring *)malloc(num_sections * sizeof(bstring));
-    d6->labels[0] = NULL;
-    for(i = 1; i < num_sections; i++)
-    {
-        d6->labels[i] = bformat("%d", 100 * i);
+    d6->labels.push_back("");
+    for (int i = 1; i < num_sections; i++) {
+        stringstream ss;
+        ss << 100 * i;
+        d6->labels.push_back(ss.str());
     }
 
     d6->args = (struct game_args *)malloc(num_sections * sizeof(struct game_args));
-    for(i = 0; i < num_sections; i++)
-    {
+    for (int i = 0; i < num_sections; i++) {
         d6->args[i].num = 4;
         d6->args[i].ptrs = (void **)malloc(4 * sizeof(void *));
         d6->args[i].ptrs[0] = malloc(sizeof(coreState *));
@@ -53,21 +54,27 @@ struct menu_opt *std_game_multiopt_create(coreState *cs, unsigned int mode, int 
     return m;
 }
 
-struct menu_opt *menu_opt_create(int type, int (*value_update_callback)(coreState *cs), bstring label)
+// Temporary hack until menu_opt is fully C++'d.
+template<typename opt_data>
+void delete_opt_data(void* data) {
+    delete (opt_data*)data;
+}
+
+struct menu_opt menu_opt_create(int type, int (*value_update_callback)(coreState *cs), string label)
 {
-    struct menu_opt *m = (struct menu_opt *)malloc(sizeof(struct menu_opt));
+    struct menu_opt m;
 
-    m->type = type;
-    m->value_update_callback = value_update_callback;
-    m->label = label;
-    m->x = 0;
-    m->y = 0;
-    m->render_update = 1;
+    m.type = type;
+    m.value_update_callback = value_update_callback;
+    m.label = label;
+    m.x = 0;
+    m.y = 0;
+    m.render_update = 1;
 
-    m->label_text_flags = 0;
-    m->value_text_flags = 0;
-    m->label_text_rgba = RGBA_DEFAULT;
-    m->value_text_rgba = RGBA_DEFAULT;
+    m.label_text_flags = 0;
+    m.value_text_flags = 0;
+    m.label_text_rgba = RGBA_DEFAULT;
+    m.value_text_rgba = RGBA_DEFAULT;
 
     struct action_opt_data *d1 = NULL;
     struct multi_opt_data *d2 = NULL;
@@ -80,65 +87,73 @@ struct menu_opt *menu_opt_create(int type, int (*value_update_callback)(coreStat
     switch(type)
     {
         case MENU_LABEL:
-            m->data = NULL;
+            m.data = NULL;
+            m.deleteData = NULL;
             break;
 
         case MENU_ACTION:
-            m->data = (struct action_opt_data *)malloc(sizeof(struct action_opt_data));
-            d1 = (struct action_opt_data *)m->data;
+            m.data = (struct action_opt_data*)new action_opt_data;
+            m.deleteData = delete_opt_data<action_opt_data>;
+            d1 = (struct action_opt_data *)m.data;
             d1->action = NULL;
             d1->val = 0;
             break;
 
         case MENU_MULTIOPT:
-            m->data = (struct multi_opt_data *)malloc(sizeof(struct multi_opt_data));
-            d2 = (struct multi_opt_data *)m->data;
+            m.data = (struct multi_opt_data*)new multi_opt_data;
+            m.deleteData = delete_opt_data<multi_opt_data>;
+            d2 = (struct multi_opt_data *)m.data;
             d2->selection = 0;
             d2->num = 0;
             d2->vals = NULL;
-            d2->labels = NULL;
+            d2->labels.clear();
             break;
 
         case MENU_TEXTINPUT:
-            m->data = (struct text_opt_data *)malloc(sizeof(struct text_opt_data));
-            d7 = (struct text_opt_data *)m->data;
+            m.data = (struct text_opt_data*)new text_opt_data;
+            m.deleteData = delete_opt_data<text_opt_data>;
+            d7 = (struct text_opt_data *)m.data;
             d7->active = 0;
             d7->position = 0;
             d7->selection = 0;
             d7->leftmost_position = 0;
             d7->visible_chars = 15;
-            d7->text = bfromcstr("");
+            d7->text = "";
             break;
 
         case MENU_TOGGLE:
-            m->data = (struct toggle_opt_data *)malloc(sizeof(struct toggle_opt_data));
-            d3 = (struct toggle_opt_data *)m->data;
+            m.data = (struct toggle_opt_data*)new toggle_opt_data;
+            m.deleteData = delete_opt_data<toggle_opt_data>;
+            d3 = (struct toggle_opt_data *)m.data;
             d3->param = NULL;
-            d3->labels[0] = NULL;
-            d3->labels[1] = NULL;
+            d3->labels[0] = "";
+            d3->labels[1] = "";
             break;
 
         case MENU_GAME:
-            m->data = (struct game_opt_data *)malloc(sizeof(struct game_opt_data));
-            d4 = (struct game_opt_data *)m->data;
+            m.data = (struct game_opt_data*)new game_opt_data;
+            m.deleteData = delete_opt_data<game_opt_data>;
+            d4 = (struct game_opt_data *)m.data;
             d4->mode = MODE_INVALID;
             d4->args.num = 0;
             d4->args.ptrs = NULL;
             break;
 
         case MENU_GAME_MULTIOPT:
-            m->data = (struct game_multiopt_data *)malloc(sizeof(struct game_multiopt_data));
-            d6 = (struct game_multiopt_data *)m->data;
+            m.data = (game_multiopt_data*)new game_multiopt_data;
+            m.deleteData = delete_opt_data<game_multiopt_data>;
+            d6 = (struct game_multiopt_data *)m.data;
             d6->mode = MODE_INVALID;
             d6->num = 0;
             d6->selection = 0;
-            d6->labels = NULL;
+            d6->labels.clear();
             d6->args = NULL;
             break;
 
         case MENU_METAGAME:
-            m->data = (struct metagame_opt_data *)malloc(sizeof(struct metagame_opt_data));
-            d5 = (struct metagame_opt_data *)m->data;
+            m.data = (struct metagame_opt_data*)new metagame_opt_data;
+            m.deleteData = delete_opt_data<metagame_opt_data>;
+            d5 = (struct metagame_opt_data *)m.data;
             d5->mode = MODE_INVALID;
             d5->submode = MODE_INVALID;
             d5->num_args = 0;
@@ -148,18 +163,15 @@ struct menu_opt *menu_opt_create(int type, int (*value_update_callback)(coreStat
             break;
 
         default:
-            free(m);
-            return NULL;
+            m.data = NULL;
+            m.deleteData = NULL;
+            break;
     }
 
     return m;
 }
 
-void menu_opt_destroy(struct menu_opt *m)
-{
-    if(!m)
-        return;
-
+void menu_opt_destroy(struct menu_opt& m) {
     struct multi_opt_data *d2 = NULL;
     struct toggle_opt_data *d3 = NULL;
     struct game_opt_data *d4 = NULL;
@@ -168,38 +180,27 @@ void menu_opt_destroy(struct menu_opt *m)
     int i = 0;
     int j = 0;
 
-    switch(m->type)
+    switch(m.type)
     {
         case MENU_LABEL:
             break;
 
         case MENU_ACTION:
-            free(m->data);
             break;
 
         case MENU_MULTIOPT:
-            d2 = (struct multi_opt_data *)m->data;
+            d2 = (struct multi_opt_data *)m.data;
             free(d2->vals);
-
-            for(i = 0; i < d2->num; i++)
-            {
-                if(d2->labels[i])
-                    bdestroy(d2->labels[i]);
-            }
-
-            free(d2->labels);
-            free(d2);
             break;
 
         case MENU_TOGGLE:
-            d3 = (struct toggle_opt_data *)m->data;
-            bdestroy(d3->labels[0]);
-            bdestroy(d3->labels[1]);
-            free(m->data);
+            d3 = (struct toggle_opt_data *)m.data;
+            d3->labels[0] = "";
+            d3->labels[1] = "";
             break;
 
         case MENU_GAME:
-            d4 = (struct game_opt_data *)m->data;
+            d4 = (struct game_opt_data *)m.data;
             for(i = 0; i < d4->args.num; i++)
             {
                 if(d4->args.ptrs[i])
@@ -207,11 +208,10 @@ void menu_opt_destroy(struct menu_opt *m)
             }
 
             free(d4->args.ptrs);
-            free(m->data);
             break;
 
         case MENU_GAME_MULTIOPT:
-            d6 = (struct game_multiopt_data *)m->data;
+            d6 = (struct game_multiopt_data *)m.data;
             for(i = 0; i < d6->num; i++)
             {
                 if(d6->args[i].ptrs)
@@ -222,31 +222,29 @@ void menu_opt_destroy(struct menu_opt *m)
                     free(d6->args[i].ptrs);
                 }
 
-                if(d6->labels[i])
-                    bdestroy(d6->labels[i]);
+                d6->labels[i] = "";
             }
 
             free(d6->args);
-            free(m->data);
             break;
 
         case MENU_METAGAME: // TODO
-            // d5 = m->data;
-
-            // free(m->data);
+            // d5 = m.data;
             break;
 
         default:
             break;
     }
 
-    free(m);
+    if (m.deleteData != NULL) {
+        m.deleteData(m.data);
+    }
 }
 
 int menu_text_toggle(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -268,53 +266,46 @@ int menu_text_toggle(coreState *cs)
 int menu_text_insert(coreState *cs, char *str)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
-    bstring t = d7->text;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
 
-    bstring bstr = bfromcstr(str);
-
-    if(bstr)
+    if(str)
     {
         if(d7->selection)
         {
-            bdestroy(t);
-            d7->text = bstr;
+            d7->text = str;
             d7->selection = 0;
-            d7->position = bstr->slen;
+            d7->position = strlen(str);
             d7->leftmost_position = 0;
-            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text->slen - d7->visible_chars)
+            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
                 d7->leftmost_position = d7->position - d7->visible_chars + 1;
         }
         else
         {
-            if(binsert(t, d7->position, bstr, 0xFF) == BSTR_OK)
+            t.insert(d7->position, str);
+            if (t.size() > 2000)
             {
-                if(t->slen > 2000)
-                {
-                    btrunc(t, 2000);
-                    d7->position = 2000;
-                }
-                else
-                    d7->position += bstr->slen;
+                t.resize(2000);
+                d7->position = 2000;
+            }
+            else
+                d7->position += strlen(str);
 
-                if(d7->position == t->slen && d7->leftmost_position < t->slen - d7->visible_chars)
-                {
-                    d7->leftmost_position = t->slen - d7->visible_chars;
-                }
-
-                if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text->slen - d7->visible_chars)
-                    d7->leftmost_position = d7->position - d7->visible_chars + 1;
+            if(d7->position == t.size() && d7->leftmost_position < t.size() - d7->visible_chars)
+            {
+                d7->leftmost_position = t.size() - d7->visible_chars;
             }
 
-            bdestroy(bstr);
+            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
+                d7->leftmost_position = d7->position - d7->visible_chars + 1;
         }
     }
 
-    if(d->menu[d->selection]->value_update_callback)
-        d->menu[d->selection]->value_update_callback(cs);
+    if(d->menu[d->selection].value_update_callback)
+        d->menu[d->selection].value_update_callback(cs);
 
     return 0;
 }
@@ -322,8 +313,8 @@ int menu_text_insert(coreState *cs, char *str)
 int menu_text_backspace(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
-    bstring t = d7->text;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -331,20 +322,20 @@ int menu_text_backspace(coreState *cs)
     if(d7->selection)
     {
         d7->selection = 0;
-        btrunc(t, 0);
+        t.resize(0);
         d7->position = 0;
         d7->leftmost_position = 0;
     }
     else if(d7->position > 0)
     {
-        bdelete(t, d7->position - 1, 1);
+        t.replace(d7->position - 1, 1, "");
         d7->position--;
         if(d7->position < d7->leftmost_position + 1 && d7->leftmost_position)
             d7->leftmost_position--;
     }
 
-    if(d->menu[d->selection]->value_update_callback)
-        d->menu[d->selection]->value_update_callback(cs);
+    if(d->menu[d->selection].value_update_callback)
+        d->menu[d->selection].value_update_callback(cs);
 
     return 0;
 }
@@ -352,8 +343,8 @@ int menu_text_backspace(coreState *cs)
 int menu_text_delete(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
-    bstring t = d7->text;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -361,17 +352,17 @@ int menu_text_delete(coreState *cs)
     if(d7->selection)
     {
         d7->selection = 0;
-        btrunc(t, 0);
+        t.resize(0);
         d7->position = 0;
         d7->leftmost_position = 0;
     }
-    else if(d7->position < d7->text->slen)
+    else if(d7->position < d7->text.size())
     {
-        bdelete(t, d7->position, 1);
+        t.replace(d7->position, 1, "");
     }
 
-    if(d->menu[d->selection]->value_update_callback)
-        d->menu[d->selection]->value_update_callback(cs);
+    if(d->menu[d->selection].value_update_callback)
+        d->menu[d->selection].value_update_callback(cs);
 
     return 0;
 }
@@ -379,8 +370,8 @@ int menu_text_delete(coreState *cs)
 int menu_text_seek_left(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
-    // bstring t = d7->text;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    // string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -398,16 +389,16 @@ int menu_text_seek_left(coreState *cs)
 int menu_text_seek_right(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
-    bstring t = d7->text;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
 
-    if(d7->position < t->slen)
+    if(d7->position < t.size())
     {
         d7->position++;
-        if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text->slen - d7->visible_chars)
+        if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
             d7->leftmost_position++;
     }
 
@@ -417,7 +408,7 @@ int menu_text_seek_right(coreState *cs)
 int menu_text_seek_home(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -434,15 +425,15 @@ int menu_text_seek_home(coreState *cs)
 int menu_text_seek_end(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
-    bstring t = d7->text;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
 
-    if(d7->position < t->slen)
+    if(d7->position < t.size())
     {
-        d7->position = t->slen;
+        d7->position = t.size();
         d7->leftmost_position = d7->position - d7->visible_chars;
         if(d7->leftmost_position < 0)
             d7->leftmost_position = 0;
@@ -454,7 +445,7 @@ int menu_text_seek_end(coreState *cs)
 int menu_text_select_all(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -467,19 +458,19 @@ int menu_text_select_all(coreState *cs)
 int menu_text_copy(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
 
     if(d7->selection)
     {
-        SDL_SetClipboardText((char *)(d7->text->data));
+        SDL_SetClipboardText(d7->text.c_str());
         d7->selection = 0;
     }
 
-    if(d->menu[d->selection]->value_update_callback)
-        d->menu[d->selection]->value_update_callback(cs);
+    if(d->menu[d->selection].value_update_callback)
+        d->menu[d->selection].value_update_callback(cs);
 
     return 0;
 }
@@ -487,21 +478,21 @@ int menu_text_copy(coreState *cs)
 int menu_text_cut(coreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection]->data;
+    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
 
     if(d7->selection)
     {
-        SDL_SetClipboardText((char *)(d7->text->data));
+        SDL_SetClipboardText(d7->text.c_str());
         d7->selection = 0;
-        btrunc(d7->text, 0);
+        d7->text.resize(0);
         d7->position = 0;
     }
 
-    if(d->menu[d->selection]->value_update_callback)
-        d->menu[d->selection]->value_update_callback(cs);
+    if(d->menu[d->selection].value_update_callback)
+        d->menu[d->selection].value_update_callback(cs);
 
     return 0;
 }
@@ -522,11 +513,10 @@ game_t *menu_create(coreState *cs)
     g->frame = NULL;
     g->draw = gfx_drawmenu;
 
-    g->data = (menudata *)malloc(sizeof(menudata));
+    g->data = new menudata;
     menudata *d = (menudata *)(g->data);
 
     d->target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 640, 480);
-    d->menu = NULL;
     d->menu_id = -1;
     d->main_menu_data.selection = 0;
     d->main_menu_data.opt_selection = 0;
@@ -539,7 +529,7 @@ game_t *menu_create(coreState *cs)
     d->page_length = 0;
     d->page_text_x = 0;
     d->page_text_y = 0;
-    d->title = NULL;
+    d->title = "";
     d->x = 0;
     d->y = 0;
 
@@ -577,22 +567,13 @@ int menu_quit(game_t *g)
     menudata *d = (menudata *)(g->data);
     int i = 0;
 
-    if(d->menu)
-    {
-        for(i = 0; i < d->numopts; i++)
-        {
-            if(d->menu[i])
-                menu_opt_destroy(d->menu[i]);
+    if (d->menu.size()) {
+        for (i = 0; i < d->numopts; i++) {
+            menu_opt_destroy(d->menu[i]);
         }
-
-        free(d->menu);
-        d->menu = NULL;
     }
 
-    if(d->title)
-        bdestroy(d->title);
-
-    free(d);
+    delete d;
 
     return 0;
 }
@@ -635,10 +616,10 @@ int menu_input(game_t *g)
         }
     }
 
-    if(!d->menu)
+    if(!d->menu.size())
         return 0;
 
-    if(d->menu[d->selection]->type != MENU_TEXTINPUT)
+    if(d->menu[d->selection].type != MENU_TEXTINPUT)
     {
         cs->text_toggle = NULL;
         cs->text_insert = NULL;
@@ -668,13 +649,13 @@ int menu_input(game_t *g)
 
             if(i == -1)
                 i = d->numopts - 1;
-            if(d->menu[i]->type != MENU_LABEL)
+            if(d->menu[i].type != MENU_LABEL)
             {
                 d->selection = i;
                 if(cs->pressed.up == 1) {
                     cs->assets->menu_choose->play(*cs->settings);
                 }
-                if(d->menu[d->selection]->type == MENU_TEXTINPUT)
+                if(d->menu[d->selection].type == MENU_TEXTINPUT)
                 {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -726,18 +707,18 @@ int menu_input(game_t *g)
                 do
                 {
                     i--;
-                } while(d->menu[i]->type == MENU_LABEL);
+                } while(d->menu[i].type == MENU_LABEL);
 
                 break;
             }
 
-            if(d->menu[i]->type != MENU_LABEL)
+            if(d->menu[i].type != MENU_LABEL)
             {
                 d->selection = i;
                 if(cs->pressed.down == 1) {
                     cs->assets->menu_choose->play(*cs->settings);
                 }
-                if(d->menu[d->selection]->type == MENU_TEXTINPUT)
+                if(d->menu[d->selection].type == MENU_TEXTINPUT)
                 {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -795,7 +776,7 @@ int menu_input(game_t *g)
     {
         for(i = 0; i < d->numopts; i++)
         {
-            d->menu[i]->render_update = 1;
+            d->menu[i].render_update = 1;
         }
     }
 
@@ -804,7 +785,7 @@ int menu_input(game_t *g)
     else if(d->menu_id == MENU_ID_PRACTICE)
         d->practice_menu_data.selection = d->selection;
 
-    if(d->menu[d->selection]->type != MENU_TEXTINPUT)
+    if(d->menu[d->selection].type != MENU_TEXTINPUT)
     {
         cs->text_toggle = NULL;
         cs->text_insert = NULL;
@@ -819,12 +800,12 @@ int menu_input(game_t *g)
         cs->text_cut = NULL;
     }
 
-    m = d->menu[d->selection];
+    m = &d->menu[d->selection];
 
     switch(m->type)
     {
         case MENU_ACTION:
-            d1 = (struct action_opt_data *)d->menu[d->selection]->data;
+            d1 = (struct action_opt_data *)d->menu[d->selection].data;
 
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
@@ -847,7 +828,7 @@ int menu_input(game_t *g)
             break;
 
         case MENU_MULTIOPT:
-            d2 = (struct multi_opt_data *)d->menu[d->selection]->data;
+            d2 = (struct multi_opt_data *)d->menu[d->selection].data;
 
             if(!d->is_paged)
             {
@@ -856,16 +837,16 @@ int menu_input(game_t *g)
                 {
                     d2->selection--;
                     *(d2->param) = d2->vals[d2->selection];
-                    if(d->menu[d->selection]->value_update_callback)
-                        d->menu[d->selection]->value_update_callback(cs);
+                    if(d->menu[d->selection].value_update_callback)
+                        d->menu[d->selection].value_update_callback(cs);
                 }
 
                 if((cs->pressed.right || is_right_input_repeat(cs, DAS)) && d2->selection < (d2->num - 1))
                 {
                     d2->selection++;
                     *(d2->param) = d2->vals[d2->selection];
-                    if(d->menu[d->selection]->value_update_callback)
-                        d->menu[d->selection]->value_update_callback(cs);
+                    if(d->menu[d->selection].value_update_callback)
+                        d->menu[d->selection].value_update_callback(cs);
                 }
             }
 
@@ -875,22 +856,22 @@ int menu_input(game_t *g)
             break;
 
         case MENU_TOGGLE:
-            d3 = (struct toggle_opt_data *)d->menu[d->selection]->data;
+            d3 = (struct toggle_opt_data *)d->menu[d->selection].data;
 
             if(!d->is_paged)
             {
                 if(cs->pressed.a || cs->pressed.left || cs->pressed.right)
                 {
                     *(d3->param) = *(d3->param) ? false : true;
-                    if(d->menu[d->selection]->value_update_callback)
-                        d->menu[d->selection]->value_update_callback(cs);
+                    if(d->menu[d->selection].value_update_callback)
+                        d->menu[d->selection].value_update_callback(cs);
                 }
             }
 
             break;
 
         case MENU_GAME:
-            d4 = (struct game_opt_data *)d->menu[d->selection]->data;
+            d4 = (struct game_opt_data *)d->menu[d->selection].data;
 
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
@@ -934,7 +915,7 @@ int menu_input(game_t *g)
             break;
 
         case MENU_GAME_MULTIOPT:
-            d6 = (struct game_multiopt_data *)d->menu[d->selection]->data;
+            d6 = (struct game_multiopt_data *)d->menu[d->selection].data;
 
             if(!d->is_paged)
             {
@@ -995,7 +976,7 @@ int menu_input(game_t *g)
             break;
 
         case MENU_METAGAME:
-            d5 = (struct metagame_opt_data *)d->menu[d->selection]->data;
+            d5 = (struct metagame_opt_data *)d->menu[d->selection].data;
 
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
@@ -1041,20 +1022,18 @@ int menu_clear(game_t *g)
 
     int i = 0;
 
-    if(!d->menu)
+    if(!d->menu.size())
         return 0;
 
     for(i = 0; i < d->numopts; i++)
     {
-        if(d->menu[i])
-            menu_opt_destroy(d->menu[i]);
+        menu_opt_destroy(d->menu[i]);
     }
 
-    d->menu = NULL;
+    d->menu.clear();
     d->use_target_tex = 0;
 
-    if(d->title)
-        bdestroy(d->title);
+    d->title = "";
 
     d->x = 0;
     d->y = 0;
@@ -1097,22 +1076,21 @@ int mload_main(game_t *g, int val)
     cs->bg = cs->assets->bg_temp.tex;
     cs->bg_old = cs->bg;
 
-    d->menu = (struct menu_opt **)malloc(16 * sizeof(struct menu_opt *));
+    //d->menu.resize(16, menu_opt());
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
     d->numopts = 16;
-    d->title = bfromcstr("MAIN MENU");
+    d->title = "MAIN MENU";
     d->x = 4 * 16;
     d->y = 3 * 16;
 
-    d->menu[0] = std_game_multiopt_create(g->origin, MODE_PENTOMINO, 12, bfromcstr("PENTOMINO C"));
-    m = d->menu[0];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_PENTOMINO, 12, "PENTOMINO C"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
 
     d6->num++;
-    d6->labels = (bstring *)realloc(d6->labels, d6->num * sizeof(bstring));
-    d6->labels[d6->num - 1] = bfromcstr("ACID RAIN");
+    d6->labels.push_back("ACID RAIN");
     d6->args = (struct game_args *)realloc(d6->args, d6->num * sizeof(struct game_args));
 
     d6->args[d6->num - 1].num = 4;
@@ -1136,8 +1114,8 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[1] = std_game_multiopt_create(g->origin, MODE_G1_MASTER, 10, bfromcstr("G1 MASTER"));
-    m = d->menu[1];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G1_MASTER, 10, "G1 MASTER"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 1)
         d6->selection = d->main_menu_data.opt_selection;
@@ -1149,8 +1127,8 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[2] = std_game_multiopt_create(g->origin, MODE_G1_20G, 10, bfromcstr("G1 20G"));
-    m = d->menu[2];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G1_20G, 10, "G1 20G"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 2)
         d6->selection = d->main_menu_data.opt_selection;
@@ -1162,8 +1140,8 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[3] = std_game_multiopt_create(g->origin, MODE_G2_MASTER, 10, bfromcstr("G2 MASTER"));
-    m = d->menu[3];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_MASTER, 10, "G2 MASTER"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 3)
         d6->selection = d->main_menu_data.opt_selection;
@@ -1176,8 +1154,8 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0xFFFF40FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[4] = std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, bfromcstr("G2 DEATH"));
-    m = d->menu[4];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, "G2 DEATH"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 4)
         d6->selection = d->main_menu_data.opt_selection;
@@ -1190,8 +1168,8 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0xFF4040FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[5] = std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, bfromcstr("G3 TERROR"));
-    m = d->menu[5];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, "G3 TERROR"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 5)
         d6->selection = d->main_menu_data.opt_selection;
@@ -1204,8 +1182,8 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0xFF4040FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[6] = std_game_multiopt_create(g->origin, MODE_G2_MASTER | BIG_MODE, 10, bfromcstr("BIG MASTER"));
-    m = d->menu[6];
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_MASTER | BIG_MODE, 10, "BIG MASTER"));
+    m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 6)
         d6->selection = d->main_menu_data.opt_selection;
@@ -1218,37 +1196,39 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0x40FF40FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu[7] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("MULTI-EDITOR"));
-    m = d->menu[7];
+    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "MULTI-EDITOR"));
+    m = &d->menu.back();
     d1 = (struct action_opt_data *)m->data;
     d1->action = mload_practice;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 16 * 16;
 
-    d->menu[8] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("REPLAY"));
-    m = d->menu[8];
+    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "REPLAY"));
+    m = &d->menu.back();
     d1 = (struct action_opt_data *)m->data;
     d1->action = mload_replay;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 17 * 16;
 
-    d->menu[9] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("SETTINGS"));
-    m = d->menu[9];
+    d->menu.push_back(menu_opt_create(MENU_LABEL, NULL, "SETTINGS"));
+    m = &d->menu.back();
     m->x = 4 * 16;
     m->y = 20 * 16;
 
-    d->menu[10] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MASTER VOLUME"));
-    m = d->menu[10];
+    d->menu.push_back(menu_opt_create(MENU_MULTIOPT, NULL, "MASTER VOLUME"));
+    m = &d->menu.back();
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->masterVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    d2->labels = (bstring *)malloc(101 * sizeof(bstring));
+    d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
-        d2->labels[i] = bformat("%d", i);
+        stringstream ss;
+        ss << i;
+        d2->labels.push_back(ss.str());
         d2->vals[i] = i;
     }
     d2->selection = g->origin->settings->masterVolume;
@@ -1258,16 +1238,18 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu[11] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("SFX VOLUME"));
-    m = d->menu[11];
+    d->menu.push_back(menu_opt_create(MENU_MULTIOPT, NULL, "SFX VOLUME"));
+    m = &d->menu.back();
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->sfxVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    d2->labels = (bstring *)malloc(101 * sizeof(bstring));
+    d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
-        d2->labels[i] = bformat("%d", i);
+        stringstream ss;
+        ss << i;
+        d2->labels.push_back(ss.str());
         d2->vals[i] = i;
     }
     d2->selection = g->origin->settings->sfxVolume;
@@ -1277,16 +1259,18 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu[12] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("MUSIC VOLUME"));
-    m = d->menu[12];
+    d->menu.push_back(menu_opt_create(MENU_MULTIOPT, NULL, "MUSIC VOLUME"));
+    m = &d->menu.back();
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->musicVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    d2->labels = (bstring *)malloc(101 * sizeof(bstring));
+    d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
-        d2->labels[i] = bformat("%d", i);
+        stringstream ss;
+        ss << i;
+        d2->labels.push_back(ss.str());
         d2->vals[i] = i;
     }
     d2->selection = g->origin->settings->musicVolume;
@@ -1296,24 +1280,24 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu[13] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("LUA MODES"));
-    m = d->menu[13];
+    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "LUA MODES"));
+    m = &d->menu.back();
     d1 = (struct action_opt_data*)m->data;
     d1->action = menu_action_lua_modes;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 26 * 16;
 
-    d->menu[14] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("QUIT"));
-    m = d->menu[14];
+    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "QUIT"));
+    m = &d->menu.back();
     d1 = (struct action_opt_data *)m->data;
     d1->action = menu_action_quit;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 27 * 16;
 
-    d->menu[15] = menu_opt_create(MENU_LABEL, NULL, bfromcstr("Pentomino C rev 1.3"));
-    m = d->menu[15];
+    d->menu.push_back(menu_opt_create(MENU_LABEL, NULL, "Pentomino C rev 1.3"));
+    m = &d->menu.back();
     m->x = 638 - (19 * 15);
     m->y = 2;
     m->label_text_rgba = 0x808080A0;
@@ -1363,11 +1347,11 @@ int mload_practice(game_t *g, int val)
     cs->bg = NULL;
     cs->bg_old = NULL;
 
-    d->menu = (struct menu_opt **)malloc(MENU_PRACTICE_NUMOPTS * sizeof(struct menu_opt *));
+    d->menu.resize(MENU_PRACTICE_NUMOPTS);
     d->menu_id = MENU_ID_PRACTICE;
     d->selection = 0;
     d->numopts = MENU_PRACTICE_NUMOPTS;
-    d->title = NULL; // bfromcstr("PRACTICE");
+    d->title = ""; // "PRACTICE";
     d->x = 20 * 16;
     d->y = 2 * 16;
 
@@ -1375,8 +1359,8 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[0] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("RETURN"));
-    m = d->menu[0];
+    d->menu[0] = menu_opt_create(MENU_ACTION, NULL, "RETURN");
+    m = &d->menu[0];
     d1 = (struct action_opt_data *)m->data;
     d1->action = mload_main;
     d1->val = 0;
@@ -1388,8 +1372,8 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[1] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("PLAY"));
-    m = d->menu[1];
+    d->menu[1] = menu_opt_create(MENU_ACTION, NULL, "PLAY");
+    m = &d->menu[1];
     d1 = (struct action_opt_data *)m->data;
     d1->action = qs_game_pracinit;
     d1->val = 0;
@@ -1401,32 +1385,34 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[2] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("GRAVITY"));
-    m = d->menu[2];
+    d->menu[2] = menu_opt_create(MENU_MULTIOPT, NULL, "GRAVITY");
+    m = &d->menu[2];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 135;
     d2->param = &q->pracdata->usr_timings->grav;
     d2->vals = (int *)malloc(135 * sizeof(int));
-    d2->labels = (bstring *)malloc(135 * sizeof(bstring));
+    d2->labels.resize(135);
     for(i = 0; i < 128; i++)
     {
-        d2->labels[i] = bformat("%d", 2 * i);
+        stringstream ss;
+        ss << 2 * i;
+        d2->labels[i] = ss.str();
         d2->vals[i] = 2 * i;
     }
 
-    d2->labels[128] = bfromcstr("1G");
+    d2->labels[128] = "1G";
     d2->vals[128] = 256;
-    d2->labels[129] = bfromcstr("1.5G");
+    d2->labels[129] = "1.5G";
     d2->vals[129] = 256 + 128;
-    d2->labels[130] = bfromcstr("2G");
+    d2->labels[130] = "2G";
     d2->vals[130] = 2 * 256;
-    d2->labels[131] = bfromcstr("3G");
+    d2->labels[131] = "3G";
     d2->vals[131] = 3 * 256;
-    d2->labels[132] = bfromcstr("4G");
+    d2->labels[132] = "4G";
     d2->vals[132] = 4 * 256;
-    d2->labels[133] = bfromcstr("5G");
+    d2->labels[133] = "5G";
     d2->vals[133] = 5 * 256;
-    d2->labels[134] = bfromcstr("20G");
+    d2->labels[134] = "20G";
     d2->vals[134] = 20 * 256;
 
     if(pracdata_mirror_existed)
@@ -1480,18 +1466,20 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[3] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("LOCK"));
-    m = d->menu[3];
+    d->menu[3] = menu_opt_create(MENU_MULTIOPT, NULL, "LOCK");
+    m = &d->menu[3];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 101;
     d2->param = &q->pracdata->usr_timings->lock;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    d2->labels = (bstring *)malloc(101 * sizeof(bstring));
-    d2->labels[0] = bfromcstr("OFF");
+    d2->labels.resize(101);
+    d2->labels[0] = "OFF";
     d2->vals[0] = -1;
     for(i = 1; i < 101; i++)
     {
-        d2->labels[i] = bformat("%d", i - 1);
+        stringstream ss;
+        ss << i - 1;
+        d2->labels[i] = ss.str();
         d2->vals[i] = i - 1;
     }
 
@@ -1519,16 +1507,18 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[4] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("ARE"));
-    m = d->menu[4];
+    d->menu[4] = menu_opt_create(MENU_MULTIOPT, NULL, "ARE");
+    m = &d->menu[4];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->are;
     d2->vals = (int *)malloc(100 * sizeof(int));
-    d2->labels = (bstring *)malloc(100 * sizeof(bstring));
+    d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
-        d2->labels[i] = bformat("%d", i);
+        stringstream ss;
+        ss << i;
+        d2->labels[i] = ss.str();
         d2->vals[i] = i;
     }
 
@@ -1556,16 +1546,18 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[5] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("LINE ARE"));
-    m = d->menu[5];
+    d->menu[5] = menu_opt_create(MENU_MULTIOPT, NULL, "LINE ARE");
+    m = &d->menu[5];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineare;
     d2->vals = (int *)malloc(100 * sizeof(int));
-    d2->labels = (bstring *)malloc(100 * sizeof(bstring));
+    d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
-        d2->labels[i] = bformat("%d", i);
+        stringstream ss;
+        ss << i;
+        d2->labels[i] = ss.str();
         d2->vals[i] = i;
     }
 
@@ -1593,16 +1585,18 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[6] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("LINE CLEAR"));
-    m = d->menu[6];
+    d->menu[6] = menu_opt_create(MENU_MULTIOPT, NULL, "LINE CLEAR");
+    m = &d->menu[6];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineclear;
     d2->vals = (int *)malloc(100 * sizeof(int));
-    d2->labels = (bstring *)malloc(100 * sizeof(bstring));
+    d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
-        d2->labels[i] = bformat("%d", i);
+        stringstream ss;
+        ss << i;
+        d2->labels[i] = ss.str();
         d2->vals[i] = i;
     }
 
@@ -1630,16 +1624,18 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[7] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("DAS"));
-    m = d->menu[7];
+    d->menu[7] = menu_opt_create(MENU_MULTIOPT, NULL, "DAS");
+    m = &d->menu[7];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 99;
     d2->param = &q->pracdata->usr_timings->das;
     d2->vals = (int *)malloc(99 * sizeof(int));
-    d2->labels = (bstring *)malloc(99 * sizeof(bstring));
+    d2->labels.resize(99);
     for(i = 0; i < 99; i++)
     {
-        d2->labels[i] = bformat("%d", i + 1);
+        stringstream ss;
+        ss << i + 1;
+        d2->labels[i] = ss.str();
         d2->vals[i] = i + 1;
     }
 
@@ -1667,16 +1663,18 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[8] = menu_opt_create(MENU_MULTIOPT, qs_update_pracdata, bfromcstr("WIDTH"));
-    m = d->menu[8];
+    d->menu[8] = menu_opt_create(MENU_MULTIOPT, qs_update_pracdata, "WIDTH");
+    m = &d->menu[8];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 5;
     d2->param = &q->pracdata->field_w;
     d2->vals = (int *)malloc(5 * sizeof(int));
-    d2->labels = (bstring *)malloc(5 * sizeof(bstring));
+    d2->labels.resize(5);
     for(i = 0; i < 5; i++)
     {
-        d2->labels[i] = bformat("%d", 2 * (i + 2));
+        stringstream ss;
+        ss << 2 * (i + 2);
+        d2->labels[i] = ss.str();
         d2->vals[i] = 2 * (i + 2);
     }
 
@@ -1701,17 +1699,19 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[9] = menu_opt_create(MENU_MULTIOPT, qs_update_pracdata, bfromcstr("GAME TYPE"));
-    m = d->menu[9];
+    d->menu[9] = menu_opt_create(MENU_MULTIOPT, qs_update_pracdata, "GAME TYPE");
+    m = &d->menu[9];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 4;
     d2->param = &q->pracdata->game_type;
     d2->vals = (int *)malloc(4 * sizeof(int));
-    d2->labels = (bstring *)malloc(4 * sizeof(bstring));
-    d2->labels[0] = bfromcstr("QRS");
-    d2->labels[1] = bfromcstr("G1");
-    d2->labels[2] = bfromcstr("G2");
-    d2->labels[3] = bfromcstr("G3");
+    d2->labels.clear();
+    d2->labels.resize(4);
+    d2->labels.resize(4);
+    d2->labels[0] = "QRS";
+    d2->labels[1] = "G1";
+    d2->labels[2] = "G2";
+    d2->labels[3] = "G3";
     d2->vals[0] = 0;
     d2->vals[1] = SIMULATE_G1;
     d2->vals[2] = SIMULATE_G2;
@@ -1754,12 +1754,12 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[10] = menu_opt_create(MENU_TOGGLE, qs_update_pracdata, bfromcstr("INVISIBLE"));
-    m = d->menu[10];
+    d->menu[10] = menu_opt_create(MENU_TOGGLE, qs_update_pracdata, "INVISIBLE");
+    m = &d->menu[10];
     d8 = (struct toggle_opt_data *)m->data;
     d8->param = &q->pracdata->invisible;
-    d8->labels[0] = bfromcstr("OFF");
-    d8->labels[1] = bfromcstr("ON");
+    d8->labels[0] = "OFF";
+    d8->labels[1] = "ON";
     m->x = 16 * 16;
     m->y = 8 * 16 + 9 * 16;
     m->value_x = m->x + 15 * 8;
@@ -1771,12 +1771,12 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[11] = menu_opt_create(MENU_TOGGLE, qs_update_pracdata, bfromcstr("BRACKETS"));
-    m = d->menu[11];
+    d->menu[11] = menu_opt_create(MENU_TOGGLE, qs_update_pracdata, "BRACKETS");
+    m = &d->menu[11];
     d8 = (struct toggle_opt_data *)m->data;
     d8->param = &q->pracdata->brackets;
-    d8->labels[0] = bfromcstr("OFF");
-    d8->labels[1] = bfromcstr("ON");
+    d8->labels[0] = "OFF";
+    d8->labels[1] = "ON";
     m->x = 16 * 16;
     m->y = 8 * 16 + 10 * 16;
     m->value_x = m->x + 15 * 8;
@@ -1788,12 +1788,12 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[12] = menu_opt_create(MENU_TOGGLE, NULL, bfromcstr("INFINITE\nFLOORKICKS"));
-    m = d->menu[12];
+    d->menu[12] = menu_opt_create(MENU_TOGGLE, NULL, "INFINITE\nFLOORKICKS");
+    m = &d->menu[12];
     d8 = (struct toggle_opt_data *)m->data;
     d8->param = &q->pracdata->infinite_floorkicks;
-    d8->labels[0] = bfromcstr("OFF");
-    d8->labels[1] = bfromcstr("ON");
+    d8->labels[0] = "OFF";
+    d8->labels[1] = "ON";
     m->x = 16 * 16;
     m->y = 8 * 16 + 11 * 16;
     m->value_x = m->x + 15 * 8;
@@ -1806,16 +1806,17 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[13] = menu_opt_create(MENU_MULTIOPT, NULL, bfromcstr("LOCK PROTECT"));
-    m = d->menu[13];
+    d->menu[13] = menu_opt_create(MENU_MULTIOPT, NULL, "LOCK PROTECT");
+    m = &d->menu[13];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 3;
     d2->param = &q->pracdata->lock_protect;
     d2->vals = (int *)malloc(3 * sizeof(int));
-    d2->labels = (bstring *)malloc(3 * sizeof(bstring));
-    d2->labels[0] = bfromcstr("DEFAULT");
-    d2->labels[1] = bfromcstr("OFF");
-    d2->labels[2] = bfromcstr("ON");
+    d2->labels.clear();
+    d2->labels.resize(3);
+    d2->labels[0] = "DEFAULT";
+    d2->labels[1] = "OFF";
+    d2->labels[2] = "ON";
     d2->vals[0] = -1;
     d2->vals[1] = 0;
     d2->vals[2] = 1;
@@ -1843,8 +1844,8 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[MENU_PRACTICE_NUMOPTS - 1] = menu_opt_create(MENU_TEXTINPUT, qs_update_pracdata, bfromcstr("PIECE SEQUENCE"));
-    m = d->menu[MENU_PRACTICE_NUMOPTS - 1];
+    d->menu[MENU_PRACTICE_NUMOPTS - 1] = menu_opt_create(MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE");
+    m = &d->menu[MENU_PRACTICE_NUMOPTS - 1];
     d7 = (struct text_opt_data *)m->data;
     d7->visible_chars = 16;
     m->x = 16 * 16;
@@ -1874,7 +1875,7 @@ int mload_options(game_t *g, int val)
         d->menu = malloc(8 * sizeof(menu_opt *));
         d->selection = 0;
         d->numopts = 8;
-        d->title = bfromcstr("CONTROLS");
+        d->title = "CONTROLS";
         d->x = 4;
         d->y = 3;
     */
@@ -1897,12 +1898,11 @@ int mload_replay(game_t *g, int val)
 
     menu_clear(g); // data->menu guaranteed to be NULL upon return
 
-    d->menu = NULL;
     d->menu_id = MENU_ID_REPLAY;
     d->use_target_tex = 1;
     d->selection = 0;
     d->numopts = 0;
-    d->title = bfromcstr("REPLAY");
+    d->title = "REPLAY";
     d->x = 20;
     d->y = 16;
 
@@ -1915,9 +1915,9 @@ int mload_replay(game_t *g, int val)
     if(replaylist)
     {
         d->numopts = replayCount + 1;
-        d->menu = (struct menu_opt **)malloc(d->numopts * sizeof(struct menu_opt *));
-        d->menu[0] = menu_opt_create(MENU_ACTION, NULL, bfromcstr("RETURN"));
-        m = d->menu[0];
+        d->menu.resize(d->numopts);
+        d->menu[0] = menu_opt_create(MENU_ACTION, NULL, "RETURN");
+        m = &d->menu[0];
         d1 = (struct action_opt_data *)m->data;
         d1->action = mload_main;
         d1->val = 0;
@@ -1927,15 +1927,15 @@ int mload_replay(game_t *g, int val)
 
         for(int i = 1; i < replayCount + 1; i++)
         {
-            d->menu[i] = menu_opt_create(MENU_GAME, NULL, NULL);
+            d->menu[i] = menu_opt_create(MENU_GAME, NULL, "");
             r = &replaylist[i - 1];
 
             char replayDescriptor[BUF_SIZE];
 
             get_replay_descriptor(r, replayDescriptor, BUF_SIZE);
 
-            d->menu[i]->label = bfromcstr(replayDescriptor);
-            m = d->menu[i];
+            d->menu[i].label = replayDescriptor;
+            m = &d->menu[i];
             d4 = (struct game_opt_data *)m->data;
             d4->mode = QUINTESSE;
             d4->args.num = 4;

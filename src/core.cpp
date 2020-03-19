@@ -283,9 +283,6 @@ void coreState_initialize(coreState *cs)
     cs->bg_old = NULL;
     // cs->anim_bg = NULL;
     // cs->anim_bg_old = NULL;
-    cs->gfx_messages = NULL;
-    cs->gfx_animations = NULL;
-    cs->gfx_buttons = NULL;
     cs->gfx_messages_max = 0;
     cs->gfx_animations_max = 0;
     cs->gfx_buttons_max = 0;
@@ -415,18 +412,19 @@ int load_files(coreState *cs)
 #undef SFX
     }
 
-    /*
+#if 0
     #ifdef ENABLE_ANIM_BG
-       bstring filename;
+       string filename;
 
-       for(i = 0; i < 10; i++) {
-          filename = bformat("g2_bg/bg%d", i);
-          cs->g2_bgs[i] = load_anim_bg(cs, filename->data, 2);
+       for(int i = 0; i < 10; i++) {
+          stringstream ss;
+          ss << "g2_bg/bg" << i;
+          filename = ss.str();
+          cs->g2_bgs[i] = load_anim_bg(cs, filename.c_str(), 2);
           //if(cs->g2_bgs[i]) printf("Successfully loaded G2 bg #%d\n", i);
-          bdestroy(filename);
        }
     #endif
-    */
+#endif
     return 0;
 }
 
@@ -868,24 +866,22 @@ int run(coreState *cs)
 
         if (newFrames > 0u) {
             for (int i = 0; i < cs->gfx_messages_max; i++) {
-                if (cs->gfx_messages[i] && cs->gfx_messages[i]->counter) {
-                    if (cs->gfx_messages[i]->counter > newFrames) {
-                        cs->gfx_messages[i]->counter -= newFrames;
+                if (cs->gfx_messages[i].counter) {
+                    if (cs->gfx_messages[i].counter > newFrames) {
+                        cs->gfx_messages[i].counter -= newFrames;
                     }
                     else {
-                        cs->gfx_messages[i]->counter = 0u;
+                        cs->gfx_messages[i].counter = 0u;
                     }
                 }
             }
 
             for (int i = 0; i < cs->gfx_animations_max; i++) {
-                if (cs->gfx_animations[i]) {
-                    if (cs->gfx_animations[i]->counter + newFrames < static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier * cs->gfx_animations[i]->num_frames)) {
-                       cs->gfx_animations[i]->counter += newFrames;
-                    }
-                    else {
-                        cs->gfx_animations[i]->counter = static_cast<unsigned>(cs->gfx_animations[i]->frame_multiplier * cs->gfx_animations[i]->num_frames);
-                    }
+                if (cs->gfx_animations[i].counter + newFrames < static_cast<unsigned>(cs->gfx_animations[i].frame_multiplier * cs->gfx_animations[i].num_frames)) {
+                   cs->gfx_animations[i].counter += newFrames;
+                }
+                else {
+                    cs->gfx_animations[i].counter = static_cast<unsigned>(cs->gfx_animations[i].frame_multiplier * cs->gfx_animations[i].num_frames);
                 }
             }
         }
@@ -1802,11 +1798,10 @@ int gfx_buttons_input(coreState *cs)
     if(!cs)
         return -1;
 
-    if(!cs->gfx_buttons)
+    if(!cs->gfx_buttons.size())
         return 1;
 
     int i = 0;
-    gfx_button *b = NULL;
 
     int scaled_x = 0;
     int scaled_y = 0;
@@ -1819,26 +1814,21 @@ int gfx_buttons_input(coreState *cs)
         scale = cs->settings->videoScale;
     }
 
-    for(i = 0; i < cs->gfx_buttons_max; i++)
-    {
-        if(!cs->gfx_buttons[i])
-            continue;
+    for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
+        gfx_button& b = *it;
+        scaled_x = scale * b.x;
+        scaled_y = scale * b.y;
+        scaled_w = scale * b.w;
+        scaled_h = scale * b.h;
 
-        b = cs->gfx_buttons[i];
-        scaled_x = scale * b->x;
-        scaled_y = scale * b->y;
-        scaled_w = scale * b->w;
-        scaled_h = scale * b->h;
-
-        if(cs->button_emergency_override && !(cs->gfx_buttons[i]->flags & BUTTON_EMERGENCY))
+        if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {
-            cs->gfx_buttons[i]->highlighted = 0;
-            if(b->delete_check)
+            b.highlighted = 0;
+            if(b.delete_check)
             {
-                if(b->delete_check(cs))
+                if(b.delete_check(cs))
                 {
-                    gfx_button_destroy(b);
-                    cs->gfx_buttons[i] = NULL;
+                    cs->gfx_buttons.erase(it);
                 }
             }
 
@@ -1847,60 +1837,53 @@ int gfx_buttons_input(coreState *cs)
 
         if(cs->mouse_x < scaled_x + scaled_w && cs->mouse_x >= scaled_x && cs->mouse_y < scaled_y + scaled_h &&
            cs->mouse_y >= scaled_y)
-            b->highlighted = 1;
+            b.highlighted = 1;
         else
-            b->highlighted = 0;
+            b.highlighted = 0;
 
-        if(b->highlighted && cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+        if(b.highlighted && cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
         {
-            if(b->action)
+            if(b.action)
             {
-                b->action(cs, b->data);
+                b.action(cs, b.data);
             }
 
-            b->clicked = 4;
+            b.clicked = 4;
         }
-        if (b->clicked) {
-            b->clicked--;
+        if (b.clicked) {
+            b.clicked--;
         }
 
-        if(b->delete_check && (!b->clicked || b->flags & BUTTON_EMERGENCY))
+        if(b.delete_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
         {
-            if(b->delete_check(cs))
+            if(b.delete_check(cs))
             {
-                gfx_button_destroy(b);
-                cs->gfx_buttons[i] = NULL;
+                cs->gfx_buttons.erase(it);
             }
         }
     }
 
-    for(i = 0; i < cs->gfx_buttons_max; i++)
-    {
-        if(!cs->gfx_buttons[i])
-            continue;
+    for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
+        gfx_button& b = cs->gfx_buttons[i];
 
-        b = cs->gfx_buttons[i];
-
-        if(cs->button_emergency_override && !(cs->gfx_buttons[i]->flags & BUTTON_EMERGENCY))
+        if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {
-            if(b->delete_check)
+            if(b.delete_check)
             {
-                if(b->delete_check(cs))
+                if(b.delete_check(cs))
                 {
-                    gfx_button_destroy(b);
-                    cs->gfx_buttons[i] = NULL;
+                    cs->gfx_buttons.erase(it);
                 }
             }
 
             continue;
         }
 
-        if(b->delete_check && (!b->clicked || b->flags & BUTTON_EMERGENCY))
+        if(b.delete_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
         {
-            if(b->delete_check(cs))
+            if(b.delete_check(cs))
             {
-                gfx_button_destroy(b);
-                cs->gfx_buttons[i] = NULL;
+                cs->gfx_buttons.erase(it);
             }
         }
     }

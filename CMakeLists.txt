@@ -66,7 +66,6 @@ configure_file(include/Config.hpp.in Config.hpp)
 
 set(SOURCES
     src/Audio.cpp
-    src/bstrlib.cpp
     src/core.cpp
     src/game_menu.cpp
     src/game_qs.cpp
@@ -101,8 +100,6 @@ set(SOURCES
 
 set(HEADERS
     src/Audio.hpp
-    src/bstr_to_std.hpp
-    src/bstrlib.h
     src/core.h
     src/Debug.hpp
     src/fonts.h

@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
                 }
 
                 iniFilename = callingPath + slash + iniFilename;
-                cs.iniFilename = (char*)malloc(iniFilename.length() + 1);
+                cs.iniFilename = (char*)malloc(iniFilename.size() + 1);
                 strcpy(cs.iniFilename, iniFilename.c_str());
             }
             else if (argc >= 2) {
