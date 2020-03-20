@@ -14,7 +14,7 @@ Timer& Timer::operator++() {
     if (time < UINT64_MAX) {
         time++;
     }
-    return Timer(*this);
+    return *this;
 }
 
 Timer Timer::operator++(int) {
@@ -27,7 +27,7 @@ Timer& Timer::operator--() {
     if (time > 0) {
         time--;
     }
-    return Timer(*this);
+    return *this;
 }
 
 Timer Timer::operator--(int) {
