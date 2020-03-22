@@ -1,7 +1,8 @@
-# shiromino
+# Shiromino
 
 ## Building
-Dependencies: CMake, SDL2 (version >= 2.0.5), SDL2_image, SDL2_mixer, SQLite3
+Dependencies: CMake, SDL2 (version >= 2.0.5), SDL2_image, SDL2_mixer, OGG,
+vorbis, vorbisfile, SQLite3
 
 Create a directory to build in somewhere, change to that directory, run `cmake
 <shiromino-source-base-directory>` in the build directory, then build with the
