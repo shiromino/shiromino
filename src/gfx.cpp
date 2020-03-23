@@ -12,6 +12,7 @@
 #include "Grid.hpp"
 #include "piecedef.h"
 #include "qrs.h"
+#include "stringtools.hpp"
 #include "Timer.hpp"
 
 using namespace Shiro;
@@ -1069,19 +1070,11 @@ int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, in
     std::size_t i = 0;
 
     std::size_t linefeeds = 0;
+
     std::size_t last_wrap_line_pos = 0;
     std::size_t last_wrap_pos = 0;
 
-    vector<string> lines;
-    {
-        string textSubstr = text;
-        string::size_type pos = 0;
-        do {
-            pos = textSubstr.find('\n');
-            lines.push_back(textSubstr.substr(0, pos));
-            textSubstr.erase(0, pos + 1);
-        } while (pos != string::npos);
-    }
+    vector<string> lines = strtools::split(text, '\n');
 
     bool using_target_tex = false;
 

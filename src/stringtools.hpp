@@ -1,5 +1,4 @@
-#ifndef _stringtools_hpp
-#define _stringtools_hpp
+#pragma once
 
 #include <memory>
 #include <string>
@@ -49,5 +48,3 @@ inline std::vector<std::string> words(std::string s)
 }
 
 } // namespace strtools
-
-#endif

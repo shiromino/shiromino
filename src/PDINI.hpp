@@ -101,7 +101,6 @@ namespace PDINI {
                 }
 
                 if (!matched && readStatus.second == 0) {
-                    printf("%zu: %s\n", invalidLineNum, line.c_str());
                     readStatus.second = invalidLineNum;
                 }
             }
@@ -139,12 +138,12 @@ namespace PDINI {
 
             // Write non-null sections.
             if (sections.size()) {
-                const auto section = *sections.begin();
+                const auto& section = *sections.begin();
                 file << "[" << rawSectionNames[section.first] << "]" << '\n';
                 for (const auto& keyValue : section.second) {
                     file << rawKeyNames[keyValue.first] << " = " << keyValue.second << '\n';
                 }
-                decltype(sections)::node_type firstHandle = sections.extract(sections.begin());
+                auto firstHandle = sections.extract(sections.begin());
                 for (const auto& section : sections) {
                     file << "\n[" << rawSectionNames[section.first] << "]" << '\n';
                     for (const auto& keyValue : section.second) {
@@ -230,7 +229,7 @@ namespace PDINI {
         void set(const std::string sectionName, const std::string keyName, const T value, const std::ios_base::fmtflags flags = std::ios_base::dec) {
             std::ostringstream stream;
             stream.setf(flags);
-            stream << std::move(value);
+            stream << value;
             set(sectionName, keyName, stream.str());
         }
 
