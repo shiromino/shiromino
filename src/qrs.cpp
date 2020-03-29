@@ -969,7 +969,7 @@ int qrs_start_record(game_t *g)
     return 0;
 }
 
-int qrs_end_record(game_t *g)
+int qrs_end_record(game_t* g)
 {
     qrsdata *q = (qrsdata *)g->data;
 

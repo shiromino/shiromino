@@ -4,6 +4,7 @@
 
 #define MAX_KEYFLAGS 72000 // 20 minutes of inputs (@ 60 fps)
 
+#include <string>
 #include <ctime>
 #include <cstdint>
 
@@ -37,7 +38,7 @@ struct replay
     struct packed_input pinputs[MAX_KEYFLAGS];
 };
 
-void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength);
+std::string get_replay_descriptor(struct replay *r);
 
 void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, size_t bufferLength);
 

@@ -161,14 +161,11 @@ void scoredb_update_player(struct scoredb *s, struct player *p)
     sqlite3_finalize(sql);
 }
 
-#define REPLAY_DESCRIPTOR_BUF_SIZE 64
 void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
 {
     sqlite3_stmt *sql;
     try {
-        char replayDescriptor[REPLAY_DESCRIPTOR_BUF_SIZE];
-
-        get_replay_descriptor(r, replayDescriptor, REPLAY_DESCRIPTOR_BUF_SIZE);
+        string replayDescriptor = get_replay_descriptor(r);
 
         const char insertSql[] =
             "INSERT INTO scores (mode, playerId, grade, startLevel, level, time, replay, date) "
@@ -190,7 +187,7 @@ void scoredb_add(struct scoredb *s, struct player* p, struct replay *r)
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(s->db));
 
-        printf("Wrote replay (%zu): %s\n", replayLen, replayDescriptor);
+        printf("Wrote replay (%zu): %s\n", replayLen, replayDescriptor.c_str());
     }
     catch (const logic_error& error) {
     }

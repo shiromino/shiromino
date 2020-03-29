@@ -2,11 +2,14 @@
 
 #include "game_qs.h"
 
+#include <sstream>
+#include <iomanip>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
 using namespace Shiro;
+using namespace std;
 
 // clang-format off
 enum packed_input_mask {
@@ -49,30 +52,29 @@ void unpack_input(struct packed_input p, struct keyflags *out_keys)
 }
 // clang-format on
 
-#define REPLAY_DESCRIPTOR_BUF_SIZE 32
-void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
+std::string get_replay_descriptor(struct replay *r)
 {
-    char modeStringBuffer[REPLAY_DESCRIPTOR_BUF_SIZE];
+    string modeString;
 
     switch(r->mode)
     {
         case MODE_PENTOMINO:
-            strncpy(modeStringBuffer, "PENTOMINO", REPLAY_DESCRIPTOR_BUF_SIZE);
+            modeString = "PENTOMINO";
             break;
         case MODE_G2_DEATH:
-            strncpy(modeStringBuffer, "G2 DEATH", REPLAY_DESCRIPTOR_BUF_SIZE);
+            modeString = "G2 DEATH";
             break;
         case MODE_G3_TERROR:
-            strncpy(modeStringBuffer, "G3 TERROR", REPLAY_DESCRIPTOR_BUF_SIZE);
+            modeString = "G3 TERROR";
             break;
         case MODE_G1_20G:
-            strncpy(modeStringBuffer, "G1 20G", REPLAY_DESCRIPTOR_BUF_SIZE);
+            modeString = "G1 20G";
             break;
         case MODE_G1_MASTER:
-            strncpy(modeStringBuffer, "G1 MASTER", REPLAY_DESCRIPTOR_BUF_SIZE);
+            modeString = "G1 MASTER";
             break;
         case MODE_G2_MASTER:
-            strncpy(modeStringBuffer, "G2 MASTER", REPLAY_DESCRIPTOR_BUF_SIZE);
+            modeString = "G2 MASTER";
             break;
         default:
             break;
@@ -80,10 +82,26 @@ void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
 
     Timer t(60.0, r->time);
 
-    char dateBuffer[REPLAY_DESCRIPTOR_BUF_SIZE];
-    struct tm *ts = localtime(&r->date);
-    strftime(dateBuffer, REPLAY_DESCRIPTOR_BUF_SIZE, "%Y.%m.%d", ts);
+    string dateString;
+    tm *ts = localtime(&r->date);
+    stringstream dateSS;
+    dateSS << put_time(ts, "%Y.%m.%d");
+    dateString = dateSS.str();
 
+    stringstream returnSS;
+    returnSS <<
+        get_grade_name(r->grade) << "  " <<
+        setfill(' ') << left << setw(10) << modeString << " " <<
+        right << setw(4) << r->starting_level << "-" <<
+        left << setw(4) << r->ending_level << "  " <<
+        setfill('0') << right <<
+        setw(2) << t.min() << ":" <<
+        setw(2) << t.sec() << ":" <<
+        setw(2) << t.csec() << "   " <<
+        dateString;
+    return returnSS.str();
+
+    /*
     snprintf(buffer,
              bufferLength,
              "%s  %-10s %4d-%-4d  %02d:%02d:%02d   %s",
@@ -95,6 +113,7 @@ void get_replay_descriptor(struct replay *r, char *buffer, size_t bufferLength)
              t.sec() % 60,//timegetsec(t) % 60,
              t.csec(),//timegetmsec(t) / 10,
              dateBuffer);
+    */
 }
 
 // TODO: Use SDL endianness functions to ensure replay data is stored little

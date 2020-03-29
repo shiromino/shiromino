@@ -1930,11 +1930,7 @@ int mload_replay(game_t *g, int val)
             d->menu[i] = menu_opt_create(MENU_GAME, NULL, "");
             r = &replaylist[i - 1];
 
-            char replayDescriptor[BUF_SIZE];
-
-            get_replay_descriptor(r, replayDescriptor, BUF_SIZE);
-
-            d->menu[i].label = replayDescriptor;
+            d->menu[i].label = get_replay_descriptor(r);
             m = &d->menu[i];
             d4 = (struct game_opt_data *)m->data;
             d4->mode = QUINTESSE;
