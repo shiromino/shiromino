@@ -97,7 +97,7 @@ std::string get_replay_descriptor(struct replay *r)
         setfill('0') << right <<
         setw(2) << t.min() << ":" <<
         setw(2) << t.sec() % 60 << ":" <<
-        setw(2) << t.csec() << "   " <<
+        setw(2) << t.csec() % 100 << "   " <<
         dateString;
     return returnSS.str();
 
