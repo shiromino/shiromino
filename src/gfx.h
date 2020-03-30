@@ -7,7 +7,7 @@
 #include "core.h"
 #include "Grid.hpp"
 #include "Timer.hpp"
-#include "piecedef.h"
+#include "PieceDef.hpp"
 #include "gfx_structures.h"
 
 #define QRS_FIELD_X 4
@@ -98,5 +98,5 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
 
 int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext_partial(coreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawpiece(coreState *cs, Shiro::Grid *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
+int gfx_drawpiece(coreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
 int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba);

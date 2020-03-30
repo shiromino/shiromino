@@ -1,113 +1,51 @@
-#include "SDL.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "Grid.hpp"
-#include "piecedef.h"
+#include "PieceDef.hpp"
 
 using namespace Shiro;
+using namespace std;
 
-piecedef *piecedef_create()
-{
-    piecedef* pd = new piecedef;
+PieceDef::PieceDef() :
+    qrsID(0),
+    flags(PDNONE),
+    anchorX(0),
+    anchorY(0) {}
 
-    pd->qrs_id = 0;
-    pd->flags = 0;
-    pd->anchorx = 0;
-    pd->anchory = 0;
-
-    for (int i = 0; i < 4; i++) {
-        pd->rotation_tables[i] = Grid(4, 4);
+bool PieceDef::setWidth(int width) {
+    if (width < 1) {
+        return true;
     }
 
-    return pd;
-}
-
-void piecedef_destroy(piecedef *pd)
-{
-    delete pd;
-}
-
-piecedef *piecedef_cpy(piecedef *pd)
-{
-    if(!pd)
-        return NULL;
-
-    piecedef* pd_new = new piecedef;
-
-    pd_new->qrs_id = pd->qrs_id;
-    pd_new->flags = pd->flags;
-    pd_new->anchorx = pd->anchorx;
-    pd_new->anchory = pd->anchory;
-
-    int i = 0;
-    for(i = 0; i < 4; i++)
-        pd_new->rotation_tables[i] = pd->rotation_tables[i];
-
-    return pd_new;
-}
-
-int pdsetw(piecedef *pd, int w)
-{
-    if(!pd)
-        return -1;
-    if(w < 1)
-        return 1;
-    if(pd->rotation_tables[0].getWidth() == w)
-        return 0;
-
-    int i = 0;
-
-    for(i = 0; i < 4; i++)
-    {
-        pd->rotation_tables[i].setWidth(w);
+    if (rotationTable[0].getWidth() == width) {
+        return false;
     }
 
-    return 0;
+    for (auto& rotation : rotationTable) {
+        rotation.setWidth(width);
+    }
+    return false;
 }
 
-int pdseth(piecedef *pd, int h)
-{
-    if(!pd)
-        return -1;
-    if(h < 1)
-        return 1;
-    if(pd->rotation_tables[0].getHeight() == h)
-        return 0;
-
-    int i = 0;
-
-    for(i = 0; i < 4; i++)
-    {
-        pd->rotation_tables[i].setHeight(h);
+bool PieceDef::setHeight(int height) {
+    if (height < 1) {
+        return true;
+    }
+    if (rotationTable[0].getHeight() == height) {
+        return false;
     }
 
-    return 0;
+    for (auto& rotation : rotationTable) {
+        rotation.setHeight(height);
+    }
+    return false;
 }
 
-int pdsetcell(piecedef *pd, int orientation, int x, int y)
-{
-    if(!pd)
-        return -1;
-
-    if(x < 0 || y < 0 || x >= pd->rotation_tables[0].getWidth() || y >= pd->rotation_tables[0].getHeight())
-        return 1;
-
-    Grid& g = pd->rotation_tables[orientation & 3];
-    if (g.cell(x, y) ^= 1) {
-        return 1;
+bool PieceDef::setCell(Orientation orientation, int x, int y) {
+    if (x < 0 || y < 0 || x >= rotationTable[0].getWidth() || y >= rotationTable[0].getHeight()) {
+        return true;
     }
 
-    return 0;
+    return (rotationTable[orientation].cell(x, y) ^= 1) != 0;
 }
-/*
-int pdchkflags(piecedef *pd, unsigned int tflags)
-{
-   if(!pd)
-      return -1;
 
-   if((pd->flags & tflags) == tflags)
-      return 1;
-
-   return 0;
-}*/
+bool PieceDef::checkFlags(PieceDefFlag testFlags) {
+    return (flags & testFlags) == testFlags;
+}

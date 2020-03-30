@@ -7,7 +7,7 @@
 
 #include "core.h"
 #include "Grid.hpp"
-#include "piecedef.h"
+#include "PieceDef.hpp"
 #include "qrs.h"
 #include "random.h"
 #include "replay.h"
@@ -64,19 +64,17 @@ void qrsdata_destroy(qrsdata *q)
 
     int i;
 
-    for(i = 0; i < 25; i++)
-        piecedef_destroy(q->piecepool[i]);
     // if(q->p1->def) piecedef_destroy(q->p1->def);
     free(q->p1);
     delete q->p1counters;
-    delete[] q->piecepool;
 
     if(q->replay)
     {
         free(q->replay);
     }
 
-    free(q);
+    delete q->hold;
+    delete q;
 }
 
 void pracdata_destroy(pracdata *d)
@@ -150,9 +148,9 @@ pracdata *pracdata_cpy(pracdata *d)
     return cpy;
 }
 
-piecedef **qrspool_create()
+vector<PieceDef> qrspool_create()
 {
-    piecedef** pool = new piecedef * [25];
+    vector<PieceDef> pool(25);
     int i = 0;
     int j = 0;
     int n = 5;
@@ -164,48 +162,39 @@ piecedef **qrspool_create()
             n = 4;
         }
 
-        pool[i] = new piecedef;
-        pool[i]->qrs_id = i;
-        pool[i]->flags = 0;
-        pool[i]->anchorx = ANCHORX_QRS;
-        pool[i]->anchory = ANCHORY_QRS;
+        pool[i].qrsID = i;
+        pool[i].flags = PDNONE;
+        pool[i].anchorX = ANCHORX_QRS;
+        pool[i].anchorY = ANCHORY_QRS;
 
         for(j = 0; j < 4; j++)
         {
             if (n == 5) {
-                pool[i]->rotation_tables[j] = qrspent_yx_rotation_tables[i][j];
+                pool[i].rotationTable[j] = qrspent_yx_rotation_tables[i][j];
             }
             else if (n == 4) {
-                pool[i]->rotation_tables[j] = qrstet_yx_rotation_tables[i - 18][j];
+                pool[i].rotationTable[j] = qrstet_yx_rotation_tables[i - 18][j];
             }
         }
 
         if(!(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L ||
              i == QRS_T || i == QRS_Ya || i == QRS_Yb || i == QRS_I4 || i == QRS_T4))
         {
-            pool[i]->flags ^= PDNOFKICK;
+            pool[i].flags = static_cast<PieceDefFlag>(pool[i].flags ^ PDNOFKICK);
         }
 
         if(i == QRS_T)
         {
-            pool[i]->flags |= PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
+            pool[i].flags = static_cast<PieceDefFlag>(pool[i].flags | PDFLATFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS);
         }
 
         if(i == QRS_T4)
         {
-            pool[i]->flags |= PDFLIPFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS;
+            pool[i].flags = static_cast<PieceDefFlag>(pool[i].flags | PDFLIPFLOORKICKS | PDONECELLFLOORKICKS | PDPREFERWKICK | PDAIRBORNEFKICKS);
         }
     }
 
     return pool;
-}
-
-piecedef *qrspiece_cpy(piecedef **piecepool, int index)
-{
-    if(index < 0 || index > 24)
-        return NULL;
-
-    return piecedef_cpy(piecepool[index]);
 }
 
 Grid *qrsfield_create()
@@ -1161,7 +1150,7 @@ int qrs_wallkick(game_t *g, qrs_player *p)
     if(!g || !p)
         return -1;
 
-    piece_id c = p->def->qrs_id;
+    piece_id c = p->def->qrsID;
     int o = p->orient;
     pair<int, int> pos;
     qrs_chkcollision(*g, *p, pos);
@@ -1206,7 +1195,7 @@ int qrs_wallkick(game_t *g, qrs_player *p)
     {
         if(qrs_move(g, p, MOVE_LEFT))
         {
-            if(p->def->rotation_tables[0].getWidth() == 4 && c != QRS_I4)
+            if(p->def->rotationTable[0].getWidth() == 4 && c != QRS_I4)
                 return 1;
             if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
                 return 1;
@@ -1226,8 +1215,8 @@ int qrs_wallkick(game_t *g, qrs_player *p)
 
 int qrs_hold(game_t *g, qrs_player *p)
 {
-    qrsdata *q = (qrsdata *)g->data;
-    piecedef *temp = NULL;
+    qrsdata* q = (qrsdata *)g->data;
+    PieceDef* temp = NULL;
 
     if(!q->hold_enabled)
         return 1;
@@ -1237,10 +1226,10 @@ int qrs_hold(game_t *g, qrs_player *p)
 
     if(!q->hold)
     {
-        q->hold = piecedef_cpy(p->def);
+        q->hold = new PieceDef(*p->def);
         if(qs_initnext(g, p, INITNEXT_DURING_ACTIVE_PLAY) == 1)
         { // if there is no next piece to swap in
-            piecedef_destroy(q->hold);
+            delete q->hold;
             q->hold = NULL;
 
             return 1;
@@ -1251,10 +1240,10 @@ int qrs_hold(game_t *g, qrs_player *p)
     else
     {
         temp = q->hold;
-        q->hold = p->def;
+        q->hold = new PieceDef(*p->def);
         p->def = temp;
 
-        if(p->def->qrs_id >= 18) // tetrominoes spawn where they do in TGM
+        if(p->def->qrsID >= 18) // tetrominoes spawn where they do in TGM
             p->y = ROWTOY(SPAWNY_QRS + 2);
         else
             p->y = ROWTOY(SPAWNY_QRS);
@@ -1392,13 +1381,13 @@ int qrs_lock(game_t *g, qrs_player *p)
         return -1;
 
     qrsdata *q = (qrsdata *)g->data;
-    Grid *d = &p->def->rotation_tables[p->orient];
+    Grid *d = &p->def->rotationTable[p->orient];
     Grid *f = g->field;
 
     int i = 0;
     int ax = ANCHORX_QRS;
     int ay = ANCHORY_QRS;
-    piece_id c = p->def->qrs_id;
+    piece_id c = p->def->qrsID;
 
     for (size_t from_y = 0, to_y = YTOROW(p->y) - ay; from_y < d->getHeight(); from_y++, to_y++) {
         for (size_t from_x = 0, to_x = p->x - ax; from_x < d->getWidth(); from_x++, to_x++) {
@@ -1429,7 +1418,7 @@ bool qrs_chkcollision(game_t& g, qrs_player& p) {
 }
 
 bool qrs_chkcollision(game_t& g, qrs_player& p, pair<int, int>& pos) {
-    Grid *d = &p.def->rotation_tables[p.orient];
+    Grid *d = &p.def->rotationTable[p.orient];
     Grid *f = g.field;
     int d_x = 0;
     int d_y = 0;
@@ -1438,8 +1427,8 @@ bool qrs_chkcollision(game_t& g, qrs_player& p, pair<int, int>& pos) {
     int f_y = 0;
     //int f_val = 0;
 
-    for (d_y = 0, f_y = YTOROW(p.y) - p.def->anchory; d_y < d->getHeight(); d_y++, f_y++) {
-        for (d_x = 0, f_x = p.x - p.def->anchory; d_x < d->getWidth(); d_x++, f_x++) {
+    for (d_y = 0, f_y = YTOROW(p.y) - p.def->anchorY; d_y < d->getHeight(); d_y++, f_y++) {
+        for (d_x = 0, f_x = p.x - p.def->anchorY; d_x < d->getWidth(); d_x++, f_x++) {
             if (d->getCell(d_x, d_y) && f->getCell(f_x, f_y)) {
                 pos = pair(d_x, d_y);
                 return true;
@@ -1624,20 +1613,20 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     return 0;
 }
 
-void qrs_embiggen(piecedef *p)
+void qrs_embiggen(PieceDef& p)
 {
     int xs[5] = {-1, -1, -1, -1, -1};
     int ys[5] = {-1, -1, -1, -1, -1};
     int k = 0;
 
-    for(int r = 0; r < p->rotation_tables.size(); r++)
+    for(int r = 0; r < p.rotationTable.size(); r++)
     {
-        p->rotation_tables[0].resize(p->rotation_tables[r].getWidth() + 1, p->rotation_tables[r].getHeight() + 1);
-        for(int i = 0; i < p->rotation_tables[r].getWidth(); i++)
+        p.rotationTable[0].resize(p.rotationTable[r].getWidth() + 1, p.rotationTable[r].getHeight() + 1);
+        for(int i = 0; i < p.rotationTable[r].getWidth(); i++)
         {
-            for(int j = 0; j < p->rotation_tables[r].getHeight(); j++)
+            for(int j = 0; j < p.rotationTable[r].getHeight(); j++)
             {
-                if(p->rotation_tables[r].getCell(i, j))
+                if(p.rotationTable[r].getCell(i, j))
                 {
                     xs[k] = i;
                     ys[k] = j;
@@ -1660,7 +1649,7 @@ switchStatement:
         switch(direction)
         {
             case 0:
-                if(ys[index] == 0 || p->rotation_tables[r].getCell(xs[index], ys[index] - 1))
+                if(ys[index] == 0 || p.rotationTable[r].getCell(xs[index], ys[index] - 1))
                 {
                     direction++;
                     tries++;
@@ -1668,13 +1657,13 @@ switchStatement:
                 }
                 else
                 {
-                    p->rotation_tables[r].cell(xs[index], ys[index] - 1) = 1;
+                    p.rotationTable[r].cell(xs[index], ys[index] - 1) = 1;
                 }
 
                 break;
 
             case 1:
-                if(xs[index] == (p->rotation_tables[r].getWidth() - 1) || p->rotation_tables[r].getCell(xs[index] + 1, ys[index]))
+                if(xs[index] == (p.rotationTable[r].getWidth() - 1) || p.rotationTable[r].getCell(xs[index] + 1, ys[index]))
                 {
                     direction++;
                     tries++;
@@ -1682,13 +1671,13 @@ switchStatement:
                 }
                 else
                 {
-                    p->rotation_tables[r].cell(xs[index] + 1, ys[index]) = 1;
+                    p.rotationTable[r].cell(xs[index] + 1, ys[index]) = 1;
                 }
 
                 break;
 
             case 2:
-                if(ys[index] == p->rotation_tables[r].getHeight() - 1 || p->rotation_tables[r].getCell(xs[index], ys[index] + 1))
+                if(ys[index] == p.rotationTable[r].getHeight() - 1 || p.rotationTable[r].getCell(xs[index], ys[index] + 1))
                 {
                     direction++;
                     tries++;
@@ -1696,13 +1685,13 @@ switchStatement:
                 }
                 else
                 {
-                    p->rotation_tables[r].cell(xs[index], ys[index] + 1) = 1;
+                    p.rotationTable[r].cell(xs[index], ys[index] + 1) = 1;
                 }
 
                 break;
 
             case 3:
-                if(xs[index] == 0 || p->rotation_tables[r].getCell(xs[index] - 1, ys[index]))
+                if(xs[index] == 0 || p.rotationTable[r].getCell(xs[index] - 1, ys[index]))
                 {
                     direction = 0;
                     tries++;
@@ -1710,7 +1699,7 @@ switchStatement:
                 }
                 else
                 {
-                    p->rotation_tables[r].cell(xs[index] - 1, ys[index]) = 1;
+                    p.rotationTable[r].cell(xs[index] - 1, ys[index]) = 1;
                 }
 
                 break;

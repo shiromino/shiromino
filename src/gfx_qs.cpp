@@ -12,6 +12,7 @@
 #include "random.h"
 #include "Timer.hpp"
 
+using namespace Shiro;
 using namespace std;
 
 // clang-format off
@@ -56,12 +57,12 @@ int gfx_drawqs(game_t *g)
     coreState *cs = g->origin;
     qrsdata *q = (qrsdata *)(g->data);
 
-    piecedef *pd_current = q->p1->def;
+    PieceDef* pd_current = q->p1->def;
 
     unsigned int drawpiece_next1_flags = DRAWPIECE_PREVIEW;
-    if(q->previews[0])
+    if(q->previews.size() > 0)
     {
-        if(q->previews[0]->qrs_id % 18 == 0)
+        if(q->previews[0].qrsID % 18 == 0)
             drawpiece_next1_flags |= DRAWPIECE_IPREVIEW;
     }
 
@@ -150,9 +151,9 @@ int gfx_drawqs(game_t *g)
     string level = strtools::format("%d", q->level);
     string next = "NEXT";
     string next_name;
-    if(q->previews[0])
+    if(q->previews.size() > 0)
     {
-        next_name = get_qrspiece_name(q->previews[0]->qrs_id);
+        next_name = get_qrspiece_name(q->previews[0].qrsID);
     }
 
     // string grade_text = get_grade_name(q->grade);
@@ -236,13 +237,13 @@ int gfx_drawqs(game_t *g)
                 // gfx_drawtext(cs, next, 48 - 32 + QRS_FIELD_X, 26, 0, 0xFFFFFF8C, 0x0000008C);
 
                 if(q->num_previews > 0)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
                 if(q->num_previews > 1)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
                 if(q->num_previews > 2)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
                 if(q->num_previews > 3)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
             }
 
             for(i = 0; i < 18; i++)
@@ -721,16 +722,16 @@ int gfx_drawqs(game_t *g)
         }
 
         if(q->num_previews > 0)
-            gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_flags | drawpiece_next1_flags, FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
+            gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_flags | drawpiece_next1_flags, Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
         if(q->num_previews > 1)
             gfx_drawpiece(
-                cs, g->field, x, y, q->previews[1], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
+                cs, g->field, x, y, q->previews[1], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
         if(q->num_previews > 2)
             gfx_drawpiece(
-                cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
         if(q->num_previews > 3)
             gfx_drawpiece(
-                cs, g->field, x, y, q->previews[3], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
+                cs, g->field, x, y, q->previews[3], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
 
         if(q->hold)
         {
@@ -738,9 +739,9 @@ int gfx_drawqs(game_t *g)
                           g->field,
                           x,
                           y,
-                          q->hold,
+                          *q->hold,
                           drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL | (q->p1->state & PSUSEDHOLD ? DRAWPIECE_LOCKFLASH : 0),
-                          FLAT,
+                          Orientation::FLAT,
                           hold_x,
                           hold_y,
                           RGBA_DEFAULT);
@@ -759,13 +760,13 @@ int gfx_drawqs(game_t *g)
                 {
                     case MODE_PENTOMINO:
                         if(q->level < 300)
-                            gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
+                            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
 
                         break;
 
                     default:
                         if(q->level < 100)
-                            gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
+                            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
 
                         break;
                 }
@@ -784,21 +785,21 @@ int gfx_drawqs(game_t *g)
             {
                 for(int j = q->p1->num_olds - 1; j >= 0; j--)
                 {
-                    gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, old_piece_xs[j], old_piece_ys[j], 0xFFFFFF00 + (0xC0 / (j + 1)) );
+                    gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, old_piece_xs[j], old_piece_ys[j], 0xFFFFFF00 + (0xC0 / (j + 1)) );
                     //if(g->frame_counter % 60 == 0) printf("Old piece x #%d: %d\n", j, q->p1->old_xs[j]);
                 }
             }
 
-            gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, rgba);
+            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, rgba);
         }
         else if(q->p1->state & (PSLOCKFLASH1 | PSLOCKFLASH2) && !(q->state_flags & GAMESTATE_BRACKETS))
-            gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags | DRAWPIECE_LOCKFLASH, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
+            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags | DRAWPIECE_LOCKFLASH, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
         else if(q->p1->state & PSPRELOCKED)
         {
             if(q->state_flags & GAMESTATE_BRACKETS)
-                gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
+                gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
             else
-                gfx_drawpiece(cs, g->field, x, y, pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0x404040FF);
+                gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0x404040FF);
         }
     }
 

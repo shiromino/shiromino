@@ -79,7 +79,7 @@ set(SOURCES
     src/main.cpp
     src/Mode/BaseMode.cpp
     src/MultiEditor.cpp
-    src/piecedef.cpp
+    src/PieceDef.cpp
     src/qrs.cpp
     src/random.cpp
     src/replay.cpp
@@ -118,7 +118,7 @@ set(HEADERS
     src/MultiEditor.hpp
     src/music.h
     src/PDINI.hpp
-    src/piecedef.h
+    src/PieceDef.hpp
     src/Player/BasePlayer.hpp
     src/qrs.h
     src/QRS.hpp

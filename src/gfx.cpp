@@ -10,7 +10,7 @@
 #include "gfx.h"
 #include "gfx_structures.h"
 #include "Grid.hpp"
-#include "piecedef.h"
+#include "PieceDef.hpp"
 #include "qrs.h"
 #include "stringtools.hpp"
 #include "Timer.hpp"
@@ -1233,9 +1233,9 @@ int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, in
     return 0;
 }
 
-int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef *pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
+int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
 {
-    if(!cs || !pd)
+    if(!cs)
         return -1;
 
     if(flags & DRAWPIECE_BRACKETS && flags & DRAWPIECE_LOCKFLASH)
@@ -1278,21 +1278,21 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
     SDL_Rect dest = {.x = 0, .y = 0, .w = size, .h = size};
 
     string piece_str = "A";
-    piece_str[0] = pd->qrs_id + 'A';
+    piece_str[0] = pd.qrsID + 'A';
 
     Grid *g = NULL;
 
     int i = 0;
     int j = 0;
-    size_t w = pd->rotation_tables[0].getWidth();
-    size_t h = pd->rotation_tables[0].getWidth();
+    size_t w = pd.rotationTable[0].getWidth();
+    size_t h = pd.rotationTable[0].getWidth();
     int c = 0;
 
     int cell_x = 0;
     int cell_y = 0;
 
-    g = &pd->rotation_tables[orient & 3];
-    src.x = pd->qrs_id * (size == 8 ? 8 : 16);
+    g = &pd.rotationTable[orient & 3];
+    src.x = pd.qrsID * (size == 8 ? 8 : 16);
     if(flags & DRAWPIECE_JEWELED)
     {
         src.x -= 18 * 16;
@@ -1329,10 +1329,10 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, piecedef
                     dest.y = y + 16 + ((j - 1) * size);
                 }
 
-                if(flags & DRAWPIECE_BRACKETS || pd->flags & PDBRACKETS)
+                if(flags & DRAWPIECE_BRACKETS || pd.flags & PDBRACKETS)
                     src.x = 30 * (size == 8 ? 8 : 16);
 
-                if(flags & DRAWPIECE_LOCKFLASH && !(flags & DRAWPIECE_BRACKETS) && !(pd->flags & PDBRACKETS))
+                if(flags & DRAWPIECE_LOCKFLASH && !(flags & DRAWPIECE_BRACKETS) && !(pd.flags & PDBRACKETS))
                 {
                     src.x = 26 * (size == 8 ? 8 : 16);
                     cell_x = (x - field_x - 16) / size + i;
