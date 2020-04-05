@@ -264,7 +264,6 @@ int gfx_drawbg(coreState *cs)
                     g = 255;
                     b = 255;
 
-                    SDL_SetTextureColorMod(cs->bg_old, 255, 255, 255);
                     cs->bg_old = cs->bg;
                 }
             }
@@ -278,6 +277,19 @@ int gfx_drawbg(coreState *cs)
         if(!cs->bg)
             return 0;
 
+        SDL_GetTextureColorMod(cs->bg, &r, &g, &b);
+        if (r < 255 - BG_FADE_RATE) {
+            r += BG_FADE_RATE;
+            g += BG_FADE_RATE;
+            b += BG_FADE_RATE;
+        }
+        else {
+            r = 255;
+            g = 255;
+            b = 255;
+        }
+
+        SDL_SetTextureColorMod(cs->bg, r, g, b);
         //SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
     }
 

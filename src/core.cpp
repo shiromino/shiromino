@@ -835,6 +835,7 @@ int run(coreState *cs)
             }
         }
         else if (cs->bg) {
+            SDL_GetTextureColorMod(cs->bg, &r, &g, &b);
             SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
         }
 
