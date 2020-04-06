@@ -505,7 +505,7 @@ int init(coreState *cs, Settings* settings)
             }
 
             if (cs->settings->joyBinds.joyIndex >= 0 && cs->joystick) {
-                printf("Opened joystick\n");
+                printf("Joysticks are enabled\n");
                 printf("Name: %s\n", SDL_JoystickNameForIndex(cs->settings->joyBinds.joyIndex));
                 printf("Index: %d\n", cs->settings->joyBinds.joyIndex);
                 printf("Number of buttons: %d\n", SDL_JoystickNumButtons(cs->joystick));
@@ -514,7 +514,7 @@ int init(coreState *cs, Settings* settings)
             }
             else {
                 cs->joystick = nullptr;
-                printf("No joysticks were opened\n");
+                printf("Joysticks are disabled\n");
             }
         }
         else {
@@ -723,12 +723,23 @@ int run(coreState *cs)
     double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
     double startTime = currentTime;
     double timeAccumulator = 0.0;
-    // Due to limitations in SDL's display refresh rate reporting, frame timing
-    // debugging can't be made to display the correct timing information when
-    // vsync and vsyncTimestep are enabled.
-//#define DEBUG_FRAME_TIMING
+// #define DEBUG_FRAME_TIMING
 #ifdef DEBUG_FRAME_TIMING
+    // Due to limitations in SDL's display refresh rate reporting, FPS
+    // debugging can't be made to display the correct monitor FPS when vsync
+    // and vsyncTimestep are enabled. So use the VIDEOFPS INI option to get
+    // correct FPS information.
+    double videoFPS;
+    {
+        INI ini;
+        ini.read(cs->iniFilename);
+        if (!ini.get("SCREEN", "VIDEOFPS", videoFPS) || videoFPS <= 0.0) {
+            videoFPS = 0.0;
+        }
+    }
     double timeFromFrames = 0.0;
+    const double fpsTimeFrameDuration = 1.0;
+    double fpsTimeFrameStart = 0.0;
 #endif
     while(running)
     {
@@ -742,6 +753,15 @@ int run(coreState *cs)
         timeAccumulator += renderFrameTime;
 
         unsigned newFrames = 0u;
+#ifdef DEBUG_FRAME_TIMING
+        for (
+            double gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
+            timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
+            timeAccumulator -= gameFrameTime,
+            newFrames++,
+            cs->frames++
+            )
+#else
         for (
             double gameFrameTime = 1.0 / cs->fps;
             timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
@@ -749,12 +769,16 @@ int run(coreState *cs)
             newFrames++,
             cs->frames++
             )
+#endif
         {
-            // TODO: Rearrange the input->draw loop
+            // TODO: Move input polling out of the game frame update loop?
+            // Requires reworking input handling, because moving this code
+            // outside the game frame update loop results in incorrect input
+            // behavior.
             cs->prev_keys_raw = cs->keys_raw;
             cs->prev_keys = cs->keys;
 
-            if(procevents(cs, wind))
+            if (procevents(cs, wind))
             {
                 return 1;
             }
@@ -790,29 +814,36 @@ int run(coreState *cs)
 
                     cs->menu = NULL;
 
-                    if (!cs->p1game)
+                    if (!cs->p1game) {
                         running = 0;
+                    }
                 }
-
-                // if(!((!cs->button_emergency_override && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)))) printf("Not
-                // processing menu input\n");
             }
 
-            // Just update the background colormod; actual drawing is done
-            // below.
-            gfx_drawbg(cs);
-
-            //wind.draw();
-
-            if(!cs->menu && !cs->p1game)
-            {
+            if (!cs->menu && !cs->p1game) {
                 running = false;
             }
+            else if (cs->p1game) {
+                cs->p1game->frame_counter++;
+            }
+            else if (cs->menu && (!cs->p1game || cs->menu_input_override)) {
+                cs->menu->frame_counter++;
+            }
 
+#ifndef DEBUG_FRAME_TIMING
             gameFrameTime = 1.0 / cs->fps;
-#ifdef DEBUG_FRAME_TIMING
+#else
+            gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
             timeFromFrames += gameFrameTime;
-            printf(" real: %f\nframe: %f\n\n", static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime, timeFromFrames);
+            // TODO: From testing with this, the game apparently doesn't reset
+            // FPS to 60 when returning to the menu from a game, so fix that.
+            // Though each mode does use its correct FPS.
+            double realTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime;
+            printf("real FPS: %f\ngame FPS: %f\n\n", (realTime / timeFromFrames) * (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps), cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
+            if (realTime - fpsTimeFrameStart >= fpsTimeFrameDuration) {
+                timeFromFrames = realTime;
+                fpsTimeFrameStart = realTime;
+            }
 #endif
             if (cs->settings->vsync && cs->settings->vsyncTimestep) {
                 timeAccumulator = 0.0;
@@ -821,33 +852,14 @@ int run(coreState *cs)
 
         SDL_RenderClear(cs->screen.renderer);
 
-        Uint8 r = 0u, g = 0u, b = 0u;
-        if (cs->bg != cs->bg_old) {
-            if (cs->bg_old) {
-                SDL_GetTextureColorMod(cs->bg_old, &r, &g, &b);
-            }
-
-            if (r && cs->bg_old) {
-                SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
-            }
-            else if (cs->bg) {
-                SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
-            }
-        }
-        else if (cs->bg) {
-            SDL_GetTextureColorMod(cs->bg, &r, &g, &b);
-            SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
-        }
-
         // SDL_SetRenderTarget(cs->screen.renderer, NULL);
+        gfx_drawbg(cs, newFrames);
 
         if (cs->p1game) {
             cs->p1game->draw(cs->p1game);
-            cs->p1game->frame_counter++;
         }
         else if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
             cs->menu->draw(cs->menu);
-            cs->menu->frame_counter++;
         }
 
         // SDL_SetRenderTarget(cs->screen.renderer, NULL);
@@ -866,23 +878,22 @@ int run(coreState *cs)
         SDL_RenderPresent(cs->screen.renderer);
 
         if (newFrames > 0u) {
-            for (int i = 0; i < cs->gfx_messages_max; i++) {
-                if (cs->gfx_messages[i].counter) {
-                    if (cs->gfx_messages[i].counter > newFrames) {
-                        cs->gfx_messages[i].counter -= newFrames;
-                    }
-                    else {
-                        cs->gfx_messages[i].counter = 0u;
-                    }
+            for (size_t i = 0; i < cs->gfx_messages_max; i++) {
+                if (cs->gfx_messages[i].counter >= newFrames) {
+                    cs->gfx_messages[i].counter -= newFrames;
+                }
+                else {
+                    cs->gfx_messages[i].counter = 0u;
                 }
             }
 
-            for (int i = 0; i < cs->gfx_animations_max; i++) {
-                if (cs->gfx_animations[i].counter + newFrames < static_cast<unsigned>(cs->gfx_animations[i].frame_multiplier * cs->gfx_animations[i].num_frames)) {
+            for (size_t i = 0; i < cs->gfx_animations_max; i++) {
+                const unsigned maxFrames = static_cast<unsigned>(cs->gfx_animations[i].frame_multiplier * cs->gfx_animations[i].num_frames);
+                if (cs->gfx_animations[i].counter + newFrames < maxFrames) {
                    cs->gfx_animations[i].counter += newFrames;
                 }
                 else {
-                    cs->gfx_animations[i].counter = static_cast<unsigned>(cs->gfx_animations[i].frame_multiplier * cs->gfx_animations[i].num_frames);
+                    cs->gfx_animations[i].counter = maxFrames;
                 }
             }
         }
@@ -1649,8 +1660,6 @@ int procevents(coreState *cs, GuiWindow& wind)
     */
 
     cs->keys = cs->keys_raw;
-
-
 
     return 0;
 }

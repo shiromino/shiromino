@@ -75,7 +75,7 @@ int gfx_init(coreState *cs);
 void gfx_quit(coreState *cs);
 
 int gfx_start_bg_fade_in(coreState *cs);
-int gfx_drawbg(coreState *cs);
+void gfx_drawbg(coreState *cs, unsigned frames);
 int gfx_draw_emergency_bg_darken(coreState *cs);
 
 // these are a little bit hacky... just add to each RGB value of the pixels

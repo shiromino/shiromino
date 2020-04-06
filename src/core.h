@@ -174,9 +174,9 @@ struct coreState
     std::vector<gfx_message> gfx_messages;
     std::vector<gfx_animation> gfx_animations;
     std::vector<gfx_button> gfx_buttons;
-    int gfx_messages_max;
-    int gfx_animations_max;
-    int gfx_buttons_max;
+    std::size_t gfx_messages_max;
+    std::size_t gfx_animations_max;
+    std::size_t gfx_buttons_max;
 
     struct keyflags prev_keys_raw;
     struct keyflags keys_raw;
