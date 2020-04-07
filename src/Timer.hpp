@@ -3,8 +3,7 @@
 #include <cstdint>
 
 namespace Shiro {
-    class Timer {
-    public:
+    struct Timer {
         Timer();
         Timer(double fps);
         Timer(double fps, uint64_t time);

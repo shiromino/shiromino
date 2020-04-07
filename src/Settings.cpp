@@ -216,6 +216,16 @@ bool Settings::read(string filename) {
     string basePath;
     if (!ini.get("PATHS", "BASE_PATH", basePath)) {
         char *basePath = SDL_GetBasePath();
+        size_t i = strlen(basePath);
+        do {
+            if (basePath[i] == '\\' || basePath[i] == '/') {
+                basePath[i] = '\0';
+            }
+            if (i == 0) {
+                break;
+            }
+            i--;
+        } while (true);
         this->basePath = basePath;
         SDL_free(basePath);
         defaultUsed = true;

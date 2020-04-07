@@ -1,7 +1,9 @@
 #pragma once
 
-#include "PDINI.hpp"
 #include <string>
+
+#include "Path.hpp"
+#include "PDINI.hpp"
 #include "SDL.h"
 
 namespace Shiro {

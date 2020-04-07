@@ -1,11 +1,11 @@
-#include "rotation_tables.h"
+#include "RotationTables.hpp"
 
 using namespace std;
 
 #define O true
 #define _ false
 
-const array<array<array<array<bool, 5>, 5>, 4>, 18> qrspent_yx_rotation_tables =
+const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
 {
     array<array<array<bool, 5>, 5>, 4>
     { // I
@@ -711,7 +711,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> qrspent_yx_rotation_tables =
     }
 };
 
-const std::array<std::array<std::array<std::array<bool, 4>, 4>, 4>, 7> qrstet_yx_rotation_tables =
+const std::array<std::array<std::array<std::array<bool, 4>, 4>, 4>, 7> Shiro::TetroRotationTables =
 {
     std::array<std::array<std::array<bool, 4>, 4>, 4>
     { // I4

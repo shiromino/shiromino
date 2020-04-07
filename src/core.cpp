@@ -155,6 +155,7 @@ int is_down_input_repeat(coreState *cs, int delay)
     return cs->keys.down && cs->hold_dir == DAS_DOWN && cs->hold_time >= delay;
 }
 
+#include "Path.hpp"
 static string make_path(const char *base, const char *subdir, const char *name, const char *ext)
 {
     string path = base ? string{base} : string{"."};
@@ -164,7 +165,7 @@ static string make_path(const char *base, const char *subdir, const char *name, 
     path.append(name);
     path.append(ext);
 
-    //printf("asset: %s\n", path.c_str());
+    //printf("asset: %s\n", directory.c_str());
     return path;
 }
 
@@ -328,8 +329,9 @@ void coreState_destroy(coreState *cs)
 
 static void load_image(coreState *cs, gfx_image *img, const char *filename)
 {
-    string path = make_path(cs->settings->basePath.c_str(), "gfx", filename, "");
-    if(!img_load(img, (const char *)path.c_str(), cs))
+    Path path(cs->settings->basePath);
+    path << "gfx" << filename;
+    if(!img_load(img, path, cs))
     {
         log_warn("Failed to load image '%s'", filename);
     }
@@ -346,7 +348,9 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
 
 static void load_sfx(coreState* cs, INI& ini, Sfx** s, const char* filename)
 {
-    string path = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
+    //string directory = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
+    Path path(cs->settings->basePath);
+    path << "audio" << filename;
     *s = new Sfx();
     if (!(*s)->load(path)) {
         log_warn("Failed to load sfx '%s'", filename);
@@ -361,20 +365,21 @@ static void load_sfx(coreState* cs, INI& ini, Sfx** s, const char* filename)
     }
 }
 
-static void load_music(coreState* cs, INI& ini, Music** m, const char* filename)
+static void load_music(coreState* cs, INI& ini, Music*& m, const char* name)
 {
-    string path = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
-    *m = new Music();
-    if (!(*m)->load(path)) {
-        log_warn("Failed to load music '%s'", filename);
+    Path directory(cs->settings->basePath);
+    directory << "audio";
+    m = new Music();
+    if (!m->load(directory, name)) {
+        log_warn("Failed to load music '%s'", name);
     }
 
     float volume;
-    if (!ini.get("", filename, volume) || volume < 0.0f || volume > 100.0f) {
-        (*m)->volume = 100.0f;
+    if (!ini.get("", name, volume) || volume < 0.0f || volume > 100.0f) {
+        m->volume = 100.0f;
     }
     else {
-        (*m)->volume = volume;
+        m->volume = volume;
     }
 }
 
@@ -398,10 +403,12 @@ int load_files(coreState *cs)
 
     {
         INI ini(false);
-        string audioINIPath = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".ini");
+        //string audioINIPath = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".ini");
+        Path audioINIPath(cs->settings->basePath);
+        audioINIPath << "audio" << "volume.ini";
         ini.read(audioINIPath);
 
-#define MUSIC(name, i) load_music(cs, ini, &cs->assets->name[i], #name #i);
+#define MUSIC(name, i) load_music(cs, ini, cs->assets->name[i], #name #i);
 #include "music.h"
 #undef MUSIC
 
@@ -573,7 +580,7 @@ int init(coreState *cs, Settings* settings)
 
         // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
-        // TODO: Configurable scores.db path
+        // TODO: Configurable scores.db directory
         static const char scoredb_file[] = "scores.db";
         scoredb_init(&cs->scores, scoredb_file);
         scoredb_create_player(&cs->scores, &cs->player, cs->settings->playerName.c_str());

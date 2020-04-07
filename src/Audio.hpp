@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Settings.hpp"
+#include "Path.hpp"
 #include <string>
 #include "SDL_mixer.h"
 
@@ -26,11 +27,12 @@ namespace Shiro {
         ~Music();
 
         /**
-         * Loads the music from a file. Provide the name of the file, without
-         * the ".ogg" or ".wav" extension. Will try to load OGG first,
-         * otherwise WAV. Returns true if the file was loaded.
+         * Loads the music from a file. directory is the directory where the
+         * audio file is. name is the name of the file, without the ".ogg" or
+         * ".wav" extension. Will try to load OGG first, otherwise WAV. Returns
+         * true if the file was loaded.
          */
-        bool load(std::string filenameNoExt);
+        bool load(std::string directory, std::string name);
 
         /**
          * Plays the music track. Returns true if the music track was played;

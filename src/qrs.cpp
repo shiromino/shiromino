@@ -19,7 +19,7 @@
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"
 
-#include "rotation_tables.h"
+#include "RotationTables.hpp"
 
 using namespace Shiro;
 using namespace std;
@@ -170,10 +170,10 @@ vector<PieceDef> qrspool_create()
         for(j = 0; j < 4; j++)
         {
             if (n == 5) {
-                pool[i].rotationTable[j] = qrspent_yx_rotation_tables[i][j];
+                pool[i].rotationTable[j] = PentoRotationTables[i][j];
             }
             else if (n == 4) {
-                pool[i].rotationTable[j] = qrstet_yx_rotation_tables[i - 18][j];
+                pool[i].rotationTable[j] = TetroRotationTables[i - 18][j];
             }
         }
 

@@ -20,18 +20,20 @@ Music::~Music() {
     }
 }
 
-bool Music::load(string filenameNoExt) {
+bool Music::load(string directory, string name) {
     data = nullptr;
     volume = MIX_MAX_VOLUME;
 
-    string path = filenameNoExt + ".ogg";
-    data = Mix_LoadMUS(path.c_str());
+    Path path = directory;
+    path << (name + ".ogg");
+    data = Mix_LoadMUS(string(path).c_str());
     if(data) {
         return true;
     }
 
-    path = filenameNoExt + ".wav";
-    data = Mix_LoadMUS(path.c_str());
+    path = directory;
+    path << (name + ".wav");
+    data = Mix_LoadMUS(string(path).c_str());
 
     return data != nullptr;
 }

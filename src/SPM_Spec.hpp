@@ -7,7 +7,7 @@
 #include "core.h"
 #include "random.h"
 #include "Grid.hpp"
-#include "rotation_tables.h"
+#include "RotationTables.hpp"
 
 #define SPM_SUBUNIT_SCALE 65536
 
@@ -333,7 +333,7 @@ class SPM_TestSpec : public SPM_Spec {
 public:
     SPM_TestSpec() {
         for (int i = 0; i < 7; i++) {
-            minoList.push_back(qrstet_yx_rotation_tables[i]);
+            minoList.push_back(Shiro::TetroRotationTables[i]);
 
             spawnPositions.push_back( {3, 2} );
         }

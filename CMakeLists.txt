@@ -79,11 +79,12 @@ set(SOURCES
     src/main.cpp
     src/Mode/BaseMode.cpp
     src/MultiEditor.cpp
+    src/Path.cpp
     src/PieceDef.cpp
     src/qrs.cpp
     src/random.cpp
     src/replay.cpp
-    src/rotation_tables.cpp
+    src/RotationTables.cpp
     src/scores.cpp
     src/Settings.cpp
     src/ShiroPhysoMino.cpp
@@ -117,6 +118,7 @@ set(HEADERS
     src/Mode/BaseMode.hpp
     src/MultiEditor.hpp
     src/music.h
+    src/Path.hpp
     src/PDINI.hpp
     src/PieceDef.hpp
     src/Player/BasePlayer.hpp
@@ -124,7 +126,7 @@ set(HEADERS
     src/QRS.hpp
     src/random.h
     src/replay.h
-    src/rotation_tables.h
+    src/RotationTables.hpp
     src/scores.h
     src/Settings.hpp
     src/sfx.h
