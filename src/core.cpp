@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <cmath>
 #include <cstdint>
 #include <cinttypes>
 
@@ -22,6 +23,10 @@
 #include <string>
 
 #include "SDL.h"
+#ifdef OPENGL_INTERPOLATION
+#define GL_GLEXT_PROTOTYPES
+#include "glad.h"
+#endif
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 #include "SGUIL/SGUIL.hpp"
@@ -279,7 +284,9 @@ void coreState_initialize(coreState *cs)
     cs->screen.h = 480;
     cs->screen.window = NULL;
     cs->screen.renderer = NULL;
-    // cs->screen.target_tex = NULL;
+#ifdef OPENGL_INTERPOLATION
+    cs->screen.target_tex = NULL;
+#endif
 
     cs->bg = NULL;
     cs->bg_old = NULL;
@@ -436,6 +443,94 @@ int load_files(coreState *cs)
     return 0;
 }
 
+#ifdef OPENGL_INTERPOLATION
+GLuint CompileShader(GLenum shaderType, const GLchar* shaderSource) {
+    GLint compileOK;
+    GLuint shader = glCreateShader(shaderType);
+    glShaderSource(shader, 1, &shaderSource, NULL);
+    glCompileShader(shader);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileOK);
+    if (compileOK) {
+        return shader;
+    }
+    else {
+        GLint infoLogLength;
+        char* infoLog;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+        infoLog = new char[infoLogLength];
+        glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
+        fprintf(stderr, "Could not compile %s shader.\n", (shaderType == GL_VERTEX_SHADER) ? "vertex" : (shaderType == GL_GEOMETRY_SHADER) ? "geometry" : (shaderType == GL_FRAGMENT_SHADER) ? "fragment" : "unknown");
+        fprintf(stderr, "%s\n", infoLog);
+        delete[] infoLog;
+        return 0u;
+    }
+}
+
+GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geometryShaderSource, const GLchar* fragmentShaderSource) {
+    GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    if (vertexShader == 0u) {
+        return 0u;
+    }
+
+    GLuint geometryShader = 0u;
+    if (geometryShaderSource != NULL) {
+        geometryShader = CompileShader(GL_GEOMETRY_SHADER, geometryShaderSource);
+        if (geometryShader == 0u) {
+            glDeleteShader(vertexShader);
+            return 0u;
+        }
+    }
+
+    GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    if (fragmentShader == 0u) {
+        if (geometryShader != 0u) glDeleteShader(geometryShader);
+        glDeleteShader(vertexShader);
+        return 0u;
+    }
+
+    GLuint program = glCreateProgram();
+    if (program == 0u) {
+        log_err("Could not create shading program.");
+        glDeleteShader(vertexShader);
+        if (geometryShader != 0u) glDeleteShader(geometryShader);
+        glDeleteShader(fragmentShader);
+        return 0u;
+    }
+
+    glAttachShader(program, vertexShader);
+    if (geometryShader != 0u) glAttachShader(program, geometryShader);
+    glAttachShader(program, fragmentShader);
+
+    glLinkProgram(program);
+
+    glDetachShader(program, vertexShader);
+    if (geometryShader != 0u) glDetachShader(program, geometryShader);
+    glDetachShader(program, fragmentShader);
+
+    glDeleteShader(vertexShader);
+    if (geometryShader != 0u) glDeleteShader(geometryShader);
+    glDeleteShader(fragmentShader);
+
+    GLint linkOK;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkOK);
+    if (linkOK) {
+        return program;
+    }
+    else {
+        GLint infoLogLength;
+        char* infoLog;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+        infoLog = new char[infoLogLength];
+        glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
+        log_err("Could not link shading program.\n");
+        log_err("%s", infoLog);
+        delete[] infoLog;
+        glDeleteProgram(program);
+        return 0u;
+    }
+}
+#endif
+
 int init(coreState *cs, Settings* settings)
 {
     try {
@@ -458,6 +553,11 @@ int init(coreState *cs, Settings* settings)
             cs->settings = new Settings();
         }
 
+#ifdef OPENGL_INTERPOLATION
+        if (cs->settings->interpolate) {
+            SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+        }
+#endif
         check(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
               "SDL_Init: Error: %s\n",
               SDL_GetError());
@@ -535,12 +635,22 @@ int init(coreState *cs, Settings* settings)
         unsigned int h = cs->screen.h;
         name = cs->screen.name;
 
-        int windowFlags = SDL_WINDOW_RESIZABLE;
+        Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
+#ifdef OPENGL_INTERPOLATION
+        // TODO: Figure out whether OpenGL 2.0 should be used for desktop. Also
+        // support OpenGL ES 2.0.
+        if (cs->settings->interpolate) {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            windowFlags |= SDL_WINDOW_OPENGL;
+        }
+#endif
 
         cs->screen.window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, windowFlags);
         check(cs->screen.window != NULL, "SDL_CreateWindow: Error: %s\n", SDL_GetError());
         cs->screen.renderer =
-            SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | (settings->vsync ? SDL_RENDERER_PRESENTVSYNC : 0));
+            SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | (cs->settings->vsync ? SDL_RENDERER_PRESENTVSYNC : 0));
         check(cs->screen.renderer != NULL, "SDL_CreateRenderer: Error: %s\n", SDL_GetError());
 
         SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_BLEND);
@@ -557,6 +667,99 @@ int init(coreState *cs, Settings* settings)
         {
             SDL_RenderSetIntegerScale(cs->screen.renderer, SDL_TRUE);
         }
+
+#ifdef OPENGL_INTERPOLATION
+        if (cs->settings->interpolate) {
+            cs->screen.target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_GetWindowPixelFormat(cs->screen.window),  SDL_TEXTUREACCESS_TARGET, 640, 480);
+        }
+        else {
+            cs->screen.target_tex = NULL;
+        }
+
+        cs->screen.interpolate_shading_prog = 0u;
+
+        if (cs->settings->interpolate) {
+            if (!gladLoadGL()) {
+                return 1;
+            }
+
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_TEXTURE_2D);
+
+            /*
+            Vertex layout (triangle strip):
+
+            0 - 2
+            | / |
+            1 - 3
+            */
+
+            // By avoiding as much client-to-server data transfer as possible,
+            // performance should be better; memory access on modern systems is much
+            // more expensive than just generating the data with computation, in many
+            // cases. So just calculate positions from gl_VertexID, rather than using
+            // vertex arrays. And take advantage of hardware linear interpolation,
+            // rather than sampling in the fragment shader multiple times and doing
+            // our own interpolation.
+            cs->screen.interpolate_shading_prog = CompileShadingProgram(
+                "#version 330\n"
+                "out vec2 texCoord;"
+                "void main() {"
+                "   vec4 pos = vec4(float(gl_VertexID / 2 != 0) * 2 - 1, float(gl_VertexID % 2 == 0) * 2 - 1, 0.0, 1.0);"
+                "   gl_Position = pos;"
+                "   texCoord = (pos.xy + vec2(1.0, -1.0)) / vec2(2.0, -2.0);"
+                "}",
+
+                NULL,
+
+                "#version 330u\n"
+                "in vec2 texCoord;"
+                "uniform sampler2D tex;"
+                "uniform vec2 viewportSize;"
+                "layout(location = 0) out vec4 outColor;"
+                "const vec2 texSize = vec2(640.0, 480.0);"
+                "void main() {"
+                // 0.0 if abs(fractCoord.c) < cutoff, fractCoord.c if
+                // abs(fractCoord.c) >= cutoff, where c is x or y.
+                // Also, it must be true that 0.5 > cutoff >= 0.0, though it
+                // appears if cutoff is 0.5, the interpolation works, though that
+                // might not work correctly on all hardware. This value was found
+                // through experimentation, to get to a "close enough" value that
+                // looks good at any of the lower resolutions that need
+                // interpolation.
+                "   const float cutoff = 0.493;"
+
+                // Scaling down fractCoord sharpens the output, making the
+                // interpolated boundary between upscaled pixels a bit thinner.
+                // The factor multiplied into the fract() return value was found
+                // through experimentation, and is "close enough" to the desired
+                // output. At high enough resolutions, the clamping results in no
+                // interpolation being done. As the resolution approaches 480p,
+                // more smoothing is used, as having thicker sharp edged graphics
+                // vs. other graphics being thinner, where both graphics in those
+                // cases are the same thickness at 480p, is undesirable.
+                "   vec2 fractCoord = fract(texCoord * texSize - 0.5) * clamp((8.0 / (viewportSize.x / texSize.x) - 1.0) / 14.0 + 0.5, 0.5, 1.0);"
+                "   vec2 offset = vec2(float(abs(fractCoord.x) > cutoff), float(abs(fractCoord.y) > cutoff)) * fractCoord;"
+                "   outColor = texture(tex, (floor(texCoord * texSize - 0.5) + offset + 0.5) / texSize);"
+                "}");
+            if (!cs->screen.interpolate_shading_prog) {
+                return 1;
+            }
+
+            glUseProgram(cs->screen.interpolate_shading_prog);
+            glUniform1i(glGetUniformLocation(cs->screen.interpolate_shading_prog, "tex"), 0);
+            glUseProgram(0u);
+
+            if (SDL_GL_BindTexture(cs->screen.target_tex, NULL, NULL) < 0) {
+                fprintf(stderr, "Failed to bind target_tex.\n");
+            }
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            if (SDL_GL_UnbindTexture(cs->screen.target_tex) < 0) {
+                fprintf(stderr, "Failed to unbind target_tex.\n");
+            }
+        }
+#endif
 
         check(load_files(cs) == 0, "load_files() returned failure\n");
 
@@ -643,13 +846,20 @@ void quit(coreState *cs)
         delete cs->assets;
     }
 
+#ifdef OPENGL_INTERPOLATION
+    if (cs->screen.target_tex) {
+        SDL_DestroyTexture(cs->screen.target_tex);
+    }
+    if (cs->screen.interpolate_shading_prog) {
+        glDeleteProgram(cs->screen.interpolate_shading_prog);
+    }
+#endif
+
     if(cs->screen.renderer)
         SDL_DestroyRenderer(cs->screen.renderer);
 
     if(cs->screen.window)
         SDL_DestroyWindow(cs->screen.window);
-
-    // SDL_DestroyTexture(cs->screen.target_tex);
 
     cs->screen.window = NULL;
     cs->screen.renderer = NULL;
@@ -749,6 +959,7 @@ int run(coreState *cs)
     const double fpsTimeFrameDuration = 1.0;
     double fpsTimeFrameStart = 0.0;
 #endif
+
     while(running)
     {
         double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
@@ -858,9 +1069,13 @@ int run(coreState *cs)
             }
         }
 
+#ifdef OPENGL_INTERPOLATION
+        if (cs->settings->interpolate) {
+            SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
+        }
+#endif
         SDL_RenderClear(cs->screen.renderer);
 
-        // SDL_SetRenderTarget(cs->screen.renderer, NULL);
         gfx_drawbg(cs, newFrames);
 
         if (cs->p1game) {
@@ -869,9 +1084,6 @@ int run(coreState *cs)
         else if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
             cs->menu->draw(cs->menu);
         }
-
-        // SDL_SetRenderTarget(cs->screen.renderer, NULL);
-        // SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 255);
 
         gfx_drawbuttons(cs, 0);
         gfx_drawmessages(cs, 0);
@@ -883,7 +1095,69 @@ int run(coreState *cs)
         gfx_drawbuttons(cs, EMERGENCY_OVERRIDE);
         gfx_drawmessages(cs, EMERGENCY_OVERRIDE);
         gfx_drawanimations(cs, EMERGENCY_OVERRIDE);
+
+#ifdef OPENGL_INTERPOLATION
+        if (cs->settings->interpolate) {
+            SDL_RenderFlush(cs->screen.renderer);
+            SDL_SetRenderTarget(cs->screen.renderer, NULL);
+
+            glUseProgram(cs->screen.interpolate_shading_prog);
+            int w, h;
+            SDL_GL_GetDrawableSize(cs->screen.window, &w, &h);
+            if ((SDL_GetWindowFlags(cs->screen.window) & ~SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN) {
+                double widthFactor, heightFactor;
+                if (cs->settings->videoStretch) {
+                    widthFactor = w / 640.0;
+                    heightFactor = h / 480.0;
+                }
+                else {
+                    widthFactor = w / 640;
+                    heightFactor = h / 480;
+                    if (widthFactor > cs->settings->videoScale) {
+                        widthFactor = cs->settings->videoScale;
+                    }
+                    if (heightFactor > cs->settings->videoScale) {
+                        heightFactor = cs->settings->videoScale;
+                    }
+                }
+                GLsizei viewportWidth, viewportHeight;
+                if (widthFactor > heightFactor) {
+                    viewportWidth = heightFactor * 640;
+                    viewportHeight = heightFactor * 480;
+                }
+                else {
+                    viewportWidth = widthFactor * 640;
+                    viewportHeight = widthFactor * 480;
+                }
+                glViewport((w - viewportWidth) / 2, (h - viewportHeight) / 2, viewportWidth, viewportHeight);
+                glUniform2f(glGetUniformLocation(cs->screen.interpolate_shading_prog, "viewportSize"), viewportWidth, viewportHeight);
+            }
+            else {
+                // TODO: Change this once a fullscreen resolution setting is supported.
+                glViewport(0, 0, w, h);
+                glUniform2f(glGetUniformLocation(cs->screen.interpolate_shading_prog, "viewportSize"), w, h);
+            }
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glActiveTexture(GL_TEXTURE0);
+            if (SDL_GL_BindTexture(cs->screen.target_tex, NULL, NULL) < 0) {
+                fprintf(stderr, "Failed to bind target_tex.\n");
+            }
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4u);
+            glUseProgram(0u);
+            if (SDL_GL_UnbindTexture(cs->screen.target_tex) < 0) {
+                fprintf(stderr, "Failed to unbind target_tex.\n");
+            }
+
+            SDL_GL_SwapWindow(cs->screen.window);
+        }
+        else {
+            SDL_RenderPresent(cs->screen.renderer);
+        }
+#else
         SDL_RenderPresent(cs->screen.renderer);
+#endif
 
         if (newFrames > 0u) {
             for (size_t i = 0; i < cs->gfx_messages_max; i++) {
@@ -1304,7 +1578,7 @@ int procevents(coreState *cs, GuiWindow& wind)
                     {
                         cs->settings->fullscreen = true;
                         SDL_SetWindowSize(cs->screen.window, 640, 480);
-                        int flags = (SDL_GetModState() & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
+                        SDL_WindowFlags flags = (SDL_GetModState() & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
                         if(SDL_SetWindowFullscreen(cs->screen.window, flags) < 0)
                         {
                             cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << endl;

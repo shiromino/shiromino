@@ -10,7 +10,10 @@ build tool on your platform (such as `make`). When building on Windows with
 Visual Studio, use [Vcpkg](https://github.com/Microsoft/vcpkg) for installing
 the libraries and use the official [CMake Windows
 distribution](https://cmake.org/download/). You can also build on Windows in an
-[MSYS2](https://www.msys2.org/) environment.
+[MSYS2](https://www.msys2.org/) environment. There's a CMake variable,
+OPENGL_INTERPOLATION, that when set, enables support for interpolated scaling,
+best when combined with the video stretch option; interpolation isn't compiled
+in by default.
 
 ## Building and running on Windows with Visual Studio and Vcpkg
 TODO
@@ -33,9 +36,13 @@ $ cd build
 
 # Use this for Linux.
 $ cmake ..
+# Enable support for the interpolation option.
+$ cmake -D OPENGL_INTERPOLATION=1 ..
 
 # Use this on Windows with MSYS2.
 $ cmake -G "MSYS Makefiles" ..
+# Enable support for the interpolation option.
+$ cmake -G "MSYS Makefiles" -D OPENGL_INTERPOLATION=1 ..
 
 # Omit -j$(nproc) if your platform doesn't have nproc.
 $ make -j$(nproc)

@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "Config.hpp"
 #include "Path.hpp"
 #include "PDINI.hpp"
 #include "SDL.h"
@@ -82,6 +83,9 @@ namespace Shiro {
         int vsync;
         int frameDelay;
         int vsyncTimestep;
+#ifdef OPENGL_INTERPOLATION
+        int interpolate;
+#endif
 
         int masterVolume;
         int sfxVolume;

@@ -187,6 +187,9 @@ Settings::Settings() :
     vsync(0),
     frameDelay(1),
     vsyncTimestep(0),
+#ifdef OPENGL_INTERPOLATION
+    interpolate(0),
+#endif
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),
@@ -303,6 +306,16 @@ bool Settings::read(string filename) {
     else {
         this->vsyncTimestep = !!vsyncTimestep;
     }
+
+#ifdef OPENGL_INTERPOLATION
+    int interpolate;
+    if (!ini.get("SCREEN", "INTERPOLATE", interpolate)) {
+        defaultUsed = true;
+    }
+    else {
+        this->interpolate = interpolate;
+    }
+#endif
 
     // [ACCOUNT]
     string playerName;

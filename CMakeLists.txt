@@ -19,6 +19,13 @@ else()
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if(${OPENGL_INTERPOLATION})
+    find_package(OpenGL REQUIRED)
+    set(OPENGL_LIBRARY OpenGL::GL)
+else()
+    set(OPENGL_LIBRARY "")
+endif()
+
 find_package(PkgConfig)
 if(${PKG_CONFIG_FOUND})
     pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
@@ -29,16 +36,18 @@ if(${PKG_CONFIG_FOUND})
     	${SDL2_LIBRARIES}
     	${SDL2_image_LIBRARIES}
     	${SDL2_mixer_LIBRARIES}
-    	${sqlite3_LIBRARIES})
+    	${sqlite3_LIBRARIES}
+        ${OPENGL_LIBRARY})
 else()
     find_package(sdl2 REQUIRED)
     find_package(sdl2-image REQUIRED)
     find_package(sdl2-mixer REQUIRED)
     find_package(sqlite3 REQUIRED)
     if(${VCPKG_TOOLCHAIN})
-        # vcpkg doesn't automatically copy over the OGG/Vorbis libraries needed
-        # to play OGG files with SDL_mixer, so they have to be explicitly added
-        # as dependencies to Shiromino to work around that bug.
+        # When using dynamically linked libraries, vcpkg doesn't automatically
+        # copy over the OGG/Vorbis libraries needed to play OGG files with
+        # SDL_mixer, so they have to be explicitly added as dependencies to
+        # Shiromino to work around that bug.
         find_package(ogg REQUIRED)
         find_library(VORBIS_LIBRARY vorbis)
         find_library(VORBISFILE_LIBRARY vorbisfile)
@@ -47,6 +56,7 @@ else()
             SDL2::SDL2_image
             SDL2::SDL2_mixer
             SQLite::SQLite3
+            ${OPENGL_LIBRARY}
             ${OGG_LIBARIES}
             ${VORBIS_LIBRARY}
             ${VORBISFILE_LIBRARY})
@@ -57,13 +67,23 @@ else()
             SDL2::SDL2 SDL2::SDL2main
             SDL2::SDL2_image
             SDL2::SDL2_mixer
-            SQLite::SQLite3)
+            SQLite::SQLite3
+            ${OPENGL_LIBRARY})
     endif()
 # TODO: Other platforms; macOS for sure.
 endif()
 
-configure_file(include/Config.hpp.in Config.hpp)
+configure_file(include/Config.hpp.in Config.hpp @ONLY)
 
+if(${OPENGL_INTERPOLATION})
+    set(OPENGL_SOURCES src/glad.cpp)
+    set(OPENGL_HEADERS
+        src/glad.h
+        src/khrplatform.h)
+else()
+    set(OPENGL_SOURCES "")
+    set(OPENGL_HEADERS "")
+endif()
 set(SOURCES
     src/Audio.cpp
     src/core.cpp
@@ -97,7 +117,9 @@ set(SOURCES
     src/SGUIL/SGUIL_GuiOptionButton.cpp
     src/SGUIL/SGUIL_GuiTextField.cpp
     src/SGUIL/SGUIL_GuiWindow.cpp
-    src/SGUIL/SGUIL.cpp)
+    src/SGUIL/SGUIL.cpp
+
+    ${OPENGL_SOURCES})
 
 set(HEADERS
     src/Audio.hpp
@@ -138,6 +160,8 @@ set(HEADERS
     src/Timer.hpp
 
     src/SGUIL/SGUIL.hpp
+
+    ${OPENGL_HEADERS}
 
     src/PCG/pcg_extras.hpp
     src/PCG/pcg_random.hpp

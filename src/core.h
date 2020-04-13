@@ -22,8 +22,12 @@
 #include <vector>
 #include <memory>
 
+#include "Config.hpp"
 #include "SDL.h"
 #include "SDL_mixer.h"
+#ifdef OPENGL_INTERPOLATION
+#include "glad.h"
+#endif
 #include "SGUIL/SGUIL.hpp"
 #include "GuiScreenManager.hpp"
 #include "Settings.hpp"
@@ -156,7 +160,10 @@ struct coreState
         unsigned int h;
         SDL_Window *window;
         SDL_Renderer *renderer;
-        //SDL_Texture *target_tex;
+#ifdef OPENGL_INTERPOLATION
+        SDL_Texture *target_tex;
+        GLuint interpolate_shading_prog;
+#endif
     } screen;
 
     char *iniFilename;
