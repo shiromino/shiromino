@@ -703,22 +703,22 @@ int init(coreState *cs, Settings* settings)
             // our own interpolation.
             cs->screen.interpolate_shading_prog = CompileShadingProgram(
                 "#version 330\n"
-                "out vec2 texCoord;"
-                "void main() {"
-                "   vec4 pos = vec4(float(gl_VertexID / 2 != 0) * 2 - 1, float(gl_VertexID % 2 == 0) * 2 - 1, 0.0, 1.0);"
-                "   gl_Position = pos;"
-                "   texCoord = (pos.xy + vec2(1.0, -1.0)) / vec2(2.0, -2.0);"
-                "}",
+                "out vec2 texCoord;\n"
+                "void main() {\n"
+                "   vec4 pos = vec4(float(gl_VertexID / 2 != 0) * 2 - 1, float(gl_VertexID % 2 == 0) * 2 - 1, 0.0, 1.0);\n"
+                "   gl_Position = pos;\n"
+                "   texCoord = (pos.xy + vec2(1.0, -1.0)) / vec2(2.0, -2.0);\n"
+                "}\n",
 
                 NULL,
 
-                "#version 330u\n"
-                "in vec2 texCoord;"
-                "uniform sampler2D tex;"
-                "uniform vec2 viewportSize;"
-                "layout(location = 0) out vec4 outColor;"
-                "const vec2 texSize = vec2(640.0, 480.0);"
-                "void main() {"
+                "#version 330\n"
+                "in vec2 texCoord;\n"
+                "uniform sampler2D tex;\n"
+                "uniform vec2 viewportSize;\n"
+                "layout(location = 0) out vec4 outColor;\n"
+                "const vec2 texSize = vec2(640.0, 480.0);\n"
+                "void main() {\n"
                 // 0.0 if abs(fractCoord.c) < cutoff, fractCoord.c if
                 // abs(fractCoord.c) >= cutoff, where c is x or y.
                 // Also, it must be true that 0.5 > cutoff >= 0.0, though it
@@ -727,7 +727,7 @@ int init(coreState *cs, Settings* settings)
                 // through experimentation, to get to a "close enough" value that
                 // looks good at any of the lower resolutions that need
                 // interpolation.
-                "   const float cutoff = 0.493;"
+                "   const float cutoff = 0.493;\n"
 
                 // Scaling down fractCoord sharpens the output, making the
                 // interpolated boundary between upscaled pixels a bit thinner.
@@ -738,10 +738,10 @@ int init(coreState *cs, Settings* settings)
                 // more smoothing is used, as having thicker sharp edged graphics
                 // vs. other graphics being thinner, where both graphics in those
                 // cases are the same thickness at 480p, is undesirable.
-                "   vec2 fractCoord = fract(texCoord * texSize - 0.5) * clamp((8.0 / (viewportSize.x / texSize.x) - 1.0) / 14.0 + 0.5, 0.5, 1.0);"
-                "   vec2 offset = vec2(float(abs(fractCoord.x) > cutoff), float(abs(fractCoord.y) > cutoff)) * fractCoord;"
-                "   outColor = texture(tex, (floor(texCoord * texSize - 0.5) + offset + 0.5) / texSize);"
-                "}");
+                "   vec2 fractCoord = fract(texCoord * texSize - 0.5) * clamp((8.0 / (viewportSize.x / texSize.x) - 1.0) / 14.0 + 0.5, 0.5, 1.0);\n"
+                "   vec2 offset = vec2(float(abs(fractCoord.x) > cutoff), float(abs(fractCoord.y) > cutoff)) * fractCoord;\n"
+                "   outColor = texture(tex, (floor(texCoord * texSize - 0.5) + offset + 0.5) / texSize);\n"
+                "}\n");
             if (!cs->screen.interpolate_shading_prog) {
                 return 1;
             }
