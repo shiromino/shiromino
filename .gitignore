@@ -23,6 +23,7 @@ tags
 *.so
 /.vs/*
 /build*
+CMakeLists.txt.user
 
 # Packages #
 ############

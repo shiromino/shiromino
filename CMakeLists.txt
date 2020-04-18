@@ -37,7 +37,8 @@ if(${PKG_CONFIG_FOUND})
     	${SDL2_image_LIBRARIES}
     	${SDL2_mixer_LIBRARIES}
     	${sqlite3_LIBRARIES}
-        ${OPENGL_LIBRARY})
+        ${OPENGL_LIBRARY}
+	${CMAKE_DL_LIBS})
 else()
     find_package(sdl2 REQUIRED)
     find_package(sdl2-image REQUIRED)
