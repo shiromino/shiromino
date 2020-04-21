@@ -718,29 +718,34 @@ int init(coreState *cs, Settings* settings)
                 "uniform vec2 viewportSize;\n"
                 "layout(location = 0) out vec4 outColor;\n"
                 "const vec2 texSize = vec2(640.0, 480.0);\n"
-                "void main() {\n"
-                // 0.0 if abs(fractCoord.c) < cutoff, fractCoord.c if
-                // abs(fractCoord.c) >= cutoff, where c is x or y.
-                // Also, it must be true that 0.5 > cutoff >= 0.0, though it
-                // appears if cutoff is 0.5, the interpolation works, though that
-                // might not work correctly on all hardware. This value was found
-                // through experimentation, to get to a "close enough" value that
-                // looks good at any of the lower resolutions that need
-                // interpolation.
-                "   const float cutoff = 0.493;\n"
 
-                // Scaling down fractCoord sharpens the output, making the
-                // interpolated boundary between upscaled pixels a bit thinner.
-                // The factor multiplied into the fract() return value was found
-                // through experimentation, and is "close enough" to the desired
-                // output. At high enough resolutions, the clamping results in no
-                // interpolation being done. As the resolution approaches 480p,
-                // more smoothing is used, as having thicker sharp edged graphics
-                // vs. other graphics being thinner, where both graphics in those
-                // cases are the same thickness at 480p, is undesirable.
-                "   vec2 fractCoord = fract(texCoord * texSize - 0.5) * clamp((8.0 / (viewportSize.x / texSize.x) - 1.0) / 14.0 + 0.5, 0.5, 1.0);\n"
-                "   vec2 offset = vec2(float(abs(fractCoord.x) > cutoff), float(abs(fractCoord.y) > cutoff)) * fractCoord;\n"
-                "   outColor = texture(tex, (floor(texCoord * texSize - 0.5) + offset + 0.5) / texSize);\n"
+                // filterCoord provided by PARTY MAN X ( https://github.com/PARTYMANX ).
+                // It's better than the thing I hacked together before. -Brandon McGriff
+                "vec2 filterCoord(vec2 uv, vec2 srcRes) {\n"
+                    "vec2 invSrc = 1.0 / srcRes;\n"
+
+                    // calculate destination resolution
+                    "vec2 duv = vec2(dFdx(uv.x), dFdy(uv.y));\n"
+                    "vec2 dstRes = 1.0 / abs(duv);\n"
+
+                    "vec2 scale = dstRes * invSrc;\n"                   // (dstRes / invSrc)
+
+                    "vec2 scaleFactor = floor(scale) + 1.0;\n"          // add one to integer scale factor so we scale down, not up
+
+                    "vec2 texelCoord = uv * srcRes;\n"                  // coordinate in texel space
+
+                    "vec2 roundCoord = floor(texelCoord) + 0.5;\n"      // center of nearest texel of uv
+                    "vec2 fractCoord = fract(texelCoord) - 0.5;\n"      // offset from nearest texel
+
+                    "vec2 offset = abs(fractCoord * scaleFactor);\n"    // absolute offset multiplied by scale factor
+                    "offset -= 0.5 * (scaleFactor - 1.0);\n"            // subtract border of scaled texel
+                    "offset = max(offset, 0.0) * sign(fractCoord);\n"   // get rid of wrong direction offsets, restore sign
+
+                    "return (roundCoord + offset) * invSrc;\n"
+                "}\n"
+
+                "void main() {\n"
+                "   outColor = texture(tex, filterCoord(texCoord, texSize));\n"
                 "}\n");
             if (!cs->screen.interpolate_shading_prog) {
                 return 1;
