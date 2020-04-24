@@ -74,8 +74,9 @@ struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 
 int gfx_init(coreState *cs);
 void gfx_quit(coreState *cs);
 
-int gfx_start_bg_fade_in(coreState *cs);
-void gfx_drawbg(coreState *cs, unsigned frames);
+int gfx_start_bg_fade_in(coreState *cs, SDL_Texture* bg_new);
+void gfx_updatebg(coreState* cs);
+void gfx_drawbg(coreState *cs);
 int gfx_draw_emergency_bg_darken(coreState *cs);
 
 // these are a little bit hacky... just add to each RGB value of the pixels

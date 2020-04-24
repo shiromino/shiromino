@@ -173,6 +173,7 @@ struct coreState
     struct assetdb *assets;
     SDL_Texture *bg;
     SDL_Texture *bg_old;
+    Sint16 bg_r, bg_g, bg_b;
     //gfx_animation *g2_bgs[10];
 
     //gfx_animation *anim_bg;

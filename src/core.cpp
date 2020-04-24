@@ -290,6 +290,9 @@ void coreState_initialize(coreState *cs)
 
     cs->bg = NULL;
     cs->bg_old = NULL;
+    cs->bg_r = 0u;
+    cs->bg_g = 0u;
+    cs->bg_b = 0u;
     // cs->anim_bg = NULL;
     // cs->anim_bg_old = NULL;
     cs->gfx_messages_max = 0;
@@ -773,6 +776,9 @@ int init(coreState *cs, Settings* settings)
 
         cs->bg = cs->assets->bg_temp.tex;
         cs->bg_old = cs->bg;
+        cs->bg_r = 255;
+        cs->bg_g = 255;
+        cs->bg_b = 255;
         // blank = cs->assets->blank.tex;
 
         // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
@@ -1026,7 +1032,7 @@ int run(coreState *cs)
                     free(cs->p1game);
                     cs->p1game = NULL;
 
-                    cs->bg = cs->assets->bg_temp.tex;
+                    gfx_start_bg_fade_in(cs, cs->assets->bg_temp.tex);
                     break;
                 }
             }
@@ -1053,6 +1059,8 @@ int run(coreState *cs)
             else if (cs->menu && (!cs->p1game || cs->menu_input_override)) {
                 cs->menu->frame_counter++;
             }
+
+            gfx_updatebg(cs);
 
 #ifndef DEBUG_FRAME_TIMING
             gameFrameTime = 1.0 / cs->fps;
@@ -1081,7 +1089,7 @@ int run(coreState *cs)
 #endif
         SDL_RenderClear(cs->screen.renderer);
 
-        gfx_drawbg(cs, newFrames);
+        gfx_drawbg(cs);
 
         if (cs->p1game) {
             cs->p1game->draw(cs->p1game);

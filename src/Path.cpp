@@ -1,7 +1,6 @@
 #include <regex>
 
 #include "Path.hpp"
-#include "stringtools.hpp"
 
 using namespace Shiro;
 using namespace std;

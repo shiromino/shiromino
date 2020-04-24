@@ -161,143 +161,44 @@ void gfx_quit(coreState *cs)
     free(monofont_fixedsys);
 }
 
-int gfx_start_bg_fade_in(coreState *cs)
-{
+int gfx_start_bg_fade_in(coreState *cs, SDL_Texture* bg_new) {
     if(!cs)
         return -1;
 
-    if(cs->bg)
-        SDL_SetTextureColorMod(cs->bg, 0, 0, 0);
+    if (bg_new) {
+        cs->bg_old = cs->bg;
+        cs->bg = bg_new;
+        cs->bg_r = -255;
+        cs->bg_g = -255;
+        cs->bg_b = -255;
+    }
     else
         return 1;
 
     return 0;
 }
 
-void gfx_drawbg(coreState *cs, unsigned frames) {
-    // SDL_Texture *bg_darken = (asset_by_name(cs, "bg_darken"))->data;
-    // SDL_Texture *anim_bg_frame = NULL;
-    // string asset_name;
-    Uint8 r = 0u, g = 0u, b = 0u;
-    // Uint8 a;
-
-    /*if(cs->anim_bg || cs->anim_bg_old) {
-        SDL_SetTextureColorMod(bg_darken, 0, 0, 0);
-        if(cs->anim_bg != cs->anim_bg_old) {
-            SDL_GetTextureAlphaMod(bg_darken, &a);
-            if(a < 255) {
-                if(a < 255 - BG_FADE_RATE)
-                    a += BG_FADE_RATE;
-                else
-                    a = 255;
-            } else {
-
-            }
-        } else {
-            asset_name = bformat("%s/%05d", cs->anim_bg->name->data, cs->anim_bg->counter/cs->anim_bg->frame_multiplier);
-            anim_bg_frame = (asset_by_name(cs, asset_name->data))->data;
-            //printf("Drawing %s\n", asset_name->data);
-
-            SDL_RenderCopy(cs->screen.renderer, anim_bg_frame, NULL, NULL);
-        //}
-
-        if(cs->anim_bg) {
-            cs->anim_bg->counter++;
-            if(cs->anim_bg->counter == cs->anim_bg->num_frames*cs->anim_bg->frame_multiplier)
-                cs->anim_bg->counter = 0;
-        }
-
-      if(cs->anim_bg_old && cs->anim_bg != cs->anim_bg_old) {
-            cs->anim_bg_old->counter++;
-            if(cs->anim_bg_old->counter == cs->anim_bg->num_frames*cs->anim_bg->frame_multiplier)
-                cs->anim_bg_old->counter = 0;
-        }
-
-        return 0;
-    }*/
-
-    for (unsigned frame = 0u; frame < frames; frame++) {
-        if (cs->bg != cs->bg_old) {
-            if (cs->bg_old) {
-                SDL_GetTextureColorMod(cs->bg_old, &r, &g, &b);
-            }
-
-            if (r && cs->bg_old) {
-                if (r > BG_FADE_RATE) {
-                    r -= BG_FADE_RATE;
-                    g -= BG_FADE_RATE;
-                    b -= BG_FADE_RATE;
-                }
-                else {
-                    r = 0;
-                    g = 0;
-                    b = 0;
-
-                    SDL_SetTextureColorMod(cs->bg, 0, 0, 0);
-                }
-
-                SDL_SetTextureColorMod(cs->bg_old, r, g, b);
-            }
-            else {
-                if (!cs->bg) {
-                    return;
-                }
-
-                SDL_GetTextureColorMod(cs->bg, &r, &g, &b);
-                if (r < 255) {
-                    if (r < 255 - BG_FADE_RATE) {
-                        r += BG_FADE_RATE;
-                        g += BG_FADE_RATE;
-                        b += BG_FADE_RATE;
-                    }
-                    else {
-                        r = 255;
-                        g = 255;
-                        b = 255;
-
-                        cs->bg_old = cs->bg;
-                    }
-                }
-
-                SDL_SetTextureColorMod(cs->bg, r, g, b);
-            }
-        }
-        else {
-            if (!cs->bg) {
-                return;
-            }
-
-            SDL_GetTextureColorMod(cs->bg, &r, &g, &b);
-            if (r < 255 - BG_FADE_RATE) {
-                r += BG_FADE_RATE;
-                g += BG_FADE_RATE;
-                b += BG_FADE_RATE;
-            }
-            else {
-                r = 255;
-                g = 255;
-                b = 255;
-            }
-
-            SDL_SetTextureColorMod(cs->bg, r, g, b);
-        }
+void gfx_updatebg(coreState* cs) {
+    if (cs->bg_r < 255) {
+        cs->bg_r += BG_FADE_RATE;
+        cs->bg_g += BG_FADE_RATE;
+        cs->bg_b += BG_FADE_RATE;
     }
-
-    r = 0u, g = 0u, b = 0u;
-    if (cs->bg != cs->bg_old) {
-        if (cs->bg_old) {
-            SDL_GetTextureColorMod(cs->bg_old, &r, &g, &b);
-        }
-
-        if (r && cs->bg_old) {
-            SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
-        }
-        else if (cs->bg) {
-            SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
-        }
+    if (cs->bg_r > 255) {
+        cs->bg_r = 255;
+        cs->bg_g = 255;
+        cs->bg_b = 255;
     }
-    else if (cs->bg) {
+}
+
+void gfx_drawbg(coreState *cs) {
+    if (cs->bg && cs->bg_r >= 0) {
+        SDL_SetTextureColorMod(cs->bg, cs->bg_r, cs->bg_g, cs->bg_b);
         SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
+    }
+    else if (cs->bg_old && cs->bg_r < 0) {
+        SDL_SetTextureColorMod(cs->bg_old, -cs->bg_r, -cs->bg_g, -cs->bg_b);
+        SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
     }
 }
 

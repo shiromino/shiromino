@@ -555,6 +555,9 @@ int menu_init(game_t *g)
 
     g->origin->bg = g->origin->assets->bg_temp.tex;
     g->origin->bg_old = g->origin->bg;
+    g->origin->bg_r = 255;
+    g->origin->bg_g = 255;
+    g->origin->bg_b = 255;
 
     return 0;
 }
@@ -1075,6 +1078,9 @@ int mload_main(game_t *g, int val)
 
     cs->bg = cs->assets->bg_temp.tex;
     cs->bg_old = cs->bg;
+    cs->bg_r = 255;
+    cs->bg_g = 255;
+    cs->bg_b = 255;
 
     //d->menu.resize(16, menu_opt());
     d->menu_id = MENU_ID_MAIN;
@@ -1346,6 +1352,9 @@ int mload_practice(game_t *g, int val)
 
     cs->bg = NULL;
     cs->bg_old = NULL;
+    cs->bg_r = 0;
+    cs->bg_g = 0;
+    cs->bg_b = 0;
 
     d->menu.resize(MENU_PRACTICE_NUMOPTS);
     d->menu_id = MENU_ID_PRACTICE;

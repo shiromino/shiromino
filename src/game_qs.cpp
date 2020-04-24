@@ -1034,8 +1034,7 @@ int qs_game_init(game_t *g)
 
     if(!q->pracdata)
     {
-        g->origin->bg = (&g->origin->assets->bg0 + bgnumber)->tex;
-        gfx_start_bg_fade_in(g->origin);
+        gfx_start_bg_fade_in(g->origin, (&g->origin->assets->bg0 + bgnumber)->tex);
 
         if(q->mode_type == MODE_G2_DEATH)
         {
@@ -2590,7 +2589,7 @@ int qs_process_lockflash(game_t *g)
                     cs->assets->newsection->play(*cs->settings);
                     if(q->section < 13)
                     {
-                        cs->bg = (&cs->assets->bg0 + q->section)->tex;
+                        gfx_start_bg_fade_in(cs, (&cs->assets->bg0 + q->section)->tex);
                     }
                 }
             }
