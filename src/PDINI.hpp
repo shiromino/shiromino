@@ -1,5 +1,34 @@
 /**
- * This library is public domain; its author disclaims any copyright to it.
+ * This library is available as public domain; its author disclaims any
+ * copyright to it, if you choose to license as public domain.
+ *
+ * You may credit the author, Brandon McGriff, when licensing as public domain.
+ *
+ * You may also license this library under the MIT license; this is intended as
+ * an option for countries that have no laws for explicit submission to the
+ * public domain:
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2020 Brandon McGriff
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 #pragma once
 
@@ -79,20 +108,20 @@ namespace PDINI {
             std::string sectionName("");
 
             std::pair<bool, std::size_t> readStatus(true, 0);
-            for (std::size_t invalidLineNum = 1; getline(file, line); invalidLineNum++) {
-                if (regex_match(line, commentOrEmptyRegex)) {
+            for (std::size_t invalidLineNum = 1; std::getline(file, line); invalidLineNum++) {
+                if (std::regex_match(line, commentOrEmptyRegex)) {
                     continue;
                 }
 
                 bool matched = true;
                 std::smatch matches;
-                if (regex_search(line, matches, keyValueRegex)) {
+                if (std::regex_search(line, matches, keyValueRegex)) {
                     if (matches[2] != "") {
                         sections[sectionName][toName(matches[1])] = matches[2];
                         rawKeyNames[toName(matches[1])] = matches[1];
                     }
                 }
-                else if (regex_search(line, matches, sectionRegex)) {
+                else if (std::regex_search(line, matches, sectionRegex)) {
                     sectionName = toName(matches[1]);
                     rawSectionNames[toName(matches[1])] = matches[1];
                 }
@@ -256,7 +285,7 @@ namespace PDINI {
             const std::regex valueRegex("(?!\\s+).*[^\\s]");
             const std::string realSectionName = toName(sectionName);
             const std::string realKeyName = toName(keyName);
-            if (regex_match(keyName, nameRegex) && regex_match(keyName, nameRegex) && regex_match(value, valueRegex)) {
+            if (std::regex_match(keyName, nameRegex) && std::regex_match(keyName, nameRegex) && std::regex_match(value, valueRegex)) {
                 if (value != "") {
                     sections[realSectionName][realKeyName] = value;
                     rawSectionNames[realSectionName] = sectionName;
@@ -280,7 +309,7 @@ namespace PDINI {
         void removeSection(const std::string sectionName) {
             const std::regex nameRegex("[_a-zA-Z][_a-zA-Z0-9]*");
             const std::string realSectionName = toName(sectionName);
-            if (regex_match(sectionName, nameRegex) && sections.count(sectionName)) {
+            if (std::regex_match(sectionName, nameRegex) && sections.count(sectionName)) {
                 sections.erase(realSectionName);
                 rawSectionNames.erase(realSectionName);
             }

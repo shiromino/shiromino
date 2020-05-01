@@ -1,8 +1,11 @@
 # Shiromino
 
 ## Building
-Dependencies: Compiler supporting C++17, CMake, SDL2 (version >= 2.0.5), SDL2_image, SDL2_mixer, OGG,
-vorbis, vorbisfile, SQLite3
+Dependencies: Compiler supporting C++17, CMake (version >= 3.10), SDL2,
+SDL2_image, SDL2_mixer, OGG, vorbis, vorbisfile, SQLite3
+
+SDL2 2.0.5 is required when not building with optional features. SDL2 2.0.10 is
+required when building with interpolation enabled.
 
 Create a directory to build in somewhere, change to that directory, run `cmake
 <shiromino-source-base-directory>` in the build directory, then build with the
@@ -10,10 +13,12 @@ build tool on your platform (such as `make`). When building on Windows with
 Visual Studio, use [Vcpkg](https://github.com/Microsoft/vcpkg) for installing
 the libraries and use the official [CMake Windows
 distribution](https://cmake.org/download/). You can also build on Windows in an
-[MSYS2](https://www.msys2.org/) environment. There's a CMake variable,
-OPENGL_INTERPOLATION, that when set, enables support for interpolated scaling,
-best when combined with the video stretch option; interpolation isn't compiled
-in by default.
+[MSYS2](https://www.msys2.org/) environment.
+
+There's a CMake variable, OPENGL_INTERPOLATION, that when set, enables support
+for an interpolated scaling INI option, best when combined with the video
+stretch option; interpolation isn't compiled in by default, and for now
+requires OpenGL 3.3 Core Profile support.
 
 ## Building and running on Windows with Visual Studio and Vcpkg
 TODO

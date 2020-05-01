@@ -3,6 +3,8 @@
 #include "SDL.h"
 #include <string>
 
+#include "core.h"
+
 #define EMERGENCY_OVERRIDE 1
 #define MESSAGE_EMERGENCY 0x1000000
 #define ANIMATION_EMERGENCY 0x1000000

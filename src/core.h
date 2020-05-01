@@ -88,7 +88,7 @@ struct keyflags
 // TODO: Refactor lists of assets with a number appended into arrays.
 struct assetdb
 {
-    gfx_image ASSET_IMG_NONE = {NULL};
+    gfx_image ASSET_IMG_NONE = { NULL };
 
 #define IMG(name, filename) gfx_image name;
 #include "images.h"
