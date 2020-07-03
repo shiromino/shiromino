@@ -22,7 +22,7 @@ Music::~Music() {
 
 bool Music::load(string directory, string name) {
     data = nullptr;
-    volume = MIX_MAX_VOLUME;
+    volume = 100.0f;
 
     Path path = directory;
     path << (name + ".ogg");
@@ -59,7 +59,7 @@ Sfx::~Sfx() {
 
 bool Sfx::load(string filenameNoExt) {
     data = nullptr;
-    volume = MIX_MAX_VOLUME;
+    volume = 100.0f;
 
     string path = filenameNoExt + ".wav";
     data = Mix_LoadWAV(path.c_str());
