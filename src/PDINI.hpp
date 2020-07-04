@@ -78,7 +78,7 @@ namespace PDINI {
          * and including the first invalid line; if no invalid lines were read,
          * the second value is 0.
          */
-        std::pair<bool, std::size_t> read(const std::string filename) {
+        std::pair<bool, std::size_t> read(const std::string& filename) {
             std::ifstream file(filename);
 
             if (file.fail()) {
@@ -144,7 +144,7 @@ namespace PDINI {
          * files that were read, or the names originally used to set values.
          * Returns true if the file was written successfully, otherwise false.
          */
-        bool write(const std::string filename) {
+        bool write(const std::string& filename) {
             std::ofstream file(filename);
 
             if (file.fail()) {
@@ -205,7 +205,7 @@ namespace PDINI {
          * the value argument.
          */
         template<typename T>
-        bool get(const std::string sectionName, const std::string keyName, T& value, const std::ios_base::fmtflags flags = std::ios_base::dec) {
+        bool get(const std::string& sectionName, const std::string& keyName, T& value, const std::ios_base::fmtflags flags = std::ios_base::dec) {
             std::string valueString;
             bool got = get(sectionName, keyName, valueString);
             if (got) {
@@ -218,23 +218,11 @@ namespace PDINI {
 
         /**
          * Gets a string value in the INI directly into the value argument,
-         * with all leading and trailing space removed. The flags argument is
-         * unused when getting strings, and is only present to ensure the
-         * overload that gets std::string is used. Returns true if the value
-         * was successfully retrieved, otherwise returns false and doesn't
-         * modify the value argument.
-         */
-        bool get(const std::string sectionName, const std::string keyName, std::string& value, const std::ios_base::fmtflags flags) {
-            return get(sectionName, keyName, value);
-        }
-
-        /**
-         * Gets a string value in the INI directly into the value argument,
          * with all leading and trailing space removed. Returns true if the
          * value was successfully retrieved, otherwise returns false and
          * doesn't modify the value argument.
          */
-        bool get(const std::string sectionName, const std::string keyName, std::string& value) {
+        bool get(const std::string& sectionName, const std::string& keyName, std::string& value) {
             const std::string realSectionName = toName(sectionName);
             const std::string realKeyName = toName(keyName);
             if (sections.count(realSectionName) && sections[realSectionName].count(realKeyName)) {
@@ -255,7 +243,7 @@ namespace PDINI {
          * ostringstream::operator<<.
          */
         template<typename T>
-        void set(const std::string sectionName, const std::string keyName, const T value, const std::ios_base::fmtflags flags = std::ios_base::dec) {
+        void set(const std::string& sectionName, const std::string& keyName, const T& value, const std::ios_base::fmtflags flags = std::ios_base::dec) {
             std::ostringstream stream;
             stream.setf(flags);
             stream << value;
@@ -266,21 +254,9 @@ namespace PDINI {
          * Sets a value in the INI directly with a string. If the section
          * didn't already exist, it's created. To remove a key, set the key to
          * "" to remove it from the INI; if the key's section is now empty, the
-         * section is also removed. The flags argument is unused when setting
-         * with strings, and is only present to ensure the overload that sets
-         * with std::string is used.
-         */
-        void set(const std::string sectionName, const std::string keyName, const std::string value, const std::ios_base::fmtflags flags) {
-            set(sectionName, keyName, value);
-        }
-
-        /**
-         * Sets a value in the INI directly with a string. If the section
-         * didn't already exist, it's created. To remove a key, set the key to
-         * "" to remove it from the INI; if the key's section is now empty, the
          * section is also removed.
          */
-        void set(const std::string sectionName, const std::string keyName, const std::string value) {
+        void set(const std::string& sectionName, const std::string& keyName, const std::string& value) {
             const std::regex nameRegex("[_a-zA-Z][_a-zA-Z0-9]*");
             const std::regex valueRegex("(?!\\s+).*[^\\s]");
             const std::string realSectionName = toName(sectionName);
@@ -306,7 +282,7 @@ namespace PDINI {
          * Removes a section from the INI. Does nothing if the section didn't
          * exist.
          */
-        void removeSection(const std::string sectionName) {
+        void removeSection(const std::string& sectionName) {
             const std::regex nameRegex("[_a-zA-Z][_a-zA-Z0-9]*");
             const std::string realSectionName = toName(sectionName);
             if (std::regex_match(sectionName, nameRegex) && sections.count(sectionName)) {
@@ -320,7 +296,7 @@ namespace PDINI {
          * Converts raw name strings to all uppercase if the INI class was
          * created to match names case insensitively.
          */
-        std::string toName(const std::string rawName) {
+        std::string toName(const std::string& rawName) {
             if (caseInsenstive) {
                 std::string convertedName = rawName;
                 for (auto& c : convertedName) {
