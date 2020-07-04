@@ -33,12 +33,12 @@ if(${PKG_CONFIG_FOUND})
     pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
     pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
     set(LIBRARIES
-    	${SDL2_LIBRARIES}
-    	${SDL2_image_LIBRARIES}
-    	${SDL2_mixer_LIBRARIES}
-    	${sqlite3_LIBRARIES}
+        ${SDL2_LIBRARIES}
+        ${SDL2_image_LIBRARIES}
+        ${SDL2_mixer_LIBRARIES}
+        ${sqlite3_LIBRARIES}
         ${OPENGL_LIBRARY}
-	${CMAKE_DL_LIBS})
+        ${CMAKE_DL_LIBS})
 else()
     find_package(sdl2 REQUIRED)
     find_package(sdl2-image REQUIRED)
