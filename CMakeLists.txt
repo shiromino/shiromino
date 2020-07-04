@@ -77,10 +77,10 @@ endif()
 configure_file(include/Config.hpp.in Config.hpp @ONLY)
 
 if(${OPENGL_INTERPOLATION})
-    set(OPENGL_SOURCES src/glad.cpp)
+    set(OPENGL_SOURCES third-party/glad.cpp)
     set(OPENGL_HEADERS
-        src/glad.h
-        src/khrplatform.h)
+        third-party/glad.h
+        third-party/khrplatform.h)
 else()
     set(OPENGL_SOURCES "")
     set(OPENGL_HEADERS "")
@@ -142,7 +142,6 @@ set(HEADERS
     src/MultiEditor.hpp
     src/music.h
     src/Path.hpp
-    src/PDINI.hpp
     src/PieceDef.hpp
     src/Player/BasePlayer.hpp
     src/qrs.h
@@ -162,14 +161,12 @@ set(HEADERS
 
     src/SGUIL/SGUIL.hpp
 
-    ${OPENGL_HEADERS}
-
-    src/PCG/pcg_extras.hpp
-    src/PCG/pcg_random.hpp
-    src/PCG/pcg_uint128.hpp)
+    ${OPENGL_HEADERS})
 source_group("Header Files" FILES ${HEADERS})
 
 add_executable(Shiromino ${SOURCES} ${HEADERS})
+
+target_include_directories(Shiromino SYSTEM PUBLIC third-party)
 
 if(${VCPKG_TOOLCHAIN})
     # For whatever reason, the proper include directory for sqlite3 isn't set when
