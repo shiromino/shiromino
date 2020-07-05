@@ -161,9 +161,9 @@ class G3_Randomizer : public SPM_Randomizer
 public:
     G3_Randomizer();
 
-    void init(SPM_randomSeed seed);
+    void init(SPM_randomSeed seed) override;
 
-    SPM_minoID pull();
+    SPM_minoID pull() override;
 
     SPM_minoID getNext();
 

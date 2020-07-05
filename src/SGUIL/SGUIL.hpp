@@ -437,7 +437,7 @@ public:
         : BindableVariable(name), value(0), min(min), max(max) {}
 
     virtual void set(const std::string& val) override { setInt(stoll(val)); }
-    virtual std::string get() const { return std::to_string(getInt()); }
+    virtual std::string get() const override { return std::to_string(getInt()); }
 
 
     void setInt(int64_t&& val)
@@ -482,7 +482,7 @@ public:
         }
     };
 
-    virtual std::string get() const
+    virtual std::string get() const override
     {
         return displayNameForValue(value);
     }
@@ -504,7 +504,7 @@ public:
         : BindableVariable(name), value(0.0), min(min), max(max) {}
 
     virtual void set(const std::string& val) override { setFloat(stold(val)); }
-    virtual std::string get() const { return std::to_string(getFloat()); }
+    virtual std::string get() const override { return std::to_string(getFloat()); }
 
 
     void setFloat(long double&& val)
