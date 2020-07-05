@@ -90,11 +90,11 @@ struct assetdb
 {
     gfx_image ASSET_IMG_NONE = { NULL };
 
-#define IMG(name, filename) gfx_image name;
+#define IMG(name, filename) gfx_image name
 #include "images.h"
 #undef IMG
 
-#define FONT(name, sheetName, outlineSheetName, charW, charH) BitFont name;
+#define FONT(name, sheetName, outlineSheetName, charW, charH) BitFont name
 #include "fonts.h"
 #undef FONT
 

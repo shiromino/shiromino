@@ -406,7 +406,7 @@ int load_files(coreState *cs)
 #undef IMG
 
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
-    load_bitfont(&cs->assets->name, &cs->assets->sheetName, &cs->assets->outlineSheetName, charW, charH);
+    load_bitfont(&cs->assets->name, &cs->assets->sheetName, &cs->assets->outlineSheetName, charW, charH)
 #include "fonts.h"
 #undef FONT
 
@@ -840,7 +840,7 @@ void quit(coreState *cs)
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
         cs->assets->name.isValid = false; \
         cs->assets->name.sheet = nullptr; \
-        cs->assets->name.outlineSheet = nullptr;
+        cs->assets->name.outlineSheet = nullptr
 #include "fonts.h"
 #undef FONT
 
