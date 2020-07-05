@@ -565,7 +565,7 @@ int init(coreState *cs, Settings* settings)
             const int numJoysticks = SDL_NumJoysticks();
             for (int i = 0; i < numJoysticks; i++) {
                 SDL_Joystick* joystick;
-                if (joystick = SDL_JoystickOpen(i)) {
+                if ((joystick = SDL_JoystickOpen(i))) {
                     printf("Attached joystick: \"%s\" at index %d\n", SDL_JoystickName(joystick), i);
                     SDL_JoystickClose(joystick);
                 }
@@ -578,7 +578,7 @@ int init(coreState *cs, Settings* settings)
             if (cs->settings->joyBinds.name != "") {
                 const int numJoysticks = SDL_NumJoysticks();
                 for (int i = 0; i < numJoysticks; i++) {
-                    if (cs->joystick = SDL_JoystickOpen(i)) {
+                    if ((cs->joystick = SDL_JoystickOpen(i))) {
                         if (SDL_JoystickName(cs->joystick) == cs->settings->joyBinds.name) {
                             cs->settings->joyBinds.joyIndex = i;
                             cs->settings->joyBinds.joyID = SDL_JoystickInstanceID(cs->joystick);
@@ -593,7 +593,7 @@ int init(coreState *cs, Settings* settings)
             }
 
             if (!cs->joystick && cs->settings->joyBinds.joyIndex >= 0 && cs->settings->joyBinds.joyIndex < SDL_NumJoysticks()) {
-                if (cs->joystick = SDL_JoystickOpen(cs->settings->joyBinds.joyIndex)) {
+                if ((cs->joystick = SDL_JoystickOpen(cs->settings->joyBinds.joyIndex))) {
                     cs->settings->joyBinds.joyID = SDL_JoystickInstanceID(cs->joystick);
                 }
             }
