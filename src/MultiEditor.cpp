@@ -630,7 +630,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
             name_strbuf[1] = '4';
             name_strbuf[2] = '\0';
 
-            name_str = {name_strbuf};
+            name_str = name_strbuf;
 
             for(j = 0; j < 25; j++)
             {
@@ -646,7 +646,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
         }
 
         name_strbuf[1] = '\0';
-        name_str = {name_strbuf};
+        name_str = name_strbuf;
 
         for(j = 0; j < 25; j++)
         {
@@ -711,7 +711,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
             name_strbuf[1] = 'a';
             name_strbuf[2] = '\0';
 
-            name_str = {name_strbuf};
+            name_str = name_strbuf;
 
             for(j = 0; j < 25; j++)
             {
@@ -776,7 +776,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
             name_strbuf[1] = 'b';
             name_strbuf[2] = '\0';
 
-            name_str = {name_strbuf};
+            name_str = name_strbuf;
 
             for(j = 0; j < 25; j++)
             {
