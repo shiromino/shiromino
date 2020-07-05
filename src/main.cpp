@@ -22,7 +22,7 @@ using namespace std;
 
 bool file_exists(const char *filename)
 {
-    struct stat buffer = {0};
+    struct stat buffer = {};
     return stat(filename, &buffer) == 0;
 }
 

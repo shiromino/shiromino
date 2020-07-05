@@ -262,11 +262,11 @@ void coreState_initialize(coreState *cs)
     cs->assets = new assetdb;
 
     cs->joystick = NULL;
-    cs->prev_keys_raw = {0};
-    cs->keys_raw = {0};
-    cs->prev_keys = {0};
-    cs->keys = {0};
-    cs->pressed = {0};
+    cs->prev_keys_raw = {};
+    cs->keys_raw = {};
+    cs->prev_keys = {};
+    cs->keys = {};
+    cs->pressed = {};
     cs->hold_dir = DAS_NONE;
     cs->hold_time = 0;
 
