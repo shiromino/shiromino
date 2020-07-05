@@ -4,6 +4,7 @@
 #include "Debug.hpp"
 #include "gfx.h"
 #include "gfx_structures.h"
+#include "Path.hpp"
 
 #include "game_menu.h"
 #include "game_qs.h"
@@ -159,20 +160,6 @@ int is_up_input_repeat(coreState *cs, int delay)
 int is_down_input_repeat(coreState *cs, int delay)
 {
     return cs->keys.down && cs->hold_dir == DAS_DOWN && cs->hold_time >= delay;
-}
-
-#include "Path.hpp"
-static string make_path(const char *base, const char *subdir, const char *name, const char *ext)
-{
-    string path = base ? string{base} : string{"."};
-    path.append("/");
-    path.append(subdir);
-    path.append("/");
-    path.append(name);
-    path.append(ext);
-
-    //printf("asset: %s\n", directory.c_str());
-    return path;
 }
 
 gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier)
@@ -357,7 +344,6 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
 
 static void load_sfx(coreState* cs, INI& ini, Sfx** s, const char* filename)
 {
-    //string directory = make_path(cs->settings->basePath.c_str(), "audio", filename, "");
     Path path(cs->settings->basePath);
     path << "audio" << filename;
     *s = new Sfx();
@@ -412,7 +398,6 @@ int load_files(coreState *cs)
 
     {
         INI ini(false);
-        //string audioINIPath = make_path(cs->settings->basePath.c_str(), "audio", "volume", ".ini");
         Path audioINIPath(cs->settings->basePath);
         audioINIPath << "audio" << "volume.ini";
         ini.read(audioINIPath);
