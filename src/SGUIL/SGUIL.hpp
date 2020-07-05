@@ -384,178 +384,178 @@ protected:
 class BindableVariable
 {
 public:
-	BindableVariable(const std::string& name) : name_(name) {}
-	virtual ~BindableVariable() {}
+    BindableVariable(const std::string& name) : name_(name) {}
+    virtual ~BindableVariable() {}
 
-	std::string name() const { return name_; }
-	virtual void set(const std::string& val) = 0;
-	virtual std::string get() const = 0;
+    std::string name() const { return name_; }
+    virtual void set(const std::string& val) = 0;
+    virtual std::string get() const = 0;
 
-	void addObserver(std::unique_ptr<VariableObserver>& ob)
+    void addObserver(std::unique_ptr<VariableObserver>& ob)
     {
         observers.push_back(std::move(ob));
     }
 
 protected:
-	void valueChanged()
-	{
-		for(auto& ob : observers)
+    void valueChanged()
+    {
+        for(auto& ob : observers)
         {
             ob->call(this);
         }
-	}
+    }
 
 private:
-	const std::string name_;
+    const std::string name_;
     std::vector<std::unique_ptr<VariableObserver>> observers;
 };
 
 class BindableString : public BindableVariable
 {
 public:
-	BindableString(const std::string& name) : BindableVariable(name) {}
-	virtual void set(const std::string& val) override
-	{
-		if(val != value)
-		{
-			value = val;
-			valueChanged();
-		}
-	}
+    BindableString(const std::string& name) : BindableVariable(name) {}
+    virtual void set(const std::string& val) override
+    {
+        if(val != value)
+        {
+            value = val;
+            valueChanged();
+        }
+    }
 
-	virtual std::string get() const override { return value; }
+    virtual std::string get() const override { return value; }
 
 private:
-	std::string value;
+    std::string value;
 };
 
 class BindableInt : public BindableVariable
 {
 public:
-	// min is inclusive, max is exclusive
-	BindableInt(const std::string& name, int64_t min, int64_t max)
-		: BindableVariable(name), min(min), max(max), value(0) {}
+    // min is inclusive, max is exclusive
+    BindableInt(const std::string& name, int64_t min, int64_t max)
+        : BindableVariable(name), min(min), max(max), value(0) {}
 
-	virtual void set(const std::string& val) override { setInt(stoll(val)); }
-	virtual std::string get() const { return std::to_string(getInt()); }
+    virtual void set(const std::string& val) override { setInt(stoll(val)); }
+    virtual std::string get() const { return std::to_string(getInt()); }
 
 
-	void setInt(int64_t&& val)
-	{
-		if(min <= val && val < max)
-		{
-			if(val != value)
-			{
-				value = val;
-				valueChanged();
-			}
-		}
-	}
+    void setInt(int64_t&& val)
+    {
+        if(min <= val && val < max)
+        {
+            if(val != value)
+            {
+                value = val;
+                valueChanged();
+            }
+        }
+    }
 
-	int64_t getInt() const { return value; }
+    int64_t getInt() const { return value; }
 
-	std::pair<int64_t, int64_t> getRange() const { return { min, max }; }
+    std::pair<int64_t, int64_t> getRange() const { return { min, max }; }
 
 protected:
-	int64_t value;
-	const int64_t min;
-	const int64_t max;
+    int64_t value;
+    const int64_t min;
+    const int64_t max;
 };
 
 class BindableEnumeration : public BindableInt
 {
 public:
-	BindableEnumeration(const std::string& name, std::vector<std::string>&& values)
-		: BindableInt(name, 0, values.size()), values(std::move(values)) {}
+    BindableEnumeration(const std::string& name, std::vector<std::string>&& values)
+        : BindableInt(name, 0, values.size()), values(std::move(values)) {}
 
-	virtual void set(const std::string& val) override
-	{
-		auto it = std::find(values.begin(), values.end(), val);
-		if(it != values.end())
-		{
-			auto newval = it - values.begin();
-			if(newval != value)
-			{
-				value = newval;
-				valueChanged();
-			}
-		}
-	};
+    virtual void set(const std::string& val) override
+    {
+        auto it = std::find(values.begin(), values.end(), val);
+        if(it != values.end())
+        {
+            auto newval = it - values.begin();
+            if(newval != value)
+            {
+                value = newval;
+                valueChanged();
+            }
+        }
+    };
 
-	virtual std::string get() const
-	{
-		return displayNameForValue(value);
-	}
+    virtual std::string get() const
+    {
+        return displayNameForValue(value);
+    }
 
-	std::string displayNameForValue(size_t val) const
-	{
-		assert(val >= 0 && val < values.size());
-		return values[val];
-	};
+    std::string displayNameForValue(size_t val) const
+    {
+        assert(val >= 0 && val < values.size());
+        return values[val];
+    };
 
 private:
-	std::vector<std::string> values;
+    std::vector<std::string> values;
 };
 
 class BindableFloat : public BindableVariable
 {
 public:
-	BindableFloat(const std::string& name, long double min, long double max)
-		: BindableVariable(name), min(min), max(max), value(0.0) {}
+    BindableFloat(const std::string& name, long double min, long double max)
+        : BindableVariable(name), min(min), max(max), value(0.0) {}
 
-	virtual void set(const std::string& val) override { setFloat(stold(val)); }
-	virtual std::string get() const { return std::to_string(getFloat()); }
+    virtual void set(const std::string& val) override { setFloat(stold(val)); }
+    virtual std::string get() const { return std::to_string(getFloat()); }
 
 
-	void setFloat(long double&& val)
-	{
-		if(min <= val && val < max)
-		{
-			if(val != value)
-			{
-				value = val;
-				valueChanged();
-			}
-		}
-	}
+    void setFloat(long double&& val)
+    {
+        if(min <= val && val < max)
+        {
+            if(val != value)
+            {
+                value = val;
+                valueChanged();
+            }
+        }
+    }
 
-	long double getFloat() const { return value; }
+    long double getFloat() const { return value; }
 
-	std::pair<long double, long double> getRange() const { return { min, max }; }
+    std::pair<long double, long double> getRange() const { return { min, max }; }
 
 protected:
-	long double value;
-	const long double min;
-	const long double max;
+    long double value;
+    const long double min;
+    const long double max;
 };
 
 class BindableVariables
 {
 public:
-	void add(std::unique_ptr<BindableVariable> var)
-	{
-		assert(!find(var->name()));
-		vars.emplace_back(std::move(var));
-	};
+    void add(std::unique_ptr<BindableVariable> var)
+    {
+        assert(!find(var->name()));
+        vars.emplace_back(std::move(var));
+    };
 
-	BindableVariable* find(const std::string& name)
-	{
+    BindableVariable* find(const std::string& name)
+    {
         if(vars.size() == 0)
         {
             return NULL;
         }
 
-		auto it = std::find_if(vars.begin(), vars.end(), [&name](const auto& p){ return p->name() == name; });
-		if(it != vars.end())
+        auto it = std::find_if(vars.begin(), vars.end(), [&name](const auto& p){ return p->name() == name; });
+        if(it != vars.end())
         {
-			return it->get();
+            return it->get();
         }
 
         return NULL;
-	};
+    };
 
 private:
-	std::vector<std::unique_ptr<BindableVariable>> vars;
+    std::vector<std::unique_ptr<BindableVariable>> vars;
 };
 
 enum enumOptionAccess
