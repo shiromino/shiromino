@@ -9,6 +9,7 @@ scores.db
 
 # Misc #
 ########
+*.kate-swp
 *.swp
 tags
 
