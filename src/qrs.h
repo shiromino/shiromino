@@ -379,15 +379,15 @@ Shiro::Grid* qrsfield_create();
 int qrsfield_set_w(Shiro::Grid* field, int w);
 int qrsfield_clear(Shiro::Grid* field);
 
-int ufu_not_exists(coreState *cs);
+int ufu_not_exists(CoreState *cs);
 
-int usr_field_bkp(coreState *cs, struct pracdata *d);
-int usr_field_undo(coreState *cs, struct pracdata *d);
-int usr_field_redo(coreState *cs, struct pracdata *d);
-int push_undo_clear_confirm(coreState *cs, void *data);
-int undo_clear_confirm_yes(coreState *cs, void *data);
-int undo_clear_confirm_no(coreState *cs, void *data);
-int usr_field_undo_clear(coreState *cs, void *data);
+int usr_field_bkp(CoreState *cs, struct pracdata *d);
+int usr_field_undo(CoreState *cs, struct pracdata *d);
+int usr_field_redo(CoreState *cs, struct pracdata *d);
+int push_undo_clear_confirm(CoreState *cs, void *data);
+int undo_clear_confirm_yes(CoreState *cs, void *data);
+int undo_clear_confirm_no(CoreState *cs, void *data);
+int usr_field_undo_clear(CoreState *cs, void *data);
 
 int qrs_input(game_t *g);
 

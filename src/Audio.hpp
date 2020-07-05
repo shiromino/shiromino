@@ -11,7 +11,7 @@
 #include <string>
 #include "SDL_mixer.h"
 
-struct coreState;
+struct CoreState;
 
 namespace Shiro {
     // TODO: Allow selecting playback channel?

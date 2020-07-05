@@ -71,13 +71,13 @@ extern png_monofont *monofont_fixedsys;
 
 struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
 
-int gfx_init(coreState *cs);
-void gfx_quit(coreState *cs);
+int gfx_init(CoreState *cs);
+void gfx_quit(CoreState *cs);
 
-int gfx_start_bg_fade_in(coreState *cs, SDL_Texture* bg_new);
-void gfx_updatebg(coreState* cs);
-void gfx_drawbg(coreState *cs);
-int gfx_draw_emergency_bg_darken(coreState *cs);
+int gfx_start_bg_fade_in(CoreState *cs, SDL_Texture* bg_new);
+void gfx_updatebg(CoreState* cs);
+void gfx_drawbg(CoreState *cs);
+int gfx_draw_emergency_bg_darken(CoreState *cs);
 
 // these are a little bit hacky... just add to each RGB value of the pixels
 // mostly would use these for animations
@@ -85,19 +85,19 @@ int gfx_draw_emergency_bg_darken(coreState *cs);
 //int gfx_brighten_texture(SDL_Texture *tex, Uint8 amt);
 // int gfx_darken_texture(SDL_Texture *tex, Uint8 amt);
 
-int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(coreState *));
-int gfx_drawmessages(coreState *cs, int type);
+int gfx_pushmessage(CoreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(CoreState *));
+int gfx_drawmessages(CoreState *cs, int type);
 
-int gfx_pushanimation(coreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba);
-int gfx_drawanimations(coreState *cs, int type);
+int gfx_pushanimation(CoreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba);
+int gfx_drawanimations(CoreState *cs, int type);
 
-int gfx_createbutton(coreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(coreState *, void *), int (*delete_check)(coreState *), void *data, Uint32 rgba);
-int gfx_drawbuttons(coreState *cs, int type);
+int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*delete_check)(CoreState *), void *data, Uint32 rgba);
+int gfx_drawbuttons(CoreState *cs, int type);
 
-int gfx_drawqrsfield(coreState *cs, Shiro::Grid *field, unsigned int mode, unsigned int flags, int x, int y);
-int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
+int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsigned int flags, int x, int y);
+int gfx_drawkeys(CoreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
 
-int gfx_drawtext(coreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawtext_partial(coreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawpiece(coreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
-int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba);
+int gfx_drawtext(CoreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
+int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);
+int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
+int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Uint32 rgba);

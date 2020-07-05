@@ -50,7 +50,7 @@ int gfx_piece_colors[25] =
 };
 */
 
-bool img_load(gfx_image *img, string path_without_ext, coreState *cs) {
+bool img_load(gfx_image *img, string path_without_ext, CoreState *cs) {
     img->tex = NULL;
 
     SDL_Surface *s = NULL;
@@ -107,7 +107,7 @@ struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 
     return fmt;
 }
 
-int gfx_init(coreState *cs)
+int gfx_init(CoreState *cs)
 {
     monofont_tiny = (png_monofont *)malloc(sizeof(png_monofont));
     monofont_small = (png_monofont *)malloc(sizeof(png_monofont));
@@ -143,7 +143,7 @@ int gfx_init(coreState *cs)
     return 0;
 }
 
-void gfx_quit(coreState *cs)
+void gfx_quit(CoreState *cs)
 {
     cs->gfx_messages.clear();
     cs->gfx_animations.clear();
@@ -159,7 +159,7 @@ void gfx_quit(coreState *cs)
     free(monofont_fixedsys);
 }
 
-int gfx_start_bg_fade_in(coreState *cs, SDL_Texture* bg_new) {
+int gfx_start_bg_fade_in(CoreState *cs, SDL_Texture* bg_new) {
     if(!cs)
         return -1;
 
@@ -176,7 +176,7 @@ int gfx_start_bg_fade_in(coreState *cs, SDL_Texture* bg_new) {
     return 0;
 }
 
-void gfx_updatebg(coreState* cs) {
+void gfx_updatebg(CoreState* cs) {
     if (cs->bg_r < 255) {
         cs->bg_r += BG_FADE_RATE;
         cs->bg_g += BG_FADE_RATE;
@@ -189,7 +189,7 @@ void gfx_updatebg(coreState* cs) {
     }
 }
 
-void gfx_drawbg(coreState *cs) {
+void gfx_drawbg(CoreState *cs) {
     if (cs->bg && cs->bg_r >= 0) {
         SDL_SetTextureColorMod(cs->bg, cs->bg_r, cs->bg_g, cs->bg_b);
         SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
@@ -200,7 +200,7 @@ void gfx_drawbg(coreState *cs) {
     }
 }
 
-int gfx_draw_emergency_bg_darken(coreState *cs)
+int gfx_draw_emergency_bg_darken(CoreState *cs)
 {
     SDL_Texture *bg_darken = cs->assets->bg_darken.tex;
     SDL_SetTextureColorMod(bg_darken, 0, 0, 0);
@@ -224,8 +224,8 @@ int gfx_darken_texture(SDL_Texture *tex, Uint8 amt)
 }
 */
 
-int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter,
-                    int (*delete_check)(coreState *))
+int gfx_pushmessage(CoreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter,
+                    int (*delete_check)(CoreState *))
 {
     if(!text)
         return -1;
@@ -246,7 +246,7 @@ int gfx_pushmessage(coreState *cs, const char *text, int x, int y, unsigned int 
     return 0;
 }
 
-int gfx_drawmessages(coreState *cs, int type)
+int gfx_drawmessages(CoreState *cs, int type)
 {
     if(!cs)
         return -1;
@@ -284,7 +284,7 @@ int gfx_drawmessages(coreState *cs, int type)
     return 0;
 }
 
-int gfx_pushanimation(coreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba)
+int gfx_pushanimation(CoreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba)
 {
     gfx_animation a;
     a.first_frame = first_frame;
@@ -302,7 +302,7 @@ int gfx_pushanimation(coreState *cs, gfx_image *first_frame, int x, int y, int n
     return 0;
 }
 
-int gfx_drawanimations(coreState *cs, int type)
+int gfx_drawanimations(CoreState *cs, int type)
 {
     if(!cs)
         return -1;
@@ -358,7 +358,7 @@ int gfx_drawanimations(coreState *cs, int type)
 
 int gfx_draw_anim_bg() { return 0; }
 
-int gfx_createbutton(coreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(coreState *, void *), int (*delete_check)(coreState *),
+int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*delete_check)(CoreState *),
                      void *data, Uint32 rgba)
 {
     if(!text)
@@ -385,7 +385,7 @@ int gfx_createbutton(coreState *cs, const char *text, int x, int y, unsigned int
     return 0;
 }
 
-int gfx_drawbuttons(coreState *cs, int type)
+int gfx_drawbuttons(CoreState *cs, int type)
 {
     if(!cs)
         return -1;
@@ -491,7 +491,7 @@ int gfx_drawbuttons(coreState *cs, int type)
     return 0;
 }
 
-int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int flags, int x, int y)
+int gfx_drawqrsfield(CoreState *cs, Grid *field, unsigned int mode, unsigned int flags, int x, int y)
 {
     if(!cs || !field)
         return -1;
@@ -831,7 +831,7 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
     return 0;
 }
 
-int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
+int gfx_drawkeys(CoreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
 {
     if(!cs)
         return -1;
@@ -947,12 +947,12 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
     return 0;
 }
 
-int gfx_drawtext(coreState *cs, string text, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext(CoreState *cs, string text, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
     return gfx_drawtext_partial(cs, text, 0, text.size(), x, y, font, fmt);
 }
 
-int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext_partial(CoreState *cs, string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
     if(!cs || text == "")
         return -1;
@@ -1152,7 +1152,7 @@ int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, in
     return 0;
 }
 
-int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
+int gfx_drawpiece(CoreState *cs, Grid *field, int field_x, int field_y, PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
 {
     if(!cs)
         return -1;
@@ -1325,7 +1325,7 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, PieceDef
     return 0;
 }
 
-int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba)
+int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Uint32 rgba)
 {
     SDL_Texture *font = cs->assets->font.tex;
     qrsdata *q = (qrsdata *)cs->p1game->data;

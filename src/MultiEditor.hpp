@@ -55,7 +55,7 @@ public:
     void updateLockProtect(BindableVariable *);
     void updateUsrseq(BindableVariable *);
 
-    coreState *origin;
+    CoreState *origin;
 
     int game_type;
     int field_w;

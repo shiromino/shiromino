@@ -101,7 +101,7 @@ protected:
     GuiScreenManager *mngr;
 };
 
-GuiScreen *mainMenu_create(coreState *cs, GuiScreenManager *mngr, BitFont& font);
+GuiScreen *mainMenu_create(CoreState *cs, GuiScreenManager *mngr, BitFont& font);
 void mainMenuInteractionCallback(GuiInteractable&, GuiEvent&);
 
 #endif

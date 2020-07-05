@@ -230,7 +230,7 @@ int qrsfield_set_w(Grid *field, int w)
 
 int qrsfield_clear(Grid *field) { return 0; }
 
-int ufu_not_exists(coreState *cs)
+int ufu_not_exists(CoreState *cs)
 {
     if(!cs->p1game)
         return 1;
@@ -247,7 +247,7 @@ int ufu_not_exists(coreState *cs)
     return 1;
 }
 
-int usr_field_bkp(coreState *cs, pracdata *d) {
+int usr_field_bkp(CoreState *cs, pracdata *d) {
     if (!d) {
         return 1;
     }
@@ -263,7 +263,7 @@ int usr_field_bkp(coreState *cs, pracdata *d) {
     return 0;
 }
 
-int usr_field_undo(coreState *cs, pracdata *d)
+int usr_field_undo(CoreState *cs, pracdata *d)
 {
     if (!d) {
         return 1;
@@ -281,7 +281,7 @@ int usr_field_undo(coreState *cs, pracdata *d)
     return 0;
 }
 
-int usr_field_redo(coreState *cs, pracdata *d)
+int usr_field_redo(CoreState *cs, pracdata *d)
 {
     if(!d)
     {
@@ -300,7 +300,7 @@ int usr_field_redo(coreState *cs, pracdata *d)
     return 0;
 }
 
-int push_undo_clear_confirm(coreState *cs, void *data)
+int push_undo_clear_confirm(CoreState *cs, void *data)
 {
     struct text_formatting *fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
 
@@ -317,7 +317,7 @@ int push_undo_clear_confirm(coreState *cs, void *data)
     return 0;
 }
 
-int undo_clear_confirm_yes(coreState *cs, void *data)
+int undo_clear_confirm_yes(CoreState *cs, void *data)
 {
     qrsdata *q = (qrsdata *)cs->p1game->data;
     usr_field_undo_clear(cs, data);
@@ -329,14 +329,14 @@ int undo_clear_confirm_yes(coreState *cs, void *data)
     return 0;
 }
 
-int undo_clear_confirm_no(coreState *cs, void *data)
+int undo_clear_confirm_no(CoreState *cs, void *data)
 {
     cs->button_emergency_override = 0;
     cs->mouse_left_down = 0;
     return 0;
 }
 
-int usr_field_undo_clear(coreState *cs, void *data)
+int usr_field_undo_clear(CoreState *cs, void *data)
 {
     qrsdata *q = (qrsdata *)cs->p1game->data;
 
@@ -348,7 +348,7 @@ int usr_field_undo_clear(coreState *cs, void *data)
 
 int qrs_input(game_t *g)
 {
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     struct keyflags *k = NULL;
 
     qrsdata *q = (qrsdata *)g->data;

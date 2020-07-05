@@ -131,7 +131,7 @@ const char *get_grade_name(int grade);
 const char *get_internal_grade_name(int index);
 int internal_to_displayed_grade(int internal_grade);
 
-game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_id);
+game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_id);
 int qs_game_init(game_t *g);
 int qs_game_pracinit(game_t *g, int val);
 int qs_game_quit(game_t *g);
@@ -146,8 +146,8 @@ int qs_process_lockflash(game_t *g);
 int qs_process_lineclear(game_t *g);
 int qs_process_lineare(game_t *g);
 
-int qrs_game_is_inactive(coreState *cs);
-int qs_update_pracdata(coreState *cs);
+int qrs_game_is_inactive(CoreState *cs);
+int qs_update_pracdata(CoreState *cs);
 int qs_get_usrseq_elem(struct pracdata *d, std::size_t index);
 
 int qs_initnext(game_t *g, qrs_player *p, unsigned int flags);

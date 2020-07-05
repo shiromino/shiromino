@@ -3,7 +3,7 @@
 #include "core.h"
 #include "game_qs.h"
 
-GuiScreen *mainMenu_create(coreState *cs, GuiScreenManager *mngr, BitFont& font)
+GuiScreen *mainMenu_create(CoreState *cs, GuiScreenManager *mngr, BitFont& font)
 {
     SDL_Rect destRect = {0, 0, 640, 480};
     GuiScreen *mainMenu = new GuiScreen {cs, "Main Menu", mainMenuInteractionCallback, destRect};
@@ -24,7 +24,7 @@ void mainMenuInteractionCallback(GuiInteractable& interactable, GuiEvent& event)
 {
     if(event.type == mouse_clicked)
     {
-        coreState *cs = interactable.getWindow()->origin;
+        CoreState *cs = interactable.getWindow()->origin;
 
         switch(interactable.ID)
         {

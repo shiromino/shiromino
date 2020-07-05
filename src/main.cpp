@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
             running = false;
         }
         else {
-            coreState cs;
-            coreState_initialize(&cs);
+            CoreState cs;
+            CoreState_initialize(&cs);
             Settings* settings = new Settings();
             const char path[] = ".";
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
             else if (argc >= 2) {
                 if (strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
                     printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
-                    coreState_destroy(&cs);
+                    CoreState_destroy(&cs);
                     return 0;
                 }
                 else if (strlen(argv[1]) >= 4 && strcmp(&argv[1][strlen(argv[1]) - 4], ".ini") != 0) {
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
             if (init(&cs, settings)) {
                 printf("Initialization failed, aborting.\n");
                 quit(&cs);
-                coreState_destroy(&cs);
+                CoreState_destroy(&cs);
                 return 1;
             }
 
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
                 int status = run(&cs);
 
                 quit(&cs);
-                coreState_destroy(&cs);
+                CoreState_destroy(&cs);
 
                 if (status == 2) {
                     printf("Opening Lua modes menu.\n");
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
             }
 
         error:
-            coreState_destroy(&cs);
+            CoreState_destroy(&cs);
             return 1;
         }
     }

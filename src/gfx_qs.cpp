@@ -54,7 +54,7 @@ int gfx_drawqs(game_t *g)
     if(!g->origin)
         return -1;
 
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)(g->data);
 
     PieceDef* pd_current = q->p1->def;

@@ -12,7 +12,7 @@
 
 using namespace std;
 
-GuiWindow::GuiWindow(coreState *origin, string title, BitFont *titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
+GuiWindow::GuiWindow(CoreState *origin, string title, BitFont *titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
     : title(title)
 {
     if(titleFont)

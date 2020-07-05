@@ -142,27 +142,27 @@ static long framedelay(Uint64 ticks_elap, double fps)
 }
 #endif
 
-int is_left_input_repeat(coreState *cs, int delay)
+int is_left_input_repeat(CoreState *cs, int delay)
 {
     return cs->keys.left && cs->hold_dir == DAS_LEFT && cs->hold_time >= delay;
 }
 
-int is_right_input_repeat(coreState *cs, int delay)
+int is_right_input_repeat(CoreState *cs, int delay)
 {
     return cs->keys.right && cs->hold_dir == DAS_RIGHT && cs->hold_time >= delay;
 }
 
-int is_up_input_repeat(coreState *cs, int delay)
+int is_up_input_repeat(CoreState *cs, int delay)
 {
     return cs->keys.up && cs->hold_dir == DAS_UP && cs->hold_time >= delay;
 }
 
-int is_down_input_repeat(coreState *cs, int delay)
+int is_down_input_repeat(CoreState *cs, int delay)
 {
     return cs->keys.down && cs->hold_dir == DAS_DOWN && cs->hold_time >= delay;
 }
 
-gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier)
+gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_multiplier)
 {
     if(!directory)
         return NULL;
@@ -213,7 +213,7 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
     return a;
 }
 
-void coreState_initialize(coreState *cs)
+void CoreState_initialize(CoreState *cs)
 {
     cs->fps = MENU_FPS;
     // cs->keyquit = SDLK_F11;
@@ -310,7 +310,7 @@ void coreState_initialize(coreState *cs)
 #endif
 }
 
-void coreState_destroy(coreState *cs)
+void CoreState_destroy(CoreState *cs)
 {
     if(!cs)
     {
@@ -323,7 +323,7 @@ void coreState_destroy(coreState *cs)
         pracdata_destroy(cs->pracdata_mirror);
 }
 
-static void load_image(coreState *cs, gfx_image *img, const char *filename)
+static void load_image(CoreState *cs, gfx_image *img, const char *filename)
 {
     Path path(cs->settings->basePath);
     path << "gfx" << filename;
@@ -342,7 +342,7 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
     font->isValid = true;
 }
 
-static void load_sfx(coreState* cs, INI& ini, Sfx** s, const char* filename)
+static void load_sfx(CoreState* cs, INI& ini, Sfx** s, const char* filename)
 {
     Path path(cs->settings->basePath);
     path << "audio" << filename;
@@ -360,7 +360,7 @@ static void load_sfx(coreState* cs, INI& ini, Sfx** s, const char* filename)
     }
 }
 
-static void load_music(coreState* cs, INI& ini, Music*& m, const char* name)
+static void load_music(CoreState* cs, INI& ini, Music*& m, const char* name)
 {
     Path directory(cs->settings->basePath);
     directory << "audio";
@@ -378,7 +378,7 @@ static void load_music(coreState* cs, INI& ini, Music*& m, const char* name)
     }
 }
 
-int load_files(coreState *cs)
+int load_files(CoreState *cs)
 {
     if(!cs)
         return -1;
@@ -517,7 +517,7 @@ GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geo
 }
 #endif
 
-int init(coreState *cs, Settings* settings)
+int init(CoreState *cs, Settings* settings)
 {
     try {
         if(!cs)
@@ -803,7 +803,7 @@ int init(coreState *cs, Settings* settings)
     }
 }
 
-void quit(coreState *cs)
+void quit(CoreState *cs)
 {
     scoredb_terminate(&cs->scores);
     // scoredb_terminate(&cs->archive);
@@ -890,7 +890,7 @@ void quit(coreState *cs)
     SDL_Quit();
 }
 
-int run(coreState *cs)
+int run(CoreState *cs)
 {
     int procStatus = 0;
     if(!cs)
@@ -1236,7 +1236,7 @@ int run(coreState *cs)
         return 2;
 }
 
-int procevents(coreState *cs, GuiWindow& wind)
+int procevents(CoreState *cs, GuiWindow& wind)
 {
     if(!cs)
         return -1;
@@ -1972,7 +1972,7 @@ int procgame(game_t *g, int input_enabled)
     return 0;
 }
 
-void handle_replay_input(coreState *cs)
+void handle_replay_input(CoreState *cs)
 {
     game_t *g = cs->p1game;
     if(g != NULL)
@@ -2004,7 +2004,7 @@ void handle_replay_input(coreState *cs)
     }
 }
 
-void update_input_repeat(coreState *cs)
+void update_input_repeat(CoreState *cs)
 {
     struct keyflags *k = &cs->keys;
 
@@ -2054,7 +2054,7 @@ void update_input_repeat(coreState *cs)
     }
 }
 
-void update_pressed(coreState *cs)
+void update_pressed(CoreState *cs)
 {
     cs->pressed.left = (cs->keys.left == 1 && cs->prev_keys.left == 0) ? 1 : 0;
     cs->pressed.right = (cs->keys.right == 1 && cs->prev_keys.right == 0) ? 1 : 0;
@@ -2068,7 +2068,7 @@ void update_pressed(coreState *cs)
     cs->pressed.escape = (cs->keys.escape == 1 && cs->prev_keys.escape == 0) ? 1 : 0;
 }
 
-int button_emergency_inactive(coreState *cs)
+int button_emergency_inactive(CoreState *cs)
 {
     if(cs->button_emergency_override)
         return 0;
@@ -2078,7 +2078,7 @@ int button_emergency_inactive(coreState *cs)
     return 1;
 }
 
-int gfx_buttons_input(coreState *cs)
+int gfx_buttons_input(CoreState *cs)
 {
     if(!cs)
         return -1;
@@ -2176,7 +2176,7 @@ int gfx_buttons_input(coreState *cs)
     return 0;
 }
 
-int request_fps(coreState *cs, double fps)
+int request_fps(CoreState *cs, double fps)
 {
     if(!cs)
         return -1;

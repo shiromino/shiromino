@@ -30,8 +30,8 @@ namespace Shiro {
     public:
         PieceDef();
 
-        bool setWidth(int width);
-        bool setHeight(int height);
+        bool setWidth(std::size_t width);
+        bool setHeight(std::size_t height);
         bool setCell(Orientation orientation, int x, int y);
         bool checkFlags(PieceDefFlag flags);
 

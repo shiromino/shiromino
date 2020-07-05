@@ -9,7 +9,7 @@ PieceDef::PieceDef() :
     anchorX(0),
     anchorY(0) {}
 
-bool PieceDef::setWidth(int width) {
+bool PieceDef::setWidth(std::size_t width) {
     if (width < 1) {
         return true;
     }
@@ -24,7 +24,8 @@ bool PieceDef::setWidth(int width) {
     return false;
 }
 
-bool PieceDef::setHeight(int height) {
+bool Shiro::PieceDef::setHeight(std::size_t height)
+{
     if (height < 1) {
         return true;
     }

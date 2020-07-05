@@ -12,7 +12,7 @@
 class ShiroPhysoMino : public Game
 {
 public:
-    ShiroPhysoMino(coreState& cs) : Game(cs) {}
+    ShiroPhysoMino(CoreState& cs) : Game(cs) {}
     virtual ~ShiroPhysoMino();
 
 protected:
@@ -66,7 +66,7 @@ struct SPM_Player
 class TestSPM : public ShiroPhysoMino
 {
 public:
-    TestSPM(coreState& cs, SPM_Spec *spec)
+    TestSPM(CoreState& cs, SPM_Spec *spec)
         : ShiroPhysoMino(cs)
     {
         this->spec = spec;

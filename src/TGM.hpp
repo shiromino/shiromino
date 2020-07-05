@@ -273,7 +273,7 @@ struct Staged_TGM_Mode
 class TGM : public ShiroPhysoMino
 {
 public:
-    TGM(coreState&, SPM_Spec *, TGM_Mode&);
+    TGM(CoreState&, SPM_Spec *, TGM_Mode&);
     ~TGM();
 
     int init();

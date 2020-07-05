@@ -16,7 +16,7 @@ typedef struct
     SDL_Texture *tex;
 } gfx_image;
 
-bool img_load(gfx_image *img, std::string path_without_ext, coreState *cs);
+bool img_load(gfx_image *img, std::string path_without_ext, CoreState *cs);
 void img_destroy(gfx_image *img);
 
 enum text_alignment { ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER };
@@ -50,7 +50,7 @@ struct gfx_message {
     png_monofont *font;
     struct text_formatting *fmt;
     unsigned int counter;
-    int (*delete_check)(coreState *);
+    int (*delete_check)(CoreState *);
 };
 
 struct gfx_animation {
@@ -73,8 +73,8 @@ struct gfx_button {
     unsigned int flags;
     int highlighted;
     int clicked;
-    int (*action)(coreState *, void *);
-    int (*delete_check)(coreState *);
+    int (*action)(CoreState *, void *);
+    int (*delete_check)(CoreState *);
     void *data;
     Uint32 text_rgba_mod;
 };

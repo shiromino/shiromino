@@ -447,7 +447,7 @@ static int find_music(int level, const struct levelmusic *table)
     return music;
 }
 
-static void play_or_halt_music(qrsdata *q, coreState *cs, Shiro::Music** tracks, int desired_music)
+static void play_or_halt_music(qrsdata *q, CoreState *cs, Shiro::Music** tracks, int desired_music)
 {
     if(q->music == desired_music)
         return;
@@ -460,7 +460,7 @@ static void play_or_halt_music(qrsdata *q, coreState *cs, Shiro::Music** tracks,
         tracks[desired_music]->play(*cs->settings);
 }
 
-static void update_music(qrsdata *q, coreState *cs)
+static void update_music(qrsdata *q, CoreState *cs)
 {
     switch(q->mode_type)
     {
@@ -491,7 +491,7 @@ static void update_music(qrsdata *q, coreState *cs)
     }
 }
 
-game_t *qs_game_create(coreState *cs, int level, unsigned int flags, int replay_id)
+game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_id)
 {
     game_t *g = (game_t *)malloc(sizeof(game_t));
     qrsdata *q = NULL;
@@ -1052,7 +1052,7 @@ int qs_game_init(game_t *g)
 
 int qs_game_pracinit(game_t *g, int val)
 {
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     g = cs->p1game;
     qrsdata *q = (qrsdata *)g->data;
     qrs_player *p = q->p1;
@@ -1202,7 +1202,7 @@ int qs_game_frame(game_t *g)
     if(!g)
         return -1;
 
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)(g->data);
 
     unsigned int *s = &q->p1->state;
@@ -1811,7 +1811,7 @@ static int qs_are_expired(game_t *g)
 
 int qs_process_are(game_t *g)
 {
-    // coreState *cs = g->origin;
+    // CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     QRS_Counters *c = q->p1counters;
@@ -1864,7 +1864,7 @@ int qs_process_are(game_t *g)
 
 int qs_process_lineare(game_t *g)
 {
-    // coreState *cs = g->origin;
+    // CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     QRS_Counters *c = q->p1counters;
@@ -1885,7 +1885,7 @@ int qs_process_lineare(game_t *g)
 
 int qs_process_lineclear(game_t *g)
 {
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     QRS_Counters *c = q->p1counters;
@@ -1934,7 +1934,7 @@ int qs_process_lineclear(game_t *g)
 
 int qs_process_lock(game_t *g)
 {
-    // coreState *cs = g->origin;
+    // CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     QRS_Counters *c = q->p1counters;
@@ -1997,7 +1997,7 @@ int qs_process_lock(game_t *g)
 
 int qs_process_fall(game_t *g)
 {
-    // coreState *cs = g->origin;
+    // CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     QRS_Counters *c = q->p1counters;
@@ -2019,7 +2019,7 @@ int qs_process_fall(game_t *g)
 
 int qs_process_prelockflash(game_t *g)
 {
-    // coreState *cs = g->origin;
+    // CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     // qrs_counters *c = q->p1counters;
@@ -2056,7 +2056,7 @@ int qs_process_prelockflash(game_t *g)
 
 int qs_process_lockflash(game_t *g)
 {
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
     // qrs_counters *c = q->p1counters;
@@ -2681,7 +2681,7 @@ int qs_process_lockflash(game_t *g)
     return 0;
 }
 
-int qrs_game_is_inactive(coreState *cs)
+int qrs_game_is_inactive(CoreState *cs)
 {
     if(!cs->p1game)
         return 1;
@@ -2715,7 +2715,7 @@ get_elem should return failure if q->pracdata->usr_seq_expand is NULL and it
 should not modify state
 */
 
-int qs_update_pracdata(coreState *cs)
+int qs_update_pracdata(CoreState *cs)
 {
     if(!cs->p1game || !cs->menu)
         return 1;
@@ -3471,7 +3471,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if(!g || !p)
         return -1;
 
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)(g->data);
     struct randomizer *qrand = q->randomizer;
 

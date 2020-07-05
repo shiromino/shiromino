@@ -32,7 +32,7 @@ struct game_args
 struct menu_opt
 {
     int type;
-    int (*value_update_callback)(coreState *cs);
+    int (*value_update_callback)(CoreState *cs);
     int render_update;
     std::string label;
     int x;
@@ -146,24 +146,24 @@ typedef struct
     int y;
 } menudata;
 
-struct menu_opt std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, std::string label);
+struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label);
 
-struct menu_opt menu_opt_create(int type, int (*value_update_callback)(coreState *cs), std::string label);
+struct menu_opt menu_opt_create(int type, int (*value_update_callback)(CoreState *cs), std::string label);
 void menu_opt_destroy(struct menu_opt& m);
 
-int menu_text_toggle(coreState *cs);
-int menu_text_insert(coreState *cs, char *);
-int menu_text_backspace(coreState *cs);
-int menu_text_delete(coreState *cs);
-int menu_text_seek_left(coreState *cs);
-int menu_text_seek_right(coreState *cs);
-int menu_text_seek_home(coreState *cs);
-int menu_text_seek_end(coreState *cs);
-int menu_text_select_all(coreState *cs);
-int menu_text_copy(coreState *cs);
-int menu_text_cut(coreState *cs);
+int menu_text_toggle(CoreState *cs);
+int menu_text_insert(CoreState *cs, char *);
+int menu_text_backspace(CoreState *cs);
+int menu_text_delete(CoreState *cs);
+int menu_text_seek_left(CoreState *cs);
+int menu_text_seek_right(CoreState *cs);
+int menu_text_seek_home(CoreState *cs);
+int menu_text_seek_end(CoreState *cs);
+int menu_text_select_all(CoreState *cs);
+int menu_text_copy(CoreState *cs);
+int menu_text_cut(CoreState *cs);
 
-game_t *menu_create(coreState *cs);
+game_t *menu_create(CoreState *cs);
 
 int menu_init(game_t *g);
 int menu_quit(game_t *g);

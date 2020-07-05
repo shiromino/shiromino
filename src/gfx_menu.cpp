@@ -17,7 +17,7 @@ int gfx_drawmenu(game_t *g)
     if(!g->origin)
         return -1;
 
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
 
     SDL_Texture *font = cs->assets->font.tex;
     SDL_Texture *font_thin = cs->assets->font_thin.tex;

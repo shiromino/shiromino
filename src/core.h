@@ -117,24 +117,24 @@ typedef struct game game_t;
 
 #include "qrs.h"
 
-struct coreState
+struct CoreState
 {
-    coreState() {}
+    CoreState() {}
 
     double fps;        // because tap fps = 61.68
 
     int text_editing;
-    int (*text_toggle)(coreState *);    // used to abstract text editing functions, can be set/called by other parts of the code
-    int (*text_insert)(coreState *, char *);
-    int (*text_backspace)(coreState *);
-    int (*text_delete)(coreState *);
-    int (*text_seek_left)(coreState *);
-    int (*text_seek_right)(coreState *);
-    int (*text_seek_home)(coreState *);
-    int (*text_seek_end)(coreState *);
-    int (*text_select_all)(coreState *);
-    int (*text_copy)(coreState *);
-    int (*text_cut)(coreState *);
+    int (*text_toggle)(CoreState *);    // used to abstract text editing functions, can be set/called by other parts of the code
+    int (*text_insert)(CoreState *, char *);
+    int (*text_backspace)(CoreState *);
+    int (*text_delete)(CoreState *);
+    int (*text_seek_left)(CoreState *);
+    int (*text_seek_right)(CoreState *);
+    int (*text_seek_home)(CoreState *);
+    int (*text_seek_end)(CoreState *);
+    int (*text_select_all)(CoreState *);
+    int (*text_copy)(CoreState *);
+    int (*text_cut)(CoreState *);
 
     int left_arrow_das;
     int right_arrow_das;
@@ -236,7 +236,7 @@ struct game
 
     unsigned long frame_counter;
 
-    coreState *origin;
+    CoreState *origin;
     Shiro::Grid *field;
     void *data;
 };
@@ -244,7 +244,7 @@ struct game
 class Game
 {
 public:
-    Game(coreState& cs) : cs(cs), frameCounter(0) {}
+    Game(CoreState& cs) : cs(cs), frameCounter(0) {}
     virtual ~Game() {}
 
     virtual int init() { return 0; }
@@ -254,7 +254,7 @@ public:
     virtual int draw() { return 0; }
 
 protected:
-    coreState& cs;
+    CoreState& cs;
     unsigned long frameCounter;
 };
 
@@ -262,31 +262,31 @@ extern struct bindings defaultkeybinds[2];
 
 extern BindableVariables bindables;
 
-int is_left_input_repeat(coreState *cs, int delay);
-int is_right_input_repeat(coreState *cs, int delay);
-int is_up_input_repeat(coreState *cs, int delay);
-int is_down_input_repeat(coreState *cs, int delay);
+int is_left_input_repeat(CoreState *cs, int delay);
+int is_right_input_repeat(CoreState *cs, int delay);
+int is_up_input_repeat(CoreState *cs, int delay);
+int is_down_input_repeat(CoreState *cs, int delay);
 
 struct bindings *bindings_copy(struct bindings *src);
 
-void coreState_initialize(coreState *cs);
-void coreState_destroy(coreState *cs);
+void CoreState_initialize(CoreState *cs);
+void CoreState_destroy(CoreState *cs);
 
-gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_multiplier);
-int load_files(coreState *cs);
+gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_multiplier);
+int load_files(CoreState *cs);
 
-int init(coreState *cs, Shiro::Settings* s);
-void quit(coreState *cs);
+int init(CoreState *cs, Shiro::Settings* s);
+void quit(CoreState *cs);
 
-int run(coreState *cs);
-int procevents(coreState *cs, GuiWindow& wind);
+int run(CoreState *cs);
+int procevents(CoreState *cs, GuiWindow& wind);
 int procgame(game_t *g, int input_enabled);
 
-void handle_replay_input(coreState* cs);
-void update_input_repeat(coreState *cs);
-void update_pressed(coreState *cs);
+void handle_replay_input(CoreState* cs);
+void update_input_repeat(CoreState *cs);
+void update_pressed(CoreState *cs);
 
-int button_emergency_inactive(coreState *cs);
-int gfx_buttons_input(coreState *cs);
+int button_emergency_inactive(CoreState *cs);
+int gfx_buttons_input(CoreState *cs);
 
-int request_fps(coreState *cs, double fps);
+int request_fps(CoreState *cs, double fps);

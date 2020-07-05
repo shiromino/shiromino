@@ -21,7 +21,7 @@
 using namespace std;
 using namespace Shiro;
 
-struct menu_opt std_game_multiopt_create(coreState *cs, unsigned int mode, int num_sections, string label)
+struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, string label)
 {
     struct menu_opt m = menu_opt_create(MENU_GAME_MULTIOPT, NULL, label);
     struct game_multiopt_data *d6 = (struct game_multiopt_data *)m.data;
@@ -40,12 +40,12 @@ struct menu_opt std_game_multiopt_create(coreState *cs, unsigned int mode, int n
     for (int i = 0; i < num_sections; i++) {
         d6->args[i].num = 4;
         d6->args[i].ptrs = (void **)malloc(4 * sizeof(void *));
-        d6->args[i].ptrs[0] = malloc(sizeof(coreState *));
+        d6->args[i].ptrs[0] = malloc(sizeof(CoreState *));
         d6->args[i].ptrs[1] = malloc(sizeof(int));
         d6->args[i].ptrs[2] = malloc(sizeof(unsigned int));
         d6->args[i].ptrs[3] = malloc(sizeof(char *));
 
-        *(coreState **)(d6->args[i].ptrs[0]) = cs;
+        *(CoreState **)(d6->args[i].ptrs[0]) = cs;
         *(int *)(d6->args[i].ptrs[1]) = 100 * i;
         *(unsigned int *)(d6->args[i].ptrs[2]) = mode;
         *(char **)(d6->args[i].ptrs[3]) = NULL;
@@ -60,7 +60,7 @@ void delete_opt_data(void* data) {
     delete (opt_data*)data;
 }
 
-struct menu_opt menu_opt_create(int type, int (*value_update_callback)(coreState *cs), string label)
+struct menu_opt menu_opt_create(int type, int (*value_update_callback)(CoreState *cs), string label)
 {
     struct menu_opt m;
 
@@ -241,7 +241,7 @@ void menu_opt_destroy(struct menu_opt& m) {
     }
 }
 
-int menu_text_toggle(coreState *cs)
+int menu_text_toggle(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -263,7 +263,7 @@ int menu_text_toggle(coreState *cs)
     return 0;
 }
 
-int menu_text_insert(coreState *cs, char *str)
+int menu_text_insert(CoreState *cs, char *str)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -310,7 +310,7 @@ int menu_text_insert(coreState *cs, char *str)
     return 0;
 }
 
-int menu_text_backspace(coreState *cs)
+int menu_text_backspace(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -340,7 +340,7 @@ int menu_text_backspace(coreState *cs)
     return 0;
 }
 
-int menu_text_delete(coreState *cs)
+int menu_text_delete(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -367,7 +367,7 @@ int menu_text_delete(coreState *cs)
     return 0;
 }
 
-int menu_text_seek_left(coreState *cs)
+int menu_text_seek_left(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -386,7 +386,7 @@ int menu_text_seek_left(coreState *cs)
     return 0;
 }
 
-int menu_text_seek_right(coreState *cs)
+int menu_text_seek_right(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -405,7 +405,7 @@ int menu_text_seek_right(coreState *cs)
     return 0;
 }
 
-int menu_text_seek_home(coreState *cs)
+int menu_text_seek_home(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -422,7 +422,7 @@ int menu_text_seek_home(coreState *cs)
     return 0;
 }
 
-int menu_text_seek_end(coreState *cs)
+int menu_text_seek_end(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -442,7 +442,7 @@ int menu_text_seek_end(coreState *cs)
     return 0;
 }
 
-int menu_text_select_all(coreState *cs)
+int menu_text_select_all(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -455,7 +455,7 @@ int menu_text_select_all(coreState *cs)
     return 0;
 }
 
-int menu_text_copy(coreState *cs)
+int menu_text_copy(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -475,7 +475,7 @@ int menu_text_copy(coreState *cs)
     return 0;
 }
 
-int menu_text_cut(coreState *cs)
+int menu_text_cut(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
@@ -497,7 +497,7 @@ int menu_text_cut(coreState *cs)
     return 0;
 }
 
-game_t *menu_create(coreState *cs)
+game_t *menu_create(CoreState *cs)
 {
     if(!cs)
         return NULL;
@@ -586,7 +586,7 @@ int menu_input(game_t *g)
     if(!g)
         return -1;
 
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     //struct keyflags *k = &cs->keys;
 
     menudata *d = (menudata *)(g->data);
@@ -885,7 +885,7 @@ int menu_input(game_t *g)
                         {
                             if(d4->args.ptrs[0] && d4->args.ptrs[1] && d4->args.ptrs[2] && d4->args.ptrs[3])
                             {
-                                g->origin->p1game = qs_game_create(*((coreState **)(d4->args.ptrs[0])),
+                                g->origin->p1game = qs_game_create(*((CoreState **)(d4->args.ptrs[0])),
                                                                    *((int *)(d4->args.ptrs[1])),
                                                                    *((unsigned int *)(d4->args.ptrs[2])),
                                                                    *((int *)(d4->args.ptrs[3])));
@@ -946,7 +946,7 @@ int menu_input(game_t *g)
                             if(d6->args[d6->selection].ptrs[0] && d6->args[d6->selection].ptrs[1] && d6->args[d6->selection].ptrs[2] &&
                                d6->args[d6->selection].ptrs[3])
                             {
-                                g->origin->p1game = qs_game_create(*((coreState **)(d6->args[d6->selection].ptrs[0])),
+                                g->origin->p1game = qs_game_create(*((CoreState **)(d6->args[d6->selection].ptrs[0])),
                                                                    *((int *)(d6->args[d6->selection].ptrs[1])),
                                                                    *((unsigned int *)(d6->args[d6->selection].ptrs[2])),
                                                                    NO_REPLAY);
@@ -1052,7 +1052,7 @@ int mload_main(game_t *g, int val)
     if(!g)
         return -1;
 
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     menudata *d = (menudata *)(g->data);
     struct menu_opt *m = NULL;
     struct action_opt_data *d1 = NULL;
@@ -1101,11 +1101,11 @@ int mload_main(game_t *g, int val)
 
     d6->args[d6->num - 1].num = 4;
     d6->args[d6->num - 1].ptrs = (void **)malloc(4 * sizeof(void *));
-    d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(coreState *));
+    d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(CoreState *));
     d6->args[d6->num - 1].ptrs[1] = malloc(sizeof(int));
     d6->args[d6->num - 1].ptrs[2] = malloc(sizeof(unsigned int));
     d6->args[d6->num - 1].ptrs[3] = malloc(sizeof(char *));
-    *(coreState **)(d6->args[d6->num - 1].ptrs[0]) = cs;
+    *(CoreState **)(d6->args[d6->num - 1].ptrs[0]) = cs;
     *(int *)(d6->args[d6->num - 1].ptrs[1]) = 1500;
     *(unsigned int *)(d6->args[d6->num - 1].ptrs[2]) = MODE_PENTOMINO;
     *(char **)(d6->args[d6->num - 1].ptrs[3]) = NULL;
@@ -1313,7 +1313,7 @@ int mload_main(game_t *g, int val)
 
 int mload_practice(game_t *g, int val)
 {
-    coreState *cs = g->origin;
+    CoreState *cs = g->origin;
     menudata *d = (menudata *)(g->data);
     struct menu_opt *m = NULL;
     struct action_opt_data *d1 = NULL;
@@ -1945,11 +1945,11 @@ int mload_replay(game_t *g, int val)
             d4->mode = QUINTESSE;
             d4->args.num = 4;
             d4->args.ptrs = (void **)malloc(4 * sizeof(void *));
-            d4->args.ptrs[0] = malloc(sizeof(coreState *));
+            d4->args.ptrs[0] = malloc(sizeof(CoreState *));
             d4->args.ptrs[1] = malloc(sizeof(int));
             d4->args.ptrs[2] = malloc(sizeof(unsigned int));
             d4->args.ptrs[3] = malloc(sizeof(int));
-            *(coreState **)(d4->args.ptrs[0]) = g->origin;
+            *(CoreState **)(d4->args.ptrs[0]) = g->origin;
             *(int *)(d4->args.ptrs[1]) = 0;
             *(unsigned int *)(d4->args.ptrs[2]) = r->mode;
             *(int *)(d4->args.ptrs[3]) = r->index;
