@@ -188,9 +188,6 @@ void Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const GridRect
         srcEndY = srcStartY + (dstEndY - dstStartY);
     }
 
-    int destX = dstStartX;
-    int destY = dstStartY;
-
     for (size_t y = 0; y < srcRect.height; y++) {
         for (size_t x = 0; x < srcRect.width; x++) {
             this->cells[dstStartY + y][dstStartX + x] = srcGrid.cells[srcStartY + y][srcStartX + x];

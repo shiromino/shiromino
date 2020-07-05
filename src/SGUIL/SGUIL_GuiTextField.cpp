@@ -480,8 +480,6 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
 
 unsigned int GuiTextField::shiftCursor(int offset)
 {
-    unsigned int oldcursor = cursor;
-
     if((unsigned)abs(offset) > cursor && offset < 0)
     {
         cursor = 0;

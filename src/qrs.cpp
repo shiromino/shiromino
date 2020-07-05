@@ -62,8 +62,6 @@ void qrsdata_destroy(qrsdata *q)
     if(!q)
         return;
 
-    int i;
-
     // if(q->p1->def) piecedef_destroy(q->p1->def);
     free(q->p1);
     delete q->p1counters;
@@ -81,8 +79,6 @@ void pracdata_destroy(pracdata *d)
 {
     if(!d)
         return;
-
-    int i = 0;
 
     if (d->usr_timings) {
         delete d->usr_timings;
@@ -377,10 +373,8 @@ int qrs_input(game_t *g)
 
     int edit_action_occurred = 0;
 
-    int moved_left = 0;
-    int moved_right = 0;
-
     int scale = 1;
+
     if(cs->settings)
     {
         scale = cs->settings->videoScale;
@@ -870,21 +864,12 @@ int qrs_input(game_t *g)
         if(cs->pressed.left || (is_left_input_repeat(cs, 1 + p->speeds->das)))
         {
             qrs_move(g, p, MOVE_LEFT);
-            /* moved_left = 1; */
         }
 
         if(cs->pressed.right || is_right_input_repeat(cs, 1 + p->speeds->das))
         {
             qrs_move(g, p, MOVE_RIGHT);
-            /* moved_right = 1; */
         }
-
-        /* if(moved_left && moved_right) { */
-        /*     if(k->left < k->right) */
-        /*         qrs_move(g, p, MOVE_LEFT); */
-        /*     else if(k->right < k->left) */
-        /*         qrs_move(g, p, MOVE_RIGHT); */
-        /* } */
 
         if(!qrs_isonground(g, p))
         {
@@ -1384,7 +1369,6 @@ int qrs_lock(game_t *g, qrs_player *p)
     Grid *d = &p->def->rotationTable[p->orient];
     Grid *f = g->field;
 
-    int i = 0;
     int ax = ANCHORX_QRS;
     int ay = ANCHORY_QRS;
     piece_id c = p->def->qrsID;

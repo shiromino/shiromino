@@ -228,8 +228,6 @@ gfx_animation *load_anim_bg(coreState *cs, const char *directory, int frame_mult
 
 void coreState_initialize(coreState *cs)
 {
-    int i = 0;
-
     cs->fps = MENU_FPS;
     // cs->keyquit = SDLK_F11;
     cs->text_editing = 0;
@@ -950,7 +948,6 @@ int run(coreState *cs)
     //cs->p1game->init(cs->p1game);
 
     double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
-    double startTime = currentTime;
     double timeAccumulator = 0.0;
 // #define DEBUG_FRAME_TIMING
 #ifdef DEBUG_FRAME_TIMING
@@ -1266,8 +1263,6 @@ int procevents(coreState *cs, GuiWindow& wind)
     SDL_Keycode kc;
     KeyBinds& kb = cs->settings->keyBinds;
     JoyBinds& jb = cs->settings->joyBinds;
-
-    Uint8 rc = 0;
 
     if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
     {

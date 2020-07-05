@@ -29,11 +29,7 @@ int BaseMode::eraseRow(const int row) {
 }
 
 bool BaseMode::clearLine(const int row) {
-    int numBlocks = 0;
-    for (Block& block : field[row]) {
-        numBlocks++;
-    }
-
+    int numBlocks = field[row].size();
     if (numBlocks == fieldWidth) {
         numLines++;
         return true;

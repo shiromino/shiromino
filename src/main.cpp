@@ -16,7 +16,6 @@
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
 #endif
-// #include "tests.h"
 
 using namespace Shiro;
 using namespace std;
@@ -61,20 +60,11 @@ int main(int argc, char** argv) {
             string slash = "/";
             string cfg_filename;
 
-            game_t* distr_test = NULL;
-
             cs.calling_path = (char*)malloc(strlen(path) + 1);
             strcpy(cs.calling_path, path);
 
             g123_seeds_init();
             srand((unsigned int)time(0));
-#if 0
-            g2_output_seed_syncs();
-            goto error;
-
-            g2_output_sync_histogram();
-            goto error;
-#endif
 
             // TODO: Use an argument handler library here, rather than hard-coded
             // logic.
@@ -102,23 +92,6 @@ int main(int argc, char** argv) {
                     printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
                     goto error;
                 }
-
-                /*
-                if (strcmp(argv[1], "--pento-distr-test") == 0) {
-                   //random_distr_test(cs, 0, 100000);
-                   goto error;
-                } else if (strcmp(argv[1], "--list-tgm-seeds") == 0) {
-                   get_tgm_seed_count(0);
-                   goto error;
-                } else if (strcmp(argv[1], "--output") == 0) {
-                   verify_tgm_rand_periodicity(0);
-                   goto error;
-                } else if (strcmp(argv[1], "--seed-avg-sync") == 0) {
-                   seed_avg_sync(0x20);
-                   goto error;
-                }*/
-
-                // check(access(argv[1], F_OK) == 0, "File does not exist");
 
                 if (settings->read(argv[1])) {
                     printf("Using one or more default settings\n");

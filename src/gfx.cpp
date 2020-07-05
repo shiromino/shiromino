@@ -145,8 +145,6 @@ int gfx_init(coreState *cs)
 
 void gfx_quit(coreState *cs)
 {
-    int i = 0;
-
     cs->gfx_messages.clear();
     cs->gfx_animations.clear();
     cs->gfx_buttons.clear();
@@ -312,7 +310,6 @@ int gfx_drawanimations(coreState *cs, int type)
     if(!cs->gfx_animations.size())
         return 0;
 
-    int n = 0;
     SDL_Rect dest = {.x = 0, .y = 0, .w = 0, .h = 0};
     SDL_Texture *t = NULL;
 
@@ -396,8 +393,6 @@ int gfx_drawbuttons(coreState *cs, int type)
     if(!cs->gfx_buttons.size())
         return 0;
 
-    int j = 0;
-    int n = 0;
     SDL_Texture *font = cs->assets->font.tex;
     // SDL_Texture *font_no_outline = cs->assets->font_no_outline.tex;
     SDL_Rect src = {.x = 0, .y = 0, .w = 6, .h = 28};
@@ -455,7 +450,7 @@ int gfx_drawbuttons(coreState *cs, int type)
         src.w = 16;
         dest.w = 16;
 
-        for(j = 0; j < b.text.size(); j++)
+        for (int j = 0; j < b.text.size(); j++)
         {
             if(j)
                 dest.x += 16;
@@ -522,7 +517,7 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
 
     string piece_str = "A";
 
-    int z = cs->p1game->frame_counter;
+    // int z = cs->p1game->frame_counter;
 
     /*
     int r = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)(z % 3000) / 3000.0)));

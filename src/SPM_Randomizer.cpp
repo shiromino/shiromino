@@ -35,8 +35,6 @@ SPM_minoID arsToQrsID(SPM_minoID t)
 
 void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t)
 {
-    unsigned int i = 0;
-
     for(unsigned int i = 0; i < histLen - 1; i++)
     {
         history[i] = history[i + 1];
