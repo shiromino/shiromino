@@ -269,7 +269,7 @@ void Gui_DrawBorder(SDL_Rect& rect, int width, rgba_t rgba)
             width
         };
 
-        SDL_Rect rects[4] = {left, right, top, bottom};
+        SDL_Rect rects[4] = { left, right, top, bottom };
 
         SDL_RenderFillRects(Gui_SDL_Renderer, rects, 4);
     }
@@ -420,8 +420,8 @@ void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, Tex
         Gui_SetTextureRGBA(font.outlineSheet, fmt->rgbaOutline);
     }
 
-    SDL_Rect src = {.x = 0, .y = 0, .w = (int)font.charW, .h = (int)font.charH};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = (int)(fmt->sizeMult * (float)font.charW), .h = (int)(fmt->sizeMult * (float)font.charH)};
+    SDL_Rect src = { 0, 0, (int) font.charW, (int) font.charH };
+    SDL_Rect dest = { 0, 0, (int) (fmt->sizeMult * (float) font.charW), (int) (fmt->sizeMult * (float) font.charH) };
 
     bool using_target_tex = false;
 

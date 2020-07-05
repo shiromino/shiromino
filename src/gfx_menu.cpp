@@ -21,12 +21,12 @@ int gfx_drawmenu(game_t *g)
 
     SDL_Texture *font = cs->assets->font.tex;
     SDL_Texture *font_thin = cs->assets->font_thin.tex;
-    SDL_Rect src = {.x = 0, .y = 80, .w = 16, .h = 16};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = 16, .h = 16};
-    SDL_Rect barsrc = {.x = 12 * 16, .y = 17, .w = 2, .h = 14};
-    SDL_Rect bardest = {.x = 0, .y = 0, .w = 2, .h = 14};
-    SDL_Rect baroutlinesrc = {.x = 256, .y = 0, .w = 102, .h = 16};
-    SDL_Rect baroutlinedest = {.x = 0, .y = 0, .w = 102, .h = 16};
+    SDL_Rect src = { 0, 80, 16, 16 };
+    SDL_Rect dest = { 0, 0, 16, 16 };
+    SDL_Rect barsrc = { 12 * 16, 17, 2, 14 };
+    SDL_Rect bardest = { 0, 0, 2, 14 };
+    SDL_Rect baroutlinesrc = { 256, 0, 102, 16 };
+    SDL_Rect baroutlinedest = { 0, 0, 102, 16 };
 
     menudata *d = (menudata *)(g->data);
     struct menu_opt *m = NULL;
@@ -74,7 +74,7 @@ int gfx_drawmenu(game_t *g)
     {
         if(menu_is_main(g))
         {
-            SDL_Rect titlePNGdest = {.x = 62, .y = 30, .w = 300, .h = 50};
+            SDL_Rect titlePNGdest = { 62, 30, 300, 50 };
             SDL_SetTextureColorMod(cs->assets->title_emboss.tex, 180, 180, 255);
             //SDL_SetTextureAlphaMod(cs->assets->title_emboss.tex, 150);
             SDL_SetTextureBlendMode(cs->assets->title_emboss.tex, SDL_BLENDMODE_BLEND);

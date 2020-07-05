@@ -78,11 +78,11 @@ int gfx_drawqs(game_t *g)
     SDL_Texture *tets_dark_qs = cs->assets->tets_dark_qs.tex;
     //SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
 
-    SDL_Rect palettesrc = {.x = 0, .y = 0, .w = 16, .h = 16};
-    SDL_Rect palettedest = {.x = FIELD_EDITOR_PALETTE_X, .y = FIELD_EDITOR_PALETTE_Y, .w = 16, .h = 16};
+    SDL_Rect palettesrc = { 0, 0, 16, 16 };
+    SDL_Rect palettedest = { FIELD_EDITOR_PALETTE_X, FIELD_EDITOR_PALETTE_Y, 16, 16 };
 
-    SDL_Rect src = {.x = 0, .y = 0, .w = 32, .h = 32};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = 32, .h = 32};
+    SDL_Rect src = { 0, 0, 32, 32 };
+    SDL_Rect dest = { 0, 0, 32, 32 };
 
     float lt = q->p1->speeds->lock;
     float l = q->p1counters->lock;
@@ -118,8 +118,8 @@ int gfx_drawqs(game_t *g)
         }
     }
 
-    SDL_Rect labg_src = {.x = 401, .y = 0, .w = 111 - 32, .h = 64};
-    SDL_Rect labg_dest = {.x = 264 - 48 + 4 + x, .y = 312 - 32 + y, .w = 111 - 32, .h = 64};
+    SDL_Rect labg_src = { 401, 0, 111 - 32, 64 };
+    SDL_Rect labg_dest = { 264 - 48 + 4 + x, 312 - 32 + y, 111 - 32, 64};
 
     int preview1_x = x + 5 * 16;
     int preview2_x = q->tetromino_only ? x + 20 * 8 : x + 21 * 8;
@@ -171,14 +171,16 @@ int gfx_drawqs(game_t *g)
     string undo_len;
     string redo_len;
 
-    struct text_formatting fmt = {.rgba = RGBA_DEFAULT,
-                                  .outline_rgba = RGBA_OUTLINE_DEFAULT,
-                                  .outlined = true,
-                                  .shadow = false,
-                                  .size_multiplier = 1.0,
-                                  .line_spacing = 1.0,
-                                  .align = ALIGN_LEFT,
-                                  .wrap_length = 0};
+    struct text_formatting fmt = {
+        RGBA_DEFAULT,
+        RGBA_OUTLINE_DEFAULT,
+        true,
+        false,
+        1.0,
+        1.0,
+        ALIGN_LEFT,
+        0
+    };
 
     // columns_adj->data = columns->data + (QRS_FIELD_W - q->field_w)/2;
     // columns_adj->slen = q->field_w;
@@ -336,16 +338,15 @@ int gfx_drawqs(game_t *g)
             gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
 
             string secTimeStr;
-            struct text_formatting secTimeFmt =
-            {
-                .rgba = RGBA_DEFAULT,
-                .outline_rgba = 0x000000A0,
-                .outlined = false,
-                .shadow = false,
-                .size_multiplier = 2.0,
-                .line_spacing = 1.0,
-                .align = ALIGN_RIGHT,
-                .wrap_length = 0
+            struct text_formatting secTimeFmt = {
+                RGBA_DEFAULT,
+                0x000000A0,
+                false,
+                false,
+                2.0,
+                1.0,
+                ALIGN_RIGHT,
+                0
             };
 
             long cumulativeTime = 0;
@@ -353,7 +354,7 @@ int gfx_drawqs(game_t *g)
             int secX = 356;
             int secY = 48;
 
-            SDL_Rect secTimeBGRect = {.x = secX, .y = secY, .w = 640 - secX + 6, .h = 24};
+            SDL_Rect secTimeBGRect = { secX, secY, 640 - secX + 6, 24 };
 
             Uint8 r_;
             Uint8 g_;
@@ -467,8 +468,8 @@ int gfx_drawqs(game_t *g)
         {
             int gradeWithoutFlags = q->grade & 0xff;
 
-            SDL_Rect grade_src = {.x = 0, .y = 390, .w = 64, .h = 64};
-            SDL_Rect grade_dest = {.x = x + 14 * 16, .y = y + 32, .w = 64, .h = 64};
+            SDL_Rect grade_src = { 0, 390, 64, 64 };
+            SDL_Rect grade_dest = { x + 14 * 16, y + 32, 64, 64 };
             float size_multiplier = 1.0;
 
             // draw a shadowy square behind the grade
@@ -881,8 +882,8 @@ int gfx_drawqsmedals(game_t *g)
         return -1;
 
     qrsdata *q = (qrsdata *)g->data;
-    SDL_Rect dest = {.x = 228 + q->field_x, .y = 150, .w = 40, .h = 20};
-    SDL_Rect src = {.x = 20, .y = 0, .w = 20, .h = 10};
+    SDL_Rect dest = { 228 + q->field_x, 150, 40, 20 };
+    SDL_Rect src = { 20, 0, 20, 10 };
     SDL_Texture *medals = g->origin->assets->medals.tex;
     bool medal = true;
 
@@ -913,7 +914,7 @@ int gfx_drawqsmedals(game_t *g)
         {
             size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_re_timestamp);
 
-            SDL_Rect dest_ = {.x = dest.x, .y = dest.y, .w = 40, .h = 20};
+            SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
             dest_.w *= size_multiplier;
             dest_.h *= size_multiplier;
@@ -955,7 +956,7 @@ int gfx_drawqsmedals(game_t *g)
         {
             size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_sk_timestamp);
 
-            SDL_Rect dest_ = {.x = dest.x, .y = dest.y, .w = 40, .h = 20};
+            SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
             dest_.w *= size_multiplier;
             dest_.h *= size_multiplier;
@@ -997,7 +998,7 @@ int gfx_drawqsmedals(game_t *g)
         {
             size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_co_timestamp);
 
-            SDL_Rect dest_ = {.x = dest.x, .y = dest.y, .w = 40, .h = 20};
+            SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
             dest_.w *= size_multiplier;
             dest_.h *= size_multiplier;
@@ -1039,7 +1040,7 @@ int gfx_drawqsmedals(game_t *g)
         {
             size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_st_timestamp);
 
-            SDL_Rect dest_ = {.x = dest.x, .y = dest.y, .w = 40, .h = 20};
+            SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
             dest_.w *= size_multiplier;
             dest_.h *= size_multiplier;
@@ -1060,8 +1061,8 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
     qrsdata *q = (qrsdata *)g->data;
 
     SDL_Texture *tets = g->origin->assets->tets_bright_qs.tex;
-    SDL_Rect src = {.x = 31 * 16, .y = 0, .w = 16, .h = 16};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = 16, .h = 16};
+    SDL_Rect src = { 31 * 16, 0, 16, 16 };
+    SDL_Rect dest = { 0, 0, 16, 16 };
 
     int i = 0;
     int j = 0;

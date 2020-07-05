@@ -310,7 +310,7 @@ int gfx_drawanimations(coreState *cs, int type)
     if(!cs->gfx_animations.size())
         return 0;
 
-    SDL_Rect dest = {.x = 0, .y = 0, .w = 0, .h = 0};
+    SDL_Rect dest = {};
     SDL_Texture *t = NULL;
 
     // TODO: This is terribly inelegant; refactor completely.
@@ -395,17 +395,19 @@ int gfx_drawbuttons(coreState *cs, int type)
 
     SDL_Texture *font = cs->assets->font.tex;
     // SDL_Texture *font_no_outline = cs->assets->font_no_outline.tex;
-    SDL_Rect src = {.x = 0, .y = 0, .w = 6, .h = 28};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = 6, .h = 28};
+    SDL_Rect src = { 0, 0, 6, 28 };
+    SDL_Rect dest = { 0, 0, 6, 28 };
 
-    struct text_formatting fmt = {.rgba = RGBA_DEFAULT,
-                                  .outline_rgba = RGBA_OUTLINE_DEFAULT,
-                                  .outlined = true,
-                                  .shadow = false,
-                                  .size_multiplier = 1.0,
-                                  .line_spacing = 1.0,
-                                  .align = ALIGN_LEFT,
-                                  .wrap_length = 0};
+    struct text_formatting fmt = {
+        RGBA_DEFAULT,
+        RGBA_OUTLINE_DEFAULT,
+        true,
+        false,
+        1.0,
+        1.0,
+        ALIGN_LEFT,
+        0
+    };
 
     for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
         gfx_button& b = *it;
@@ -500,11 +502,11 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
     SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
     SDL_Texture *misc = cs->assets->misc.tex;
 
-    SDL_Rect tdest = {.x = x, .y = y - 48, .w = 274, .h = 416};
-    SDL_Rect src = {.x = 0, .y = 0, .w = 16, .h = 16};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = 16, .h = 16};
+    SDL_Rect tdest = { x, y - 48, 274, 416 };
+    SDL_Rect src = { 0, 0, 16, 16 };
+    SDL_Rect dest = { 0, 0, 16, 16 };
 
-    // SDL_Rect field_dest = {.x = x+16, .y = y+32, .w = 16*12, .h = 16*20};
+    // SDL_Rect field_dest = { x + 16, y + 32, 16 * 12, 16 * 20 };
 
     qrsdata *q = (qrsdata *)cs->p1game->data;
     int use_deltas = 0;
@@ -750,7 +752,7 @@ int gfx_drawqrsfield(coreState *cs, Grid *field, unsigned int mode, unsigned int
                         SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
                         SDL_SetRenderDrawColor(cs->screen.renderer, 0xFF, 0xFF, 0xFF, 0x8C);
 
-                        SDL_Rect outlineRect = {.x = dest.x, .y = dest.y, .w = cellSize, .h = 2};
+                        SDL_Rect outlineRect = { dest.x, dest.y, cellSize, 2 };
 
                         c = field->getCell(i, j - 1); // above
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
@@ -838,22 +840,24 @@ int gfx_drawkeys(coreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
     SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
     SDL_SetTextureAlphaMod(font, A(rgba));
 
-    SDL_Rect src = {0, 80, 16, 16};
-    SDL_Rect dest = {0, y, 16, 16};
+    SDL_Rect src = { 0, 80, 16, 16 };
+    SDL_Rect dest = { 0, y, 16, 16 };
 
     string text_a = "A";
     string text_b = "B";
     string text_c = "C";
     string text_d = "D";
 
-    struct text_formatting fmt = {.rgba = RGBA_DEFAULT,
-                                  .outline_rgba = RGBA_OUTLINE_DEFAULT,
-                                  .outlined = true,
-                                  .shadow = false,
-                                  .size_multiplier = 1.0,
-                                  .line_spacing = 1.0,
-                                  .align = ALIGN_LEFT,
-                                  .wrap_length = 0};
+    struct text_formatting fmt = {
+        RGBA_DEFAULT,
+        RGBA_OUTLINE_DEFAULT,
+        true,
+        false,
+        1.0,
+        1.0,
+        ALIGN_LEFT,
+        0
+    };
 
     if(k->left)
     {
@@ -956,14 +960,16 @@ int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, in
     if(!font)
         font = monofont_fixedsys;
 
-    struct text_formatting fmt_ = {.rgba = RGBA_DEFAULT,
-                                   .outline_rgba = RGBA_OUTLINE_DEFAULT,
-                                   .outlined = true,
-                                   .shadow = false,
-                                   .size_multiplier = 1.0,
-                                   .line_spacing = 1.0,
-                                   .align = ALIGN_LEFT,
-                                   .wrap_length = 0};
+    struct text_formatting fmt_ = {
+        RGBA_DEFAULT,
+        RGBA_OUTLINE_DEFAULT,
+        true,
+        false,
+        1.0,
+        1.0,
+        ALIGN_LEFT,
+        0
+    };
 
     if(!fmt)
         fmt = &fmt_;
@@ -977,8 +983,8 @@ int gfx_drawtext_partial(coreState *cs, string text, int pos, int len, int x, in
         SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->outline_rgba));
     }
 
-    SDL_Rect src = {.x = 0, .y = 0, .w = (int)font->char_w, .h = (int)font->char_h};
-    SDL_Rect dest = {.x = x, .y = y, .w = (int)(fmt->size_multiplier * (float)font->char_w), .h = (int)(fmt->size_multiplier * (float)font->char_h)};
+    SDL_Rect src = { 0, 0, (int) font->char_w, (int) font->char_h };
+    SDL_Rect dest = { x, y, (int) (fmt->size_multiplier * (float) font->char_w), (int) (fmt->size_multiplier * (float) font->char_h) };
 
     std::size_t i = 0;
 
@@ -1187,8 +1193,8 @@ int gfx_drawpiece(coreState *cs, Grid *field, int field_x, int field_y, PieceDef
     //   }
 
     int size = (flags & DRAWPIECE_SMALL) ? 8 : (flags & DRAWPIECE_BIG ? 32 : 16);
-    SDL_Rect src = {.x = 0, .y = 0, .w = (size == 8 ? 8 : 16), .h = (size == 8 ? 8 : 16)};
-    SDL_Rect dest = {.x = 0, .y = 0, .w = size, .h = size};
+    SDL_Rect src = { 0, 0, (size == 8 ? 8 : 16), (size == 8 ? 8 : 16) };
+    SDL_Rect dest = { 0, 0, size, size };
 
     string piece_str = "A";
     piece_str[0] = pd.qrsID + 'A';
@@ -1325,8 +1331,8 @@ int gfx_drawtimer(coreState *cs, Shiro::Timer *t, int x, Uint32 rgba)
     qrsdata *q = (qrsdata *)cs->p1game->data;
     int y = q->field_y;
 
-    SDL_Rect src = {.x = 0, .y = 96, .w = 20, .h = 32};
-    SDL_Rect dest = {.x = x, .y = 26 * 16 + 8 - QRS_FIELD_Y + y, .w = 20, .h = 32};
+    SDL_Rect src = { 0, 96, 20, 32 };
+    SDL_Rect dest = { x, 26 * 16 + 8 - QRS_FIELD_Y + y, 20, 32 };
 
     int min = t->min();
     int sec = t->sec() % 60;
