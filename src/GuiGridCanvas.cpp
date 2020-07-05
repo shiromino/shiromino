@@ -10,7 +10,7 @@ using namespace Shiro;
 using namespace std;
 
 GuiGridCanvas::GuiGridCanvas(int ID, Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
-    : cells(cells), paletteVar(paletteVar), paletteTex(paletteTex), cellW(cellW), cellH(cellH)
+    : cells(cells), paletteTex(paletteTex), cellW(cellW), cellH(cellH), paletteVar(paletteVar)
 {
     this->relativeDestRect = relativeDestRect;
     this->ID = ID;

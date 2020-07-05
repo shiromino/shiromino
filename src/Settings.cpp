@@ -177,7 +177,7 @@ bool JoyBinds::read(INI& ini, const string sectionName) {
     return defaultUsed;
 }
 
-JoyBinds::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), a(-1), b(-1), c(-1), d(-1), start(-1), escape(-1) {}
+JoyBinds::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
 JoyBinds::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
 
 Settings::Settings() :

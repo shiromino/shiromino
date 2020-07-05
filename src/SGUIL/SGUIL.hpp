@@ -434,7 +434,7 @@ class BindableInt : public BindableVariable
 public:
     // min is inclusive, max is exclusive
     BindableInt(const std::string& name, int64_t min, int64_t max)
-        : BindableVariable(name), min(min), max(max), value(0) {}
+        : BindableVariable(name), value(0), min(min), max(max) {}
 
     virtual void set(const std::string& val) override { setInt(stoll(val)); }
     virtual std::string get() const { return std::to_string(getInt()); }
@@ -501,7 +501,7 @@ class BindableFloat : public BindableVariable
 {
 public:
     BindableFloat(const std::string& name, long double min, long double max)
-        : BindableVariable(name), min(min), max(max), value(0.0) {}
+        : BindableVariable(name), value(0.0), min(min), max(max) {}
 
     virtual void set(const std::string& val) override { setFloat(stold(val)); }
     virtual std::string get() const { return std::to_string(getFloat()); }

@@ -13,11 +13,11 @@ using namespace std;
 BaseMode::BaseMode(const int fieldWidth, const int fieldHeight) :
     activePiece(PolyominoType::Empty),
     activePos{ -1, -1 },
+    fieldWidth(fieldWidth),
+    fieldHeight(fieldHeight),
     field(fieldHeight, vector<Block>(fieldWidth, Block(PolyominoType::Empty))),
     numLines(0u),
-    numPieces(0u),
-    fieldWidth(fieldWidth),
-    fieldHeight(fieldHeight) {}
+    numPieces(0u) {}
 
 int BaseMode::eraseRow(const int row) {
     int numBlocks = 0;
