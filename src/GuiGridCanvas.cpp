@@ -18,7 +18,7 @@ GuiGridCanvas::GuiGridCanvas(int ID, Grid *cells, BindableInt& paletteVar, SDL_T
     readPaletteSelection(&paletteVar);
     paletteSize = (unsigned)get<1>(paletteVar.getRange());
 
-    function<void(BindableVariable *)> membFunc = [=](BindableVariable *bv) { this->readPaletteSelection(bv); };
+    function<void(BindableVariable *)> membFunc = [=, this](BindableVariable *bv) { this->readPaletteSelection(bv); };
 
     unique_ptr<VariableObserver> vob {
         (VariableObserver *)( new MemberVariableObserver{membFunc} )
