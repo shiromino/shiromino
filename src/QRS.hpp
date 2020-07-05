@@ -106,6 +106,7 @@ public:
         {
             case qrs_variant_G1:
                 allowHardDrop = false;
+                [[fallthrough]];
             case qrs_variant_G2:
                 fieldW = 10;
                 numPreviews = 1;
