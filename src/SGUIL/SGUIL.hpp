@@ -489,7 +489,7 @@ public:
 
     std::string displayNameForValue(size_t val) const
     {
-        assert(val >= 0 && val < values.size());
+        assert(val < values.size());
         return values[val];
     };
 

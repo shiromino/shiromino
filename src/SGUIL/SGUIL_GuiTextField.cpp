@@ -544,11 +544,6 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
         start = p;
     }
 
-    if(start < 0)
-    {
-        start = 0;
-    }
-
     if(end > value.size())
     {
         end = (unsigned)value.size();

@@ -51,7 +51,7 @@ QRS_Counters::QRS_Counters() :
 
 const string get_qrspiece_name(size_t n)
 {
-    if(n < 0 || n > 24)
+    if(n > 24)
         return {};
 
     return {qrspiece_names[n]};

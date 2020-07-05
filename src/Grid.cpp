@@ -224,7 +224,7 @@ size_t Grid::getHeight() const {
 }
 
 int Grid::getCell(const size_t x, const size_t y) {
-    if (x < 0 || y < 0 || x >= this->width || y >= this->height) {
+    if (x >= this->width || y >= this->height) {
         return GRID_OOB;
     }
     return this->cells[y][x];
