@@ -1222,12 +1222,12 @@ int qs_game_frame(game_t *g)
         switch(cs->displayMode)
         {
             default:
-            case game_display_default:
-            case game_display_detailed:
+            case DisplayMode::DEFAULT:
+            case DisplayMode::DETAILED:
                 q->field_x = QRS_FIELD_X;
                 break;
 
-            case game_display_centered:
+            case DisplayMode::CENTERED:
                 q->field_x = 192;
                 break;
         }

@@ -1,16 +1,12 @@
 #pragma once
-
-#include <memory>
-#include <vector>
-#include "SGUIL/SGUIL.hpp"
-
-#include "core.h"
+#include "Game.h"
 #include "replay.h"
+#include "SGUIL/SGUIL.hpp"
 #include "SPM_Spec.hpp"
 #include "SPM_Randomizer.hpp"
-
-class ShiroPhysoMino : public Game
-{
+#include <memory>
+#include <vector>
+class ShiroPhysoMino : public Game {
 public:
     ShiroPhysoMino(CoreState& cs) : Game(cs) {}
     virtual ~ShiroPhysoMino();
@@ -30,10 +26,8 @@ protected:
     SPM_gamePhase gamePhase;
 };
 
-struct SPM_Player
-{
-    SPM_Player()
-    {
+struct SPM_Player {
+    SPM_Player() {
         randomizer = new G3_Randomizer;
         mino = NULL;
         hold = NULL;
@@ -63,12 +57,10 @@ struct SPM_Player
     unsigned int minoSeqIndex;
 };
 
-class TestSPM : public ShiroPhysoMino
-{
+class TestSPM : public ShiroPhysoMino {
 public:
     TestSPM(CoreState& cs, SPM_Spec *spec)
-        : ShiroPhysoMino(cs)
-    {
+        : ShiroPhysoMino(cs) {
         this->spec = spec;
 
         player.randomizer = new G3_Randomizer;

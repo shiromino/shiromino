@@ -1,12 +1,9 @@
 #pragma once
-
 #include <cstdint>
 #include <vector>
 #include "SGUIL/SGUIL.hpp"
-
-#include "core.h"
-#include "random.h"
 #include "Grid.hpp"
+#include "random.h"
 #include "RotationTables.hpp"
 
 #define SPM_SUBUNIT_SCALE 65536
@@ -297,8 +294,7 @@ public:
     SPM_orientation orientation;
 };
 
-class SPM_Spec
-{
+class SPM_Spec {
 public:
     virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino);
     virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino, std::pair<int, int>& pos);
@@ -317,7 +313,7 @@ public:
     int visualFieldH;
 
     std::vector<SPM_point> spawnPositions;
-    std::vector<Polyomino> minoList;
+    std::vector<Polyomino> polyominoes;
 
     // TODO: no reset vs. step reset vs. move reset, as well as possibility for other options?
 
@@ -333,7 +329,7 @@ class SPM_TestSpec : public SPM_Spec {
 public:
     SPM_TestSpec() {
         for (int i = 0; i < 7; i++) {
-            minoList.push_back(Shiro::TetroRotationTables[i]);
+            polyominoes.push_back(Shiro::TetroRotationTables[i]);
 
             spawnPositions.push_back( {3, 2} );
         }

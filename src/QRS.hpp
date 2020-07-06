@@ -1,12 +1,8 @@
-#ifndef _qrs_hpp
-#define _qrs_hpp
-
+#pragma once
+#include "RotationTables.hpp"
+#include "SPM_Spec.hpp"
 #include <cstdint>
 #include <vector>
-
-#include "SPM_Spec.hpp"
-#include "RotationTables.hpp"
-
 // IJLXSZNGUTFaFbPQWYaYbV I4T4J4L4OS4Z4 - felicity's arbitrary pentomino+tetromino ordering
 #define QRS_I 0
 #define QRS_J 1
@@ -81,7 +77,7 @@ public:
     {
         if (variant == qrs_variant_P) {
             for (size_t i = 0; i < 18; i++) {
-                minoList.push_back(Shiro::PentoRotationTables[i]);
+                polyominoes.push_back(Shiro::PentoRotationTables[i]);
                 spawnPositions.push_back({ 4, 1 });
             }
 
@@ -96,7 +92,7 @@ public:
         }
 
         for (size_t i = 0; i < Shiro::TetroRotationTables.size(); i++) {
-            minoList.push_back(Shiro::TetroRotationTables[i]);
+            polyominoes.push_back(Shiro::TetroRotationTables[i]);
         }
 
 
@@ -361,5 +357,3 @@ public:
 protected:
     QRS_variant variant;
 };
-
-#endif // _qrs_hpp

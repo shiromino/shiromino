@@ -1,5 +1,4 @@
-#include "GuiScreenManager.hpp"
-
+#include "GuiScreenManager.h"
 #include "CoreState.h"
 #include "game_qs.h"
 

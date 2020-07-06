@@ -4,22 +4,19 @@
 
 #define MAX_KEYFLAGS 72000 // 20 minutes of inputs (@ 60 fps)
 
+#include "Input.h"
 #include <string>
 #include <ctime>
 #include <cstdint>
 
-#include "core.h" // TODO: Extract keyflags from core.h
-
-struct packed_input
-{
+struct packed_input {
     uint8_t data;
 };
 
 struct packed_input pack_input(struct keyflags *k);
 void unpack_input(struct packed_input p, struct keyflags *out_keys);
 
-struct replay
-{
+struct replay {
     unsigned int len;
     unsigned int mlen;
 

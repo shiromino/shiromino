@@ -1,12 +1,11 @@
 #include "replay.h"
-
 #include "game_qs.h"
-
-#include <sstream>
-#include <iomanip>
-#include <cstdio>
+#include "Input.h"
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 using namespace Shiro;
 using namespace std;

@@ -1,7 +1,5 @@
-#ifndef _game_qs_h
-#define _game_qs_h
-
-#include "core.h"
+#pragma once
+#include "Game.h"
 #include "qrs.h"
 
 #define QS_CURVE_MAX 19
@@ -18,11 +16,6 @@
 #define PENTOMINO_ONLY 0x0002
 #define TETROMINO_ONLY 0x0004
 #define NO_LOCK_DELAY  0x0008
-
-// these are defined in core.h now
-// #define SIMULATE_G1    0x0010
-// #define SIMULATE_G2    0x0020
-// #define SIMULATE_G3    0x0040
 
 // mode IDs
 #define QRS_PRACTICE   0x0080
@@ -157,5 +150,3 @@ int qs_randomize(game_t *g);
 int qs_normal_randomize(int *history, long double *weights);
 int qs_g2_randomize(int *history);
 int qs_g1_randomize(int *history);
-
-#endif

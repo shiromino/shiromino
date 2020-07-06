@@ -1,14 +1,12 @@
 #pragma once
-
-#include <cstdlib>
-#include "SDL.h"
-#include <string>
-
-#include "core.h"
+#include "CoreState.h"
 #include "Grid.hpp"
 #include "Timer.hpp"
 #include "PieceDef.hpp"
 #include "gfx_structures.h"
+#include <cstdlib>
+#include <SDL.h>
+#include <string>
 
 #define QRS_FIELD_X 4
 #define QRS_FIELD_Y 50

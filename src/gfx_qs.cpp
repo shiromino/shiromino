@@ -5,6 +5,7 @@
 #include "stringtools.hpp"
 
 #include "CoreState.h"
+#include "DisplayMode.h"
 #include "game_qs.h"
 #include "GameType.h"
 #include "gfx.h"
@@ -334,7 +335,7 @@ int gfx_drawqs(game_t *g)
         else
             gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
 
-        if(cs->displayMode == game_display_detailed)
+        if(cs->displayMode == DisplayMode::DETAILED)
         {
             gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
 

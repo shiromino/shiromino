@@ -1,15 +1,13 @@
 #pragma once
-
-#include <vector>
-#include <array>
-#include <fstream>
-#include <cstdint>
-
-#include "core.h"
+#include "Game.h"
 #include "GameType.h"
-#include "PieceDef.hpp"
 #include "Grid.hpp"
+#include "PieceDef.hpp"
 #include "Timer.hpp"
+#include <array>
+#include <cstdint>
+#include <fstream>
+#include <vector>
 
 #define MAX_SECTIONS 30
 
@@ -88,8 +86,6 @@
 
 #define PIECE_ID_INVALID 255
 
-/* */
-
 #define SUBSET_ALL 0
 #define SUBSET_TETS 1
 #define SUBSET_PENTS 2
@@ -160,6 +156,11 @@
 extern const char *qrs_piece_names[25];
 
 typedef uint8_t piece_id;
+
+enum {
+    MODE_INVALID,
+    QUINTESSE
+};
 
 struct QRS_Timings {
     QRS_Timings();

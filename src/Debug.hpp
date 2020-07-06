@@ -7,10 +7,10 @@
 // TODO: Go over the code, changing uses of "goto error;" to handle true/false
 // values of check* macros.
 #pragma once
-
-#include "SDL_log.h"
-#include <exception>
 #include <cerrno>
+#include <exception>
+#include <SDL_log.h>
+#include <stdexcept>
 
 #ifdef NDEBUG
 #define debug(M, ...)

@@ -1,19 +1,11 @@
-#ifndef _guiscreenmanager_hpp
-#define _guiscreenmanager_hpp
-
-#include <string>
-#include <map>
-#include <utility>
-#include <functional>
-#include "SDL.h"
+#pragma once
 #include "SGUIL/SGUIL.hpp"
-
-class GuiScreenManager;
-
-#include "core.h"
-
-class GuiScreenManager
-{
+#include <functional>
+#include <map>
+#include <SDL.h>
+#include <string>
+#include <utility>
+class GuiScreenManager {
 public:
     GuiScreenManager()
     {
@@ -78,8 +70,7 @@ protected:
     GuiScreen *currentScreen;
 };
 
-class GuiScreenSwitchButton : public GuiButton
-{
+class GuiScreenSwitchButton : public GuiButton {
 public:
     GuiScreenSwitchButton(int ID, std::string screenName, GuiScreenManager *mngr, std::string displayString, BitFont& font, SDL_Rect relativeDestRect)
         : GuiButton(ID, relativeDestRect, displayString, font)
@@ -103,5 +94,3 @@ protected:
 
 GuiScreen *mainMenu_create(CoreState *cs, GuiScreenManager *mngr, BitFont& font);
 void mainMenuInteractionCallback(GuiInteractable&, GuiEvent&);
-
-#endif

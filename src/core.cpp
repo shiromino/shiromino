@@ -2,6 +2,7 @@
 
 #include "Config.hpp"
 #include "Debug.hpp"
+#include "DisplayMode.h"
 #include "gfx.h"
 #include "gfx_structures.h"
 #include "Path.hpp"
@@ -34,19 +35,18 @@
 #include "SDL_mixer.h"
 #include "SGUIL/SGUIL.hpp"
 #include "GuiGridCanvas.hpp"
-#include "GuiScreenManager.hpp"
+#include "GuiScreenManager.h"
 
 #include "SPM_Spec.hpp"
 #include "QRS.hpp"
 #include "ShiroPhysoMino.hpp"
 
 #define PENTOMINO_C_REVISION_STRING "rev 1.3"
+#define FRAMEDELAY_ERR 0
 
 using namespace Shiro;
 using namespace std;
 using namespace PDINI;
-
-BindableVariables bindables;
 
 #if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \
     !defined(__MINGW64__)
@@ -248,7 +248,7 @@ void CoreState_initialize(CoreState *cs)
     cs->seven_pressed = 0;
     cs->nine_pressed = 0;
 
-    cs->assets = new assetdb;
+    cs->assets = new Shiro::AssetStore();
 
     cs->joystick = NULL;
     cs->prev_keys_raw = {};
@@ -294,7 +294,7 @@ void CoreState_initialize(CoreState *cs)
 
     cs->screenManager = new GuiScreenManager {};
 
-    cs->displayMode = game_display_default;
+    cs->displayMode = DisplayMode::DEFAULT;
     cs->motionBlur = false;
     cs->pracdata_mirror = NULL;
 
@@ -577,13 +577,13 @@ int init(CoreState *cs, Settings* settings)
             }
 
             cs->joystick = nullptr;
-            if (cs->settings->joyBinds.name != "") {
+            if (cs->settings->gamepadBindings.name != "") {
                 const int numJoysticks = SDL_NumJoysticks();
                 for (int i = 0; i < numJoysticks; i++) {
                     if ((cs->joystick = SDL_JoystickOpen(i))) {
-                        if (SDL_JoystickName(cs->joystick) == cs->settings->joyBinds.name) {
-                            cs->settings->joyBinds.joyIndex = i;
-                            cs->settings->joyBinds.joyID = SDL_JoystickInstanceID(cs->joystick);
+                        if (SDL_JoystickName(cs->joystick) == cs->settings->gamepadBindings.name) {
+                            cs->settings->gamepadBindings.gamepadIndex = i;
+                            cs->settings->gamepadBindings.gamepadID = SDL_JoystickInstanceID(cs->joystick);
                             break;
                         }
                         else {
@@ -594,16 +594,16 @@ int init(CoreState *cs, Settings* settings)
                 }
             }
 
-            if (!cs->joystick && cs->settings->joyBinds.joyIndex >= 0 && cs->settings->joyBinds.joyIndex < SDL_NumJoysticks()) {
-                if ((cs->joystick = SDL_JoystickOpen(cs->settings->joyBinds.joyIndex))) {
-                    cs->settings->joyBinds.joyID = SDL_JoystickInstanceID(cs->joystick);
+            if (!cs->joystick && cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->settings->gamepadBindings.gamepadIndex < SDL_NumJoysticks()) {
+                if ((cs->joystick = SDL_JoystickOpen(cs->settings->gamepadBindings.gamepadIndex))) {
+                    cs->settings->gamepadBindings.gamepadID = SDL_JoystickInstanceID(cs->joystick);
                 }
             }
 
-            if (cs->settings->joyBinds.joyIndex >= 0 && cs->joystick) {
+            if (cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->joystick) {
                 printf("Joysticks are enabled\n");
-                printf("Name: %s\n", SDL_JoystickNameForIndex(cs->settings->joyBinds.joyIndex));
-                printf("Index: %d\n", cs->settings->joyBinds.joyIndex);
+                printf("Name: %s\n", SDL_JoystickNameForIndex(cs->settings->gamepadBindings.gamepadIndex));
+                printf("Index: %d\n", cs->settings->gamepadBindings.gamepadIndex);
                 printf("Number of buttons: %d\n", SDL_JoystickNumButtons(cs->joystick));
                 printf("Number of axes: %d\n", SDL_JoystickNumAxes(cs->joystick));
                 printf("Number of hats: %d\n", SDL_JoystickNumHats(cs->joystick));
@@ -782,8 +782,8 @@ int init(CoreState *cs, Settings* settings)
 
         // TODO: Configurable scores.db directory
         static const char scoredb_file[] = "scores.db";
-        scoredb_init(&cs->scores, scoredb_file);
-        scoredb_create_player(&cs->scores, &cs->player, cs->settings->playerName.c_str());
+        scoredb_init(&cs->records, scoredb_file);
+        scoredb_create_player(&cs->records, &cs->player, cs->settings->playerName.c_str());
 
         /*
         static const char archive_file[] = "archive.db";
@@ -807,7 +807,7 @@ int init(CoreState *cs, Settings* settings)
 
 void quit(CoreState *cs)
 {
-    scoredb_terminate(&cs->scores);
+    scoredb_terminate(&cs->records);
     // scoredb_terminate(&cs->archive);
 
     if(cs->assets)
@@ -900,16 +900,16 @@ int run(CoreState *cs)
 
     bool running = true;
 
-    int windW = 620;
-    int windH = 460;
-    SDL_Rect gridRect = {16, 44, windW - 32, windH - 60};
+    int windowWidth = 620;
+    int windowHeight = 460;
+    SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
 
     Grid* g = new Grid(gridRect.w / 16, gridRect.h / 16);
     SDL_Texture *paletteTex = cs->assets->tets_bright_qs.tex;
 
     BindableInt paletteVar {"paletteVar", 0, 25};
 
-    GuiGridCanvas *gridCanvas = new GuiGridCanvas{
+    GuiGridCanvas *gridCanvas = new GuiGridCanvas {
         0,
         g,
         paletteVar,
@@ -918,17 +918,17 @@ int run(CoreState *cs)
         gridRect
     };
 
-    SDL_Rect windowRect = {10, 10, windW, windH};
+    SDL_Rect windowRect = { 10, 10, windowWidth, windowHeight };
     // TODO: Fix how fixedsys is loaded/unloaded; currently, both SGUIL and
     // Shiromio try to free it, with SGUIL freeing it first in the GuiWindow
     // destructor.
-    GuiWindow wind {cs, "Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
+    GuiWindow window {cs, "Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
 
-    wind.addControlElement(gridCanvas);
+    window.addControlElement(gridCanvas);
 
     // SPM_Spec spec;
-    QRS spec {qrs_variant_P, false};
-    TestSPM SPMgame {*cs, &spec};
+    QRS spec { qrs_variant_P, false };
+    TestSPM SPMgame { *cs, &spec };
     SPMgame.init();
 
     //cs->p1game = qs_game_create(cs, 0, MODE_PENTOMINO, NO_REPLAY);
@@ -992,7 +992,7 @@ int run(CoreState *cs)
             cs->prev_keys_raw = cs->keys_raw;
             cs->prev_keys = cs->keys;
 
-            if (procevents(cs, wind))
+            if (process_events(cs, window))
             {
                 return 1;
             }
@@ -1238,7 +1238,7 @@ int run(CoreState *cs)
         return 2;
 }
 
-int procevents(CoreState *cs, GuiWindow& wind)
+int process_events(CoreState *cs, GuiWindow& window)
 {
     if(!cs)
         return -1;
@@ -1247,9 +1247,9 @@ int procevents(CoreState *cs, GuiWindow& wind)
     //struct keyflags joyflags{0};
 
     SDL_Event event;
-    SDL_Keycode kc;
-    KeyBinds& kb = cs->settings->keyBinds;
-    JoyBinds& jb = cs->settings->joyBinds;
+    SDL_Keycode keyCode;
+    KeyBindings& keyBindings = cs->settings->keyBindings;
+    GamepadBindings& gamepadBindings = cs->settings->gamepadBindings;
 
     if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
     {
@@ -1318,7 +1318,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
 
     while(SDL_PollEvent(&event))
     {
-        // wind.handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y} );
+        // window.handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y} );
         //printf("Handling SDL event\n");
         //cs->screenManager->handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y});
 
@@ -1329,13 +1329,13 @@ int procevents(CoreState *cs, GuiWindow& wind)
             case SDL_JOYAXISMOTION:
                 k = &cs->keys_raw;
 
-                if (event.jaxis.which == jb.joyID) {
-                    if (event.jaxis.axis == jb.axes.x) {
-                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * jb.axes.right) {
+                if (event.jaxis.which == gamepadBindings.gamepadID) {
+                    if (event.jaxis.axis == gamepadBindings.axes.x) {
+                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.right) {
                             k->right = 1;
                             k->left = 0;
                         }
-                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -jb.axes.right) {
+                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.right) {
                             k->left = 1;
                             k->right = 0;
                         }
@@ -1344,12 +1344,12 @@ int procevents(CoreState *cs, GuiWindow& wind)
                             k->left = 0;
                         }
                     }
-                    else if (event.jaxis.axis == jb.axes.y) {
-                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * jb.axes.down) {
+                    else if (event.jaxis.axis == gamepadBindings.axes.y) {
+                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.down) {
                             k->down = 1;
                             k->up = 0;
                         }
-                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -jb.axes.down) {
+                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.down) {
                             k->up = 1;
                             k->down = 0;
                         }
@@ -1365,7 +1365,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
             case SDL_JOYHATMOTION:
                 k = &cs->keys_raw;
 
-                if (event.jhat.which == jb.joyID && event.jhat.hat == jb.hatIndex) {
+                if (event.jhat.which == gamepadBindings.gamepadID && event.jhat.hat == gamepadBindings.hatIndex) {
                     if (event.jhat.value == SDL_HAT_CENTERED) {
                         k->right = 0;
                         k->left = 0;
@@ -1398,9 +1398,9 @@ int procevents(CoreState *cs, GuiWindow& wind)
             case SDL_JOYBUTTONDOWN:
             case SDL_JOYBUTTONUP:
                 k = &cs->keys_raw;
-                if (event.jbutton.which == jb.joyID) {
+                if (event.jbutton.which == gamepadBindings.gamepadID) {
                     #define CHECK_BUTTON(name) \
-                    if (event.jbutton.button == jb.buttons.name) { \
+                    if (event.jbutton.button == gamepadBindings.buttons.name) { \
                         k->name = event.type == SDL_JOYBUTTONDOWN; \
                     }
 
@@ -1424,41 +1424,41 @@ int procevents(CoreState *cs, GuiWindow& wind)
                 if(event.key.repeat)
                     break;
 
-                kc = event.key.keysym.sym;
+                keyCode = event.key.keysym.sym;
 
                 k = &cs->keys_raw;
 
-                if(kc == kb.left)
+                if(keyCode == keyBindings.left)
                     k->left = 1;
 
-                if(kc == kb.right)
+                if(keyCode == keyBindings.right)
                     k->right = 1;
 
-                if(kc == kb.up)
+                if(keyCode == keyBindings.up)
                     k->up = 1;
 
-                if(kc == kb.down)
+                if(keyCode == keyBindings.down)
                     k->down = 1;
 
-                if(kc == kb.start)
+                if(keyCode == keyBindings.start)
                     k->start = 1;
 
-                if(kc == kb.a)
+                if(keyCode == keyBindings.a)
                     k->a = 1;
 
-                if(kc == kb.b)
+                if(keyCode == keyBindings.b)
                     k->b = 1;
 
-                if(kc == kb.c)
+                if(keyCode == keyBindings.c)
                     k->c = 1;
 
-                if(kc == kb.d)
+                if(keyCode == keyBindings.d)
                     k->d = 1;
 
-                if(kc == kb.escape)
+                if(keyCode == keyBindings.escape)
                     k->escape = 1;
 
-                if(kc == SDLK_v && SDL_GetModState() & KMOD_CTRL)
+                if(keyCode == SDLK_v && SDL_GetModState() & KMOD_CTRL)
                 {
                     if(cs->text_editing && cs->text_insert)
                         cs->text_insert(cs, SDL_GetClipboardText());
@@ -1466,7 +1466,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     break;
                 }
 
-                if(kc == SDLK_c && SDL_GetModState() & KMOD_CTRL)
+                if(keyCode == SDLK_c && SDL_GetModState() & KMOD_CTRL)
                 {
                     if(cs->text_editing && cs->text_copy)
                         cs->text_copy(cs);
@@ -1474,7 +1474,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     break;
                 }
 
-                if(kc == SDLK_x && SDL_GetModState() & KMOD_CTRL)
+                if(keyCode == SDLK_x && SDL_GetModState() & KMOD_CTRL)
                 {
                     if(cs->text_editing && cs->text_cut)
                         cs->text_cut(cs);
@@ -1482,7 +1482,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     break;
                 }
 
-                if(kc == SDLK_a && SDL_GetModState() & KMOD_CTRL)
+                if(keyCode == SDLK_a && SDL_GetModState() & KMOD_CTRL)
                 {
                     if(cs->text_editing && cs->text_select_all)
                         cs->text_select_all(cs);
@@ -1490,78 +1490,78 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     break;
                 }
 
-                if(kc == SDLK_z && SDL_GetModState() & KMOD_CTRL)
+                if(keyCode == SDLK_z && SDL_GetModState() & KMOD_CTRL)
                 {
                     cs->undo = 1;
                     break;
                 }
 
-                if(kc == SDLK_y && SDL_GetModState() & KMOD_CTRL)
+                if(keyCode == SDLK_y && SDL_GetModState() & KMOD_CTRL)
                 {
                     cs->redo = 1;
                     break;
                 }
 
-                if(kc == SDLK_BACKSPACE)
+                if(keyCode == SDLK_BACKSPACE)
                 {
                     cs->backspace_das = 1;
                 }
 
-                if(kc == SDLK_DELETE)
+                if(keyCode == SDLK_DELETE)
                 {
                     cs->delete_das = 1;
                 }
 
-                if(kc == SDLK_HOME)
+                if(keyCode == SDLK_HOME)
                 {
                     if(cs->text_editing && cs->text_seek_home)
                         cs->text_seek_home(cs);
                 }
 
-                if(kc == SDLK_END)
+                if(keyCode == SDLK_END)
                 {
                     if(cs->text_editing && cs->text_seek_end)
                         cs->text_seek_end(cs);
                 }
 
-                if(kc == SDLK_RETURN)
+                if(keyCode == SDLK_RETURN)
                 {
                     if(cs->text_toggle)
                         cs->text_toggle(cs);
                 }
 
-                if(kc == SDLK_LEFT)
+                if(keyCode == SDLK_LEFT)
                 {
                     cs->left_arrow_das = 1;
                 }
 
-                if(kc == SDLK_RIGHT)
+                if(keyCode == SDLK_RIGHT)
                 {
                     cs->right_arrow_das = 1;
                 }
 
-                if(kc == SDLK_F8)
+                if(keyCode == SDLK_F8)
                 {
                     switch(cs->displayMode)
                     {
-                        case game_display_default:
-                            cs->displayMode = game_display_detailed;
+                        case DisplayMode::DEFAULT:
+                            cs->displayMode = DisplayMode::DETAILED;
                             break;
-                        case game_display_detailed:
-                            cs->displayMode = game_display_centered;
+                        case DisplayMode::DETAILED:
+                            cs->displayMode = DisplayMode::CENTERED;
                             break;
                         default:
-                            cs->displayMode = game_display_default;
+                            cs->displayMode = DisplayMode::DEFAULT;
                             break;
                     }
                 }
 
-                if(kc == SDLK_F9)
+                if(keyCode == SDLK_F9)
                 {
                     cs->motionBlur = !cs->motionBlur;
                 }
 
-                if(kc == SDLK_F11)
+                if(keyCode == SDLK_F11)
                 {
                     if(cs->settings->fullscreen)
                     {
@@ -1581,17 +1581,17 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     }
                 }
 
-                if(kc == SDLK_F4 && SDL_GetModState() & KMOD_ALT)
+                if(keyCode == SDLK_F4 && SDL_GetModState() & KMOD_ALT)
                 {
                     return 1;
                 }
 
-                if(kc == SDLK_0)
+                if(keyCode == SDLK_0)
                 {
                     cs->zero_pressed = 1;
                 }
 
-                if(kc == SDLK_1)
+                if(keyCode == SDLK_1)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
@@ -1602,7 +1602,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     cs->one_pressed = 1;
                 }
 
-                if(kc == SDLK_2)
+                if(keyCode == SDLK_2)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
@@ -1613,7 +1613,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     cs->two_pressed = 1;
                 }
 
-                if(kc == SDLK_3)
+                if(keyCode == SDLK_3)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
@@ -1624,7 +1624,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     cs->three_pressed = 1;
                 }
 
-                if(kc == SDLK_4)
+                if(keyCode == SDLK_4)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
@@ -1635,7 +1635,7 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     cs->four_pressed = 1;
                 }
 
-                if(kc == SDLK_5)
+                if(keyCode == SDLK_5)
                 {
                     if(SDL_GetModState() & KMOD_ALT)
                     {
@@ -1646,17 +1646,17 @@ int procevents(CoreState *cs, GuiWindow& wind)
                     cs->five_pressed = 1;
                 }
 
-                if(kc == SDLK_6)
+                if(keyCode == SDLK_6)
                 {
                     cs->six_pressed = 1;
                 }
 
-                if(kc == SDLK_7)
+                if(keyCode == SDLK_7)
                 {
                     cs->seven_pressed = 1;
                 }
 
-                if(kc == SDLK_9)
+                if(keyCode == SDLK_9)
                 {
                     cs->nine_pressed = 1;
                 }
@@ -1664,93 +1664,93 @@ int procevents(CoreState *cs, GuiWindow& wind)
                 break;
 
             case SDL_KEYUP:
-                kc = event.key.keysym.sym;
+                keyCode = event.key.keysym.sym;
 
                 k = &cs->keys_raw;
 
-                if(kc == kb.left)
+                if(keyCode == keyBindings.left)
                     k->left = 0;
 
-                if(kc == kb.right)
+                if(keyCode == keyBindings.right)
                     k->right = 0;
 
-                if(kc == kb.up)
+                if(keyCode == keyBindings.up)
                     k->up = 0;
 
-                if(kc == kb.down)
+                if(keyCode == keyBindings.down)
                     k->down = 0;
 
-                if(kc == kb.start)
+                if(keyCode == keyBindings.start)
                     k->start = 0;
 
-                if(kc == kb.a)
+                if(keyCode == keyBindings.a)
                     k->a = 0;
 
-                if(kc == kb.b)
+                if(keyCode == keyBindings.b)
                     k->b = 0;
 
-                if(kc == kb.c)
+                if(keyCode == keyBindings.c)
                     k->c = 0;
 
-                if(kc == kb.d)
+                if(keyCode == keyBindings.d)
                     k->d = 0;
 
-                if(kc == kb.escape)
+                if(keyCode == keyBindings.escape)
                     k->escape = 0;
 
-                if(kc == SDLK_LEFT)
+                if(keyCode == SDLK_LEFT)
                     cs->left_arrow_das = 0;
 
-                if(kc == SDLK_RIGHT)
+                if(keyCode == SDLK_RIGHT)
                     cs->right_arrow_das = 0;
 
-                if(kc == SDLK_BACKSPACE)
+                if(keyCode == SDLK_BACKSPACE)
                     cs->backspace_das = 0;
 
-                if(kc == SDLK_DELETE)
+                if(keyCode == SDLK_DELETE)
                     cs->delete_das = 0;
 
-                if(kc == SDLK_0)
+                if(keyCode == SDLK_0)
                 {
                     cs->zero_pressed = 0;
                 }
 
-                if(kc == SDLK_1)
+                if(keyCode == SDLK_1)
                 {
                     cs->one_pressed = 0;
                 }
 
-                if(kc == SDLK_2)
+                if(keyCode == SDLK_2)
                 {
                     cs->two_pressed = 0;
                 }
 
-                if(kc == SDLK_3)
+                if(keyCode == SDLK_3)
                 {
                     cs->three_pressed = 0;
                 }
 
-                if(kc == SDLK_4)
+                if(keyCode == SDLK_4)
                 {
                     cs->four_pressed = 0;
                 }
 
-                if(kc == SDLK_5)
+                if(keyCode == SDLK_5)
                 {
                     cs->five_pressed = 0;
                 }
 
-                if(kc == SDLK_6)
+                if(keyCode == SDLK_6)
                 {
                     cs->six_pressed = 0;
                 }
 
-                if(kc == SDLK_7)
+                if(keyCode == SDLK_7)
                 {
                     cs->seven_pressed = 0;
                 }
 
-                if(kc == SDLK_9)
+                if(keyCode == SDLK_9)
                 {
                     cs->nine_pressed = 0;
                 }
@@ -1857,9 +1857,9 @@ int procevents(CoreState *cs, GuiWindow& wind)
         SDL_Joystick *joy = cs->joystick;
         const uint8_t *keystates = SDL_GetKeyboardState(NULL);
 
-        if (cs->settings->keybinds) {
+        if (cs->settings->keyBindings) {
             k = &cs->keys_raw;
-            kb = cs->settings->keybinds;
+            kb = cs->settings->keyBindings;
 
             *k = (struct keyflags) { 0 };
 

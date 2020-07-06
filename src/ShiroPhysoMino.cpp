@@ -1,13 +1,11 @@
 #include "ShiroPhysoMino.hpp"
-
+#include "CoreState.h"
+#include "SGUIL/SGUIL.hpp"
+#include "SPM_Spec.hpp"
+#include "SPM_Randomizer.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "SGUIL/SGUIL.hpp"
-
-#include "CoreState.h"
-#include "SPM_Spec.hpp"
-#include "SPM_Randomizer.hpp"
 
 using namespace Shiro;
 using namespace std;
@@ -461,11 +459,11 @@ bool TestSPM::initNextMino(SPM_Player& p)
 
 ActivatedPolyomino *TestSPM::activateMino(SPM_minoID ID)
 {
-    if(ID >= spec->minoList.size())
+    if(ID >= spec->polyominoes.size())
     {
         return NULL;
     }
 
-    ActivatedPolyomino *ap = new ActivatedPolyomino{spec->minoList[ID], ID, spec->spawnPositions[ID]};
+    ActivatedPolyomino *ap = new ActivatedPolyomino{spec->polyominoes[ID], ID, spec->spawnPositions[ID]};
     return ap;
 }

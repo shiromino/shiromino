@@ -1,6 +1,19 @@
-#include "core.h"
+#pragma once
+#include "AssetStore.h"
+#include "DisplayMode.h"
+#include "Game.h"
+#include "GuiScreenManager.h"
+#include "gfx_structures.h"
+#include "Input.h"
+#include "Player.h"
+#include "Settings.h"
+#include "RecordList.h"
 #include <SDL.h>
 #include <vector>
+#ifdef OPENGL_INTERPOLATION
+        #include "glad.h"
+#endif
+#define RECENT_FRAMES 60
 struct CoreState
 {
     CoreState() {}
@@ -54,7 +67,7 @@ struct CoreState
     char *calling_path;
 
     Shiro::Settings* settings;
-    struct assetdb *assets;
+    Shiro::AssetStore* assets;
     SDL_Texture *bg;
     SDL_Texture *bg_old;
     Sint16 bg_r, bg_g, bg_b;
@@ -94,7 +107,7 @@ struct CoreState
     struct pracdata *pracdata_mirror;
     GuiScreenManager *screenManager;
 
-    gameDisplayMode displayMode;
+    Shiro::DisplayMode displayMode;
     bool motionBlur;
 
     //long double avg_sleep_ms;
@@ -104,7 +117,34 @@ struct CoreState
     //long double avg_sleep_ms_recent_array[RECENT_FRAMES];
     //int recent_frame_overload;
 
-    struct scoredb scores;
+    Shiro::RecordList records;
     // struct scoredb archive;
-    struct player player;
+    Shiro::Player player;
 };
+void CoreState_initialize(CoreState *cs);
+void CoreState_destroy(CoreState *cs);
+int is_left_input_repeat(CoreState *cs, int delay);
+int is_right_input_repeat(CoreState *cs, int delay);
+int is_up_input_repeat(CoreState *cs, int delay);
+int is_down_input_repeat(CoreState *cs, int delay);
+
+struct bindings *bindings_copy(struct bindings *src);
+
+gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_multiplier);
+int load_files(CoreState *cs);
+
+int init(CoreState *cs, Shiro::Settings* s);
+void quit(CoreState *cs);
+
+int run(CoreState *cs);
+int process_events(CoreState *cs, GuiWindow& window);
+int procgame(game_t *g, int input_enabled);
+
+void handle_replay_input(CoreState* cs);
+void update_input_repeat(CoreState *cs);
+void update_pressed(CoreState *cs);
+
+int button_emergency_inactive(CoreState *cs);
+int gfx_buttons_input(CoreState *cs);
+
+int request_fps(CoreState *cs, double fps);

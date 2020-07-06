@@ -8,10 +8,10 @@
 #include "SDL.h"
 
 namespace Shiro {
-    class KeyBinds {
+    class KeyBindings {
     public:
-        KeyBinds();
-        KeyBinds(const int playerNum);
+        KeyBindings();
+        KeyBindings(const int playerNum);
 
         bool read(PDINI::INI& ini, const std::string sectionName);
 
@@ -27,15 +27,15 @@ namespace Shiro {
         SDL_Keycode escape;
     };
 
-    class JoyBinds {
+    class GamepadBindings {
     public:
-        JoyBinds();
+        GamepadBindings();
 
         bool read(PDINI::INI& ini, const std::string sectionName);
 
         std::string name;
-        int joyIndex;
-        SDL_JoystickID joyID;
+        int gamepadIndex;
+        SDL_JoystickID gamepadID;
 
         struct Buttons {
             Buttons();
@@ -73,9 +73,8 @@ namespace Shiro {
 
         bool read(const std::string filename);
 
-        KeyBinds keyBinds;
-        JoyBinds joyBinds;
-        // TODO: XInputBinds xInputBinds;
+        KeyBindings keyBindings;
+        GamepadBindings gamepadBindings;
 
         float videoScale;
         int videoStretch;

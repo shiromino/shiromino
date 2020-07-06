@@ -1,14 +1,13 @@
-#include "Settings.hpp"
+#include "Settings.h"
 #include <array>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cinttypes>
 
 using namespace Shiro;
-using namespace std;
 using namespace PDINI;
 
-static array<string, 10> KeyBindNames = {
+static std::array<std::string, 10> keyBindingNames = {
     "LEFT",
     "RIGHT",
     "UP",
@@ -21,52 +20,52 @@ static array<string, 10> KeyBindNames = {
     "ESCAPE"
 };
 
-KeyBinds::KeyBinds() : KeyBinds(0) {}
+KeyBindings::KeyBindings() : KeyBindings(0) {}
 
 /**
  * We have to guarantee some default control option for fresh installs, so
  * keyboard is the best option. Other inputs, like joysticks, don't have any
  * defaults set.
  */
-KeyBinds::KeyBinds(int playerNum) {
+KeyBindings::KeyBindings(int playerNum) {
     switch (playerNum) {
-    default:
-    case 0:
-        left = SDLK_LEFT;
-        right = SDLK_RIGHT;
-        up = SDLK_UP;
-        down = SDLK_DOWN;
-        start = SDLK_RETURN;
-        a = SDLK_f;
-        b = SDLK_d;
-        c = SDLK_s;
-        d = SDLK_a;
-        escape = SDLK_ESCAPE;
-        break;
+        default:
+        case 0:
+            left = SDLK_LEFT;
+            right = SDLK_RIGHT;
+            up = SDLK_UP;
+            down = SDLK_DOWN;
+            start = SDLK_RETURN;
+            a = SDLK_f;
+            b = SDLK_d;
+            c = SDLK_s;
+            d = SDLK_a;
+            escape = SDLK_ESCAPE;
+            break;
 
-    case 1:    
-        left = SDLK_j;
-        right = SDLK_l;
-        up = SDLK_i;
-        down = SDLK_k;
-        start = SDLK_TAB;
-        a = SDLK_r;
-        b = SDLK_e;
-        c = SDLK_w;
-        d = SDLK_q;
-        escape = SDLK_F11;
-        break;
+        case 1:    
+            left = SDLK_j;
+            right = SDLK_l;
+            up = SDLK_i;
+            down = SDLK_k;
+            start = SDLK_TAB;
+            a = SDLK_r;
+            b = SDLK_e;
+            c = SDLK_w;
+            d = SDLK_q;
+            escape = SDLK_F11;
+            break;
     }
 }
 
-bool KeyBinds::read(INI& ini, const string sectionName) {
+bool KeyBindings::read(INI& ini, const std::string sectionName) {
     bool defaultUsed = false;
     SDL_Keycode* const keycodes[] = {&left, &right, &up, &down, &start, &a, &b, &c, &d, &escape};
     SDL_Keycode* const* keycode = keycodes;
-    for (const auto keyBindName : KeyBindNames) {
-        string keyName;
-        if (!ini.get(sectionName, keyBindName, keyName) || SDL_GetKeyFromName(keyName.c_str()) == SDLK_UNKNOWN) {
-            fprintf(stderr, "Binding for %s is invalid\n", keyBindName.c_str());
+    for (const auto& keyBindingName : keyBindingNames) {
+        std::string keyName;
+        if (!ini.get(sectionName, keyBindingName, keyName) || SDL_GetKeyFromName(keyName.c_str()) == SDLK_UNKNOWN) {
+            fprintf(stderr, "Binding for %s is invalid\n", keyBindingName.c_str());
             defaultUsed = true;
         }
         else {
@@ -77,16 +76,16 @@ bool KeyBinds::read(INI& ini, const string sectionName) {
     return defaultUsed;
 }
 
-JoyBinds::JoyBinds() : name(""), joyIndex(-1), joyID(-1), hatIndex(-1) {}
+GamepadBindings::GamepadBindings() : name(""), gamepadIndex(-1), gamepadID(-1), hatIndex(-1) {}
 
-bool JoyBinds::read(INI& ini, const string sectionName) {
+bool GamepadBindings::read(INI& ini, const std::string sectionName) {
     bool defaultUsed = false;
 
-    if (!ini.get(sectionName, "JOYNAME", name) && !ini.get(sectionName, "JOYINDEX", joyIndex)) {
+    if (!ini.get(sectionName, "JOYNAME", name) && !ini.get(sectionName, "JOYINDEX", gamepadIndex)) {
         // When no joystick name nor index is set in the INI, just disable
         // joystick input completely.
         name = "";
-        joyIndex = -1;
+        gamepadIndex = -1;
         return defaultUsed;
     }
 
@@ -120,7 +119,7 @@ bool JoyBinds::read(INI& ini, const string sectionName) {
     }
     else {
         if (axes.x >= 0) {
-            string axisDirection = "";
+            std::string axisDirection = "";
             if (ini.get(sectionName, "AXISRIGHT", axisDirection)) {
                 if (axisDirection == "+") {
                     axes.right = 1;
@@ -141,7 +140,7 @@ bool JoyBinds::read(INI& ini, const string sectionName) {
         }
 
         if (axes.y >= 0) {
-            string axisDirection = "";
+            std::string axisDirection = "";
             if (ini.get(sectionName, "AXISDOWN", axisDirection)) {
                 if (axisDirection == "+") {
                     axes.down = 1;
@@ -177,8 +176,8 @@ bool JoyBinds::read(INI& ini, const string sectionName) {
     return defaultUsed;
 }
 
-JoyBinds::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
-JoyBinds::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
+GamepadBindings::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
+GamepadBindings::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
 
 Settings::Settings() :
     videoScale(1.0f),
@@ -196,7 +195,7 @@ Settings::Settings() :
     basePath("."),
     playerName("ARK") {}
 
-bool Settings::read(string filename) {
+bool Settings::read(std::string filename) {
     INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
@@ -208,15 +207,15 @@ bool Settings::read(string filename) {
     }
 
     // [P1KEYBINDS]
-    bool defaultUsed = this->keyBinds.read(ini, "P1KEYBINDS");
+    bool defaultUsed = this->keyBindings.read(ini, "P1KEYBINDS");
 
     // [P1JOYBINDS]
-    if (!this->joyBinds.read(ini, "P1JOYBINDS")) {
+    if (!this->gamepadBindings.read(ini, "P1JOYBINDS")) {
         defaultUsed = true;
     }
 
     // [PATHS]
-    string basePath;
+    std::string basePath;
     if (!ini.get("PATHS", "BASE_PATH", basePath)) {
         char *basePath = SDL_GetBasePath();
         size_t i = strlen(basePath);
@@ -318,7 +317,7 @@ bool Settings::read(string filename) {
 #endif
 
     // [ACCOUNT]
-    string playerName;
+    std::string playerName;
     if (ini.get("ACCOUNT", "PLAYERNAME", playerName)) {
         this->playerName = playerName;
     }

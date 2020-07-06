@@ -1,9 +1,7 @@
 #pragma once
 
-#include "SDL.h"
+#include <SDL.h>
 #include <string>
-
-#include "core.h"
 
 #define EMERGENCY_OVERRIDE 1
 #define MESSAGE_EMERGENCY 0x1000000
@@ -15,6 +13,8 @@ typedef struct
 {
     SDL_Texture *tex;
 } gfx_image;
+
+struct CoreState;
 
 bool img_load(gfx_image *img, std::string path_without_ext, CoreState *cs);
 void img_destroy(gfx_image *img);

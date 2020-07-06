@@ -1,9 +1,8 @@
 #pragma once
-
 #include <string>
 #include <vector>
-
-#include "core.h"
+#include "CoreState.h"
+#include "Game.h"
 
 #define MENU_PRACTICE_NUMOPTS 15
 

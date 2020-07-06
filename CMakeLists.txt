@@ -95,9 +95,9 @@ set(SOURCES
     src/PieceDef.cpp
     src/qrs.cpp
     src/random.cpp
+    src/RecordList.cpp
     src/replay.cpp
     src/RotationTables.cpp
-    src/scores.cpp
     src/Settings.cpp
     src/ShiroPhysoMino.cpp
     src/SPM_Randomizer.cpp
@@ -114,9 +114,11 @@ set(SOURCES
     ${OPENGL_SOURCES})
 
 set(HEADERS
+    src/AssetStore.h
     src/Audio.hpp
-    src/core.h
+    src/CoreState.h
     src/Debug.hpp
+    src/DisplayMode.h
     src/fonts.h
     src/game_menu.h
     src/game_qs.h
@@ -127,21 +129,24 @@ set(HEADERS
     src/gfx_structures.h
     src/Grid.hpp
     src/GuiGridCanvas.hpp
-    src/GuiScreenManager.hpp
+    src/GuiScreenManager.h
     src/images.h
+    src/Input.h
     src/Mode/BaseMode.hpp
     src/MultiEditor.hpp
     src/music.h
     src/Path.hpp
     src/PieceDef.hpp
+    src/Player.h
     src/Player/BasePlayer.hpp
     src/qrs.h
     src/QRS.hpp
+    src/RecordList.h
     src/random.h
     src/replay.h
+    src/RefreshRates.h
     src/RotationTables.hpp
-    src/scores.h
-    src/Settings.hpp
+    src/Settings.h
     src/sfx.h
     src/ShiroPhysoMino.hpp
     src/SPM_Randomizer.hpp

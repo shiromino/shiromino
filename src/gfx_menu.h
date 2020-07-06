@@ -1,8 +1,3 @@
-#ifndef _gfx_menu_h
-#define _gfx_menu_h
-
-#include "core.h"
-
+#pragma once
+#include "Game.h"
 int gfx_drawmenu(game_t *g);
-
-#endif

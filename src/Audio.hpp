@@ -6,10 +6,10 @@
  */
 #pragma once
 
-#include "Settings.hpp"
+#include "Settings.h"
 #include "Path.hpp"
+#include <SDL_mixer.h>
 #include <string>
-#include "SDL_mixer.h"
 
 struct CoreState;
 

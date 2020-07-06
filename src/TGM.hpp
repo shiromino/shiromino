@@ -1,13 +1,10 @@
-#ifndef _tgm_hpp
-#define _tgm_hpp
-
+#pragma once
+#include "CoreState.h"
+#include "SPM_Spec.hpp"
+#include "ShiroPhysoMino.hpp"
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "core.h"
-#include "SPM_Spec.hpp"
-#include "ShiroPhysoMino.hpp"
 
 #define TGM_CELL_MONO -5
 #define TGM_FIELD_W_LIMITER -30
@@ -17,8 +14,7 @@
 #define TGM_CELL_GHOST (1 << 25)
 #define TGM_CELL_GEM (1 << 26)
 
-enum TGM_grade
-{
+enum TGM_grade {
     tgm_grade_none = -1,
 
     tgm_grade_9 = 0,
@@ -64,8 +60,7 @@ enum TGM_grade
     tgm_grade_GM
 };
 
-enum TGM_medal
-{
+enum TGM_medal {
     tgm_medal_none = 0,
 
     tgm_medal_bronze,
@@ -74,8 +69,7 @@ enum TGM_medal
     tgm_medal_platinum
 };
 
-struct TGM_frameCounters : public SPM_frameCounters
-{
+struct TGM_frameCounters : public SPM_frameCounters {
     int postLock;
     int postLockExpirePoint;
 
@@ -87,25 +81,20 @@ class TGM_Mino : public ActivatedPolyomino
 {
 public:
     TGM_Mino(Polyomino& p, SPM_minoID ID, SPM_point position)
-        : ActivatedPolyomino(p, ID, position)
-    {
+        : ActivatedPolyomino(p, ID, position) {
         brackets = false;
         mono = false;
         ghost = false;
     }
 
-    virtual int codedCellValue() override
-    {
-        if(mono)
-        {
+    virtual int codedCellValue() override {
+        if(mono) {
             return TGM_CELL_MONO;
         }
-        else if(brackets)
-        {
+        else if(brackets) {
             return (ID + 1) | TGM_CELL_BRACKETS;
         }
-        else if(ghost)
-        {
+        else if(ghost) {
             return (ID + 1) | TGM_CELL_GHOST;
         }
 
@@ -117,8 +106,7 @@ public:
     bool ghost; // only draw the outline around the piece
 };
 
-struct TGM_sectionData
-{
+struct TGM_sectionData {
     long time;
     long coolTime;
     long levelStopTime;
@@ -126,8 +114,7 @@ struct TGM_sectionData
     int numTetrises;
 };
 
-struct TGM_Player
-{
+struct TGM_Player {
     TGM_Player();
 
     SPM_Randomizer *randomizer;
@@ -159,8 +146,7 @@ struct TGM_Player
 
 
 
-    struct placementData
-    {
+    struct placementData {
         int softDropCounter;
         int sonicDropHeight;
         int activePieceTime;
@@ -174,8 +160,7 @@ struct TGM_Player
         int comboSimple;
     };
 
-    struct statistics
-    {
+    struct statistics {
         int numSingles;
         int numDoubles;
         int numTriples;
@@ -186,8 +171,7 @@ struct TGM_Player
     };
 };
 
-struct TGM_GameState
-{
+struct TGM_GameState {
     uint32_t stateFlags;
 
     int garbageDelay;
@@ -197,8 +181,7 @@ struct TGM_GameState
 
 //enum TGM_levelEventType {tgm_event_garbage_on,};
 
-class TGM_LevelEvent
-{
+class TGM_LevelEvent {
 public:
     TGM_LevelEvent(int level) : level(level) {}
     virtual ~TGM_LevelEvent() {}
@@ -209,8 +192,7 @@ public:
     int level;
 };
 
-class TGM_SpeedEvent : public TGM_LevelEvent
-{
+class TGM_SpeedEvent : public TGM_LevelEvent {
 public:
     TGM_SpeedEvent(int level, SPM_frameTimings timings)
         : TGM_LevelEvent(level)
@@ -224,13 +206,11 @@ protected:
     SPM_frameTimings timings;
 };
 
-class TGM_MusicEvent : public TGM_LevelEvent
-{
+class TGM_MusicEvent : public TGM_LevelEvent {
 
 };
 
-struct TGM_Mode
-{
+struct TGM_Mode {
     SPM_Spec *spec;
     SPM_Randomizer *randomizer;
 
@@ -257,21 +237,18 @@ struct TGM_Mode
     Shiro::Grid *startingField;
 };
 
-struct TGM_Stage
-{
+struct TGM_Stage {
     int index;
     std::string name;
 
     Shiro::Grid *startingField;
 };
 
-struct Staged_TGM_Mode
-{
+struct Staged_TGM_Mode {
 
 };
 
-class TGM : public ShiroPhysoMino
-{
+class TGM : public ShiroPhysoMino {
 public:
     TGM(CoreState&, SPM_Spec *, TGM_Mode&);
     ~TGM();
@@ -308,9 +285,6 @@ private:
     TGM_Mode *mode;
 };
 
-class Staged_TGM : public TGM
-{
+class Staged_TGM : public TGM {
 
 };
-
-#endif // _tgm_hpp
