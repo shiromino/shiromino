@@ -7,16 +7,7 @@ if(${VCPKG_TOOLCHAIN})
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
 
-if(${VCPKG_TOOLCHAIN})
-    # Some features supported by GCC for C++17 aren't supported by MSVC
-    # C++17. This makes MSVC use the "latest" standard, which has the
-    # features we need.
-    set(CMAKE_CXX_STANDARD 20)
-else()
-    # For now, only C++17 features will be used, despite needing to use
-    # C++20 for MSVC.
-    set(CMAKE_CXX_STANDARD 17)
-endif()
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(${OPENGL_INTERPOLATION})
@@ -45,7 +36,7 @@ else()
     find_package(sdl2-mixer REQUIRED)
     find_package(sqlite3 REQUIRED)
     if(${VCPKG_TOOLCHAIN})
-        # When using dynamically linked libraries, vcpkg doesn't automatically
+        # When using dynamically linked libraries, Vcpkg doesn't automatically
         # copy over the OGG/Vorbis libraries needed to play OGG files with
         # SDL_mixer, so they have to be explicitly added as dependencies to
         # Shiromino to work around that bug.
@@ -169,8 +160,8 @@ add_executable(Shiromino ${SOURCES} ${HEADERS})
 target_include_directories(Shiromino SYSTEM PUBLIC third-party)
 
 if(${VCPKG_TOOLCHAIN})
-    # For whatever reason, the proper include directory for sqlite3 isn't set when
-    # using vcpkg and Visual Studio, so the include directory has to be manually
+    # For whatever reason, the proper include directory for SQLite3 isn't set when
+    # using Vcpkg and Visual Studio, so the include directory has to be manually
     # added.
     find_path(INCLUDE_DIRS sqlite3.h)
 elseif(${PKG_CONFIG_FOUND})
