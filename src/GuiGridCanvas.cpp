@@ -1,26 +1,21 @@
 #include "GuiGridCanvas.hpp"
-
-#include <utility>
-#include <memory>
-#include <functional>
-#include "SDL.h"
 #include "SGUIL/SGUIL.hpp"
-
-using namespace Shiro;
-using namespace std;
-
-GuiGridCanvas::GuiGridCanvas(int ID, Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
+#include <functional>
+#include <memory>
+#include <SDL.h>
+#include <utility>
+GuiGridCanvas::GuiGridCanvas(int ID, Shiro::Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
     : cells(cells), paletteTex(paletteTex), cellW(cellW), cellH(cellH), paletteVar(paletteVar)
 {
     this->relativeDestRect = relativeDestRect;
     this->ID = ID;
 
     readPaletteSelection(&paletteVar);
-    paletteSize = (unsigned)get<1>(paletteVar.getRange());
+    paletteSize = (unsigned) std::get<1>(paletteVar.getRange());
 
-    function<void(BindableVariable *)> membFunc = [=](BindableVariable *bv) { this->readPaletteSelection(bv); };
+    std::function<void(BindableVariable *)> membFunc = [=](BindableVariable *bv) { this->readPaletteSelection(bv); };
 
-    unique_ptr<VariableObserver> vob {
+    std::unique_ptr<VariableObserver> vob {
         (VariableObserver *)( new MemberVariableObserver{membFunc} )
     };
 
@@ -51,7 +46,7 @@ void GuiGridCanvas::draw()
     {
         for(int j = 0; j < cells->getHeight(); j++)
         {
-            vector<unsigned int> paletteList;
+            std::vector<unsigned int> paletteList;
             GuiVirtualPoint point = {i, j};
 
             int val = getCell(point);
@@ -123,7 +118,7 @@ void GuiGridCanvas::draw()
             greaterY = swp;
         }
 
-        GridRect rect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+        Shiro::GridRect rect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
 
         SDL_Rect selectionRect = SDL_Rect{relativeDestRect.x + (rect.x * (int)cellW), relativeDestRect.y + (rect.y * (int)cellH), (int)(rect.width * cellW), (int)(rect.height * cellH)};
 
@@ -409,7 +404,7 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
                 greaterY = swp;
             }
 
-            GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+            Shiro::GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
 
             if(paletteValMap.size() <= (std::size_t)num + 1)
             {
@@ -435,7 +430,7 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
 
 void GuiGridCanvas::makeBackup()
 {
-    undoBuffer.push_back(new Grid(*cells));
+    undoBuffer.push_back(new Shiro::Grid(*cells));
 
     for(auto r : redoBuffer)
     {
@@ -452,7 +447,7 @@ void GuiGridCanvas::undo()
         return;
     }
 
-    redoBuffer.push_back(new Grid(*cells));
+    redoBuffer.push_back(new Shiro::Grid(*cells));
     cells = undoBuffer.back();
     undoBuffer.pop_back();
 }
@@ -464,7 +459,7 @@ void GuiGridCanvas::redo()
         return;
     }
 
-    undoBuffer.push_back(new Grid(*cells));
+    undoBuffer.push_back(new Shiro::Grid(*cells));
     cells = redoBuffer.back();
     redoBuffer.pop_back();
 }
@@ -511,8 +506,8 @@ void GuiGridCanvas::copySelection()
         greaterY = swp;
     }
 
-    GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
-    clipboard = new Grid(*cells, selectionRect);
+    Shiro::GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+    clipboard = new Shiro::Grid(*cells, selectionRect);
 }
 
 void GuiGridCanvas::cutSelection()
@@ -541,8 +536,8 @@ void GuiGridCanvas::cutSelection()
         greaterY = swp;
     }
 
-    GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
-    clipboard = new Grid(*cells, selectionRect);
+    Shiro::GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+    clipboard = new Shiro::Grid(*cells, selectionRect);
 
     if(paletteValMap.size() == 0)
     {
@@ -561,7 +556,7 @@ void GuiGridCanvas::pasteSelection()
         return;
     }
 
-    GridRect dest = {cellUnderMouse.x, cellUnderMouse.y, clipboard->getWidth(), clipboard->getHeight()};
+    Shiro::GridRect dest = {cellUnderMouse.x, cellUnderMouse.y, clipboard->getWidth(), clipboard->getHeight()};
     cells->copyRect(*clipboard, { 0, 0, clipboard->getWidth(), clipboard->getHeight() }, dest);
 }
 

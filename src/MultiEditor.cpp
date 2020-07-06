@@ -1,9 +1,7 @@
 #include "MultiEditor.hpp"
-
-#include <string>
 #include "SGUIL/SGUIL.hpp"
-
 #include "qrs.h"
+#include <string>
 
 #define SUBSET_ALL 0
 #define SUBSET_TETS 1
@@ -14,8 +12,6 @@
 #define SEQUENCE_REPEAT_START 2048
 #define SEQUENCE_REPEAT_END 4096
 #define SEQUENCE_REPEAT_INF 8192
-
-using namespace std;
 
 MultiEditor::MultiEditor()
 {
@@ -483,7 +479,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
 
     char rpt_count_strbuf[5];
     char name_strbuf[3] = {0, 0, 0};
-    string name_str;
+    std::string name_str;
 
     for(i = 0; i < usr_seq_str.size(); i++)
     {

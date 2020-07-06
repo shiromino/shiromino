@@ -1,19 +1,14 @@
 #include "gfx_helpers.hpp"
-
+#include <SDL.h>
 #include <vector>
-#include "SDL.h"
-
-using namespace Shiro;
-using namespace std;
-
-void gfx_drawCodedGrid(SDL_Renderer *renderer, Grid *cells, SDL_Texture *paletteTex, SDL_Point position,
-    int cellW, int cellH, vector<paletteMapEntry>& paletteValMap)
+void gfx_drawCodedGrid(SDL_Renderer *renderer, Shiro::Grid *cells, SDL_Texture *paletteTex, SDL_Point position,
+    int cellW, int cellH, std::vector<paletteMapEntry>& paletteValMap)
 {
     for(int i = 0; i < cells->getWidth(); i++)
     {
         for(int j = 0; j < cells->getHeight(); j++)
         {
-            vector<unsigned int> paletteList;
+            std::vector<unsigned int> paletteList;
             int val = cells->getCell(i, j);
 
             int destX = position.x + (i * cellW);

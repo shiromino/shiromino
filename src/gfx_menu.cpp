@@ -1,15 +1,10 @@
-#include "SDL.h"
-#include <cstdio>
-#include <cstdlib>
-
+#include "gfx_menu.h"
 #include "CoreState.h"
 #include "game_menu.h"
-
 #include "gfx.h"
-#include "gfx_menu.h"
-
-using namespace std;
-
+#include <cstdio>
+#include <cstdlib>
+#include <SDL.h>
 int gfx_drawmenu(game_t *g)
 {
     if(!g)
@@ -35,8 +30,8 @@ int gfx_drawmenu(game_t *g)
     struct text_opt_data *d7 = NULL;
     struct toggle_opt_data *d8 = NULL;
 
-    string textinput_display;
-    string page_str;
+    std::string textinput_display;
+    std::string page_str;
 
     int i = 0;
     int j = 0;
@@ -51,7 +46,7 @@ int gfx_drawmenu(game_t *g)
 
     if(d->is_paged)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << "PAGE " << d->page + 1 << "/" << ((d->numopts - 1) / d->page_length) + 1;
         page_str = ss.str();
         fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);

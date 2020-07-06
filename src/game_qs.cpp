@@ -1,13 +1,4 @@
 #include "Debug.hpp"
-#include "SDL.h"
-#include <cmath>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <string>
-#include <fstream>
-
 #include "CoreState.h"
 #include "game_menu.h"
 #include "game_qs.h"
@@ -17,13 +8,16 @@
 #include "qrs.h"
 #include "random.h"
 #include "RefreshRates.h"
-#include "Timer.hpp"
-
 #include "replay.h"
-
-using namespace Shiro;
-using namespace std;
-
+#include "Timer.hpp"
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <SDL.h>
+#include <string>
 // clang-format off
 const char *grade_names[37] =
 {
@@ -500,7 +494,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     qrs_player *p = NULL;
 
     g->origin = cs;
-    g->field = new Grid(QRS_FIELD_W, QRS_FIELD_H);
+    g->field = new Shiro::Grid(QRS_FIELD_W, QRS_FIELD_H);
 
     g->init = qs_game_init;
     g->quit = qs_game_quit;
@@ -517,7 +511,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->mode_flags = flags;
 
     q->piecepool = qrspool_create();
-    q->timer = Timer(60.0);
+    q->timer = Shiro::Timer(60.0);
     q->p1 = (qrs_player *)malloc(sizeof(qrs_player));
     p = q->p1;
     p->def = NULL;
@@ -533,7 +527,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         p->old_xs[i] = 0;
         p->old_ys[i] = 0;
     }
-    p->orient = FLAT;
+    p->orient = Shiro::FLAT;
 
     q->p1counters = new QRS_Counters;
 
@@ -603,8 +597,8 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->max_floorkicks = 2;
     q->lock_on_rotate = 0;
 
-    request_fps(cs, RefreshRates::pentomino);
-    q->game_type = GameType::SIMULATE_QRS;
+    request_fps(cs, Shiro::RefreshRates::pentomino);
+    q->game_type = Shiro::GameType::SIMULATE_QRS;
     q->mode_type = MODE_PENTOMINO;
 
     q->last_gradeup_timestamp = 0xFFFFFFFF;
@@ -629,20 +623,20 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         // q->field_x = QRS_FIELD_X - 28;
         // q->field_y = QRS_FIELD_Y - 16 + 2;
         q->lock_protect = 1;
-        flags |= static_cast<int>(GameType::SIMULATE_G2);
+        flags |= static_cast<int>(Shiro::GameType::SIMULATE_G2);
         flags |= TETROMINO_ONLY;
-        flags &= ~static_cast<int>(GameType::SIMULATE_G1);
-        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G1);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G3);
     }
     else if(flags & MODE_G3_TERROR)
     {
         q->mode_type = MODE_G3_TERROR;
         q->grade = NO_GRADE;
         q->lock_protect = 1;
-        flags |= static_cast<int>(GameType::SIMULATE_G3);
+        flags |= static_cast<int>(Shiro::GameType::SIMULATE_G3);
         flags |= TETROMINO_ONLY;
-        flags &= ~static_cast<int>(GameType::SIMULATE_G1);
-        flags &= ~static_cast<int>(GameType::SIMULATE_G2);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G1);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G2);
         if(level < 1000 && level >= 500)
         {
             q->state_flags |= GAMESTATE_RISING_GARBAGE;
@@ -658,28 +652,28 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     {
         q->mode_type = MODE_G1_MASTER;
         q->grade = GRADE_9;
-        flags |= static_cast<int>(GameType::SIMULATE_G1);
+        flags |= static_cast<int>(Shiro::GameType::SIMULATE_G1);
         flags |= TETROMINO_ONLY;
-        flags &= ~static_cast<int>(GameType::SIMULATE_G2);
-        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G2);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G3);
     }
     else if(flags & MODE_G1_20G)
     {
         q->mode_type = MODE_G1_20G;
         q->grade = GRADE_9;
-        flags |= static_cast<int>(GameType::SIMULATE_G1);
+        flags |= static_cast<int>(Shiro::GameType::SIMULATE_G1);
         flags |= TETROMINO_ONLY;
-        flags &= ~static_cast<int>(GameType::SIMULATE_G2);
-        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G2);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G3);
     }
     else if(flags & MODE_G2_MASTER)
     {
         q->mode_type = MODE_G2_MASTER;
         q->grade = GRADE_9;
-        flags |= static_cast<int>(GameType::SIMULATE_G2);
+        flags |= static_cast<int>(Shiro::GameType::SIMULATE_G2);
         flags |= TETROMINO_ONLY;
-        flags &= ~static_cast<int>(GameType::SIMULATE_G1);
-        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G1);
+        flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G3);
 
         // 61.68 "game seconds", or 60 realtime seconds
         q->credit_roll_counter = 3701;
@@ -699,36 +693,36 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->tetromino_only = 1;
     }
 
-    if(flags & static_cast<int>(GameType::SIMULATE_G1))
+    if(flags & static_cast<int>(Shiro::GameType::SIMULATE_G1))
     {
         q->tetromino_only = 1;
         q->randomizer_type = RANDOMIZER_G1;
-        q->game_type = GameType::SIMULATE_G1;
+        q->game_type = Shiro::GameType::SIMULATE_G1;
         q->num_previews = 1;
         q->max_floorkicks = 0;
         q->special_irs = 0;
         q->lock_protect = 0;
-        q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
-        request_fps(cs, RefreshRates::g1);
+        q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
+        request_fps(cs, Shiro::RefreshRates::g1);
     }
 
-    if(flags & static_cast<int>(GameType::SIMULATE_G2))
+    if(flags & static_cast<int>(Shiro::GameType::SIMULATE_G2))
     {
         q->tetromino_only = 1;
         q->randomizer_type = RANDOMIZER_G2;
-        q->game_type = GameType::SIMULATE_G2;
+        q->game_type = Shiro::GameType::SIMULATE_G2;
         q->num_previews = 1;
         q->max_floorkicks = 0;
         q->special_irs = 0;
-        q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
-        request_fps(cs, RefreshRates::g2);
+        q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
+        request_fps(cs, Shiro::RefreshRates::g2);
     }
 
-    if(flags & static_cast<int>(GameType::SIMULATE_G3))
+    if(flags & static_cast<int>(Shiro::GameType::SIMULATE_G3))
     {
         q->tetromino_only = 1;
         q->randomizer_type = RANDOMIZER_G3;
-        q->game_type = GameType::SIMULATE_G3;
+        q->game_type = Shiro::GameType::SIMULATE_G3;
         q->num_previews = 3;
         q->max_floorkicks = 1;
         q->special_irs = 0;
@@ -736,7 +730,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->hold_enabled = 1;
     }
 
-    if(q->game_type == GameType::SIMULATE_QRS)
+    if(q->game_type == Shiro::GameType::SIMULATE_QRS)
         q->field_x = QRS_FIELD_X + 4;
 
     uint32_t randomizer_flags = 0;
@@ -815,7 +809,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     /* for testing */
     // flags |= BIG_MODE;
 
-    if(flags & static_cast<int>(GameType::BIG_MODE) && !(flags & QRS_PRACTICE))
+    if(flags & static_cast<int>(Shiro::GameType::BIG_MODE) && !(flags & QRS_PRACTICE))
     {
         q->state_flags |= GAMESTATE_BIGMODE;
 
@@ -844,14 +838,14 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
             q->pracdata = new pracdata;
 
             q->pracdata->field_w = 10;
-            q->pracdata->game_type = GameType::SIMULATE_G2;
+            q->pracdata->game_type = Shiro::GameType::SIMULATE_G2;
             // q->pracdata->long_history = NULL;   // unused at the moment
             q->pracdata->usr_seq_expand_len = 0;
             q->pracdata->usr_seq_len = 0;
             q->pracdata->usr_field_undo.clear();
             q->pracdata->usr_field_redo.clear();
             q->pracdata->field_edit_in_progress = 0;
-            q->pracdata->usr_field = Grid(QRS_FIELD_W, QRS_FIELD_H);
+            q->pracdata->usr_field = Shiro::Grid(QRS_FIELD_W, QRS_FIELD_H);
             q->pracdata->palette_selection = -5;
             q->pracdata->field_selection = 0;
             q->pracdata->field_selection_vertex1_x = 0;
@@ -1004,7 +998,7 @@ int qs_game_init(game_t *g)
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<PieceDefFlag>(preview.flags | PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags | Shiro::PDBRACKETS);
         }
     }
 
@@ -1147,7 +1141,7 @@ int qs_game_pracinit(game_t *g, int val)
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<PieceDefFlag>(preview.flags | PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags | Shiro::PDBRACKETS);
         }
     }
 
@@ -1222,12 +1216,12 @@ int qs_game_frame(game_t *g)
         switch(cs->displayMode)
         {
             default:
-            case DisplayMode::DEFAULT:
-            case DisplayMode::DETAILED:
+            case Shiro::DisplayMode::DEFAULT:
+            case Shiro::DisplayMode::DETAILED:
                 q->field_x = QRS_FIELD_X;
                 break;
 
-            case DisplayMode::CENTERED:
+            case Shiro::DisplayMode::CENTERED:
                 q->field_x = 192;
                 break;
         }
@@ -1632,7 +1626,7 @@ int qs_game_frame(game_t *g)
         }
     }
 
-    if(!q->pracdata && q->is_recovering && q->game_type == GameType::SIMULATE_QRS)
+    if(!q->pracdata && q->is_recovering && q->game_type == Shiro::GameType::SIMULATE_QRS)
     {
         if (g->field->cellsFilled() <= 85) {
             q->recoveries++;
@@ -2118,7 +2112,7 @@ int qs_process_lockflash(game_t *g)
 
             if(!(q->state_flags & GAMESTATE_CREDITS) && !q->pracdata)
             {
-                if(q->game_type == GameType::SIMULATE_G3 && n > 2)
+                if(q->game_type == Shiro::GameType::SIMULATE_G3 && n > 2)
                     q->lvlinc = 2 * n - 2;
                 else
                     q->lvlinc = n;
@@ -2258,7 +2252,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-            if(!q->pracdata && q->game_type == GameType::SIMULATE_QRS)
+            if(!q->pracdata && q->game_type == Shiro::GameType::SIMULATE_QRS)
             {
                 switch(q->combo_simple)
                 {
@@ -2725,7 +2719,7 @@ int qs_update_pracdata(CoreState *cs)
     qrsdata *q = (qrsdata *)cs->p1game->data;
     pracdata *d = q->pracdata;
     menudata *md = (menudata *)cs->menu->data;
-    string seqStr;
+    std::string seqStr;
     char name_str[3] = {0, 0, 0};
 
     int piece_seq[3000];
@@ -2750,7 +2744,7 @@ int qs_update_pracdata(CoreState *cs)
 
     switch(q->game_type)
     {
-        case GameType::SIMULATE_QRS:
+        case Shiro::GameType::SIMULATE_QRS:
             q->num_previews = 4;
             q->randomizer_type = RANDOMIZER_NORMAL;
             if(q->randomizer)
@@ -2760,12 +2754,12 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 0;
             q->max_floorkicks = 2;
             q->lock_protect = 1;
-            q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags & ~PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
             q->tetromino_only = 0;
             q->pentomino_only = 0;
-            request_fps(cs, RefreshRates::pentomino);
+            request_fps(cs, Shiro::RefreshRates::pentomino);
             break;
-        case GameType::SIMULATE_G1:
+        case Shiro::GameType::SIMULATE_G1:
             q->num_previews = 1;
             q->randomizer_type = RANDOMIZER_G1;
             if(q->randomizer)
@@ -2775,12 +2769,12 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 0;
             q->max_floorkicks = 0;
             q->lock_protect = 0;
-            q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, RefreshRates::g1);
+            request_fps(cs, Shiro::RefreshRates::g1);
             break;
-        case GameType::SIMULATE_G2:
+        case Shiro::GameType::SIMULATE_G2:
             q->num_previews = 1;
             q->randomizer_type = RANDOMIZER_G2;
             if(q->randomizer)
@@ -2790,12 +2784,12 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 0;
             q->max_floorkicks = 0;
             q->lock_protect = 1;
-            q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, RefreshRates::g2);
+            request_fps(cs, Shiro::RefreshRates::g2);
             break;
-        case GameType::SIMULATE_G3:
+        case Shiro::GameType::SIMULATE_G3:
             q->num_previews = 3;
             q->randomizer_type = RANDOMIZER_G3;
             if(q->randomizer)
@@ -2805,10 +2799,10 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 1;
             q->max_floorkicks = 1;
             q->lock_protect = 1;
-            q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags & ~PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, RefreshRates::g3);
+            request_fps(cs, Shiro::RefreshRates::g3);
             break;
         default:
             break;
@@ -2820,7 +2814,7 @@ int qs_update_pracdata(CoreState *cs)
 
     if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1].type == MENU_TEXTINPUT)
     {
-        string seqStr = ((struct text_opt_data*)(md->menu[md->numopts - 1].data))->text;
+        std::string seqStr = ((struct text_opt_data*)(md->menu[md->numopts - 1].data))->text;
         for(i = 0; i < seqStr.size(); i++)
         {
             c = seqStr[i];
@@ -3245,13 +3239,13 @@ end_sequence_proc:
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<PieceDefFlag>(preview.flags | PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags | Shiro::PDBRACKETS);
         }
     }
     else
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<PieceDefFlag>(preview.flags & ~PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags & ~Shiro::PDBRACKETS);
         }
     }
 
@@ -3555,7 +3549,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if (p->def) {
         delete p->def;
     }
-    p->def = new PieceDef(q->previews[0]);
+    p->def = new Shiro::PieceDef(q->previews[0]);
 
     if(p->def)
         q->cur_piece_qrs_id = p->def->qrsID;
@@ -3575,7 +3569,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         if (q->previews.size() > 3) {
-            q->previews[3].flags = static_cast<PieceDefFlag>(q->previews[3].flags | PDBRACKETS);
+            q->previews[3].flags = static_cast<Shiro::PieceDefFlag>(q->previews[3].flags | Shiro::PDBRACKETS);
         }
     }
 
@@ -3588,7 +3582,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
             int ts = t;
             if(ts >= 18)
                 ts -= 18;
-            Sfx* sfx = cs->assets->pieces[ts % 7];
+            Shiro::Sfx* sfx = cs->assets->pieces[ts % 7];
             sfx->play(*cs->settings);
         }
     }
@@ -3626,7 +3620,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
         p->old_ys[i] = p->old_ys[i - 1];
     }
 
-    p->orient = FLAT;
+    p->orient = Shiro::FLAT;
     p->state = PSFALL | PSSPAWN;
 
     q->p1counters->lock = 0;

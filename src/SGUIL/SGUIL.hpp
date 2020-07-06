@@ -643,7 +643,7 @@ class GuiButton : public GuiInteractable
 // clickable, causes a direct action to take place, can also be scrolled through with arrow keys or similar
 {
 public:
-    GuiButton(int, SDL_Rect, std::string, BitFont&);
+    GuiButton(int ID, SDL_Rect relativeDestRect, std::string displayString, BitFont& font);
     // GuiButton(const GuiButton&);
     ~GuiButton();
 
@@ -657,54 +657,6 @@ public:
 protected:
     BitFont &font;
 };
-/*
-template<typename T>
-class GuiOptionButton : public GuiOptionInteractable<T>
-{
-public:
-    GuiOptionButton(int, optionID_t, SDL_Rect, std::string, BitFont&);
-    ~GuiOptionButton();
-
-    void draw();
-    void addEventHook(std::function<void(GuiOptionButton&, GuiEvent&)>, enumGuiEventType);
-    void addRenderHook(std::function<void(GuiOptionButton&)>);
-    void mouseClicked(int, int);
-    void mouseDragged(int, int);
-    void mouseReleased(int, int);
-    void keyPressed(SDL_Keycode);
-
-protected:
-    std::vector<GuiEventHook<GuiButton>> eventHooks;
-    std::vector<GuiRenderHook<GuiButton>> renderHooks;
-
-    BitFont &font;
-};
-*//*
-template<typename T>
-class GuiDropDownList : public GuiOptionInteractable
-// self-explanatory (list of T with associated strings); this->value should always equal entry[selection]
-{
-public:
-    GuiDropDownList(int, optionID_t, SDL_Rect);
-    ~GuiDropDownList();
-
-    void draw();
-    void addEventHook(std::function<void(GuiDropDownList&, GuiEvent&)>, enumGuiEventType);
-    void addRenderHook(std::function<void(GuiDropDownList&)>);
-    bool canInteractAt(int, int);
-    void mouseClicked(int, int);
-    void mouseDragged(int, int);
-    void mouseReleased(int, int);
-    void keyPressed(SDL_Keycode);
-
-    bool addEntry(T, std::string);
-
-protected:
-    std::vector<std::pair<T, std::string>> entry;
-    unsigned int selection;
-    bool menuShown;
-};
-*/
 
 struct CoreState;
 

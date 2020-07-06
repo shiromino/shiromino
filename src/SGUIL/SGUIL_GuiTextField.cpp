@@ -13,9 +13,6 @@
 
 #define TEXT_POSITION_NONE 0xFFFFFFFFu
 
-using namespace std;
-
-
 GuiTextField::GuiTextField(int ID, BindableString *var, BitFont& font, SDL_Rect relativeDestRect)
     : font(font)
 {
@@ -49,7 +46,7 @@ GuiTextField::GuiTextField(int ID, BindableString *var, BitFont& font, SDL_Rect 
     verticalScroll = true;
 }
 
-GuiTextField::GuiTextField(int ID, BindableString *var, string valueDefault, BitFont& font, SDL_Rect relativeDestRect)
+GuiTextField::GuiTextField(int ID, BindableString *var, std::string valueDefault, BitFont& font, SDL_Rect relativeDestRect)
     : GuiTextField(ID, var, font, relativeDestRect)
 {
     if(!valueDefault.empty())
@@ -165,7 +162,7 @@ void GuiTextField::draw()
     }
 
     bool cursorBlinkOn = false;
-    uint64_t ms = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    uint64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     if((ms % 1000) < 500)
     {
@@ -190,19 +187,19 @@ void GuiTextField::draw()
         SDL_Rect cursorRect;
         if(cursor < textPositionalValues.size())
         {
-            cursorRect.x = get<0>(textPositionalValues[cursor]);
-            cursorRect.y = get<1>(textPositionalValues[cursor]);
+            cursorRect.x = std::get<0>(textPositionalValues[cursor]);
+            cursorRect.y = std::get<1>(textPositionalValues[cursor]);
         } else if(textPositionalValues.size() != 0)
         {
             if(value[textPositionalValues.size() - 1] == '\n')
             {
                 cursorRect.x = relativeDestRect.x;
-                cursorRect.y = get<1>(textPositionalValues[textPositionalValues.size() - 1]);
+                cursorRect.y = std::get<1>(textPositionalValues[textPositionalValues.size() - 1]);
                 cursorRect.y += fmt.lineSpacing * fmt.sizeMult * (float)font.charH;
             } else
             {
-                cursorRect.x = get<0>(textPositionalValues[textPositionalValues.size() - 1]);
-                cursorRect.y = get<1>(textPositionalValues[textPositionalValues.size() - 1]);
+                cursorRect.x = std::get<0>(textPositionalValues[textPositionalValues.size() - 1]);
+                cursorRect.y = std::get<1>(textPositionalValues[textPositionalValues.size() - 1]);
                 cursorRect.x += (float)font.charW * fmt.sizeMult;
             }
         } else
@@ -237,7 +234,7 @@ void GuiTextField::handleEvent(GuiEvent& event)
                 SDL_SetCursor(sdlCursor);
             } else
             {
-                cout << "GuiTextField::handleEvent(): Error: SDL_CreateSystemCursor(): " << SDL_GetError() << endl;
+                std::cout << "GuiTextField::handleEvent(): Error: SDL_CreateSystemCursor(): " << SDL_GetError() << std::endl;
             }
 
             break;
@@ -248,7 +245,7 @@ void GuiTextField::handleEvent(GuiEvent& event)
                 SDL_SetCursor(sdlCursor);
             } else
             {
-                cout << "GuiTextField::handleEvent(): Error: SDL_CreateSystemCursor(): " << SDL_GetError() << endl;
+                std::cout << "GuiTextField::handleEvent(): Error: SDL_CreateSystemCursor(): " << SDL_GetError() << std::endl;
             }
 
             break;
@@ -317,7 +314,7 @@ void GuiTextField::mouseDragged(int x, int y, Uint8 button)
         return;
     }
 
-    lastEventTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    lastEventTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     cursor = selectionEnd = pos;
 }
 
@@ -359,7 +356,7 @@ void GuiTextField::keyPressed(SDL_Keycode kc)
         case SDLK_v:
             if(SDL_GetModState() & KMOD_CTRL)
             {
-                string s = {SDL_GetClipboardText()};
+                std::string s = {SDL_GetClipboardText()};
                 textInsert(s);
             }
 
@@ -418,7 +415,7 @@ void GuiTextField::keyPressed(SDL_Keycode kc)
     }
 }
 
-void GuiTextField::textInput(string s)
+void GuiTextField::textInput(std::string s)
 {
     textInsert(s);
 }
@@ -434,7 +431,7 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
     int lineY;
     for(auto p : textPositionalValues)
     {
-        lineY = get<1>(p);
+        lineY = std::get<1>(p);
         if(fmt.lineSpacing > 1.0)
         {
             lineY -= (int)(0.5 * (fmt.lineSpacing - 1.0) * fmt.sizeMult * (float)font.charH);
@@ -453,18 +450,18 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
         }
     }
 
-    lineY = get<1>(textPositionalValues[i]);
+    lineY = std::get<1>(textPositionalValues[i]);
 
     for(; i < textPositionalValues.size(); i++)
     {
-        int currentX = get<0>(textPositionalValues[i]);
+        int currentX = std::get<0>(textPositionalValues[i]);
         currentX -= (float)font.charW * fmt.sizeMult * 0.5;
         if(x >= currentX && x < currentX + (int)(fmt.sizeMult * font.charW))
         {
             break;
         }
 
-        if(i < textPositionalValues.size() - 1 && get<1>(textPositionalValues[i + 1]) != lineY)
+        if(i < textPositionalValues.size() - 1 && std::get<1>(textPositionalValues[i + 1]) != lineY)
         {
             break;
         }
@@ -503,7 +500,7 @@ unsigned int GuiTextField::shiftCursor(int offset)
     return cursor;
 }
 
-bool GuiTextField::textInsert(string s)
+bool GuiTextField::textInsert(std::string s)
 {
     if(selectionStart != selectionEnd)
     {
@@ -519,7 +516,7 @@ bool GuiTextField::textInsert(string s)
     cursor += (unsigned)s.size();
     selectionStart = selectionEnd = cursor;
 
-    lastEventTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    lastEventTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     typing = true;
     updatePositionalValues = true;
     return true;
@@ -573,22 +570,22 @@ void GuiTextField::textDelete(unsigned int start, unsigned int end)
         selectionStart = selectionEnd = cursor;
     }
 
-    lastEventTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    lastEventTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     typing = true;
     updatePositionalValues = true;
 }
 
-string GuiTextField::textCut()
+std::string GuiTextField::textCut()
 {
-    string s = value.substr(selectionStart, abs((int)selectionEnd - (int)selectionStart));
+    std::string s = value.substr(selectionStart, abs((int)selectionEnd - (int)selectionStart));
     textDelete();
     SDL_SetClipboardText(s.c_str());
     return s;
 }
 
-string GuiTextField::textCopy()
+std::string GuiTextField::textCopy()
 {
-    string s = value.substr(selectionStart, abs((int)selectionEnd - (int)selectionStart));
+    std::string s = value.substr(selectionStart, abs((int)selectionEnd - (int)selectionStart));
     SDL_SetClipboardText(s.c_str());
     return s;
 }

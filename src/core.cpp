@@ -44,10 +44,6 @@
 #define PENTOMINO_C_REVISION_STRING "rev 1.3"
 #define FRAMEDELAY_ERR 0
 
-using namespace Shiro;
-using namespace std;
-using namespace PDINI;
-
 #if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \
     !defined(__MINGW64__)
 #define _WIN32_WINNT 0x0400
@@ -217,7 +213,7 @@ gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_mult
 
 void CoreState_initialize(CoreState *cs)
 {
-    cs->fps = RefreshRates::menu;
+    cs->fps = Shiro::RefreshRates::menu;
     // cs->keyquit = SDLK_F11;
     cs->text_editing = 0;
     cs->text_insert = NULL;
@@ -294,7 +290,7 @@ void CoreState_initialize(CoreState *cs)
 
     cs->screenManager = new GuiScreenManager {};
 
-    cs->displayMode = DisplayMode::DEFAULT;
+    cs->displayMode = Shiro::DisplayMode::DEFAULT;
     cs->motionBlur = false;
     cs->pracdata_mirror = NULL;
 
@@ -327,7 +323,7 @@ void CoreState_destroy(CoreState *cs)
 
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
 {
-    Path path(cs->settings->basePath);
+    Shiro::Path path(cs->settings->basePath);
     path << "gfx" << filename;
     if(!img_load(img, path, cs))
     {
@@ -344,11 +340,11 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
     font->isValid = true;
 }
 
-static void load_sfx(CoreState* cs, INI& ini, Sfx** s, const char* filename)
+static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char* filename)
 {
-    Path path(cs->settings->basePath);
+    Shiro::Path path(cs->settings->basePath);
     path << "audio" << filename;
-    *s = new Sfx();
+    *s = new Shiro::Sfx();
     if (!(*s)->load(path)) {
         log_warn("Failed to load sfx '%s'", filename);
     }
@@ -362,11 +358,11 @@ static void load_sfx(CoreState* cs, INI& ini, Sfx** s, const char* filename)
     }
 }
 
-static void load_music(CoreState* cs, INI& ini, Music*& m, const char* name)
+static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const char* name)
 {
-    Path directory(cs->settings->basePath);
+    Shiro::Path directory(cs->settings->basePath);
     directory << "audio";
-    m = new Music();
+    m = new Shiro::Music();
     if (!m->load(directory, name)) {
         log_warn("Failed to load music '%s'", name);
     }
@@ -399,8 +395,8 @@ int load_files(CoreState *cs)
         // audio assets
 
     {
-        INI ini(false);
-        Path audioINIPath(cs->settings->basePath);
+        PDINI::INI ini(false);
+        Shiro::Path audioINIPath(cs->settings->basePath);
         audioINIPath << "audio" << "volume.ini";
         ini.read(audioINIPath);
 
@@ -519,7 +515,7 @@ GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geo
 }
 #endif
 
-int init(CoreState *cs, Settings* settings)
+int init(CoreState *cs, Shiro::Settings* settings)
 {
     try {
         if(!cs)
@@ -538,7 +534,7 @@ int init(CoreState *cs, Settings* settings)
             }
         }
         else {
-            cs->settings = new Settings();
+            cs->settings = new Shiro::Settings();
         }
 
 #ifdef OPENGL_INTERPOLATION
@@ -800,7 +796,7 @@ int init(CoreState *cs, Settings* settings)
 
         return 0;
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
         return 1;
     }
 }
@@ -904,7 +900,7 @@ int run(CoreState *cs)
     int windowHeight = 460;
     SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
 
-    Grid* g = new Grid(gridRect.w / 16, gridRect.h / 16);
+    Shiro::Grid* g = new Shiro::Grid(gridRect.w / 16, gridRect.h / 16);
     SDL_Texture *paletteTex = cs->assets->tets_bright_qs.tex;
 
     BindableInt paletteVar {"paletteVar", 0, 25};
@@ -944,7 +940,7 @@ int run(CoreState *cs)
     // correct FPS information.
     double videoFPS;
     {
-        INI ini;
+        PDINI::INI ini;
         ini.read(cs->iniFilename);
         if (!ini.get("SCREEN", "VIDEOFPS", videoFPS) || videoFPS <= 0.0) {
             videoFPS = 0.0;
@@ -1248,8 +1244,8 @@ int process_events(CoreState *cs, GuiWindow& window)
 
     SDL_Event event;
     SDL_Keycode keyCode;
-    KeyBindings& keyBindings = cs->settings->keyBindings;
-    GamepadBindings& gamepadBindings = cs->settings->gamepadBindings;
+    Shiro::KeyBindings& keyBindings = cs->settings->keyBindings;
+    Shiro::GamepadBindings& gamepadBindings = cs->settings->gamepadBindings;
 
     if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
     {
@@ -1544,14 +1540,14 @@ int process_events(CoreState *cs, GuiWindow& window)
                 {
                     switch(cs->displayMode)
                     {
-                        case DisplayMode::DEFAULT:
-                            cs->displayMode = DisplayMode::DETAILED;
+                        case Shiro::DisplayMode::DEFAULT:
+                            cs->displayMode = Shiro::DisplayMode::DETAILED;
                             break;
-                        case DisplayMode::DETAILED:
-                            cs->displayMode = DisplayMode::CENTERED;
+                        case Shiro::DisplayMode::DETAILED:
+                            cs->displayMode = Shiro::DisplayMode::CENTERED;
                             break;
                         default:
-                            cs->displayMode = DisplayMode::DEFAULT;
+                            cs->displayMode = Shiro::DisplayMode::DEFAULT;
                             break;
                     }
                 }
@@ -1576,7 +1572,7 @@ int process_events(CoreState *cs, GuiWindow& window)
                         SDL_WindowFlags flags = (SDL_GetModState() & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
                         if(SDL_SetWindowFullscreen(cs->screen.window, flags) < 0)
                         {
-                            cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << endl;
+                            std::cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << std::endl;
                         }
                     }
                 }
@@ -2182,7 +2178,7 @@ int request_fps(CoreState *cs, double fps)
 {
     if(!cs)
         return -1;
-    if(fps != 60.00 && fps != RefreshRates::g1 && fps != RefreshRates::g2 && fps != RefreshRates::g3)
+    if(fps != 60.00 && fps != Shiro::RefreshRates::g1 && fps != Shiro::RefreshRates::g2 && fps != Shiro::RefreshRates::g3)
         return 1;
 
     cs->fps = fps;

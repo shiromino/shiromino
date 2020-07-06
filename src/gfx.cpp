@@ -1,10 +1,3 @@
-#include "SDL.h"
-#include "SDL_image.h"
-#include <string>
-#include <vector>
-#include <cmath>
-#include <cstdio>
-
 #include "CoreState.h"
 #include "game_qs.h"
 #include "gfx.h"
@@ -14,10 +7,12 @@
 #include "qrs.h"
 #include "stringtools.hpp"
 #include "Timer.hpp"
-
-using namespace Shiro;
-using namespace std;
-
+#include <cmath>
+#include <cstdio>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <string>
+#include <vector>
 /*
 int gfx_piece_colors[25] =
 {
@@ -50,12 +45,12 @@ int gfx_piece_colors[25] =
 };
 */
 
-bool img_load(gfx_image *img, string path_without_ext, CoreState *cs) {
+bool img_load(gfx_image *img, std::string path_without_ext, CoreState *cs) {
     img->tex = NULL;
 
     SDL_Surface *s = NULL;
 
-    string path = path_without_ext + ".png";
+    std::string path = path_without_ext + ".png";
     s = IMG_Load(path.c_str());
 
     if(!s) {
@@ -255,8 +250,8 @@ int gfx_drawmessages(CoreState *cs, int type)
         return 0;
 
     // TODO: This is terribly inelegant; refactor completely.
-    size_t i = 0;
-    vector<size_t> toErase;
+    std::size_t i = 0;
+    std::vector<std::size_t> toErase;
     for (auto it = cs->gfx_messages.begin(), end = cs->gfx_messages.end(); it != end; it++, i++) {
         gfx_message& m = *it;
         if (type == EMERGENCY_OVERRIDE && !(m.flags & MESSAGE_EMERGENCY)) {
@@ -275,7 +270,7 @@ int gfx_drawmessages(CoreState *cs, int type)
         gfx_drawtext(cs, m.text, m.x, m.y, m.font, m.fmt);
     }
     if (toErase.size()) {
-        size_t i = toErase.size() - 1;
+        std::size_t i = toErase.size() - 1;
         do {
             cs->gfx_messages.erase(cs->gfx_messages.begin() + toErase[i]);
         } while (i-- > 0);
@@ -314,8 +309,8 @@ int gfx_drawanimations(CoreState *cs, int type)
     SDL_Texture *t = NULL;
 
     // TODO: This is terribly inelegant; refactor completely.
-    size_t i = 0;
-    vector<size_t> toErase;
+    std::size_t i = 0;
+    std::vector<std::size_t> toErase;
     for (auto it = cs->gfx_animations.begin(); it != cs->gfx_animations.end(); it++, i++) {
         gfx_animation& a = cs->gfx_animations[i];
 
@@ -491,7 +486,7 @@ int gfx_drawbuttons(CoreState *cs, int type)
     return 0;
 }
 
-int gfx_drawqrsfield(CoreState *cs, Grid *field, unsigned int mode, unsigned int flags, int x, int y)
+int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsigned int flags, int x, int y)
 {
     if(!cs || !field)
         return -1;
@@ -517,7 +512,7 @@ int gfx_drawqrsfield(CoreState *cs, Grid *field, unsigned int mode, unsigned int
     int c = 0;
     // int outline = 0;
 
-    string piece_str = "A";
+    std::string piece_str = "A";
 
     // int z = cs->p1game->frame_counter;
 
@@ -843,10 +838,10 @@ int gfx_drawkeys(CoreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
     SDL_Rect src = { 0, 80, 16, 16 };
     SDL_Rect dest = { 0, y, 16, 16 };
 
-    string text_a = "A";
-    string text_b = "B";
-    string text_c = "C";
-    string text_d = "D";
+    std::string text_a = "A";
+    std::string text_b = "B";
+    std::string text_c = "C";
+    std::string text_d = "D";
 
     struct text_formatting fmt = {
         RGBA_DEFAULT,
@@ -947,12 +942,12 @@ int gfx_drawkeys(CoreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
     return 0;
 }
 
-int gfx_drawtext(CoreState *cs, string text, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext(CoreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
     return gfx_drawtext_partial(cs, text, 0, text.size(), x, y, font, fmt);
 }
 
-int gfx_drawtext_partial(CoreState *cs, string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
     if(!cs || text == "")
         return -1;
@@ -993,7 +988,7 @@ int gfx_drawtext_partial(CoreState *cs, string text, int pos, int len, int x, in
     std::size_t last_wrap_line_pos = 0;
     std::size_t last_wrap_pos = 0;
 
-    vector<string> lines = strtools::split(text, '\n');
+    std::vector<std::string> lines = strtools::split(text, '\n');
 
     bool using_target_tex = false;
 
@@ -1152,7 +1147,7 @@ int gfx_drawtext_partial(CoreState *cs, string text, int pos, int len, int x, in
     return 0;
 }
 
-int gfx_drawpiece(CoreState *cs, Grid *field, int field_x, int field_y, PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
+int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
 {
     if(!cs)
         return -1;
@@ -1196,10 +1191,10 @@ int gfx_drawpiece(CoreState *cs, Grid *field, int field_x, int field_y, PieceDef
     SDL_Rect src = { 0, 0, (size == 8 ? 8 : 16), (size == 8 ? 8 : 16) };
     SDL_Rect dest = { 0, 0, size, size };
 
-    string piece_str = "A";
+    std::string piece_str = "A";
     piece_str[0] = pd.qrsID + 'A';
 
-    Grid *g = NULL;
+    Shiro::Grid *g = NULL;
 
     int i = 0;
     int j = 0;
@@ -1248,10 +1243,10 @@ int gfx_drawpiece(CoreState *cs, Grid *field, int field_x, int field_y, PieceDef
                     dest.y = y + 16 + ((j - 1) * size);
                 }
 
-                if(flags & DRAWPIECE_BRACKETS || pd.flags & PDBRACKETS)
+                if(flags & DRAWPIECE_BRACKETS || pd.flags & Shiro::PDBRACKETS)
                     src.x = 30 * (size == 8 ? 8 : 16);
 
-                if(flags & DRAWPIECE_LOCKFLASH && !(flags & DRAWPIECE_BRACKETS) && !(pd.flags & PDBRACKETS))
+                if(flags & DRAWPIECE_LOCKFLASH && !(flags & DRAWPIECE_BRACKETS) && !(pd.flags & Shiro::PDBRACKETS))
                 {
                     src.x = 26 * (size == 8 ? 8 : 16);
                     cell_x = (x - field_x - 16) / size + i;

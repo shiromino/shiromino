@@ -6,10 +6,6 @@
 
 // TODO: Change malloc/free of structs containing std::string to new/delete.
 
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-
 #include "CoreState.h"
 #include "game_menu.h"
 #include "GameType.h"
@@ -19,11 +15,10 @@
 #include "qrs.h"
 #include "RefreshRates.h"
 #include "replay.h"
-
-using namespace std;
-using namespace Shiro;
-
-struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, string label)
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label)
 {
     struct menu_opt m = menu_opt_create(MENU_GAME_MULTIOPT, NULL, label);
     struct game_multiopt_data *d6 = (struct game_multiopt_data *)m.data;
@@ -33,7 +28,7 @@ struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int n
     d6->selection = 0;
     d6->labels.push_back("");
     for (int i = 1; i < num_sections; i++) {
-        stringstream ss;
+        std::stringstream ss;
         ss << 100 * i;
         d6->labels.push_back(ss.str());
     }
@@ -62,7 +57,7 @@ void delete_opt_data(void* data) {
     delete (opt_data*)data;
 }
 
-struct menu_opt menu_opt_create(int type, int (*value_update_callback)(CoreState *cs), string label)
+struct menu_opt menu_opt_create(int type, int (*value_update_callback)(CoreState *cs), std::string label)
 {
     struct menu_opt m;
 
@@ -269,7 +264,7 @@ int menu_text_insert(CoreState *cs, char *str)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
-    string& t = d7->text;
+    std::string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -316,7 +311,7 @@ int menu_text_backspace(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
-    string& t = d7->text;
+    std::string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -346,7 +341,7 @@ int menu_text_delete(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
-    string& t = d7->text;
+    std::string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -392,7 +387,7 @@ int menu_text_seek_right(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
-    string& t = d7->text;
+    std::string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -428,7 +423,7 @@ int menu_text_seek_end(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
     struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
-    string& t = d7->text;
+    std::string& t = d7->text;
 
     if(cs->button_emergency_override)
         return 0;
@@ -1063,7 +1058,7 @@ int mload_main(game_t *g, int val)
     struct game_multiopt_data *d6 = NULL;
     int i = 0;
 
-    request_fps(cs, RefreshRates::menu);
+    request_fps(cs, Shiro::RefreshRates::menu);
 
     if(d->menu_id == MENU_ID_MAIN)
     {
@@ -1234,7 +1229,7 @@ int mload_main(game_t *g, int val)
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i;
         d2->labels.push_back(ss.str());
         d2->vals[i] = i;
@@ -1255,7 +1250,7 @@ int mload_main(game_t *g, int val)
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i;
         d2->labels.push_back(ss.str());
         d2->vals[i] = i;
@@ -1276,7 +1271,7 @@ int mload_main(game_t *g, int val)
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i;
         d2->labels.push_back(ss.str());
         d2->vals[i] = i;
@@ -1405,7 +1400,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(135);
     for(i = 0; i < 128; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << 2 * i;
         d2->labels[i] = ss.str();
         d2->vals[i] = 2 * i;
@@ -1488,7 +1483,7 @@ int mload_practice(game_t *g, int val)
     d2->vals[0] = -1;
     for(i = 1; i < 101; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i - 1;
         d2->labels[i] = ss.str();
         d2->vals[i] = i - 1;
@@ -1527,7 +1522,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i;
         d2->labels[i] = ss.str();
         d2->vals[i] = i;
@@ -1566,7 +1561,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i;
         d2->labels[i] = ss.str();
         d2->vals[i] = i;
@@ -1605,7 +1600,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i;
         d2->labels[i] = ss.str();
         d2->vals[i] = i;
@@ -1644,7 +1639,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(99);
     for(i = 0; i < 99; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << i + 1;
         d2->labels[i] = ss.str();
         d2->vals[i] = i + 1;
@@ -1683,7 +1678,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(5);
     for(i = 0; i < 5; i++)
     {
-        stringstream ss;
+        std::stringstream ss;
         ss << 2 * (i + 2);
         d2->labels[i] = ss.str();
         d2->vals[i] = 2 * (i + 2);

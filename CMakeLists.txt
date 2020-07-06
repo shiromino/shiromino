@@ -105,8 +105,6 @@ set(SOURCES
     src/Timer.cpp
 
     src/SGUIL/SGUIL_GuiButton.cpp
-    src/SGUIL/SGUIL_GuiDropDownList.cpp
-    src/SGUIL/SGUIL_GuiOptionButton.cpp
     src/SGUIL/SGUIL_GuiTextField.cpp
     src/SGUIL/SGUIL_GuiWindow.cpp
     src/SGUIL/SGUIL.cpp

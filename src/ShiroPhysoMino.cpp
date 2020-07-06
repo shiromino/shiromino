@@ -6,10 +6,6 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
-using namespace Shiro;
-using namespace std;
-
 ShiroPhysoMino::~ShiroPhysoMino()
 {
     delete field;
@@ -262,7 +258,7 @@ int TestSPM::draw()
 
     if(player.mino && player.playPhase == spm_player_control)
     {
-        Grid m = player.mino->currentRotationTable();
+        Shiro::Grid m = player.mino->currentRotationTable();
         for(int i = 0; i < m.getWidth(); i++)
         {
             for(int j = 0; j < m.getHeight(); j++)
@@ -290,7 +286,7 @@ int TestSPM::draw()
     {
         if(p)
         {
-            Grid m = p->currentRotationTable();
+            Shiro::Grid m = p->currentRotationTable();
             for(int i = 0; i < m.getWidth(); i++)
             {
                 for(int j = 0; j < m.getHeight(); j++)

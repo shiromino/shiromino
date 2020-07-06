@@ -1,17 +1,12 @@
 #include "SPM_Spec.hpp"
-
 #include <iostream>
 #include <vector>
-
-using namespace Shiro;
-using namespace std;
-
-bool SPM_Spec::checkCollision(Grid* field, ActivatedPolyomino& mino) {
-    pair<int, int> pos;
+bool SPM_Spec::checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino) {
+    std::pair<int, int> pos;
     return checkCollision(field, mino, pos);
 }
-bool SPM_Spec::checkCollision(Grid *field, ActivatedPolyomino& mino, pair<int, int>& pos) {
-    Grid d = mino.currentRotationTable();
+bool SPM_Spec::checkCollision(Shiro::Grid *field, ActivatedPolyomino& mino, std::pair<int, int>& pos) {
+    Shiro::Grid d = mino.currentRotationTable();
 
     int d_x = 0;
     int d_y = 0;
@@ -22,7 +17,7 @@ bool SPM_Spec::checkCollision(Grid *field, ActivatedPolyomino& mino, pair<int, i
     for (d_y = 0, f_y = mino.position.y; d_y < d.getHeight(); d_y++, f_y++) {
         for (d_x = 0, f_x = mino.position.x; d_x < d.getWidth(); d_x++, f_x++) {
             if (d.getCell(d_x, d_y) && field->getCell(f_x, f_y)) {
-                pos = pair<int, int>(d_x, d_y);
+                pos = std::pair<int, int>(d_x, d_y);
                 return true;
             }
         }
@@ -31,7 +26,7 @@ bool SPM_Spec::checkCollision(Grid *field, ActivatedPolyomino& mino, pair<int, i
     return false;
 }
 
-bool SPM_Spec::isGrounded(Grid *field, ActivatedPolyomino& mino)
+bool SPM_Spec::isGrounded(Shiro::Grid *field, ActivatedPolyomino& mino)
 {
     mino.position.y++;
     if(checkCollision(field, mino))
@@ -44,7 +39,7 @@ bool SPM_Spec::isGrounded(Grid *field, ActivatedPolyomino& mino)
     return false;
 }
 
-bool SPM_Spec::checkedShift(Grid *field, ActivatedPolyomino& mino, SPM_offset offset)
+bool SPM_Spec::checkedShift(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_offset offset)
 {
     mino.position = mino.position + offset;
     if(checkCollision(field, mino))
@@ -56,7 +51,7 @@ bool SPM_Spec::checkedShift(Grid *field, ActivatedPolyomino& mino, SPM_offset of
     return true;
 }
 
-bool SPM_Spec::checkedRotate(Grid *field, ActivatedPolyomino& mino, SPM_orientation dir)
+bool SPM_Spec::checkedRotate(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_orientation dir)
 {
     SPM_orientation old = mino.orientation;
     mino.orientation = static_cast<SPM_orientation>((static_cast<int>(mino.orientation) + static_cast<int>(dir)) % 4);
@@ -70,7 +65,7 @@ bool SPM_Spec::checkedRotate(Grid *field, ActivatedPolyomino& mino, SPM_orientat
     return true;
 }
 
-int SPM_Spec::checkedFall(Grid *field, ActivatedPolyomino& mino, int subY)
+int SPM_Spec::checkedFall(Shiro::Grid *field, ActivatedPolyomino& mino, int subY)
 {
     SPM_point backupPos = mino.position;
 
@@ -98,9 +93,9 @@ int SPM_Spec::checkedFall(Grid *field, ActivatedPolyomino& mino, int subY)
     return mino.position.y - backupPos.y;
 }
 
-void SPM_Spec::imprintMino(Grid *field, ActivatedPolyomino& mino)
+void SPM_Spec::imprintMino(Shiro::Grid *field, ActivatedPolyomino& mino)
 {
-    Grid d = mino.currentRotationTable();
+    Shiro::Grid d = mino.currentRotationTable();
 
     for (int from_y = 0, to_y = mino.position.y; from_y < d.getHeight(); from_y++, to_y++) {
         for (int from_x = 0, to_x = mino.position.x; from_x < d.getWidth(); from_x++, to_x++) {
@@ -113,7 +108,7 @@ void SPM_Spec::imprintMino(Grid *field, ActivatedPolyomino& mino)
     // sfx_play(&g->origin->assets->lock);
 }
 
-int SPM_Spec::checkAndClearLines(Grid *field, int bound)
+int SPM_Spec::checkAndClearLines(Shiro::Grid *field, int bound)
 {
     int n = 0;
 
@@ -142,7 +137,7 @@ int SPM_Spec::checkAndClearLines(Grid *field, int bound)
     return n;
 }
 
-void SPM_Spec::dropField(Grid *field)
+void SPM_Spec::dropField(Shiro::Grid *field)
 {
     int n = 0;
 

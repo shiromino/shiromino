@@ -3,10 +3,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cinttypes>
-
-using namespace Shiro;
-using namespace PDINI;
-
 static std::array<std::string, 10> keyBindingNames = {
     "LEFT",
     "RIGHT",
@@ -19,15 +15,14 @@ static std::array<std::string, 10> keyBindingNames = {
     "D",
     "ESCAPE"
 };
-
-KeyBindings::KeyBindings() : KeyBindings(0) {}
+Shiro::KeyBindings::KeyBindings() : KeyBindings(0) {}
 
 /**
  * We have to guarantee some default control option for fresh installs, so
  * keyboard is the best option. Other inputs, like joysticks, don't have any
  * defaults set.
  */
-KeyBindings::KeyBindings(int playerNum) {
+Shiro::KeyBindings::KeyBindings(int playerNum) {
     switch (playerNum) {
         default:
         case 0:
@@ -58,7 +53,7 @@ KeyBindings::KeyBindings(int playerNum) {
     }
 }
 
-bool KeyBindings::read(INI& ini, const std::string sectionName) {
+bool Shiro::KeyBindings::read(PDINI::INI& ini, const std::string sectionName) {
     bool defaultUsed = false;
     SDL_Keycode* const keycodes[] = {&left, &right, &up, &down, &start, &a, &b, &c, &d, &escape};
     SDL_Keycode* const* keycode = keycodes;
@@ -76,9 +71,9 @@ bool KeyBindings::read(INI& ini, const std::string sectionName) {
     return defaultUsed;
 }
 
-GamepadBindings::GamepadBindings() : name(""), gamepadIndex(-1), gamepadID(-1), hatIndex(-1) {}
+Shiro::GamepadBindings::GamepadBindings() : name(""), gamepadIndex(-1), gamepadID(-1), hatIndex(-1) {}
 
-bool GamepadBindings::read(INI& ini, const std::string sectionName) {
+bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName) {
     bool defaultUsed = false;
 
     if (!ini.get(sectionName, "JOYNAME", name) && !ini.get(sectionName, "JOYINDEX", gamepadIndex)) {
@@ -176,10 +171,10 @@ bool GamepadBindings::read(INI& ini, const std::string sectionName) {
     return defaultUsed;
 }
 
-GamepadBindings::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
-GamepadBindings::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
+Shiro::GamepadBindings::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
+Shiro::GamepadBindings::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
 
-Settings::Settings() :
+Shiro::Settings::Settings() :
     videoScale(1.0f),
     videoStretch(1),
     fullscreen(0),
@@ -195,8 +190,8 @@ Settings::Settings() :
     basePath("."),
     playerName("ARK") {}
 
-bool Settings::read(std::string filename) {
-    INI ini;
+bool Shiro::Settings::read(std::string filename) {
+    PDINI::INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
         fprintf(stderr, "Error reading configuation INI \"%s\" on line %zu\n", filename.c_str(), readStatus.second);

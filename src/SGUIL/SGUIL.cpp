@@ -1,16 +1,12 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cstdint>
-#include <cstddef>
-#include <map>
+#include "SGUIL.hpp"
 #include "SDL.h"
 #include "SDL_image.h"
-
-#include "SGUIL.hpp"
-
-using namespace std;
-
+#include <cstddef>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <sstream>
 
 SDL_Renderer *Gui_SDL_Renderer = NULL;
 SDL_Texture *Gui_ThemeTexture = NULL;
@@ -25,13 +21,13 @@ bool Gui_Init(SDL_Renderer *theRenderer, const char *themePath)
 
         if(rc < 0)
         {
-            cout << "Gui_Init(): Error: SDL_GetRendererInfo(): " << SDL_GetError() << endl;
+            std::cout << "Gui_Init(): Error: SDL_GetRendererInfo(): " << SDL_GetError() << std::endl;
             return false;
         }
 
         if((info.flags & SDL_RENDERER_TARGETTEXTURE) == 0)
         {
-            cout << "Gui_Init(): Error: SDL_Renderer flags must include SDL_RENDERER_TARGETTEXTURE!" << endl;
+            std::cout << "Gui_Init(): Error: SDL_Renderer flags must include SDL_RENDERER_TARGETTEXTURE!" << std::endl;
             return false;
         }
 
@@ -43,7 +39,7 @@ bool Gui_Init(SDL_Renderer *theRenderer, const char *themePath)
                 Gui_ThemeTexture = SDL_CreateTextureFromSurface(theRenderer, sur);
             } else
             {
-                cout << "Gui_Init(): Error: IMG_Load(): " << IMG_GetError() << endl;
+                std::cout << "Gui_Init(): Error: IMG_Load(): " << IMG_GetError() << std::endl;
                 return false;
             }
         } else
@@ -54,12 +50,12 @@ bool Gui_Init(SDL_Renderer *theRenderer, const char *themePath)
             */
         }
 
-        cout << "Finished initializing SGUIL, version " << SGUIL_VERSION_STR << endl;
+        std::cout << "Finished initializing SGUIL, version " << SGUIL_VERSION_STR << std::endl;
         Gui_SDL_Renderer = theRenderer;
         return true;
     } else
     {
-        cout << "Gui_Init(): Error: Must provide valid SDL_Renderer!" << endl;
+        std::cout << "Gui_Init(): Error: Must provide valid SDL_Renderer!" << std::endl;
         return false;
     }
 
@@ -81,14 +77,14 @@ BitFont::BitFont(const char *sheetFname, const char *outlineSheetFname, unsigned
         sheet = SDL_CreateTextureFromSurface(Gui_SDL_Renderer, sheetSur);
         if(sheet == NULL)
         {
-            cout << "BitFont::BitFont(): SDL_CreateTextureFromSurface(): Error: " << SDL_GetError() << endl;
+            std::cout << "BitFont::BitFont(): SDL_CreateTextureFromSurface(): Error: " << SDL_GetError() << std::endl;
         } else
         {
             sheetValid = true;
         }
     } else
     {
-        cout << "BitFont::BitFont(): IMG_Load(sheetFname.c_str()): Error: " << IMG_GetError() << endl;
+        std::cout << "BitFont::BitFont(): IMG_Load(sheetFname.c_str()): Error: " << IMG_GetError() << std::endl;
         sheet = NULL;
     }
 
@@ -102,14 +98,14 @@ BitFont::BitFont(const char *sheetFname, const char *outlineSheetFname, unsigned
             outlineSheet = SDL_CreateTextureFromSurface(Gui_SDL_Renderer, outlineSheetSur);
             if(outlineSheet == NULL)
             {
-                cout << "BitFont::BitFont(): SDL_CreateTextureFromSurface(): Error: " << SDL_GetError() << endl;
+                std::cout << "BitFont::BitFont(): SDL_CreateTextureFromSurface(): Error: " << SDL_GetError() << std::endl;
             } else
             {
                 outlineSheetValid = true;
             }
         } else
         {
-            cout << "BitFont::BitFont(): IMG_Load(outlineSheetFname.c_str()): Error: " << IMG_GetError() << endl;
+            std::cout << "BitFont::BitFont(): IMG_Load(outlineSheetFname.c_str()): Error: " << IMG_GetError() << std::endl;
             outlineSheet = NULL;
         }
     } else
@@ -164,7 +160,7 @@ BitFont::~BitFont()
     }
 }
 
-GuiText::GuiText(string text, BitFont& font, SDL_Rect& relativeDestRect)
+GuiText::GuiText(std::string text, BitFont& font, SDL_Rect& relativeDestRect)
     : text(text), font(font)
 {
     this->relativeDestRect = relativeDestRect;
@@ -277,14 +273,14 @@ void Gui_DrawBorder(SDL_Rect& rect, int width, rgba_t rgba)
     SDL_SetRenderDrawColor(Gui_SDL_Renderer, r, g, b, a);
 }
 
-void Gui_GenerateTextPositionalValues(string& text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox,
-    vector<pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
+void Gui_GenerateTextPositionalValues(std::string& text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox,
+    std::vector<std::pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
 {
     Gui_GenerateTextPositionalValuesPartial(text, 0, (unsigned)text.size(), fmt, font, destBox, values, horizontalScroll, verticalScroll);
 }
 
-void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
-    BitFont& font, SDL_Rect& destBox, vector<pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
+void Gui_GenerateTextPositionalValuesPartial(std::string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
+    BitFont& font, SDL_Rect& destBox, std::vector<std::pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
 {
     TextFormat fmtDefault {};
 
@@ -293,9 +289,9 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
         fmt = &fmtDefault;
     }
 
-    stringstream ss {text};
-    string to;
-    vector<string> lines;
+    std::stringstream ss {text};
+    std::string to;
+    std::vector<std::string> lines;
     while(getline(ss, to, '\n'))
     {
         lines.push_back(to);
@@ -392,14 +388,14 @@ void Gui_GenerateTextPositionalValuesPartial(string& text, unsigned int pos, uns
     }
 }
 
-void Gui_DrawText_PV(string text, TextFormat *fmt, BitFont& font, vector<pair<int, int>>& positionalValues,
+void Gui_DrawText_PV(std::string text, TextFormat *fmt, BitFont& font, std::vector<std::pair<int, int>>& positionalValues,
     unsigned int scrollPosX, unsigned int scrollPosY)
 {
     Gui_DrawTextPartial_PV(text, 0, (unsigned)text.size(), fmt, font, positionalValues, scrollPosX, scrollPosY);
 }
 
-void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, TextFormat *fmt,
-    BitFont& font, vector<pair<int, int>>& positionalValues, unsigned int scrollPosX, unsigned int scrollPosY)
+void Gui_DrawTextPartial_PV(std::string text, unsigned int pos, unsigned int len, TextFormat *fmt,
+    BitFont& font, std::vector<std::pair<int, int>>& positionalValues, unsigned int scrollPosX, unsigned int scrollPosY)
 {
     if(positionalValues.size() == 0)
     {
@@ -438,8 +434,8 @@ void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, Tex
         }
 
         auto p = positionalValues[i];
-        dest.x = get<0>(p);
-        dest.y = get<1>(p);
+        dest.x = std::get<0>(p);
+        dest.y = std::get<1>(p);
 
         if(fmt->highlight || (fmt->outline && font.outlineSheet == NULL))
         {
@@ -497,17 +493,17 @@ void Gui_DrawTextPartial_PV(string text, unsigned int pos, unsigned int len, Tex
     }
 }
 
-void Gui_DrawText(string text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
+void Gui_DrawText(std::string text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
 {
-    vector<pair<int, int>> textPositionalValues;
+    std::vector<std::pair<int, int>> textPositionalValues;
     Gui_GenerateTextPositionalValues(text, fmt, font, destBox, textPositionalValues, false, false);
     Gui_DrawText_PV(text, fmt, font, textPositionalValues, 0, 0);
 }
 
-void Gui_DrawTextPartial(string text, unsigned int pos, unsigned int len, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
+void Gui_DrawTextPartial(std::string text, unsigned int pos, unsigned int len, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
 // destBox's w and h fields can be 0, which results in the text being rendered without strict positional bounds
 {
-    vector<pair<int, int>> textPositionalValues;
+    std::vector<std::pair<int, int>> textPositionalValues;
     Gui_GenerateTextPositionalValuesPartial(text, pos, len, fmt, font, destBox, textPositionalValues, false, false);
     Gui_DrawTextPartial_PV(text, pos, len, fmt, font, textPositionalValues, 0, 0);
 }

@@ -7,9 +7,6 @@
 #include <iomanip>
 #include <sstream>
 
-using namespace Shiro;
-using namespace std;
-
 // clang-format off
 enum packed_input_mask {
     pi_left   = 1 << 0,
@@ -53,7 +50,7 @@ void unpack_input(struct packed_input p, struct keyflags *out_keys)
 
 std::string get_replay_descriptor(struct replay *r)
 {
-    string modeString;
+    std::string modeString;
 
     switch(r->mode)
     {
@@ -79,24 +76,24 @@ std::string get_replay_descriptor(struct replay *r)
             break;
     }
 
-    Timer t(60.0, r->time);
+    Shiro::Timer t(60.0, r->time);
 
-    string dateString;
+    std::string dateString;
     tm *ts = localtime(&r->date);
-    stringstream dateSS;
-    dateSS << put_time(ts, "%Y.%m.%d");
+    std::stringstream dateSS;
+    dateSS << std::put_time(ts, "%Y.%m.%d");
     dateString = dateSS.str();
 
-    stringstream returnSS;
+    std::stringstream returnSS;
     returnSS <<
         get_grade_name(r->grade) << "  " <<
-        setfill(' ') << left << setw(10) << modeString << " " <<
-        right << setw(4) << r->starting_level << "-" <<
-        left << setw(4) << r->ending_level << "  " <<
-        setfill('0') << right <<
-        setw(2) << t.min() << ":" <<
-        setw(2) << t.sec() % 60 << ":" <<
-        setw(2) << t.csec() % 100 << "   " <<
+        std::setfill(' ') << std::left << std::setw(10) << modeString << " " <<
+        std::right << std::setw(4) << r->starting_level << "-" <<
+        std::left << std::setw(4) << r->ending_level << "  " <<
+        std::setfill('0') << std::right <<
+        std::setw(2) << t.min() << ":" <<
+        std::setw(2) << t.sec() % 60 << ":" <<
+        std::setw(2) << t.csec() % 100 << "   " <<
         dateString;
     return returnSS.str();
 

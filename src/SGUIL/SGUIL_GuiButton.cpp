@@ -10,9 +10,7 @@
 
 #include "SGUIL.hpp"
 
-using namespace std;
-
-GuiButton::GuiButton(int ID, SDL_Rect relativeDestRect, string displayString, BitFont& font)
+GuiButton::GuiButton(int ID, SDL_Rect relativeDestRect, std::string displayString, BitFont& font)
     : font(font)
 {
     this->ID = ID;

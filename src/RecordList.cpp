@@ -7,10 +7,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sqlite3.h>
-
-using namespace Shiro;
-using namespace std;
-
 #define check_bind(db, bind_call) check((bind_call) == SQLITE_OK, "Could not bind parameter value: %s", sqlite3_errmsg((db)))
 
 static const int MAX_PLAYER_NAME_LENGTH = 64;
@@ -61,7 +57,7 @@ void scoredb_init(Shiro::RecordList *records, const char *filename)
 
         // TODO: Create a view with human-readable data
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 }
 
@@ -126,7 +122,7 @@ void scoredb_create_player(Shiro::RecordList *records, Shiro::Player *out_player
         out_player->pentoCount  = sqlite3_column_int(sql,  3);
         out_player->tetrisCount = sqlite3_column_int(sql,  4);
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 
     sqlite3_finalize(sql);
@@ -153,7 +149,7 @@ void scoredb_update_player(Shiro::RecordList *records, Shiro::Player *p)
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not update players table for: %s", sqlite3_errmsg(records->db));
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 
     sqlite3_finalize(sql);
@@ -163,7 +159,7 @@ void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
 {
     sqlite3_stmt *sql;
     try {
-        string replayDescriptor = get_replay_descriptor(r);
+        std::string replayDescriptor = get_replay_descriptor(r);
 
         const char insertSql[] =
             "INSERT INTO scores (mode, playerId, grade, startLevel, level, time, replay, date) "
@@ -187,7 +183,7 @@ void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
 
         printf("Wrote replay (%zu): %s\n", replayLen, replayDescriptor.c_str());
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 
     sqlite3_finalize(sql);
@@ -212,7 +208,7 @@ int scoredb_get_replay_count(Shiro::RecordList *records, Shiro::Player *p)
 
         replayCount = sqlite3_column_int(sql, 0);
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 
     sqlite3_finalize(sql);
@@ -251,7 +247,7 @@ struct replay *scoredb_get_replay_list(Shiro::RecordList *records, Shiro::Player
             replayList[i].date           = sqlite3_column_int(sql, 6);
         }
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
     sqlite3_finalize(sql);
 
@@ -280,7 +276,7 @@ void scoredb_get_full_replay(Shiro::RecordList *records, struct replay *out_repl
 
         read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 
     sqlite3_finalize(sql);
@@ -308,7 +304,7 @@ void scoredb_get_full_replay_by_condition(Shiro::RecordList *records, struct rep
 
         read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
     }
-    catch (const logic_error& error) {
+    catch (const std::logic_error& error) {
     }
 
     sqlite3_finalize(sql);

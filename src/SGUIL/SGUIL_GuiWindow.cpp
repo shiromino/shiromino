@@ -1,18 +1,15 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "SGUIL.hpp"
 #include <cstdint>
 #include <cstddef>
+#include <fstream>
+#include <iostream>
 #include <functional>
 #include <map>
-#include "SDL.h"
-#include "SDL_image.h"
+#include <sstream>
+#include <SDL.h>
+#include <SDL_image.h>
 
-#include "SGUIL.hpp"
-
-using namespace std;
-
-GuiWindow::GuiWindow(CoreState *origin, string title, BitFont *titleFont, function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
+GuiWindow::GuiWindow(CoreState *origin, std::string title, BitFont *titleFont, std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
     : title(title)
 {
     if(titleFont)
@@ -481,7 +478,7 @@ void GuiWindow::keyPressed(SDL_Keycode kc)
 
 }
 
-void GuiWindow::textInput(string s)
+void GuiWindow::textInput(std::string s)
 {
 
 }

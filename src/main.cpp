@@ -2,24 +2,18 @@
    main.cpp - handle command line arguments, load game settings, manage main
    data structures
 */
-
 #include "CoreState.h"
-#include "random.h"
-
 #include "Debug.hpp"
+#include "random.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <string>
+#include <time.h>
+#include <sys/stat.h>
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
 #endif
-
-using namespace Shiro;
-using namespace std;
-
 bool file_exists(const char *filename)
 {
     struct stat buffer = {};
@@ -52,13 +46,13 @@ int main(int argc, char** argv) {
         else {
             CoreState cs;
             CoreState_initialize(&cs);
-            Settings* settings = new Settings();
+            Shiro::Settings* settings = new Shiro::Settings();
             const char path[] = ".";
 
-            string callingPath{ path };
-            string iniFilename = "game.ini";
-            string slash = "/";
-            string cfg_filename;
+            std::string callingPath{ path };
+            std::string iniFilename = "game.ini";
+            std::string slash = "/";
+            std::string cfg_filename;
 
             cs.calling_path = (char*)malloc(strlen(path) + 1);
             strcpy(cs.calling_path, path);
@@ -131,6 +125,5 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
-
     return 0;
 }

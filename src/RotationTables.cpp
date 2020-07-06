@@ -1,17 +1,13 @@
 #include "RotationTables.hpp"
-
-using namespace std;
-
 #define O true
 #define _ false
-
-const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
+const std::array<std::array<std::array<std::array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
 {
-    array<array<array<bool, 5>, 5>, 4>
+    std::array<std::array<std::array<bool, 5>, 5>, 4>
     { // I
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, O},
@@ -20,7 +16,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -29,7 +25,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, O},
@@ -38,7 +34,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -48,9 +44,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // J
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -59,7 +55,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -68,7 +64,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, _, _, _, _},
@@ -77,7 +73,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, O, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -87,9 +83,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // L
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -98,7 +94,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {O, O, _, _, _},
             {_, O, _, _, _},
             {_, O, _, _, _},
@@ -107,7 +103,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, _, _, O, _},
@@ -116,7 +112,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, O, _, _, _},
             {_, O, _, _, _},
             {_, O, _, _, _},
@@ -126,9 +122,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // X
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -137,7 +133,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -146,7 +142,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -155,7 +151,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -165,9 +161,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // S
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -176,7 +172,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -185,7 +181,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -194,7 +190,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -204,9 +200,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // Z
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -215,7 +211,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, _, _, _},
@@ -224,7 +220,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -233,7 +229,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, _, _, _},
@@ -243,9 +239,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // N
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, _, _},
@@ -254,7 +250,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -263,7 +259,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, _, _, _},
@@ -272,7 +268,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -282,9 +278,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // G
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, O, _},
@@ -293,7 +289,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, O, _, _, _},
             {_, O, O, _, _},
             {_, _, O, _, _},
@@ -302,7 +298,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, _, O, O, _},
@@ -311,7 +307,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, O, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -321,9 +317,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // U
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, _, _},
@@ -332,7 +328,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, _, _, _},
@@ -341,7 +337,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, _, O, _, _},
@@ -350,7 +346,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -360,9 +356,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // T
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, O, _, _},
             {_, O, _, _, _},
@@ -371,7 +367,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -380,7 +376,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {_, O, _, _, _},
@@ -389,7 +385,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -399,9 +395,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // Fa
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, O, _, _},
@@ -410,7 +406,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {O, O, _, _, _},
@@ -419,7 +415,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -428,7 +424,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -438,9 +434,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // Fb
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {O, O, O, _, _},
@@ -449,7 +445,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, _, _, _},
@@ -458,7 +454,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {O, O, O, _, _},
@@ -467,7 +463,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, O, _, _},
@@ -477,9 +473,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // P
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, _, _},
@@ -488,7 +484,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -497,7 +493,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, _, _},
@@ -506,7 +502,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, O, _, _},
@@ -516,9 +512,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // Q
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, O, _},
@@ -527,7 +523,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {_, O, O, _, _},
@@ -536,7 +532,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, O, _, _},
@@ -545,7 +541,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -555,9 +551,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // W
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, _, _, _},
             {_, O, O, _, _},
@@ -566,7 +562,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -575,7 +571,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, O, _, _, _},
@@ -584,7 +580,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, O, O, _, _},
             {O, O, _, _, _},
@@ -594,9 +590,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // Ya
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -605,7 +601,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, O, O, _, _},
             {_, _, O, _, _},
@@ -614,7 +610,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, _, O, _, _},
@@ -623,7 +619,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, O, _, _, _},
             {_, O, _, _, _},
             {_, O, O, _, _},
@@ -633,9 +629,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // Yb
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {O, O, O, O, _},
@@ -644,7 +640,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, O, _, _},
             {_, _, O, _, _},
             {_, O, O, _, _},
@@ -653,7 +649,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, _, _, _},
             {_, O, _, _, _},
@@ -662,7 +658,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, O, _, _, _},
             {_, O, O, _, _},
             {_, O, _, _, _},
@@ -672,9 +668,9 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
     },
 
     { // V
-        array<array<bool, 5>, 5>
+        std::array<std::array<bool, 5>, 5>
         { // FLAT
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, O, _, _},
             {O, _, _, _, _},
@@ -683,7 +679,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, O, O, _, _},
             {_, _, O, _, _},
@@ -692,7 +688,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // FLIP
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {_, _, O, _, _},
             {_, _, O, _, _},
@@ -701,7 +697,7 @@ const array<array<array<array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
         },
 
         { // CCW
-            array<bool, 5>
+            std::array<bool, 5>
             {_, _, _, _, _},
             {O, _, _, _, _},
             {O, _, _, _, _},
@@ -959,6 +955,5 @@ const std::array<std::array<std::array<std::array<bool, 4>, 4>, 4>, 7> Shiro::Te
         }
     }
 };
-
 #undef _
 #undef O
