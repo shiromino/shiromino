@@ -1,16 +1,13 @@
 #include "Grid.hpp"
 
-using namespace Shiro;
-using namespace std;
+Shiro::Grid::Grid() : width(0), height(0) {}
 
-Grid::Grid() : width(0u), height(0u) {}
-
-Grid::Grid(const size_t width, const size_t height) :
+Shiro::Grid::Grid(std::size_t width, std::size_t height) :
     width(width),
     height(height),
-    cells(vector<vector<int>>(height, vector<int>(width, 0))) {}
+    cells(std::vector<std::vector<int>>(height, std::vector<int>(width, 0))) {}
 
-Grid::Grid(const Grid& srcGrid, const GridRect& srcRect) {
+Shiro::Grid::Grid(const Grid& srcGrid, const GridRect& srcRect) {
     int startX = srcRect.x;
     int endX = static_cast<int>(srcRect.x + srcRect.width);
     int startY = srcRect.y;
@@ -36,40 +33,40 @@ Grid::Grid(const Grid& srcGrid, const GridRect& srcRect) {
 
     this->width = (long)endX - startX;
     this->height = (long)endY - startY;
-    this->cells = vector<vector<int>>(this->height, vector<int>(this->width));
-    for (size_t y = 0; y < this->height; y++) {
-        for (size_t x = 0; x < this->width; x++) {
+    this->cells = std::vector<std::vector<int>>(this->height, std::vector<int>(this->width));
+    for (std::size_t y = 0; y < this->height; y++) {
+        for (std::size_t x = 0; x < this->width; x++) {
             this->cells[y][x] = srcGrid.cells[startY + y][startX + x];
         }
     }
 }
 
-void Grid::setWidth(const size_t width) {
+void Shiro::Grid::setWidth(std::size_t width) {
     this->width = width;
     for (auto& row : this->cells) {
         row.resize(this->width, 0);
     }
 }
 
-void Grid::setHeight(const size_t height) {
+void Shiro::Grid::setHeight(std::size_t height) {
     this->height = height;
-    this->cells.resize(height, vector<int>(this->width, 0));
+    this->cells.resize(height, std::vector<int>(this->width, 0));
 }
 
-void Grid::resize(const size_t width, const size_t height) {
+void Shiro::Grid::resize(std::size_t width, std::size_t height) {
     this->width = width;
     this->height = height;
     for (auto& row : cells) {
         row.resize(this->width, 0);
     }
-    cells.resize(this->height, vector<int>(this->width, 0));
+    cells.resize(this->height, std::vector<int>(this->width, 0));
 }
 
-int& Grid::cell(const int x, const int y) {
+int& Shiro::Grid::cell(int x, int y) {
     return cells[y][x];
 }
 
-int Grid::setCell(const int x, const int y, const int value) {
+int Shiro::Grid::setCell(int x, int y, int value) {
     if (x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return GRID_OOB;
     }
@@ -81,7 +78,7 @@ int Grid::setCell(const int x, const int y, const int value) {
     return 0;
 }
 
-int Grid::xorCell(const int x, const int y, const int value) {
+int Shiro::Grid::xorCell(int x, int y, int value) {
     if (x < 0 || y < 0 || x >= this->width || y >= this->height) {
         return GRID_OOB;
     }
@@ -93,12 +90,12 @@ int Grid::xorCell(const int x, const int y, const int value) {
     return 0;
 }
 
-void Grid::fill(const int value) {
+void Shiro::Grid::fill(int value) {
     GridRect defaultRect = { 0, 0, this->width, this->height };
     fill(defaultRect, value);
 }
 
-void Grid::fill(const GridRect& rect, const int value) {
+void Shiro::Grid::fill(const GridRect& rect, int value) {
     int startX = rect.x;
     int endX = static_cast<int>(rect.x + rect.width);
     int startY = rect.y;
@@ -128,10 +125,7 @@ void Grid::fill(const GridRect& rect, const int value) {
     }
 }
 
-void Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const GridRect& dstRect) {
-    GridRect defaultSrcRect(srcRect.width, srcRect.height);
-    GridRect defaultDstRect(dstRect.width, dstRect.height);
-
+void Shiro::Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const GridRect& dstRect) {
     int srcStartX = srcRect.x;
     int srcEndX = static_cast<int>(srcRect.x + srcRect.width);
     int srcStartY = srcRect.y;
@@ -188,21 +182,21 @@ void Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const GridRect
         srcEndY = srcStartY + (dstEndY - dstStartY);
     }
 
-    for (size_t y = 0; y < srcRect.height; y++) {
-        for (size_t x = 0; x < srcRect.width; x++) {
+    for (std::size_t y = 0; y < srcRect.height; y++) {
+        for (std::size_t x = 0; x < srcRect.width; x++) {
             this->cells[dstStartY + y][dstStartX + x] = srcGrid.cells[srcStartY + y][srcStartX + x];
         }
     }
 }
 
-void Grid::copyRow(const size_t srcRow, const size_t dstRow) {
+void Shiro::Grid::copyRow(std::size_t srcRow, std::size_t dstRow) {
     if (srcRow != dstRow) {
         copyRow(*this, srcRow, dstRow);
     }
 }
 
-void Grid::copyRow(const Grid& srcGrid, const size_t srcRow, const size_t dstRow) {
-    for (size_t x = 0; x < this->width; x++) {
+void Shiro::Grid::copyRow(const Grid& srcGrid, std::size_t srcRow, std::size_t dstRow) {
+    for (std::size_t x = 0; x < this->width; x++) {
         if (x < srcGrid.width) {
             this->cells[dstRow][x] = srcGrid.cells[srcRow][x];
         }
@@ -212,25 +206,25 @@ void Grid::copyRow(const Grid& srcGrid, const size_t srcRow, const size_t dstRow
     }
 }
 
-size_t Grid::getWidth() const {
+std::size_t Shiro::Grid::getWidth() const {
     return this->width;
 }
 
-size_t Grid::getHeight() const {
+std::size_t Shiro::Grid::getHeight() const {
     return this->height;
 }
 
-int Grid::getCell(const size_t x, const size_t y) {
+int Shiro::Grid::getCell(std::size_t x, std::size_t y) const {
     if (x >= this->width || y >= this->height) {
         return GRID_OOB;
     }
     return this->cells[y][x];
 }
 
-size_t Grid::cellsFilled() {
-    size_t numCellsFilled = 0;
-    for (auto& row : cells) {
-        for (auto cell : row) {
+std::size_t Shiro::Grid::cellsFilled() const {
+    std::size_t numCellsFilled = 0;
+    for (auto&& row : cells) {
+        for (auto&& cell : row) {
             numCellsFilled += cell != 0;
         }
     }
