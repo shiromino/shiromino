@@ -1,6 +1,6 @@
 #include "GuiScreenManager.hpp"
 
-#include "core.h"
+#include "CoreState.h"
 #include "game_qs.h"
 
 GuiScreen *mainMenu_create(CoreState *cs, GuiScreenManager *mngr, BitFont& font)

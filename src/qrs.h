@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include "core.h"
+#include "GameType.h"
 #include "PieceDef.hpp"
 #include "Grid.hpp"
 #include "Timer.hpp"
@@ -76,7 +77,7 @@
 #define QRS_ARS_S 5
 #define QRS_ARS_Z 6
 
-// IZSJLOT - arkia's arbitrary tetromino ordering
+// IZSJLOT - Arika's arbitrary tetromino ordering
 #define ARS_I 0
 #define ARS_Z 1
 #define ARS_S 2
@@ -203,7 +204,7 @@ struct qrs_player
 
 struct pracdata
 {
-    int game_type;    // mirrors of values in qrsdata; these are just here so that..
+    Shiro::GameType game_type;    // mirrors of values in qrsdata; these are just here so that..
     int field_w;    // ..backed up pracdata structs can be used to restore their values
 
     //int *long_history;        // old idea, just history of all pieces placed,
@@ -267,7 +268,7 @@ struct qrsdata
     bool recording;
     bool playback;
 
-    int game_type;
+    Shiro::GameType game_type;
     int mode_type;
     unsigned int mode_flags;
     int randomizer_type;

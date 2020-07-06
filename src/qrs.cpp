@@ -5,8 +5,10 @@
 #include <string>
 #include <utility>
 
-#include "core.h"
+#include "CoreState.h"
+#include "GameType.h"
 #include "Grid.hpp"
+#include "Input.h"
 #include "PieceDef.hpp"
 #include "qrs.h"
 #include "random.h"
@@ -905,7 +907,7 @@ int qrs_input(game_t *g)
 
         if(k->up == 1)
         {
-            if(!(q->game_type == SIMULATE_G1))
+            if(!(q->game_type == Shiro::GameType::SIMULATE_G1))
             {
                 int num_rows = qrs_fall(g, p, 20 * 256);
                 if(num_rows > q->sonic_drop_height)
@@ -1089,7 +1091,7 @@ int qrs_proc_initials(game_t *g)
 
     qrs_irs(g);
 
-    if(k->up && (q->game_type != SIMULATE_G1))
+    if(k->up && (q->game_type != Shiro::GameType::SIMULATE_G1))
     {
         qrs_fall(g, p, 20 * 256);
     }

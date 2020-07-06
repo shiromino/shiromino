@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "core.h"
+#include "CoreState.h"
 #include "game_menu.h"
 
 #include "gfx.h"

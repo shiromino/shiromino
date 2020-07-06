@@ -4,8 +4,9 @@
 #include <vector>
 #include "stringtools.hpp"
 
-#include "core.h"
+#include "CoreState.h"
 #include "game_qs.h"
+#include "GameType.h"
 #include "gfx.h"
 #include "gfx_qs.h"
 #include "qrs.h"
@@ -109,7 +110,7 @@ int gfx_drawqs(game_t *g)
         old_piece_ys[j] = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->old_ys[j]) - QRS_FIELD_H + 20));
     }
 
-    if((q->state_flags & GAMESTATE_BIGMODE) && (q->game_type != SIMULATE_QRS))
+    if((q->state_flags & GAMESTATE_BIGMODE) && (q->game_type != GameType::SIMULATE_QRS))
     {
         piece_x += 16;
         for(int j = 0; j < q->p1->num_olds; j++)
@@ -125,10 +126,10 @@ int gfx_drawqs(game_t *g)
     int preview2_x = q->tetromino_only ? x + 20 * 8 : x + 21 * 8;
     int preview3_x = q->tetromino_only ? x + 24 * 8 + 12 : x + 27 * 8;
     int preview4_x = q->tetromino_only ? x + 28 * 8 + 24 : x + 33 * 8;
-    int preview1_y = y - 3 * 16 - (q->game_type && !q->pracdata ? 4 : 0);
-    int preview2_y = y - 2 * 8 - (q->game_type && !q->pracdata ? 4 : 0);
-    int preview3_y = y - 2 * 8 - (q->game_type && !q->pracdata ? 4 : 0);
-    int preview4_y = y - 2 * 8 - (q->game_type && !q->pracdata ? 4 : 0);
+    int preview1_y = y - 3 * 16 - (q->game_type != GameType::SIMULATE_QRS && !q->pracdata ? 4 : 0);
+    int preview2_y = y - 2 * 8 - (q->game_type != GameType::SIMULATE_QRS && !q->pracdata ? 4 : 0);
+    int preview3_y = y - 2 * 8 - (q->game_type != GameType::SIMULATE_QRS && !q->pracdata ? 4 : 0);
+    int preview4_y = y - 2 * 8 - (q->game_type != GameType::SIMULATE_QRS && !q->pracdata ? 4 : 0);
     int hold_x = preview1_x - 8 * 6;
     int hold_y = preview2_y - 12;
 

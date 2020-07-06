@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstdio>
 
-#include "core.h"
+#include "CoreState.h"
 #include "game_qs.h"
 #include "gfx.h"
 #include "gfx_structures.h"

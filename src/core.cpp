@@ -1,4 +1,4 @@
-#include "core.h"
+#include "CoreState.h"
 
 #include "Config.hpp"
 #include "Debug.hpp"
@@ -8,6 +8,8 @@
 
 #include "game_menu.h"
 #include "game_qs.h"
+#include "Input.h"
+#include "RefreshRates.h"
 #include "replay.h"
 
 #include <cstdio>
@@ -215,7 +217,7 @@ gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_mult
 
 void CoreState_initialize(CoreState *cs)
 {
-    cs->fps = MENU_FPS;
+    cs->fps = RefreshRates::menu;
     // cs->keyquit = SDLK_F11;
     cs->text_editing = 0;
     cs->text_insert = NULL;
@@ -2180,7 +2182,7 @@ int request_fps(CoreState *cs, double fps)
 {
     if(!cs)
         return -1;
-    if(fps != 60.00 && fps != G1_FPS && fps != G2_FPS && fps != G3_FPS)
+    if(fps != 60.00 && fps != RefreshRates::g1 && fps != RefreshRates::g2 && fps != RefreshRates::g3)
         return 1;
 
     cs->fps = fps;

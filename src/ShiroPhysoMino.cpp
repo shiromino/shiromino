@@ -5,7 +5,7 @@
 #include <vector>
 #include "SGUIL/SGUIL.hpp"
 
-#include "core.h"
+#include "CoreState.h"
 #include "SPM_Spec.hpp"
 #include "SPM_Randomizer.hpp"
 

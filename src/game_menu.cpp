@@ -10,12 +10,14 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "core.h"
+#include "CoreState.h"
 #include "game_menu.h"
+#include "GameType.h"
 #include "game_qs.h"
 #include "gfx.h"
 #include "gfx_menu.h"
 #include "qrs.h"
+#include "RefreshRates.h"
 #include "replay.h"
 
 using namespace std;
@@ -1061,7 +1063,7 @@ int mload_main(game_t *g, int val)
     struct game_multiopt_data *d6 = NULL;
     int i = 0;
 
-    request_fps(cs, MENU_FPS);
+    request_fps(cs, RefreshRates::menu);
 
     if(d->menu_id == MENU_ID_MAIN)
     {
@@ -1188,7 +1190,7 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0xFF4040FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_MASTER | BIG_MODE, 10, "BIG MASTER"));
+    d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_MASTER | static_cast<int>(Shiro::GameType::BIG_MODE), 10, "BIG MASTER"));
     m = &d->menu.back();
     d6 = (struct game_multiopt_data *)m->data;
     if(d->main_menu_data.selection == 6)
@@ -1331,7 +1333,7 @@ int mload_practice(game_t *g, int val)
     int das_ = 0;
     int width_ = 0;
 
-    int game_type_ = 0;
+    auto game_type_ = Shiro::GameType::SIMULATE_QRS;
     int lock_protect_ = 0;
 
     // TODO: piece sequence restore from pracdata struct (need to save char* that the user enters)
@@ -1712,7 +1714,8 @@ int mload_practice(game_t *g, int val)
     m = &d->menu[9];
     d2 = (struct multi_opt_data *)m->data;
     d2->num = 4;
-    d2->param = &q->pracdata->game_type;
+    // TODO: This will be rewritten in another way.
+    // d2->param = &q->pracdata->game_type;
     d2->vals = (int *)malloc(4 * sizeof(int));
     d2->labels.clear();
     d2->labels.resize(4);
@@ -1721,23 +1724,23 @@ int mload_practice(game_t *g, int val)
     d2->labels[1] = "G1";
     d2->labels[2] = "G2";
     d2->labels[3] = "G3";
-    d2->vals[0] = 0;
-    d2->vals[1] = SIMULATE_G1;
-    d2->vals[2] = SIMULATE_G2;
-    d2->vals[3] = SIMULATE_G3;
+    d2->vals[0] = static_cast<int>(Shiro::GameType::SIMULATE_QRS);
+    d2->vals[1] = static_cast<int>(Shiro::GameType::SIMULATE_G1);
+    d2->vals[2] = static_cast<int>(Shiro::GameType::SIMULATE_G2);
+    d2->vals[3] = static_cast<int>(Shiro::GameType::SIMULATE_G3);
 
     if(pracdata_mirror_existed)
     {
         game_type_ = q->game_type;
-        if(game_type_ == 0)
+        if(game_type_ == Shiro::GameType::SIMULATE_QRS)
         {
             d2->selection = 0;
         }
-        else if(game_type_ == SIMULATE_G1)
+        else if(game_type_ == Shiro::GameType::SIMULATE_G1)
         {
             d2->selection = 1;
         }
-        else if(game_type_ == SIMULATE_G2)
+        else if(game_type_ == Shiro::GameType::SIMULATE_G2)
         {
             d2->selection = 2;
         }

@@ -8,13 +8,15 @@
 #include <string>
 #include <fstream>
 
-#include "core.h"
+#include "CoreState.h"
 #include "game_menu.h"
 #include "game_qs.h"
+#include "GameType.h"
 #include "gfx.h"
 #include "gfx_qs.h"
 #include "qrs.h"
 #include "random.h"
+#include "RefreshRates.h"
 #include "Timer.hpp"
 
 #include "replay.h"
@@ -601,8 +603,8 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->max_floorkicks = 2;
     q->lock_on_rotate = 0;
 
-    request_fps(cs, PENTOMINO_FPS);
-    q->game_type = 0;
+    request_fps(cs, RefreshRates::pentomino);
+    q->game_type = GameType::SIMULATE_QRS;
     q->mode_type = MODE_PENTOMINO;
 
     q->last_gradeup_timestamp = 0xFFFFFFFF;
@@ -627,20 +629,20 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         // q->field_x = QRS_FIELD_X - 28;
         // q->field_y = QRS_FIELD_Y - 16 + 2;
         q->lock_protect = 1;
-        flags |= SIMULATE_G2;
+        flags |= static_cast<int>(GameType::SIMULATE_G2);
         flags |= TETROMINO_ONLY;
-        flags &= ~SIMULATE_G1;
-        flags &= ~SIMULATE_G3;
+        flags &= ~static_cast<int>(GameType::SIMULATE_G1);
+        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
     }
     else if(flags & MODE_G3_TERROR)
     {
         q->mode_type = MODE_G3_TERROR;
         q->grade = NO_GRADE;
         q->lock_protect = 1;
-        flags |= SIMULATE_G3;
+        flags |= static_cast<int>(GameType::SIMULATE_G3);
         flags |= TETROMINO_ONLY;
-        flags &= ~SIMULATE_G1;
-        flags &= ~SIMULATE_G2;
+        flags &= ~static_cast<int>(GameType::SIMULATE_G1);
+        flags &= ~static_cast<int>(GameType::SIMULATE_G2);
         if(level < 1000 && level >= 500)
         {
             q->state_flags |= GAMESTATE_RISING_GARBAGE;
@@ -656,28 +658,28 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     {
         q->mode_type = MODE_G1_MASTER;
         q->grade = GRADE_9;
-        flags |= SIMULATE_G1;
+        flags |= static_cast<int>(GameType::SIMULATE_G1);
         flags |= TETROMINO_ONLY;
-        flags &= ~SIMULATE_G2;
-        flags &= ~SIMULATE_G3;
+        flags &= ~static_cast<int>(GameType::SIMULATE_G2);
+        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
     }
     else if(flags & MODE_G1_20G)
     {
         q->mode_type = MODE_G1_20G;
         q->grade = GRADE_9;
-        flags |= SIMULATE_G1;
+        flags |= static_cast<int>(GameType::SIMULATE_G1);
         flags |= TETROMINO_ONLY;
-        flags &= ~SIMULATE_G2;
-        flags &= ~SIMULATE_G3;
+        flags &= ~static_cast<int>(GameType::SIMULATE_G2);
+        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
     }
     else if(flags & MODE_G2_MASTER)
     {
         q->mode_type = MODE_G2_MASTER;
         q->grade = GRADE_9;
-        flags |= SIMULATE_G2;
+        flags |= static_cast<int>(GameType::SIMULATE_G2);
         flags |= TETROMINO_ONLY;
-        flags &= ~SIMULATE_G1;
-        flags &= ~SIMULATE_G3;
+        flags &= ~static_cast<int>(GameType::SIMULATE_G1);
+        flags &= ~static_cast<int>(GameType::SIMULATE_G3);
 
         // 61.68 "game seconds", or 60 realtime seconds
         q->credit_roll_counter = 3701;
@@ -697,36 +699,36 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->tetromino_only = 1;
     }
 
-    if(flags & SIMULATE_G1)
+    if(flags & static_cast<int>(GameType::SIMULATE_G1))
     {
         q->tetromino_only = 1;
         q->randomizer_type = RANDOMIZER_G1;
-        q->game_type = SIMULATE_G1;
+        q->game_type = GameType::SIMULATE_G1;
         q->num_previews = 1;
         q->max_floorkicks = 0;
         q->special_irs = 0;
         q->lock_protect = 0;
         q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
-        request_fps(cs, G1_FPS);
+        request_fps(cs, RefreshRates::g1);
     }
 
-    if(flags & SIMULATE_G2)
+    if(flags & static_cast<int>(GameType::SIMULATE_G2))
     {
         q->tetromino_only = 1;
         q->randomizer_type = RANDOMIZER_G2;
-        q->game_type = SIMULATE_G2;
+        q->game_type = GameType::SIMULATE_G2;
         q->num_previews = 1;
         q->max_floorkicks = 0;
         q->special_irs = 0;
         q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
-        request_fps(cs, G2_FPS);
+        request_fps(cs, RefreshRates::g2);
     }
 
-    if(flags & SIMULATE_G3)
+    if(flags & static_cast<int>(GameType::SIMULATE_G3))
     {
         q->tetromino_only = 1;
         q->randomizer_type = RANDOMIZER_G3;
-        q->game_type = SIMULATE_G3;
+        q->game_type = GameType::SIMULATE_G3;
         q->num_previews = 3;
         q->max_floorkicks = 1;
         q->special_irs = 0;
@@ -734,7 +736,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->hold_enabled = 1;
     }
 
-    if(q->game_type == 0)
+    if(q->game_type == GameType::SIMULATE_QRS)
         q->field_x = QRS_FIELD_X + 4;
 
     uint32_t randomizer_flags = 0;
@@ -813,7 +815,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     /* for testing */
     // flags |= BIG_MODE;
 
-    if(flags & BIG_MODE && !(flags & QRS_PRACTICE))
+    if(flags & static_cast<int>(GameType::BIG_MODE) && !(flags & QRS_PRACTICE))
     {
         q->state_flags |= GAMESTATE_BIGMODE;
 
@@ -842,7 +844,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
             q->pracdata = new pracdata;
 
             q->pracdata->field_w = 10;
-            q->pracdata->game_type = SIMULATE_G2;
+            q->pracdata->game_type = GameType::SIMULATE_G2;
             // q->pracdata->long_history = NULL;   // unused at the moment
             q->pracdata->usr_seq_expand_len = 0;
             q->pracdata->usr_seq_len = 0;
@@ -1630,7 +1632,7 @@ int qs_game_frame(game_t *g)
         }
     }
 
-    if(!q->pracdata && q->is_recovering && q->game_type == 0)
+    if(!q->pracdata && q->is_recovering && q->game_type == GameType::SIMULATE_QRS)
     {
         if (g->field->cellsFilled() <= 85) {
             q->recoveries++;
@@ -2116,7 +2118,7 @@ int qs_process_lockflash(game_t *g)
 
             if(!(q->state_flags & GAMESTATE_CREDITS) && !q->pracdata)
             {
-                if(q->game_type == SIMULATE_G3 && n > 2)
+                if(q->game_type == GameType::SIMULATE_G3 && n > 2)
                     q->lvlinc = 2 * n - 2;
                 else
                     q->lvlinc = n;
@@ -2256,7 +2258,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-            if(!q->pracdata && q->game_type == 0)
+            if(!q->pracdata && q->game_type == GameType::SIMULATE_QRS)
             {
                 switch(q->combo_simple)
                 {
@@ -2748,7 +2750,7 @@ int qs_update_pracdata(CoreState *cs)
 
     switch(q->game_type)
     {
-        case 0:
+        case GameType::SIMULATE_QRS:
             q->num_previews = 4;
             q->randomizer_type = RANDOMIZER_NORMAL;
             if(q->randomizer)
@@ -2761,9 +2763,9 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags & ~PDNOWKICK);
             q->tetromino_only = 0;
             q->pentomino_only = 0;
-            request_fps(cs, PENTOMINO_FPS);
+            request_fps(cs, RefreshRates::pentomino);
             break;
-        case SIMULATE_G1:
+        case GameType::SIMULATE_G1:
             q->num_previews = 1;
             q->randomizer_type = RANDOMIZER_G1;
             if(q->randomizer)
@@ -2776,9 +2778,9 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, G1_FPS);
+            request_fps(cs, RefreshRates::g1);
             break;
-        case SIMULATE_G2:
+        case GameType::SIMULATE_G2:
             q->num_previews = 1;
             q->randomizer_type = RANDOMIZER_G2;
             if(q->randomizer)
@@ -2791,9 +2793,9 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags | PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, G2_FPS);
+            request_fps(cs, RefreshRates::g2);
             break;
-        case SIMULATE_G3:
+        case GameType::SIMULATE_G3:
             q->num_previews = 3;
             q->randomizer_type = RANDOMIZER_G3;
             if(q->randomizer)
@@ -2806,7 +2808,7 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<PieceDefFlag>(q->piecepool[QRS_I4].flags & ~PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, G3_FPS);
+            request_fps(cs, RefreshRates::g3);
             break;
         default:
             break;

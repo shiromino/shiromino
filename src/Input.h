@@ -1,0 +1,3 @@
+#pragma once
+#define BUTTON_PRESSED_THIS_FRAME 2
+#define JOYSTICK_DEAD_ZONE 8000
