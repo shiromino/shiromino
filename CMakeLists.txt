@@ -92,7 +92,7 @@ set(SOURCES
     src/Mode/BaseMode.cpp
     src/MultiEditor.cpp
     src/Path.cpp
-    src/PieceDef.cpp
+    src/PieceDefinition.cpp
     src/qrs.cpp
     src/random.cpp
     src/RecordList.cpp
@@ -134,7 +134,7 @@ set(HEADERS
     src/MultiEditor.hpp
     src/music.h
     src/Path.hpp
-    src/PieceDef.hpp
+    src/PieceDefinition.h
     src/Player.h
     src/Player/BasePlayer.hpp
     src/qrs.h

@@ -702,7 +702,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->max_floorkicks = 0;
         q->special_irs = 0;
         q->lock_protect = 0;
-        q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
+        q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
         request_fps(cs, Shiro::RefreshRates::g1);
     }
 
@@ -714,7 +714,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->num_previews = 1;
         q->max_floorkicks = 0;
         q->special_irs = 0;
-        q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
+        q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
         request_fps(cs, Shiro::RefreshRates::g2);
     }
 
@@ -998,7 +998,7 @@ int qs_game_init(game_t *g)
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags | Shiro::PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefinitionFlag>(preview.flags | Shiro::PDBRACKETS);
         }
     }
 
@@ -1141,7 +1141,7 @@ int qs_game_pracinit(game_t *g, int val)
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags | Shiro::PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefinitionFlag>(preview.flags | Shiro::PDBRACKETS);
         }
     }
 
@@ -2754,7 +2754,7 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 0;
             q->max_floorkicks = 2;
             q->lock_protect = 1;
-            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
             q->tetromino_only = 0;
             q->pentomino_only = 0;
             request_fps(cs, Shiro::RefreshRates::pentomino);
@@ -2769,7 +2769,7 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 0;
             q->max_floorkicks = 0;
             q->lock_protect = 0;
-            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
             request_fps(cs, Shiro::RefreshRates::g1);
@@ -2784,7 +2784,7 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 0;
             q->max_floorkicks = 0;
             q->lock_protect = 1;
-            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
             request_fps(cs, Shiro::RefreshRates::g2);
@@ -2799,7 +2799,7 @@ int qs_update_pracdata(CoreState *cs)
             q->hold_enabled = 1;
             q->max_floorkicks = 1;
             q->lock_protect = 1;
-            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
+            q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
             request_fps(cs, Shiro::RefreshRates::g3);
@@ -3239,13 +3239,13 @@ end_sequence_proc:
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags | Shiro::PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefinitionFlag>(preview.flags | Shiro::PDBRACKETS);
         }
     }
     else
     {
         for (auto& preview : q->previews) {
-            preview.flags = static_cast<Shiro::PieceDefFlag>(preview.flags & ~Shiro::PDBRACKETS);
+            preview.flags = static_cast<Shiro::PieceDefinitionFlag>(preview.flags & ~Shiro::PDBRACKETS);
         }
     }
 
@@ -3549,7 +3549,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if (p->def) {
         delete p->def;
     }
-    p->def = new Shiro::PieceDef(q->previews[0]);
+    p->def = new Shiro::PieceDefinition(q->previews[0]);
 
     if(p->def)
         q->cur_piece_qrs_id = p->def->qrsID;
@@ -3569,7 +3569,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
         if (q->previews.size() > 3) {
-            q->previews[3].flags = static_cast<Shiro::PieceDefFlag>(q->previews[3].flags | Shiro::PDBRACKETS);
+            q->previews[3].flags = static_cast<Shiro::PieceDefinitionFlag>(q->previews[3].flags | Shiro::PDBRACKETS);
         }
     }
 

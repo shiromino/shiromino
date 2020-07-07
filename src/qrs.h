@@ -2,7 +2,7 @@
 #include "Game.h"
 #include "GameType.h"
 #include "Grid.hpp"
-#include "PieceDef.hpp"
+#include "PieceDefinition.h"
 #include "Timer.hpp"
 #include <array>
 #include <cstdint>
@@ -191,7 +191,7 @@ struct QRS_Counters {
 
 struct qrs_player
 {
-    Shiro::PieceDef* def;
+    Shiro::PieceDefinition* def;
     QRS_Timings* speeds;
     unsigned int state;        // rename?
 
@@ -246,7 +246,7 @@ struct pracdata
 
 struct qrsdata
 {
-    std::vector<Shiro::PieceDef> piecepool;
+    std::vector<Shiro::PieceDefinition> piecepool;
     struct randomizer *randomizer;
     struct pracdata *pracdata;
     struct replay *replay;
@@ -257,8 +257,8 @@ struct qrsdata
     Shiro::Timer timer;
     qrs_player *p1;
     QRS_Counters *p1counters;
-    std::vector<Shiro::PieceDef> previews;
-    Shiro::PieceDef* hold;
+    std::vector<Shiro::PieceDefinition> previews;
+    Shiro::PieceDefinition* hold;
 
 // fields which are assumed to be read-only during normal gameplay
 
@@ -375,7 +375,7 @@ const std::string get_qrspiece_name(std::size_t n);
 void qrsdata_destroy(qrsdata *q);
 void pracdata_destroy(struct pracdata *d);
 
-std::vector<Shiro::PieceDef> qrspool_create();
+std::vector<Shiro::PieceDefinition> qrspool_create();
 
 Shiro::Grid* qrsfield_create();
 int qrsfield_set_w(Shiro::Grid* field, int w);
@@ -420,4 +420,4 @@ int qrs_lineclear(game_t *g, qrs_player *p);
 int qrs_dropfield(game_t *g);
 int qrs_spawn_garbage(game_t *g, unsigned int flags);
 
-void qrs_embiggen(Shiro::PieceDef& p);
+void qrs_embiggen(Shiro::PieceDefinition& p);

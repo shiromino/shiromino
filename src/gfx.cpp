@@ -3,7 +3,7 @@
 #include "gfx.h"
 #include "gfx_structures.h"
 #include "Grid.hpp"
-#include "PieceDef.hpp"
+#include "PieceDefinition.h"
 #include "qrs.h"
 #include "stringtools.hpp"
 #include "Timer.hpp"
@@ -1147,7 +1147,7 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
     return 0;
 }
 
-int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDef& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
+int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDefinition& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba)
 {
     if(!cs)
         return -1;

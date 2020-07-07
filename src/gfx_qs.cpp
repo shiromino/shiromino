@@ -54,7 +54,7 @@ int gfx_drawqs(game_t *g)
     CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)(g->data);
 
-    Shiro::PieceDef* pd_current = q->p1->def;
+    Shiro::PieceDefinition* pd_current = q->p1->def;
 
     unsigned int drawpiece_next1_flags = DRAWPIECE_PREVIEW;
     if(q->previews.size() > 0)

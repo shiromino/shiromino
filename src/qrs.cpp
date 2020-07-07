@@ -7,7 +7,7 @@
 #include "gfx_structures.h"
 #include "Grid.hpp"
 #include "Input.h"
-#include "PieceDef.hpp"
+#include "PieceDefinition.h"
 #include "qrs.h"
 #include "random.h"
 #include "replay.h"
@@ -137,9 +137,9 @@ pracdata *pracdata_cpy(pracdata *d)
     return cpy;
 }
 
-std::vector<Shiro::PieceDef> qrspool_create()
+std::vector<Shiro::PieceDefinition> qrspool_create()
 {
-    std::vector<Shiro::PieceDef> pool(25);
+    std::vector<Shiro::PieceDefinition> pool(25);
     int i = 0;
     int j = 0;
     int n = 5;
@@ -169,12 +169,12 @@ std::vector<Shiro::PieceDef> qrspool_create()
         if(!(i == QRS_I || i == QRS_N || i == QRS_G || i == QRS_J || i == QRS_L ||
              i == QRS_T || i == QRS_Ya || i == QRS_Yb || i == QRS_I4 || i == QRS_T4))
         {
-            pool[i].flags = static_cast<Shiro::PieceDefFlag>(pool[i].flags ^ Shiro::PDNOFKICK);
+            pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(pool[i].flags ^ Shiro::PDNOFKICK);
         }
 
         if(i == QRS_T)
         {
-            pool[i].flags = static_cast<Shiro::PieceDefFlag>(
+            pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(
                 pool[i].flags |
                 Shiro::PDFLATFLOORKICKS |
                 Shiro::PDONECELLFLOORKICKS |
@@ -185,7 +185,7 @@ std::vector<Shiro::PieceDef> qrspool_create()
 
         if(i == QRS_T4)
         {
-            pool[i].flags = static_cast<Shiro::PieceDefFlag>(
+            pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(
                 pool[i].flags |
                 Shiro::PDFLIPFLOORKICKS |
                 Shiro::PDONECELLFLOORKICKS |
@@ -1206,7 +1206,7 @@ int qrs_wallkick(game_t *g, qrs_player *p)
 int qrs_hold(game_t *g, qrs_player *p)
 {
     qrsdata* q = (qrsdata *)g->data;
-    Shiro::PieceDef* temp = NULL;
+    Shiro::PieceDefinition* temp = NULL;
 
     if(!q->hold_enabled)
         return 1;
@@ -1216,7 +1216,7 @@ int qrs_hold(game_t *g, qrs_player *p)
 
     if(!q->hold)
     {
-        q->hold = new Shiro::PieceDef(*p->def);
+        q->hold = new Shiro::PieceDefinition(*p->def);
         if(qs_initnext(g, p, INITNEXT_DURING_ACTIVE_PLAY) == 1)
         { // if there is no next piece to swap in
             delete q->hold;
@@ -1230,7 +1230,7 @@ int qrs_hold(game_t *g, qrs_player *p)
     else
     {
         temp = q->hold;
-        q->hold = new Shiro::PieceDef(*p->def);
+        q->hold = new Shiro::PieceDefinition(*p->def);
         p->def = temp;
 
         if(p->def->qrsID >= 18) // tetrominoes spawn where they do in TGM
@@ -1602,7 +1602,7 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     return 0;
 }
 
-void qrs_embiggen(Shiro::PieceDef& p)
+void qrs_embiggen(Shiro::PieceDefinition& p)
 {
     int xs[5] = {-1, -1, -1, -1, -1};
     int ys[5] = {-1, -1, -1, -1, -1};

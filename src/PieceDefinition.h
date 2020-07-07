@@ -6,7 +6,7 @@
 #include <cstdint>
 
 namespace Shiro {
-    enum PieceDefFlag {
+    enum PieceDefinitionFlag {
         PDNONE,
         PDNOWKICK           = 0x00000001,
         PDNOFKICK           = 0x00000002,
@@ -26,11 +26,11 @@ namespace Shiro {
         CCW
     };
 
-    class PieceDef {
+    class PieceDefinition {
     public:
-        PieceDef();
+        PieceDefinition();
         uint8_t qrsID; // minor cross-contamination (old: int color)
-        PieceDefFlag flags;
+        PieceDefinitionFlag flags;
         int anchorX;
         int anchorY;
         std::array<Grid, 4> rotationTable;
