@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cinttypes>
+#include <filesystem>
 static std::array<std::string, 10> keyBindingNames = {
     "LEFT",
     "RIGHT",
@@ -174,7 +175,7 @@ bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName
 Shiro::GamepadBindings::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
 Shiro::GamepadBindings::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
 
-Shiro::Settings::Settings() :
+Shiro::Settings::Settings(std::filesystem::path executablePath) :
     videoScale(1.0f),
     videoStretch(1),
     fullscreen(0),
@@ -187,7 +188,7 @@ Shiro::Settings::Settings() :
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),
-    basePath("."),
+    basePath(std::filesystem::canonical(executablePath.remove_filename()).parent_path()),
     playerName("ARK") {}
 
 bool Shiro::Settings::read(std::string filename) {
@@ -210,25 +211,12 @@ bool Shiro::Settings::read(std::string filename) {
     }
 
     // [PATHS]
-    std::string basePath;
-    if (!ini.get("PATHS", "BASE_PATH", basePath)) {
-        char *basePath = SDL_GetBasePath();
-        size_t i = strlen(basePath);
-        do {
-            if (basePath[i] == '\\' || basePath[i] == '/') {
-                basePath[i] = '\0';
-            }
-            if (i == 0) {
-                break;
-            }
-            i--;
-        } while (true);
+    std::filesystem::path basePath;
+    if (ini.get("PATHS", "BASE_PATH", basePath)) {
         this->basePath = basePath;
-        SDL_free(basePath);
-        defaultUsed = true;
     }
     else {
-        this->basePath = basePath;
+        defaultUsed = true;
     }
 
     // [AUDIO]

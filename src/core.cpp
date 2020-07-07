@@ -1,45 +1,39 @@
 #include "CoreState.h"
-
 #include "Config.hpp"
 #include "Debug.hpp"
 #include "DisplayMode.h"
 #include "gfx.h"
 #include "gfx_structures.h"
-#include "Path.hpp"
-
 #include "game_menu.h"
 #include "game_qs.h"
+#include "GuiGridCanvas.hpp"
+#include "GuiScreenManager.h"
 #include "Input.h"
+#include "QRS.hpp"
 #include "RefreshRates.h"
 #include "replay.h"
-
+#include "SGUIL/SGUIL.hpp"
+#include "ShiroPhysoMino.hpp"
+#include "SPM_Spec.hpp"
+#include <array>
+#include <cinttypes>
+#include <cmath>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cmath>
-#include <cstdint>
-#include <cinttypes>
-
+#include <filesystem>
 #include <iostream>
-#include <vector>
-#include <array>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <string>
-
-#include "SDL.h"
+#include <vector>
 #ifdef OPENGL_INTERPOLATION
 #define GL_GLEXT_PROTOTYPES
 #include "glad.h"
 #endif
-#include "SDL_image.h"
-#include "SDL_mixer.h"
-#include "SGUIL/SGUIL.hpp"
-#include "GuiGridCanvas.hpp"
-#include "GuiScreenManager.h"
-
-#include "SPM_Spec.hpp"
-#include "QRS.hpp"
-#include "ShiroPhysoMino.hpp"
 
 #define PENTOMINO_C_REVISION_STRING "rev 1.3"
 #define FRAMEDELAY_ERR 0
@@ -48,8 +42,6 @@
     !defined(__MINGW64__)
 #define _WIN32_WINNT 0x0400
 #include <direct.h>
-#define chdir _chdir
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -96,7 +88,6 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
 #else
 #include <errno.h>
 #include <sys/stat.h>
-#include <unistd.h> // For chdir
 #endif
 
 #if 0
@@ -174,9 +165,7 @@ gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_mult
     a->rgba_mod = RGBA_DEFAULT;
 
     struct stat s;
-    chdir("gfx");
     int err = stat(directory, &s);
-    chdir("..");
 
     if(-1 == err)
     {
@@ -323,9 +312,8 @@ void CoreState_destroy(CoreState *cs)
 
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
 {
-    Shiro::Path path(cs->settings->basePath);
-    path << "gfx" << filename;
-    if(!img_load(img, path, cs))
+    std::filesystem::path path { cs->settings->basePath };
+    if(!img_load(img, path / "gfx" / filename, cs))
     {
         log_warn("Failed to load image '%s'", filename);
     }
@@ -342,13 +330,11 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
 
 static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char* filename)
 {
-    Shiro::Path path(cs->settings->basePath);
-    path << "audio" << filename;
+    std::filesystem::path basePath { cs->settings->basePath };
     *s = new Shiro::Sfx();
-    if (!(*s)->load(path)) {
+    if (!(*s)->load(basePath / "audio" / filename)) {
         log_warn("Failed to load sfx '%s'", filename);
     }
-
     float volume;
     if (!ini.get("", filename, volume) || volume < 0.0f || volume > 100.0f) {
         (*s)->volume = 100.0f;
@@ -360,10 +346,9 @@ static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char*
 
 static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const char* name)
 {
-    Shiro::Path directory(cs->settings->basePath);
-    directory << "audio";
+    std::filesystem::path basePath { cs->settings->basePath };
     m = new Shiro::Music();
-    if (!m->load(directory, name)) {
+    if (!m->load(basePath / "audio" / name)) {
         log_warn("Failed to load music '%s'", name);
     }
 
@@ -396,9 +381,8 @@ int load_files(CoreState *cs)
 
     {
         PDINI::INI ini(false);
-        Shiro::Path audioINIPath(cs->settings->basePath);
-        audioINIPath << "audio" << "volume.ini";
-        ini.read(audioINIPath);
+        std::filesystem::path basePath { cs->settings->basePath };
+        ini.read(basePath / "audio" / "volume.ini");
 
 #define MUSIC(name, i) load_music(cs, ini, cs->assets->name[i], #name #i);
 #include "music.h"
@@ -515,7 +499,7 @@ GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geo
 }
 #endif
 
-int init(CoreState *cs, Shiro::Settings* settings)
+int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &executablePath)
 {
     try {
         if(!cs)
@@ -528,13 +512,9 @@ int init(CoreState *cs, Shiro::Settings* settings)
 
         if(settings) {
             cs->settings = settings;
-            printf("Base path is: %s\n", cs->settings->basePath.c_str());
-            if(chdir(cs->settings->basePath.c_str()) < 0) { // chdir so relative paths later on make sense
-                log_err("chdir() returned failure");
-            }
         }
         else {
-            cs->settings = new Shiro::Settings();
+            cs->settings = new Shiro::Settings(executablePath);
         }
 
 #ifdef OPENGL_INTERPOLATION

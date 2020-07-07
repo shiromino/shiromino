@@ -1,5 +1,4 @@
 #pragma once
-
 namespace Shiro {
     enum class PieceRotation {
         down, right, up, left

@@ -9,6 +9,7 @@
 #include "Timer.hpp"
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
@@ -45,17 +46,16 @@ int gfx_piece_colors[25] =
 };
 */
 
-bool img_load(gfx_image *img, std::string path_without_ext, CoreState *cs) {
+bool img_load(gfx_image *img, std::filesystem::path&& pathWithoutExtension, CoreState *cs) {
     img->tex = NULL;
 
     SDL_Surface *s = NULL;
 
-    std::string path = path_without_ext + ".png";
-    s = IMG_Load(path.c_str());
+    std::filesystem::path& imagePath = pathWithoutExtension.concat(".png");
+    s = IMG_Load(imagePath.c_str());
 
     if(!s) {
-        path = path_without_ext + ".jpg";
-        s = IMG_Load(path.c_str());
+        s = IMG_Load(imagePath.replace_extension(".jpg").c_str());
     }
 
     if(s) {

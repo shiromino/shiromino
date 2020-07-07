@@ -1,8 +1,7 @@
 #pragma once
-
+#include <filesystem>
 #include <SDL.h>
 #include <string>
-
 #define EMERGENCY_OVERRIDE 1
 #define MESSAGE_EMERGENCY 0x1000000
 #define ANIMATION_EMERGENCY 0x1000000
@@ -16,7 +15,7 @@ typedef struct
 
 struct CoreState;
 
-bool img_load(gfx_image *img, std::string path_without_ext, CoreState *cs);
+bool img_load(gfx_image *img, std::filesystem::path&& pathWithoutExtension, CoreState *cs);
 void img_destroy(gfx_image *img);
 
 enum text_alignment { ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER };

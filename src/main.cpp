@@ -46,10 +46,10 @@ int main(int argc, char** argv) {
         else {
             CoreState cs;
             CoreState_initialize(&cs);
-            Shiro::Settings* settings = new Shiro::Settings();
+            Shiro::Settings* settings = new Shiro::Settings(argv[0]);
             const char path[] = ".";
 
-            std::string callingPath{ path };
+            std::string currentWorkingDirectory{ path };
             std::string iniFilename = "game.ini";
             std::string slash = "/";
             std::string cfg_filename;
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
                     printf("Using one or more default settings\n");
                 }
 
-                iniFilename = callingPath + slash + iniFilename;
+                iniFilename = currentWorkingDirectory + slash + iniFilename;
                 cs.iniFilename = (char*)malloc(iniFilename.size() + 1);
                 strcpy(cs.iniFilename, iniFilename.c_str());
             }
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 
             printf("Finished reading configuration file: %s\n", cs.iniFilename);
 
-            if (init(&cs, settings)) {
+            if (init(&cs, settings, argv[0])) {
                 printf("Initialization failed, aborting.\n");
                 quit(&cs);
                 CoreState_destroy(&cs);

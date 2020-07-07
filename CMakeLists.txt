@@ -81,17 +81,16 @@ set(SOURCES
     src/core.cpp
     src/game_menu.cpp
     src/game_qs.cpp
-    src/gfx.cpp
     src/gfx_helpers.cpp
     src/gfx_menu.cpp
     src/gfx_qs.cpp
+    src/gfx.cpp
     src/Grid.cpp
     src/GuiGridCanvas.cpp
     src/GuiScreenManager.cpp
     src/main.cpp
     src/Mode/BaseMode.cpp
     src/MultiEditor.cpp
-    src/Path.cpp
     src/PieceDefinition.cpp
     src/qrs.cpp
     src/random.cpp
@@ -133,7 +132,6 @@ set(HEADERS
     src/Mode/BaseMode.hpp
     src/MultiEditor.hpp
     src/music.h
-    src/Path.hpp
     src/PieceDefinition.h
     src/Player.h
     src/Player/BasePlayer.hpp

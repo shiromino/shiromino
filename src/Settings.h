@@ -1,12 +1,9 @@
 #pragma once
-
-#include <string>
-
 #include "Config.hpp"
-#include "Path.hpp"
 #include "PDINI.hpp"
-#include "SDL.h"
-
+#include <filesystem>
+#include <string>
+#include <SDL.h>
 namespace Shiro {
     class KeyBindings {
     public:
@@ -69,7 +66,7 @@ namespace Shiro {
 
     class Settings {
     public:
-        Settings();
+        Settings(std::filesystem::path executablePath);
 
         bool read(const std::string filename);
 
@@ -90,7 +87,7 @@ namespace Shiro {
         int sfxVolume;
         int musicVolume;
 
-        std::string basePath;
+        std::filesystem::path basePath;
 
         std::string playerName;
     };

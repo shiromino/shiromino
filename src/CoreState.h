@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Settings.h"
 #include "RecordList.h"
+#include <filesystem>
 #include <SDL.h>
 #include <vector>
 #ifdef OPENGL_INTERPOLATION
@@ -133,7 +134,7 @@ struct bindings *bindings_copy(struct bindings *src);
 gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_multiplier);
 int load_files(CoreState *cs);
 
-int init(CoreState *cs, Shiro::Settings* s);
+int init(CoreState *cs, Shiro::Settings* s, const std::filesystem::path& executablePath);
 void quit(CoreState *cs);
 
 int run(CoreState *cs);

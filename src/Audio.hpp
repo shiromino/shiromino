@@ -5,9 +5,8 @@
  * directory for the full text of the license.
  */
 #pragma once
-
 #include "Settings.h"
-#include "Path.hpp"
+#include <filesystem>
 #include <SDL_mixer.h>
 #include <string>
 
@@ -32,7 +31,7 @@ namespace Shiro {
          * ".wav" extension. Will try to load OGG first, otherwise WAV. Returns
          * true if the file was loaded.
          */
-        bool load(std::string directory, std::string name);
+        bool load(std::filesystem::path&& path);
 
         /**
          * Plays the music track. Returns true if the music track was played;
@@ -66,7 +65,7 @@ namespace Shiro {
          * Loads the sound effect from a file. Provide the name of the file,
          * without the ".wav" extension. Returns true if the file was loaded.
          */
-        bool load(std::string filenameNoExt);
+        bool load(std::filesystem::path&& filenameWithoutExtension);
 
         /**
          * Plays the sound effect. Returns true if the sound effect was played;

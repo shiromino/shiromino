@@ -31,7 +31,7 @@
  * THE SOFTWARE.
  */
 #pragma once
-
+#include <filesystem>
 #include <fstream>
 #include <regex>
 #include <string>
@@ -39,7 +39,6 @@
 #include <utility>
 #include <sstream>
 #include <locale>
-
 namespace PDINI {
     /**
      * Read, modify, and write INI files. Section names, key names, and values
@@ -78,8 +77,8 @@ namespace PDINI {
          * and including the first invalid line; if no invalid lines were read,
          * the second value is 0.
          */
-        std::pair<bool, std::size_t> read(const std::string& filename) {
-            std::ifstream file(filename);
+        std::pair<bool, std::size_t> read(const std::filesystem::path&& filePath) {
+            std::ifstream file(filePath);
 
             if (file.fail()) {
                 return {false, 0};
@@ -229,9 +228,7 @@ namespace PDINI {
                 value = sections[realSectionName][realKeyName];
                 return true;
             }
-            else {
-                return false;
-            }
+            return false;
         }
 
         /**
