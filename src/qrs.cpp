@@ -1145,7 +1145,7 @@ int qrs_wallkick(game_t *g, qrs_player *p)
     std::pair<int, int> pos;
     qrs_chkcollision(*g, *p, pos);
     int x = pos.first;
-    // printf("Trying to kick with collision at x = %d\n", x);
+//     std::cerr << "Trying to kick with collision at x = " << x << std::endl;
 
     if(p->def->flags & Shiro::PDNOWKICK)
         return 1;
@@ -1307,7 +1307,7 @@ int qrs_floorkick(game_t *g, qrs_player *p)
     }
 
     q->p1counters->floorkicks++;
-    // printf("Number of floorkicks so far: %d\n", q->p1counters->floorkicks);
+//     std::cerr << "Number of floorkicks so far: " << q->p1counters->floorkicks << std::endl;
 
     return 0;
 }

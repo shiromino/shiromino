@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -133,48 +132,41 @@ void g123_seeds_init()
     pento_seed = g2_rand((s << 4) % 11456);
 }
 
-/*
-int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
-{
-    unsigned int i = 0;
-    uint32_t s1_tmp_forward = s1;
-    uint32_t s1_tmp_backward = s1;
+// int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
+// {
+//     unsigned int i = 0;
+//     uint32_t s1_tmp_forward = s1;
+//     uint32_t s1_tmp_backward = s1;
+// 
+//     for(i = 0; i < max_gap; i++) {
+//         s1_tmp_forward = g2_rand(s1_tmp_forward);
+//         if(s1_tmp_forward == s2)
+//             return 1;
+// 
+//         s1_tmp_backward = g2_unrand(s1_tmp_backward);
+//         if(s1_tmp_backward == s2)
+//             return 1;
+//     }
+// 
+//     return 0;
+// }
+// 
+// int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
+// {
+//     unsigned int i = 0;
+//     for(i = 0; i < max_gap; i++) {
+//         a = g2_rand(a);
+//         if(a == b)
+//             return 1;
+//     }
+// 
+//     return 0;
+// }
 
-    for(i = 0; i < max_gap; i++) {
-        s1_tmp_forward = g2_rand(s1_tmp_forward);
-        if(s1_tmp_forward == s2)
-            return 1;
-
-        s1_tmp_backward = g2_unrand(s1_tmp_backward);
-        if(s1_tmp_backward == s2)
-            return 1;
-    }
-
-    return 0;
-}
-
-int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
-{
-    unsigned int i = 0;
-    for(i = 0; i < max_gap; i++) {
-        a = g2_rand(a);
-        if(a == b)
-            return 1;
-    }
-
-    return 0;
-}
-*/
-
-/*
-char *sprintf_rngstate(char *strbuf, rngstate s)
-{
-    sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), (long unsigned int)(s & 0xffffffff));
-    return strbuf;
-}
-*/
-
-/* */
+// char *sprintf_rngstate(char *strbuf, rngstate s) {
+//     sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), (long unsigned int)(s & 0xffffffff));
+//     return strbuf;
+// }
 
 struct randomizer *g1_randomizer_create(uint32_t flags)
 {
@@ -1060,7 +1052,7 @@ rngstate g2_state_init_randomize(rngstate s)
         s = g2_state_rand(s);
     }
 
-    printf("init piece = %c\n", pieces[t]);
+    std::cerr << "init piece = " << pieces[t] << std::endl;
 
     s = state_set_hN(s, 0, state_hN(s, 1));
     s = state_set_hN(s, 1, state_hN(s, 2));

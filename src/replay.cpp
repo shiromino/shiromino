@@ -2,7 +2,6 @@
 #include "game_qs.h"
 #include "Input.h"
 #include <cstdlib>
-#include <cstdio>
 #include <cstring>
 #include <iomanip>
 #include <sstream>

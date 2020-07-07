@@ -19,7 +19,6 @@
 #include <cinttypes>
 #include <cmath>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -167,36 +166,18 @@ gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_mult
     struct stat s;
     int err = stat(directory, &s);
 
-    if(-1 == err)
-    {
+    if (err == -1) {
         if(ENOENT == errno)
         {
             return NULL;
         }
     }
-    else
-    {
+    else {
         if(!S_ISDIR(s.st_mode))
         {
             return NULL;
         }
     }
-
-    // TODO: convert to new asset system - create an animation asset
-    /*
-    for(int i = 0; i < 1000; i++) {
-       full_path = bformat("%s/%05d", directory, i);
-       if(load_asset(cs, ASSET_IMG, (char *)(full_path->data)) < 0) {
-          a->num_frames = i;
-          break;
-       } else {
-          //printf("Loaded frame #%d of animated bg: %s\n", i, full_path->data);
-       }
-
-        bdestroy(full_path);
-     }
-     */
-
     return a;
 }
 
@@ -394,20 +375,6 @@ int load_files(CoreState *cs)
 #undef SFX_ARRAY
 #undef SFX
     }
-
-#if 0
-    #ifdef ENABLE_ANIM_BG
-       string filename;
-
-       for(int i = 0; i < 10; i++) {
-          stringstream ss;
-          ss << "g2_bg/bg" << i;
-          filename = ss.str();
-          cs->g2_bgs[i] = load_anim_bg(cs, filename.c_str(), 2);
-          //if(cs->g2_bgs[i]) printf("Successfully loaded G2 bg #%d\n", i);
-       }
-    #endif
-#endif
     return 0;
 }
 
@@ -427,8 +394,15 @@ GLuint CompileShader(GLenum shaderType, const GLchar* shaderSource) {
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
         infoLog = new char[infoLogLength];
         glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
-        fprintf(stderr, "Could not compile %s shader.\n", (shaderType == GL_VERTEX_SHADER) ? "vertex" : (shaderType == GL_GEOMETRY_SHADER) ? "geometry" : (shaderType == GL_FRAGMENT_SHADER) ? "fragment" : "unknown");
-        fprintf(stderr, "%s\n", infoLog);
+        const auto shaderTypeString = shaderType == GL_VERTEX_SHADER
+            ? "vertex"
+            : shaderType == GL_GEOMETRY_SHADER
+                ? "geometry"
+                : shaderType == GL_FRAGMENT_SHADER
+                    ? "fragment"
+                    : "unknown";
+        std::cerr << "Could not compile " << shaderTypeString << " shader." << std::endl;
+        std::cerr << infoLog << std::endl;
         delete[] infoLog;
         return 0u;
     }
@@ -527,7 +501,7 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
               SDL_GetError());
         check(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem: Error: %s\n", SDL_GetError());
         if (SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH) != 0) {
-            printf("Failed to set high thread priority; continuing without changing thread priority\n");
+            std::cerr << "Failed to set high thread priority; continuing without changing thread priority" << std::endl;
         }
         check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG,
             "IMG_Init: Failed to initialize PNG support: %s\n",
@@ -544,11 +518,11 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             for (int i = 0; i < numJoysticks; i++) {
                 SDL_Joystick* joystick;
                 if ((joystick = SDL_JoystickOpen(i))) {
-                    printf("Attached joystick: \"%s\" at index %d\n", SDL_JoystickName(joystick), i);
+                    std::cerr << "Attached joystick \"" << SDL_JoystickName(joystick) << "\" at index " << i << std::endl;
                     SDL_JoystickClose(joystick);
                 }
                 else {
-                    printf("Joystick index %d not attached\n", i);
+                    std::cerr << "Joystick at index " << i << " not attached" << std::endl;
                 }
             }
 
@@ -577,20 +551,21 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             }
 
             if (cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->joystick) {
-                printf("Joysticks are enabled\n");
-                printf("Name: %s\n", SDL_JoystickNameForIndex(cs->settings->gamepadBindings.gamepadIndex));
-                printf("Index: %d\n", cs->settings->gamepadBindings.gamepadIndex);
-                printf("Number of buttons: %d\n", SDL_JoystickNumButtons(cs->joystick));
-                printf("Number of axes: %d\n", SDL_JoystickNumAxes(cs->joystick));
-                printf("Number of hats: %d\n", SDL_JoystickNumHats(cs->joystick));
+                std::cerr
+                    << "Joysticks are enabled" << std::endl
+                    << "Name: " << SDL_JoystickNameForIndex(cs->settings->gamepadBindings.gamepadIndex) << std::endl
+                    << "Index: " << cs->settings->gamepadBindings.gamepadIndex << std::endl
+                    << "Buttons: " << SDL_JoystickNumButtons(cs->joystick) << std::endl
+                    << "Axes: " << SDL_JoystickNumAxes(cs->joystick) << std::endl
+                    << "Hats: " << SDL_JoystickNumHats(cs->joystick) << std::endl;
             }
             else {
                 cs->joystick = nullptr;
-                printf("Joysticks are disabled\n");
+                std::cerr << "Joysticks are disabled" << std::endl;
             }
         }
         else {
-            printf("No joysticks are attached\n");
+            std::cerr << "No joysticks are attached" << std::endl;
         }
 
         cs->screen.w = cs->settings->videoScale * 640u;
@@ -720,12 +695,12 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             glUseProgram(0u);
 
             if (SDL_GL_BindTexture(cs->screen.target_tex, NULL, NULL) < 0) {
-                fprintf(stderr, "Failed to bind target_tex.\n");
+                std::cerr << "Failed to bind `target_tex`." << std::endl;
             }
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             if (SDL_GL_UnbindTexture(cs->screen.target_tex) < 0) {
-                fprintf(stderr, "Failed to unbind target_tex.\n");
+                std::cerr << "Failed to unbind `target_tex`." << std::endl;
             }
         }
 #endif
@@ -772,7 +747,7 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
 
         cs->menu->init(cs->menu);
 
-        printf("\nPENTOMINO C: %s\n\n", PENTOMINO_C_REVISION_STRING);
+        std::cerr << "PENTOMINO C: " << PENTOMINO_C_REVISION_STRING << std::endl;
 
         return 0;
     }
@@ -843,7 +818,7 @@ void quit(CoreState *cs)
 
     if(cs->p1game)
     {
-        printf("quit(): Found leftover game struct, attempting ->quit\n");
+        std::cerr << "quit(): Found leftover game struct, attempting ->quit" << std::endl;
         cs->p1game->quit(cs->p1game);
         free(cs->p1game);
         cs->p1game = NULL;
@@ -1031,7 +1006,15 @@ int run(CoreState *cs)
             // FPS to 60 when returning to the menu from a game, so fix that.
             // Though each mode does use its correct FPS.
             double realTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime;
-            printf("real FPS: %f\ngame FPS: %f\n\n", (realTime / timeFromFrames) * (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps), cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
+            std::cerr
+                << "real FPS: " << (realTime / timeFromFrames) * (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0
+                    ? videoFPS
+                    : cs->fps
+                ) << std::endl
+                << "game FPS: " << cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0
+                    ? videoFPS
+                    : cs->fps
+                ) << std::endl;
             if (realTime - fpsTimeFrameStart >= fpsTimeFrameDuration) {
                 timeFromFrames = realTime;
                 fpsTimeFrameStart = realTime;
@@ -1115,12 +1098,12 @@ int run(CoreState *cs)
 
             glActiveTexture(GL_TEXTURE0);
             if (SDL_GL_BindTexture(cs->screen.target_tex, NULL, NULL) < 0) {
-                fprintf(stderr, "Failed to bind target_tex.\n");
+                std::cerr << "Failed to bind `target_tex`." << std::endl;
             }
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4u);
             glUseProgram(0u);
             if (SDL_GL_UnbindTexture(cs->screen.target_tex) < 0) {
-                fprintf(stderr, "Failed to unbind target_tex.\n");
+                std::cerr << "Failed to unbind `target_tex`." << std::endl;
             }
 
             SDL_GL_SwapWindow(cs->screen.window);
@@ -1155,57 +1138,6 @@ int run(CoreState *cs)
         if (!cs->settings->vsync) {
             SDL_Delay(cs->settings->frameDelay);
         }
-
-#if 0
-        {
-            //cs->screenManager->drawScreen();
-        }
-#endif
-        // TODO: Reimplement lag percentage display with the new fixed timestep code.
-#if 0
-        newTime = SDL_GetPerformanceCounter() - newTime;
-        long sleep_ns = framedelay(newTime, cs->fps);
-
-        if(sleep_ns == FRAMEDELAY_ERR)
-            return 1;
-
-        cs->avg_sleep_ms = ((cs->avg_sleep_ms * (long double)(cs->frames)) + ((long double)(sleep_ns) / 1000000.0L)) /
-                           (long double)(cs->frames + 1);
-        cs->frames++;
-
-        if(cs->frames <= RECENT_FRAMES)
-        {
-            cs->avg_sleep_ms_recent_array[cs->frames - 1] = ((long double)(sleep_ns) / 1000000.0L);
-            if(sleep_ns < 0)
-            {
-                // printf("Lag from last frame in microseconds: %ld (%f frames)\n", abs(sleep_ns/1000), fabs((long
-                // double)(sleep_ns)/(1000000000.0L/(long double)(cs->fps))));
-                cs->recent_frame_overload = cs->frames - 1;
-            }
-        }
-        else
-        {
-            cs->avg_sleep_ms_recent_array[(cs->frames - 1) % RECENT_FRAMES] = ((long double)(sleep_ns) / 1000000.0L);
-            if(sleep_ns < 0)
-            {
-                // printf("Lag from last frame in microseconds: %ld (%f frames)\n", abs(sleep_ns/1000), fabs((long
-                // double)(sleep_ns)/(1000000000.0L/(long double)(cs->fps))));
-                cs->recent_frame_overload = (cs->frames - 1) % RECENT_FRAMES;
-            }
-            else if(cs->recent_frame_overload == (cs->frames - 1) % RECENT_FRAMES)
-                cs->recent_frame_overload = -1;
-        }
-
-        cs->avg_sleep_ms_recent = 0;
-        for(int i = 0; i < RECENT_FRAMES; i++)
-        {
-            cs->avg_sleep_ms_recent += cs->avg_sleep_ms_recent_array[i];
-        }
-
-        cs->avg_sleep_ms_recent /= (cs->frames < RECENT_FRAMES ? cs->frames : RECENT_FRAMES);
-
-        // printf("Frame elapsed.\n");
-#endif
     }
 
     if (procStatus != 2)
@@ -1294,10 +1226,6 @@ int process_events(CoreState *cs, GuiWindow& window)
 
     while(SDL_PollEvent(&event))
     {
-        // window.handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y} );
-        //printf("Handling SDL event\n");
-        //cs->screenManager->handleSDLEvent(event, {cs->logical_mouse_x, cs->logical_mouse_y});
-
         switch (event.type) {
             case SDL_QUIT:
                 return 1;
@@ -1945,7 +1873,7 @@ int procgame(game_t *g, int input_enabled)
     }
 
     benchmark = SDL_GetPerformanceCounter() - benchmark;
-    //   printf("%fms\n", (double)(benchmark) * 1000 / (double)SDL_GetPerformanceFrequency());
+//     std::cerr << (double) (benchmark) * 1000 / (double) SDL_GetPerformanceFrequency() << " ms" << std::endl;
 
     return 0;
 }

@@ -1,9 +1,9 @@
 #include "Settings.h"
 #include <array>
 #include <cstdint>
-#include <cstdio>
 #include <cinttypes>
 #include <filesystem>
+#include <iostream>
 static std::array<std::string, 10> keyBindingNames = {
     "LEFT",
     "RIGHT",
@@ -61,7 +61,7 @@ bool Shiro::KeyBindings::read(PDINI::INI& ini, const std::string sectionName) {
     for (const auto& keyBindingName : keyBindingNames) {
         std::string keyName;
         if (!ini.get(sectionName, keyBindingName, keyName) || SDL_GetKeyFromName(keyName.c_str()) == SDLK_UNKNOWN) {
-            fprintf(stderr, "Binding for %s is invalid\n", keyBindingName.c_str());
+            std::cerr << "Binding for " << keyBindingName << " is invalid." << std::endl;
             defaultUsed = true;
         }
         else {
@@ -195,10 +195,10 @@ bool Shiro::Settings::read(std::string filename) {
     PDINI::INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
-        fprintf(stderr, "Error reading configuation INI \"%s\" on line %zu\n", filename.c_str(), readStatus.second);
+        std::cerr << "Error reading configuation INI \"" << filename << "\" on line " << readStatus.second << std::endl;
     }
     if (!readStatus.first) {
-        fprintf(stderr, "Failed opening configuration INI \"%s\"\n", filename.c_str());
+        std::cerr << "Failed opening configuration INI \"" << filename << "\"." << std::endl;
         return true;
     }
 

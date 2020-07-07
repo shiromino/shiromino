@@ -12,10 +12,10 @@
 #include "Timer.hpp"
 #include <cmath>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <SDL.h>
 #include <string>
 // clang-format off
@@ -449,7 +449,7 @@ static void play_or_halt_music(qrsdata *q, CoreState *cs, Shiro::Music** tracks,
         return;
 
     q->music = desired_music;
-    printf("music: %d\n", q->music);
+    std::cerr << "Music: " << q->music << std::endl;
     if(desired_music == -1)
         Mix_HaltMusic();
     else
@@ -955,7 +955,7 @@ int qs_game_init(game_t *g)
         q->randomizer_seed = *(qrand->seedp);
     }
 
-    printf("Random seed: %ld\n", q->randomizer_seed);
+    std::cerr << "Random seed: " << q->randomizer_seed << std::endl;
 
     if(qrand)
     {
@@ -1540,7 +1540,7 @@ int qs_game_frame(game_t *g)
     {
         qs_process_fall(g);
         (*s) &= ~PSSPAWN;
-        // printf("First piece\n");
+        std::cerr << "First piece" << std::endl;
     }
     else
     {
@@ -3448,9 +3448,12 @@ int qs_get_usrseq_elem(pracdata *d, std::size_t index)
             val = USRSEQ_ELEM_OOB;
     }
 
-    // printf("Expanded sequence:");
-    // for(i = 0; i < expand_count; i++) { printf(" %d", expand[i]); }
-    // printf("\n");
+//     std::cerr << "Expanded sequence:" << std::endl;
+//     for (i = 0; i < expand_count; i++) {
+//         std::cerr << " " << expand[i];
+//         
+//     }
+//     std::cerr << std::endl;
 
     // updating the pracdata's expanded sequence field so we don't have to waste time expanding it later unless it changes
     for(i = 0; i < expand_count; i++)
@@ -3517,7 +3520,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
         if(gems_in_field == false)
         {
-            printf("No gems left, terminating.\n");
+            std::cerr << "No gems left, terminating." << std::endl;
             return QSGAME_SHOULD_TERMINATE;
         }
     }
@@ -3564,7 +3567,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if (t != PIECE_ID_INVALID) {
         q->previews.push_back(q->piecepool[t]);
     }
-    // printf("New piecedef to deal out: %lx with ID %d\n", &q->previews[3], t);
+//     std::cerr << "New piece definition to deal out: " << &q->previews[3] << " with ID " << t << std::endl;
 
     if(q->state_flags & GAMESTATE_BRACKETS)
     {

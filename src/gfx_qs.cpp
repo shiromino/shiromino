@@ -784,7 +784,9 @@ int gfx_drawqs(game_t *g)
                 for(int j = q->p1->num_olds - 1; j >= 0; j--)
                 {
                     gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, old_piece_xs[j], old_piece_ys[j], 0xFFFFFF00 + (0xC0 / (j + 1)) );
-                    //if(g->frame_counter % 60 == 0) printf("Old piece x #%d: %d\n", j, q->p1->old_xs[j]);
+//                     if (g->frame_counter % 60 == 0) {
+//                        std::cerr << "Old piece x # " << j << ": " << q->p1->old_xs[j] << std::endl;
+//                     }
                 }
             }
 

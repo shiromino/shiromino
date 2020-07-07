@@ -4,8 +4,8 @@
 #include "Player.h"
 #include <cinttypes>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
+#include <iostream>
 #include <sqlite3.h>
 #define check_bind(db, bind_call) check((bind_call) == SQLITE_OK, "Could not bind parameter value: %s", sqlite3_errmsg((db)))
 
@@ -53,7 +53,7 @@ void scoredb_init(Shiro::RecordList *records, const char *filename)
         ret = sqlite3_exec(records->db, createTableSql, NULL, NULL, NULL);
         check(ret == 0, "Could not create scores table");
 
-        printf("Opened scoredb %s\n", filename);
+        std::cerr << "Opened record list \"" << filename << "\"" << std::endl;
 
         // TODO: Create a view with human-readable data
     }
@@ -100,7 +100,7 @@ void scoredb_create_player(Shiro::RecordList *records, Shiro::Player *out_player
         int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(records->db));
 
-        printf("Player \"%s\" is in players table\n", playerName);
+        std::cerr << "Player \"" << playerName << "\" is in players table" << std::endl;
 
         sqlite3_finalize(sql);
 
@@ -181,7 +181,7 @@ void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(records->db));
 
-        printf("Wrote replay (%zu): %s\n", replayLen, replayDescriptor.c_str());
+        std::cerr << "Wrote replay " << replayLen << ": " << replayDescriptor << std::endl;
     }
     catch (const std::logic_error& error) {
     }

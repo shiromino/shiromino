@@ -8,8 +8,8 @@
 #include "stringtools.hpp"
 #include "Timer.hpp"
 #include <cmath>
-#include <cstdio>
 #include <filesystem>
+#include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
@@ -328,8 +328,9 @@ int gfx_drawanimations(CoreState *cs, int type)
 
         int framenum = a.counter / a.frame_multiplier;
         t = a.first_frame[framenum].tex;
-        if(!t)
-            printf("NULL texture on frame %d\n", framenum);
+        if (!t) {
+            std::cerr << "NULL texture on frame " << framenum << std::endl;
+        }
 
         dest.x = a.x;
         dest.y = a.y;

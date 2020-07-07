@@ -5,7 +5,7 @@
 #include "CoreState.h"
 #include "Debug.hpp"
 #include "random.h"
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -14,18 +14,12 @@
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
 #endif
-bool file_exists(const char *filename)
-{
-    struct stat buffer = {};
-    return stat(filename, &buffer) == 0;
-}
-
 // When building with GCC on Windows, this fixes the error where WinMain is
 // undefined.
 #ifdef main
 #undef main
 #endif
-int main(int argc, char** argv) {
+int main(int argc, const char* argv[]) {
     bool luaModes = false;
     bool running = true;
 
@@ -63,13 +57,13 @@ int main(int argc, char** argv) {
             // TODO: Use an argument handler library here, rather than hard-coded
             // logic.
             if (argc == 1) {
-                if (!file_exists(iniFilename.c_str())) {
-                    log_err("Couldn't find configuration file, aborting\n");
+                if (!std::filesystem::exists(iniFilename)) {
+                    std::cerr << "Couldn't find configuration file, aborting" << std::endl;
                     goto error;
                 }
 
                 if (settings->read(iniFilename)) {
-                    printf("Using one or more default settings\n");
+                    std::cerr << "Using one or more default settings" << std::endl;
                 }
 
                 iniFilename = currentWorkingDirectory + slash + iniFilename;
@@ -78,27 +72,27 @@ int main(int argc, char** argv) {
             }
             else if (argc >= 2) {
                 if (strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-                    printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
+                    std::cerr << "Usage: " << argv[0] << " [path to *.ini configuration file]" << std::endl;
                     CoreState_destroy(&cs);
                     return 0;
                 }
                 else if (strlen(argv[1]) >= 4 && strcmp(&argv[1][strlen(argv[1]) - 4], ".ini") != 0) {
-                    printf("Usage: %s [path to *.ini configuration file]\n", argv[0]);
+                    std::cerr << "Usage: " << argv[0] << " [path to *.ini configuration file]" << std::endl;
                     goto error;
                 }
 
                 if (settings->read(argv[1])) {
-                    printf("Using one or more default settings\n");
+                    std::cerr << "Using one or more default settings" << std::endl;
                 }
 
                 cs.iniFilename = (char*)malloc(strlen(argv[1]) + 1);
                 strcpy(cs.iniFilename, argv[1]);
             }
 
-            printf("Finished reading configuration file: %s\n", cs.iniFilename);
+            std::cerr << "Finished reading configuration file: " << cs.iniFilename << std::endl;
 
             if (init(&cs, settings, argv[0])) {
-                printf("Initialization failed, aborting.\n");
+                std::cerr << "Initialization failed, aborting." << std::endl;
                 quit(&cs);
                 CoreState_destroy(&cs);
                 return 1;
@@ -111,7 +105,7 @@ int main(int argc, char** argv) {
                 CoreState_destroy(&cs);
 
                 if (status == 2) {
-                    printf("Opening Lua modes menu.\n");
+                    std::cerr << "Opening Lua modes menu." << std::endl;
                     luaModes = true;
                     continue;
                 }

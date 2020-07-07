@@ -15,9 +15,9 @@
 #include "qrs.h"
 #include "RefreshRates.h"
 #include "replay.h"
-#include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label)
 {
     struct menu_opt m = menu_opt_create(MENU_GAME_MULTIOPT, NULL, label);
@@ -535,11 +535,13 @@ game_t *menu_create(CoreState *cs)
 
 int menu_init(game_t *g)
 {
-    if(!g)
+    if (!g) {
         return -1;
+    }
 
-    if(mload_main(g, 0))
-        printf("Failed to load main menu\n");
+    if (mload_main(g, 0)) {
+        std::cerr << "Failed to load main menu" << std::endl;
+    }
 
     menudata *d = (menudata *)g->data;
 
@@ -814,7 +816,7 @@ int menu_input(game_t *g)
                     int quitStatus = d1->action(g, d1->val);
                     if(quitStatus == 1)
                     {
-                        printf("Received quit signal, shutting down.\n");
+                        std::cerr << "Received quit signal, shutting down." << std::endl;
                         return 1;
                     }
                     else if (quitStatus == 2) {
