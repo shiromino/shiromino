@@ -4,7 +4,7 @@
 #include "GameType.h"
 #include "gfx.h"
 #include "gfx_qs.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include "stringtools.h"
 #include "random.h"
 #include "Timer.h"

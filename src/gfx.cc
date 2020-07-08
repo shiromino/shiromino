@@ -4,7 +4,7 @@
 #include "gfx_structures.h"
 #include "Grid.h"
 #include "PieceDefinition.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include "stringtools.h"
 #include "Timer.h"
 #include <cmath>

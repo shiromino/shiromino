@@ -1,5 +1,5 @@
 #include "random.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>

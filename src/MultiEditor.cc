@@ -1,6 +1,6 @@
 #include "MultiEditor.h"
 #include "SGUIL/SGUIL.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include <string>
 
 #define SUBSET_ALL 0

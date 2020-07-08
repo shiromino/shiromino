@@ -93,7 +93,7 @@ set(SOURCES
     src/Mode/BaseMode.cc
     src/MultiEditor.cc
     src/PieceDefinition.cc
-    src/qrs.cc
+    src/QRS.cc
     src/random.cc
     src/RecordList.cc
     src/replay.cc
@@ -144,8 +144,8 @@ set(HEADERS
     src/PieceDefinition.h
     src/Player.h
     src/Player/BasePlayer.h
-    src/qrs.h
-    src/QRS.h
+    src/QRS0.h
+    src/QRS1.h
     src/RecordList.h
     src/random.h
     src/replay.h

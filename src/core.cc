@@ -9,7 +9,7 @@
 #include "GuiGridCanvas.h"
 #include "GuiScreenManager.h"
 #include "Input.h"
-#include "QRS.h"
+#include "QRS1.h"
 #include "RefreshRates.h"
 #include "replay.h"
 #include "SGUIL/SGUIL.h"

@@ -8,7 +8,7 @@
 #include "Grid.h"
 #include "Input.h"
 #include "PieceDefinition.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include "random.h"
 #include "replay.h"
 #include "Timer.h"

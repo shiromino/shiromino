@@ -1,6 +1,6 @@
 #pragma once
 #include "Game.h"
-#include "qrs.h"
+#include "QRS0.h"
 
 #define QS_CURVE_MAX 19
 #define G1_MASTER_CURVE_MAX 30

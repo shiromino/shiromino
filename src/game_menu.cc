@@ -12,7 +12,7 @@
 #include "game_qs.h"
 #include "gfx.h"
 #include "gfx_menu.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include "Menu/ActionOption.h"
 #include "Menu/ElementType.h"
 #include "Menu/GameArguments.h"

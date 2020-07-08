@@ -3,7 +3,7 @@
 #include <vector>
 #include "Grid.h"
 #include "SGUIL/SGUIL.h"
-#include "qrs.h"
+#include "QRS0.h"
 #define USRSEQ_MAX 2000
 #define USRSEQ_EXPAND_MAX 4000
 enum multiEditorButtonID

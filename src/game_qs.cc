@@ -5,7 +5,7 @@
 #include "GameType.h"
 #include "gfx.h"
 #include "gfx_qs.h"
-#include "qrs.h"
+#include "QRS0.h"
 #include "Menu/ElementType.h"
 #include "Menu/TextOption.h"
 #include "random.h"

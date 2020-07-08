@@ -1,5 +1,5 @@
 #pragma once
-#include "QRS.h"
+#include "QRS1.h"
 #include "SPM_Spec.h"
 #include <cstdint>
 typedef uint64_t SPM_randomSeed;
