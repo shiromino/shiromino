@@ -6,7 +6,7 @@
 #include "Menu/MultiOption.h"
 #include "Menu/TextOption.h"
 #include "Menu/ToggleOption.h"
-#include "MenuOption.h"
+#include "Option.h"
 #include "CoreState.h"
 #include "gfx.h"
 #include "QRS0.h"

@@ -20,6 +20,7 @@
 #include "Menu/GameOption.h"
 #include "Menu/MetaGameOption.h"
 #include "Menu/MultiOption.h"
+#include "Menu/Option.h"
 #include "Menu/TextOption.h"
 #include "Menu/ToggleOption.h"
 #include "RefreshRates.h"

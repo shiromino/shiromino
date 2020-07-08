@@ -5,9 +5,9 @@
 #include "Menu/ElementType.h"
 #include "Menu/GameMultiOption.h"
 #include "Menu/MultiOption.h"
+#include "Menu/Option.h"
 #include "Menu/TextOption.h"
 #include "Menu/ToggleOption.h"
-#include "MenuOption.h"
 #include <cstdlib>
 #include <iostream>
 #include <SDL.h>

@@ -89,7 +89,7 @@ set(SOURCES
     src/GuiGridCanvas.cc
     src/GuiScreenManager.cc
     src/main.cc
-    src/MenuOption.cc
+    src/Menu/Option.cc
     src/Mode/BaseMode.cc
     src/MultiEditor.cc
     src/PieceDefinition.cc
@@ -135,9 +135,9 @@ set(HEADERS
     src/Menu/GameOption.h
     src/Menu/MetaGameOption.h
     src/Menu/MultiOption.h
+    src/Menu/Option.h
     src/Menu/TextOption.h
     src/Menu/ToggleOption.h
-    src/MenuOption.h
     src/Mode/BaseMode.h
     src/MultiEditor.h
     src/music.h
