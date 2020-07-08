@@ -1,16 +1,14 @@
 #include "SGUIL.hpp"
-#include "SDL.h"
-#include "SDL_image.h"
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <SDL.h>
+#include <SDL_image.h>
 #include <sstream>
-
 SDL_Renderer *Gui_SDL_Renderer = NULL;
 SDL_Texture *Gui_ThemeTexture = NULL;
-
 bool Gui_Init(SDL_Renderer *theRenderer, const char *themePath)
 {
     if(theRenderer != NULL)

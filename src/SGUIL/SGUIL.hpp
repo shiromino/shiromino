@@ -1,44 +1,33 @@
 /*
     SGUIL - Simple GUI Layer version 0.1.0 for SDL2 >=2.0.5
 */
-
-#ifndef _SGUIL_hpp
-#define _SGUIL_hpp
-
+#pragma once
 #define SGUIL_VERSION_STR "0.1.2"
-
-#include <cstdint>
-#include <cstddef>
-#include <cassert>
-#include <utility>
-#include <memory>
-#include <functional>
 #include <algorithm>
-#include <string>
-#include <vector>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <list>
-#include "SDL.h"
-
+#include <memory>
+#include <SDL.h>
+#include <string>
+#include <utility>
+#include <vector>
 #define GUI_TEXT_ALIGN_CENTER   0x0002
 #define GUI_TEXT_OUTLINE        0x0004
 #define GUI_TEXT_SHADOW         0x0008
 #define GUI_TEXT_HIGHLIGHT      0x0010
 #define GUI_TEXT_ALIGN_RIGHT    0x0020
-
 #define GUI_RGBA_DEFAULT            0xFFFFFFFF
 #define GUI_RGBA_OUTLINE_DEFAULT    0x000000FF
-
 #define GUI_WINDOW_CALLBACK_NONE    NULL
-
 typedef unsigned char byte_t;
 typedef uint32_t rgba_t;
 typedef int optionID_t;
-
 extern SDL_Renderer *Gui_SDL_Renderer;
 extern SDL_Texture *Gui_ThemeTexture;
-
 bool Gui_Init(SDL_Renderer *, const char *);
-
 struct BitFont
 // sheets should be 32w x 4h characters in dimensions
 {
@@ -802,5 +791,3 @@ void Gui_DrawText_PV(std::string, TextFormat *, BitFont&, std::vector<std::pair<
 void Gui_DrawTextPartial_PV(std::string, unsigned int, unsigned int, TextFormat *, BitFont&, std::vector<std::pair<int, int>>&, unsigned int, unsigned int);
 void Gui_DrawText(std::string, TextFormat *, BitFont&, SDL_Rect&);
 void Gui_DrawTextPartial(std::string, unsigned int, unsigned int, TextFormat *, BitFont&, SDL_Rect&);
-
-#endif
