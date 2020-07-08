@@ -1,5 +1,5 @@
-#include "MultiEditor.hpp"
-#include "SGUIL/SGUIL.hpp"
+#include "MultiEditor.h"
+#include "SGUIL/SGUIL.h"
 #include "qrs.h"
 #include <string>
 

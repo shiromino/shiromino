@@ -3,9 +3,9 @@
 #include <iostream>
 #include <string>
 #include "SDL.h"
-#include "SGUIL/SGUIL.hpp"
+#include "SGUIL/SGUIL.h"
 
-#include "Grid.hpp"
+#include "Grid.h"
 
 struct paletteMapEntry
 {

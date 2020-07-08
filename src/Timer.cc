@@ -1,4 +1,4 @@
-#include "Timer.hpp"
+#include "Timer.h"
 #include <cstdint>
 namespace Shiro {
     Timer::Timer() : fps(60.0), time(0) {}

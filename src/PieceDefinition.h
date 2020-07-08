@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Grid.hpp"
+#include "Grid.h"
 #include <bitset>
 #include <array>
 #include <cstdint>

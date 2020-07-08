@@ -1,10 +1,10 @@
 #pragma once
 #include <cstdint>
 #include <vector>
-#include "SGUIL/SGUIL.hpp"
-#include "Grid.hpp"
+#include "SGUIL/SGUIL.h"
+#include "Grid.h"
 #include "random.h"
-#include "RotationTables.hpp"
+#include "RotationTables.h"
 
 #define SPM_SUBUNIT_SCALE 65536
 

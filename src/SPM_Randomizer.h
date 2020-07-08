@@ -1,13 +1,8 @@
-#ifndef _spm_randomizer_hpp
-#define _spm_randomizer_hpp
-
+#pragma once
+#include "QRS.h"
+#include "SPM_Spec.h"
 #include <cstdint>
-
-#include "SPM_Spec.hpp"
-#include "QRS.hpp"
-
 typedef uint64_t SPM_randomSeed;
-
 SPM_minoID arsToQrsID(SPM_minoID t);
 void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t);
 SPM_minoID history_pop(SPM_minoID *history);
@@ -202,5 +197,3 @@ protected:
     SPM_minoID bag[35];
     int histogram[7];
 };
-
-#endif

@@ -1,6 +1,6 @@
 #pragma once
-#include "RotationTables.hpp"
-#include "SPM_Spec.hpp"
+#include "RotationTables.h"
+#include "SPM_Spec.h"
 #include <cstdint>
 #include <vector>
 // IJLXSZNGUTFaFbPQWYaYbV I4T4J4L4OS4Z4 - felicity's arbitrary pentomino+tetromino ordering

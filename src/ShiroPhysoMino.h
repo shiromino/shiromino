@@ -1,9 +1,9 @@
 #pragma once
 #include "Game.h"
 #include "replay.h"
-#include "SGUIL/SGUIL.hpp"
-#include "SPM_Spec.hpp"
-#include "SPM_Randomizer.hpp"
+#include "SGUIL/SGUIL.h"
+#include "SPM_Spec.h"
+#include "SPM_Randomizer.h"
 #include <memory>
 #include <vector>
 class ShiroPhysoMino : public Game {

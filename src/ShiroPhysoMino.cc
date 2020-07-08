@@ -1,8 +1,8 @@
-#include "ShiroPhysoMino.hpp"
+#include "ShiroPhysoMino.h"
 #include "CoreState.h"
-#include "SGUIL/SGUIL.hpp"
-#include "SPM_Spec.hpp"
-#include "SPM_Randomizer.hpp"
+#include "SGUIL/SGUIL.h"
+#include "SPM_Spec.h"
+#include "SPM_Randomizer.h"
 #include <iostream>
 #include <memory>
 #include <vector>

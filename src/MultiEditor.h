@@ -1,16 +1,11 @@
-#ifndef _multieditor_hpp
-#define _multieditor_hpp
-
+#pragma once
 #include <string>
 #include <vector>
-
-#include "SGUIL/SGUIL.hpp"
-#include "Grid.hpp"
+#include "Grid.h"
+#include "SGUIL/SGUIL.h"
 #include "qrs.h"
-
 #define USRSEQ_MAX 2000
 #define USRSEQ_EXPAND_MAX 4000
-
 enum multiEditorButtonID
 {
     return_button_id,
@@ -97,8 +92,4 @@ public:
 
     long randomizer_seed;
 };
-
 //GuiScreen *loadEditorScreen(GuiScreenManager *mngr);
-
-
-#endif // _multieditor_hpp

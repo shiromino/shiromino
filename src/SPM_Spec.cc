@@ -1,4 +1,4 @@
-#include "SPM_Spec.hpp"
+#include "SPM_Spec.h"
 #include <iostream>
 #include <vector>
 bool SPM_Spec::checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino) {

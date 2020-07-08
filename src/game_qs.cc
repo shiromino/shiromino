@@ -1,4 +1,4 @@
-#include "Debug.hpp"
+#include "Debug.h"
 #include "CoreState.h"
 #include "game_menu.h"
 #include "game_qs.h"
@@ -11,7 +11,7 @@
 #include "random.h"
 #include "RefreshRates.h"
 #include "replay.h"
-#include "Timer.hpp"
+#include "Timer.h"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>

@@ -1,9 +1,9 @@
 #pragma once
 #include "Game.h"
 #include "GameType.h"
-#include "Grid.hpp"
+#include "Grid.h"
 #include "PieceDefinition.h"
-#include "Timer.hpp"
+#include "Timer.h"
 #include <array>
 #include <cstdint>
 #include <fstream>

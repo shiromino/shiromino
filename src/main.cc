@@ -3,7 +3,7 @@
    data structures
 */
 #include "CoreState.h"
-#include "Debug.hpp"
+#include "Debug.h"
 #include "random.h"
 #include <iostream>
 #include <stdlib.h>

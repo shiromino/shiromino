@@ -1,4 +1,4 @@
-#include "RotationTables.hpp"
+#include "RotationTables.h"
 #define O true
 #define _ false
 const std::array<std::array<std::array<std::array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =

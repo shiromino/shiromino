@@ -2,11 +2,11 @@
 #include "game_qs.h"
 #include "gfx.h"
 #include "gfx_structures.h"
-#include "Grid.hpp"
+#include "Grid.h"
 #include "PieceDefinition.h"
 #include "qrs.h"
-#include "stringtools.hpp"
-#include "Timer.hpp"
+#include "stringtools.h"
+#include "Timer.h"
 #include <cmath>
 #include <filesystem>
 #include <iostream>

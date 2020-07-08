@@ -1,5 +1,5 @@
 #pragma once
-#include "SGUIL/SGUIL.hpp"
+#include "SGUIL/SGUIL.h"
 #include <functional>
 #include <map>
 #include <SDL.h>

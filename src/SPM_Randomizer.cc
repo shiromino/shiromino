@@ -1,6 +1,6 @@
-#include "SPM_Randomizer.hpp"
+#include "SPM_Randomizer.h"
 
-#include "SPM_Spec.hpp"
+#include "SPM_Spec.h"
 
 SPM_minoID arsToQrsID(SPM_minoID t)
 {

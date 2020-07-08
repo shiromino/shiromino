@@ -5,14 +5,14 @@
 #include "gfx.h"       // questionable dependency
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"
-#include "Grid.hpp"
+#include "Grid.h"
 #include "Input.h"
 #include "PieceDefinition.h"
 #include "qrs.h"
 #include "random.h"
 #include "replay.h"
-#include "Timer.hpp"
-#include "RotationTables.hpp"
+#include "Timer.h"
+#include "RotationTables.h"
 #include <SDL.h>
 #include <cstdint>
 #include <cstdlib>

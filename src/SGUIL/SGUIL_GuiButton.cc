@@ -8,7 +8,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
-#include "SGUIL.hpp"
+#include "SGUIL.h"
 
 GuiButton::GuiButton(int ID, SDL_Rect relativeDestRect, std::string displayString, BitFont& font)
     : font(font)

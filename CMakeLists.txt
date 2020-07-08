@@ -65,10 +65,10 @@ else()
 # TODO: Other platforms; macOS for sure.
 endif()
 
-configure_file(include/Config.hpp.in Config.hpp @ONLY)
+configure_file(include/Config.h.in Config.h @ONLY)
 
 if(${OPENGL_INTERPOLATION})
-    set(OPENGL_SOURCES third-party/glad.cpp)
+    set(OPENGL_SOURCES third-party/glad.cc)
     set(OPENGL_HEADERS
         third-party/glad.h
         third-party/khrplatform.h)
@@ -77,56 +77,54 @@ else()
     set(OPENGL_HEADERS "")
 endif()
 set(SOURCES
-    src/Audio.cpp
-    src/core.cpp
-    src/game_menu.cpp
-    src/game_qs.cpp
-    src/gfx_helpers.cpp
-    src/gfx_menu.cpp
-    src/gfx_qs.cpp
-    src/gfx.cpp
-    src/Grid.cpp
-    src/GuiGridCanvas.cpp
-    src/GuiScreenManager.cpp
-    src/main.cpp
+    src/Audio.cc
+    src/core.cc
+    src/game_menu.cc
+    src/game_qs.cc
+    src/gfx_helpers.cc
+    src/gfx_menu.cc
+    src/gfx_qs.cc
+    src/gfx.cc
+    src/Grid.cc
+    src/GuiGridCanvas.cc
+    src/GuiScreenManager.cc
+    src/main.cc
     src/MenuOption.cc
-    src/Mode/BaseMode.cpp
-    src/MultiEditor.cpp
-    src/PieceDefinition.cpp
-    src/qrs.cpp
-    src/random.cpp
-    src/RecordList.cpp
-    src/replay.cpp
-    src/RotationTables.cpp
-    src/Settings.cpp
-    src/ShiroPhysoMino.cpp
-    src/SPM_Randomizer.cpp
-    src/SPM_Spec.cpp
-    src/Timer.cpp
-
-    src/SGUIL/SGUIL_GuiButton.cpp
-    src/SGUIL/SGUIL_GuiTextField.cpp
-    src/SGUIL/SGUIL_GuiWindow.cpp
-    src/SGUIL/SGUIL.cpp
-
+    src/Mode/BaseMode.cc
+    src/MultiEditor.cc
+    src/PieceDefinition.cc
+    src/qrs.cc
+    src/random.cc
+    src/RecordList.cc
+    src/replay.cc
+    src/RotationTables.cc
+    src/Settings.cc
+    src/ShiroPhysoMino.cc
+    src/SPM_Randomizer.cc
+    src/SPM_Spec.cc
+    src/Timer.cc
+    src/SGUIL/SGUIL_GuiButton.cc
+    src/SGUIL/SGUIL_GuiTextField.cc
+    src/SGUIL/SGUIL_GuiWindow.cc
+    src/SGUIL/SGUIL.cc
     ${OPENGL_SOURCES})
 
 set(HEADERS
     src/AssetStore.h
-    src/Audio.hpp
+    src/Audio.h
     src/CoreState.h
-    src/Debug.hpp
+    src/Debug.h
     src/DisplayMode.h
     src/fonts.h
     src/game_menu.h
     src/game_qs.h
     src/gfx.h
-    src/gfx_helpers.hpp
+    src/gfx_helpers.h
     src/gfx_menu.h
     src/gfx_qs.h
     src/gfx_structures.h
-    src/Grid.hpp
-    src/GuiGridCanvas.hpp
+    src/Grid.h
+    src/GuiGridCanvas.h
     src/GuiScreenManager.h
     src/images.h
     src/Input.h
@@ -140,30 +138,28 @@ set(HEADERS
     src/Menu/TextOption.h
     src/Menu/ToggleOption.h
     src/MenuOption.h
-    src/Mode/BaseMode.hpp
-    src/MultiEditor.hpp
+    src/Mode/BaseMode.h
+    src/MultiEditor.h
     src/music.h
     src/PieceDefinition.h
     src/Player.h
-    src/Player/BasePlayer.hpp
+    src/Player/BasePlayer.h
     src/qrs.h
-    src/QRS.hpp
+    src/QRS.h
     src/RecordList.h
     src/random.h
     src/replay.h
     src/RefreshRates.h
-    src/RotationTables.hpp
+    src/RotationTables.h
     src/Settings.h
     src/sfx.h
-    src/ShiroPhysoMino.hpp
-    src/SPM_Randomizer.hpp
-    src/SPM_Spec.hpp
-    src/stringtools.hpp
-    src/TGM.hpp
-    src/Timer.hpp
-
-    src/SGUIL/SGUIL.hpp
-
+    src/ShiroPhysoMino.h
+    src/SPM_Randomizer.h
+    src/SPM_Spec.h
+    src/stringtools.h
+    src/TGM.h
+    src/Timer.h
+    src/SGUIL/SGUIL.h
     ${OPENGL_HEADERS})
 source_group("Header Files" FILES ${HEADERS})
 

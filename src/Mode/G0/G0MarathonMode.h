@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "Modes/BaseMode.hpp"
+#include "Modes/BaseMode.h"
 
 namespace Shiro {
     namespace Mode {

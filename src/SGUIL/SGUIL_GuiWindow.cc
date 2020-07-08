@@ -1,4 +1,4 @@
-#include "SGUIL.hpp"
+#include "SGUIL.h"
 #include <cstdint>
 #include <cstddef>
 #include <fstream>

@@ -1,13 +1,9 @@
-#ifndef _random_h
-#define _random_h
-
+#pragma once
 #include "qrs.h"
 #include <stdbool.h>
 #include <stdint.h>
-
 #define RNGSTATE(STR, SEED) ((uint64_t)(STR[0]) << 56
 #define RNGSTATE_STRLEN 14
-
 //#define RANDOMIZER_INIT_ERROR -1
 
 #define PENTO_READ_RAND_MAX 0x7fff
@@ -201,5 +197,3 @@ piece_id g2_std_randomize(piece_id *history);
 rngstate g2_state_randomize(rngstate s);
 rngstate g2_state_init_randomize(rngstate s);
 */
-
-#endif

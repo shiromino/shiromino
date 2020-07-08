@@ -1,5 +1,5 @@
 #pragma once
-#include "Grid.hpp"
+#include "Grid.h"
 #include "gfx_structures.h"
 typedef struct game game_t;
 struct game {

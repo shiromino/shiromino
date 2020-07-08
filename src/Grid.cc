@@ -1,4 +1,4 @@
-#include "Grid.hpp"
+#include "Grid.h"
 
 Shiro::Grid::Grid() : width(0), height(0) {}
 

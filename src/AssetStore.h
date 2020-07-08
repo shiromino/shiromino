@@ -1,7 +1,7 @@
 #pragma once
-#include "Audio.hpp"
+#include "Audio.h"
 #include "gfx_structures.h"
-#include "SGUIL/SGUIL.hpp"
+#include "SGUIL/SGUIL.h"
 // TODO: Refactor lists of assets with a number appended into arrays.
 namespace Shiro {
     struct AssetStore {

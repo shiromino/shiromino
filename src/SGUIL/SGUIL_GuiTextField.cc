@@ -9,7 +9,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
-#include "SGUIL.hpp"
+#include "SGUIL.h"
 
 #define TEXT_POSITION_NONE 0xFFFFFFFFu
 

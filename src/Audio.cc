@@ -4,9 +4,9 @@
  * Licensed under the MIT license; see the LICENSE-src file at the top level
  * directory for the full text of the license.
  */
-#include "Audio.hpp"
+#include "Audio.h"
 #include "SDL_mixer.h"
-#include "Config.hpp"
+#include "Config.h"
 #include <filesystem>
 namespace Shiro {
     Music::Music() : volume(0.0f), data(nullptr) {

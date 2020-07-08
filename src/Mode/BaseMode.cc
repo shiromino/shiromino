@@ -4,7 +4,7 @@
  * Licensed under the MIT license; see the LICENSE-src file at the top level
  * directory for the full text of the license.
  */
-#include "BaseMode.hpp"
+#include "BaseMode.h"
 #include <cstring>
 namespace Shiro::Mode {
     BaseMode::BaseMode(const int fieldWidth, const int fieldHeight) :

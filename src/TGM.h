@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreState.h"
-#include "SPM_Spec.hpp"
-#include "ShiroPhysoMino.hpp"
+#include "SPM_Spec.h"
+#include "ShiroPhysoMino.h"
 #include <string>
 #include <utility>
 #include <vector>

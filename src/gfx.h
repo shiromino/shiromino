@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreState.h"
-#include "Grid.hpp"
-#include "Timer.hpp"
+#include "Grid.h"
+#include "Timer.h"
 #include "PieceDefinition.h"
 #include "gfx_structures.h"
 #include <cstdlib>

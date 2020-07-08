@@ -5,9 +5,9 @@
 #include "gfx.h"
 #include "gfx_qs.h"
 #include "qrs.h"
-#include "stringtools.hpp"
+#include "stringtools.h"
 #include "random.h"
-#include "Timer.hpp"
+#include "Timer.h"
 #include <SDL.h>
 #include <stdlib.h>
 #include <string>

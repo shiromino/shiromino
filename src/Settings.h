@@ -1,6 +1,6 @@
 #pragma once
-#include "Config.hpp"
-#include "PDINI.hpp"
+#include "Config.h"
+#include "PDINI.h"
 #include <filesystem>
 #include <string>
 #include <SDL.h>

@@ -1,5 +1,5 @@
-#include "GuiGridCanvas.hpp"
-#include "SGUIL/SGUIL.hpp"
+#include "GuiGridCanvas.h"
+#include "SGUIL/SGUIL.h"
 #include <functional>
 #include <memory>
 #include <SDL.h>

@@ -1,5 +1,5 @@
 #include "RecordList.h"
-#include "Debug.hpp"
+#include "Debug.h"
 #include "replay.h"
 #include "Player.h"
 #include <cinttypes>
