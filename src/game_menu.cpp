@@ -13,15 +13,24 @@
 #include "gfx.h"
 #include "gfx_menu.h"
 #include "qrs.h"
+#include "Menu/ActionOption.h"
+#include "Menu/ElementType.h"
+#include "Menu/GameArguments.h"
+#include "Menu/GameMultiOption.h"
+#include "Menu/GameOption.h"
+#include "Menu/MetaGameOption.h"
+#include "Menu/MultiOption.h"
+#include "Menu/TextOption.h"
+#include "Menu/ToggleOption.h"
 #include "RefreshRates.h"
 #include "replay.h"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label)
+Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label)
 {
-    struct menu_opt m = menu_opt_create(MENU_GAME_MULTIOPT, NULL, label);
-    struct game_multiopt_data *d6 = (struct game_multiopt_data *)m.data;
+    Shiro::MenuOption m = Shiro::create_menu_option(Shiro::ElementType::MENU_GAME_MULTIOPT, NULL, label);
+    Shiro::GameMultiOptionData *d6 = (Shiro::GameMultiOptionData *)m.data;
 
     d6->mode = QUINTESSE;
     d6->num = num_sections;
@@ -33,7 +42,7 @@ struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int n
         d6->labels.push_back(ss.str());
     }
 
-    d6->args = (struct game_args *)malloc(num_sections * sizeof(struct game_args));
+    d6->args = (Shiro::GameArguments *)malloc(num_sections * sizeof(Shiro::GameArguments));
     for (int i = 0; i < num_sections; i++) {
         d6->args[i].num = 4;
         d6->args[i].ptrs = (void **)malloc(4 * sizeof(void *));
@@ -51,197 +60,10 @@ struct menu_opt std_game_multiopt_create(CoreState *cs, unsigned int mode, int n
     return m;
 }
 
-// Temporary hack until menu_opt is fully C++'d.
-template<typename opt_data>
-void delete_opt_data(void* data) {
-    delete (opt_data*)data;
-}
-
-struct menu_opt menu_opt_create(int type, int (*value_update_callback)(CoreState *cs), std::string label)
-{
-    struct menu_opt m;
-
-    m.type = type;
-    m.value_update_callback = value_update_callback;
-    m.label = label;
-    m.x = 0;
-    m.y = 0;
-    m.render_update = 1;
-
-    m.label_text_flags = 0;
-    m.value_text_flags = 0;
-    m.label_text_rgba = RGBA_DEFAULT;
-    m.value_text_rgba = RGBA_DEFAULT;
-
-    struct action_opt_data *d1 = NULL;
-    struct multi_opt_data *d2 = NULL;
-    struct toggle_opt_data *d3 = NULL;
-    struct game_opt_data *d4 = NULL;
-    struct metagame_opt_data *d5 = NULL;
-    struct game_multiopt_data *d6 = NULL;
-    struct text_opt_data *d7 = NULL;
-
-    switch(type)
-    {
-        case MENU_LABEL:
-            m.data = NULL;
-            m.deleteData = NULL;
-            break;
-
-        case MENU_ACTION:
-            m.data = (struct action_opt_data*)new action_opt_data;
-            m.deleteData = delete_opt_data<action_opt_data>;
-            d1 = (struct action_opt_data *)m.data;
-            d1->action = NULL;
-            d1->val = 0;
-            break;
-
-        case MENU_MULTIOPT:
-            m.data = (struct multi_opt_data*)new multi_opt_data;
-            m.deleteData = delete_opt_data<multi_opt_data>;
-            d2 = (struct multi_opt_data *)m.data;
-            d2->selection = 0;
-            d2->num = 0;
-            d2->vals = NULL;
-            d2->labels.clear();
-            break;
-
-        case MENU_TEXTINPUT:
-            m.data = (struct text_opt_data*)new text_opt_data;
-            m.deleteData = delete_opt_data<text_opt_data>;
-            d7 = (struct text_opt_data *)m.data;
-            d7->active = 0;
-            d7->position = 0;
-            d7->selection = 0;
-            d7->leftmost_position = 0;
-            d7->visible_chars = 15;
-            d7->text = "";
-            break;
-
-        case MENU_TOGGLE:
-            m.data = (struct toggle_opt_data*)new toggle_opt_data;
-            m.deleteData = delete_opt_data<toggle_opt_data>;
-            d3 = (struct toggle_opt_data *)m.data;
-            d3->param = NULL;
-            d3->labels[0] = "";
-            d3->labels[1] = "";
-            break;
-
-        case MENU_GAME:
-            m.data = (struct game_opt_data*)new game_opt_data;
-            m.deleteData = delete_opt_data<game_opt_data>;
-            d4 = (struct game_opt_data *)m.data;
-            d4->mode = MODE_INVALID;
-            d4->args.num = 0;
-            d4->args.ptrs = NULL;
-            break;
-
-        case MENU_GAME_MULTIOPT:
-            m.data = (game_multiopt_data*)new game_multiopt_data;
-            m.deleteData = delete_opt_data<game_multiopt_data>;
-            d6 = (struct game_multiopt_data *)m.data;
-            d6->mode = MODE_INVALID;
-            d6->num = 0;
-            d6->selection = 0;
-            d6->labels.clear();
-            d6->args = NULL;
-            break;
-
-        case MENU_METAGAME:
-            m.data = (struct metagame_opt_data*)new metagame_opt_data;
-            m.deleteData = delete_opt_data<metagame_opt_data>;
-            d5 = (struct metagame_opt_data *)m.data;
-            d5->mode = MODE_INVALID;
-            d5->submode = MODE_INVALID;
-            d5->num_args = 0;
-            d5->num_subargs = 0;
-            d5->args = NULL;
-            d5->sub_args = NULL;
-            break;
-
-        default:
-            m.data = NULL;
-            m.deleteData = NULL;
-            break;
-    }
-
-    return m;
-}
-
-void menu_opt_destroy(struct menu_opt& m) {
-    struct multi_opt_data *d2 = NULL;
-    struct toggle_opt_data *d3 = NULL;
-    struct game_opt_data *d4 = NULL;
-    struct game_multiopt_data *d6 = NULL;
-
-    int i = 0;
-    int j = 0;
-
-    switch(m.type)
-    {
-        case MENU_LABEL:
-            break;
-
-        case MENU_ACTION:
-            break;
-
-        case MENU_MULTIOPT:
-            d2 = (struct multi_opt_data *)m.data;
-            free(d2->vals);
-            break;
-
-        case MENU_TOGGLE:
-            d3 = (struct toggle_opt_data *)m.data;
-            d3->labels[0] = "";
-            d3->labels[1] = "";
-            break;
-
-        case MENU_GAME:
-            d4 = (struct game_opt_data *)m.data;
-            for(i = 0; i < d4->args.num; i++)
-            {
-                if(d4->args.ptrs[i])
-                    free(d4->args.ptrs[i]);
-            }
-
-            free(d4->args.ptrs);
-            break;
-
-        case MENU_GAME_MULTIOPT:
-            d6 = (struct game_multiopt_data *)m.data;
-            for(i = 0; i < d6->num; i++)
-            {
-                if(d6->args[i].ptrs)
-                {
-                    for(j = 0; j < d6->args[i].num; j++)
-                        free(d6->args[i].ptrs[j]);
-
-                    free(d6->args[i].ptrs);
-                }
-
-                d6->labels[i] = "";
-            }
-
-            free(d6->args);
-            break;
-
-        case MENU_METAGAME: // TODO
-            // d5 = m.data;
-            break;
-
-        default:
-            break;
-    }
-
-    if (m.deleteData != NULL) {
-        m.deleteData(m.data);
-    }
-}
-
 int menu_text_toggle(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -263,7 +85,7 @@ int menu_text_toggle(CoreState *cs)
 int menu_text_insert(CoreState *cs, char *str)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
     std::string& t = d7->text;
 
     if(cs->button_emergency_override)
@@ -310,7 +132,7 @@ int menu_text_insert(CoreState *cs, char *str)
 int menu_text_backspace(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
     std::string& t = d7->text;
 
     if(cs->button_emergency_override)
@@ -340,7 +162,7 @@ int menu_text_backspace(CoreState *cs)
 int menu_text_delete(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
     std::string& t = d7->text;
 
     if(cs->button_emergency_override)
@@ -367,7 +189,7 @@ int menu_text_delete(CoreState *cs)
 int menu_text_seek_left(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
     // string& t = d7->text;
 
     if(cs->button_emergency_override)
@@ -386,7 +208,7 @@ int menu_text_seek_left(CoreState *cs)
 int menu_text_seek_right(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
     std::string& t = d7->text;
 
     if(cs->button_emergency_override)
@@ -405,7 +227,7 @@ int menu_text_seek_right(CoreState *cs)
 int menu_text_seek_home(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -422,7 +244,7 @@ int menu_text_seek_home(CoreState *cs)
 int menu_text_seek_end(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
     std::string& t = d7->text;
 
     if(cs->button_emergency_override)
@@ -442,7 +264,7 @@ int menu_text_seek_end(CoreState *cs)
 int menu_text_select_all(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -455,7 +277,7 @@ int menu_text_select_all(CoreState *cs)
 int menu_text_copy(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -475,7 +297,7 @@ int menu_text_copy(CoreState *cs)
 int menu_text_cut(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
-    struct text_opt_data *d7 = (struct text_opt_data *)d->menu[d->selection].data;
+    Shiro::TextOptionData *d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
 
     if(cs->button_emergency_override)
         return 0;
@@ -571,7 +393,7 @@ int menu_quit(game_t *g)
 
     if (d->menu.size()) {
         for (i = 0; i < d->numopts; i++) {
-            menu_opt_destroy(d->menu[i]);
+            Shiro::destroy_menu_option(d->menu[i]);
         }
     }
 
@@ -590,14 +412,14 @@ int menu_input(game_t *g)
 
     menudata *d = (menudata *)(g->data);
 
-    struct menu_opt *m = NULL;
+    Shiro::MenuOption *m = NULL;
 
-    struct action_opt_data *d1 = NULL;
-    struct multi_opt_data *d2 = NULL;
-    struct toggle_opt_data *d3 = NULL;
-    struct game_opt_data *d4 = NULL;
-    struct metagame_opt_data *d5 = NULL;
-    struct game_multiopt_data *d6 = NULL;
+    Shiro::ActionOptionData *d1 = NULL;
+    Shiro::MultiOptionData *d2 = NULL;
+    Shiro::ToggleOptionData *d3 = NULL;
+    Shiro::GameOptionData *d4 = NULL;
+    Shiro::MetaGameOptionData *d5 = NULL;
+    Shiro::GameMultiOptionData *d6 = NULL;
 
     int i = 0;
     int update = 0;
@@ -621,7 +443,7 @@ int menu_input(game_t *g)
     if(!d->menu.size())
         return 0;
 
-    if(d->menu[d->selection].type != MENU_TEXTINPUT)
+    if(d->menu[d->selection].type != Shiro::ElementType::MENU_TEXTINPUT)
     {
         cs->text_toggle = NULL;
         cs->text_insert = NULL;
@@ -651,13 +473,13 @@ int menu_input(game_t *g)
 
             if(i == -1)
                 i = d->numopts - 1;
-            if(d->menu[i].type != MENU_LABEL)
+            if(d->menu[i].type != Shiro::ElementType::MENU_LABEL)
             {
                 d->selection = i;
                 if(cs->pressed.up == 1) {
                     cs->assets->menu_choose->play(*cs->settings);
                 }
-                if(d->menu[d->selection].type == MENU_TEXTINPUT)
+                if(d->menu[d->selection].type == Shiro::ElementType::MENU_TEXTINPUT)
                 {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -709,18 +531,18 @@ int menu_input(game_t *g)
                 do
                 {
                     i--;
-                } while(d->menu[i].type == MENU_LABEL);
+                } while(d->menu[i].type == Shiro::ElementType::MENU_LABEL);
 
                 break;
             }
 
-            if(d->menu[i].type != MENU_LABEL)
+            if(d->menu[i].type != Shiro::ElementType::MENU_LABEL)
             {
                 d->selection = i;
                 if(cs->pressed.down == 1) {
                     cs->assets->menu_choose->play(*cs->settings);
                 }
-                if(d->menu[d->selection].type == MENU_TEXTINPUT)
+                if(d->menu[d->selection].type == Shiro::ElementType::MENU_TEXTINPUT)
                 {
                     cs->text_toggle = menu_text_toggle;
                     cs->text_insert = menu_text_insert;
@@ -787,7 +609,7 @@ int menu_input(game_t *g)
     else if(d->menu_id == MENU_ID_PRACTICE)
         d->practice_menu_data.selection = d->selection;
 
-    if(d->menu[d->selection].type != MENU_TEXTINPUT)
+    if(d->menu[d->selection].type != Shiro::ElementType::MENU_TEXTINPUT)
     {
         cs->text_toggle = NULL;
         cs->text_insert = NULL;
@@ -806,8 +628,8 @@ int menu_input(game_t *g)
 
     switch(m->type)
     {
-        case MENU_ACTION:
-            d1 = (struct action_opt_data *)d->menu[d->selection].data;
+        case Shiro::ElementType::MENU_ACTION:
+            d1 = (Shiro::ActionOptionData *)d->menu[d->selection].data;
 
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
@@ -829,8 +651,8 @@ int menu_input(game_t *g)
 
             break;
 
-        case MENU_MULTIOPT:
-            d2 = (struct multi_opt_data *)d->menu[d->selection].data;
+        case Shiro::ElementType::MENU_MULTIOPT:
+            d2 = (Shiro::MultiOptionData *)d->menu[d->selection].data;
 
             if(!d->is_paged)
             {
@@ -854,11 +676,11 @@ int menu_input(game_t *g)
 
             break;
 
-        case MENU_TEXTINPUT:
+        case Shiro::ElementType::MENU_TEXTINPUT:
             break;
 
-        case MENU_TOGGLE:
-            d3 = (struct toggle_opt_data *)d->menu[d->selection].data;
+        case Shiro::ElementType::MENU_TOGGLE:
+            d3 = (Shiro::ToggleOptionData *)d->menu[d->selection].data;
 
             if(!d->is_paged)
             {
@@ -872,8 +694,8 @@ int menu_input(game_t *g)
 
             break;
 
-        case MENU_GAME:
-            d4 = (struct game_opt_data *)d->menu[d->selection].data;
+        case Shiro::ElementType::MENU_GAME:
+            d4 = (Shiro::GameOptionData *)d->menu[d->selection].data;
 
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
@@ -916,8 +738,8 @@ int menu_input(game_t *g)
 
             break;
 
-        case MENU_GAME_MULTIOPT:
-            d6 = (struct game_multiopt_data *)d->menu[d->selection].data;
+        case Shiro::ElementType::MENU_GAME_MULTIOPT:
+            d6 = (Shiro::GameMultiOptionData *)d->menu[d->selection].data;
 
             if(!d->is_paged)
             {
@@ -977,8 +799,8 @@ int menu_input(game_t *g)
 
             break;
 
-        case MENU_METAGAME:
-            d5 = (struct metagame_opt_data *)d->menu[d->selection].data;
+        case Shiro::ElementType::MENU_METAGAME:
+            d5 = (Shiro::MetaGameOptionData *)d->menu[d->selection].data;
 
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
@@ -1029,7 +851,7 @@ int menu_clear(game_t *g)
 
     for(i = 0; i < d->numopts; i++)
     {
-        menu_opt_destroy(d->menu[i]);
+        Shiro::destroy_menu_option(d->menu[i]);
     }
 
     d->menu.clear();
@@ -1053,11 +875,10 @@ int mload_main(game_t *g, int val)
 
     CoreState *cs = g->origin;
     menudata *d = (menudata *)(g->data);
-    struct menu_opt *m = NULL;
-    struct action_opt_data *d1 = NULL;
-    struct multi_opt_data *d2 = NULL;
-    //struct game_opt_data *d4 = NULL;
-    struct game_multiopt_data *d6 = NULL;
+    Shiro::MenuOption *m = NULL;
+    Shiro::ActionOptionData *d1 = NULL;
+    Shiro::MultiOptionData *d2 = NULL;
+    Shiro::GameMultiOptionData *d6 = NULL;
     int i = 0;
 
     request_fps(cs, Shiro::RefreshRates::menu);
@@ -1092,11 +913,11 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_PENTOMINO, 12, "PENTOMINO C"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
 
     d6->num++;
     d6->labels.push_back("ACID RAIN");
-    d6->args = (struct game_args *)realloc(d6->args, d6->num * sizeof(struct game_args));
+    d6->args = (Shiro::GameArguments *)realloc(d6->args, d6->num * sizeof(Shiro::GameArguments));
 
     d6->args[d6->num - 1].num = 4;
     d6->args[d6->num - 1].ptrs = (void **)malloc(4 * sizeof(void *));
@@ -1121,7 +942,7 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G1_MASTER, 10, "G1 MASTER"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
     if(d->main_menu_data.selection == 1)
         d6->selection = d->main_menu_data.opt_selection;
     else
@@ -1134,7 +955,7 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G1_20G, 10, "G1 20G"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
     if(d->main_menu_data.selection == 2)
         d6->selection = d->main_menu_data.opt_selection;
     else
@@ -1147,7 +968,7 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_MASTER, 10, "G2 MASTER"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
     if(d->main_menu_data.selection == 3)
         d6->selection = d->main_menu_data.opt_selection;
     else
@@ -1161,7 +982,7 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_DEATH, 10, "G2 DEATH"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
     if(d->main_menu_data.selection == 4)
         d6->selection = d->main_menu_data.opt_selection;
     else
@@ -1175,7 +996,7 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G3_TERROR, 13, "G3 TERROR"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
     if(d->main_menu_data.selection == 5)
         d6->selection = d->main_menu_data.opt_selection;
     else
@@ -1189,7 +1010,7 @@ int mload_main(game_t *g, int val)
 
     d->menu.push_back(std_game_multiopt_create(g->origin, MODE_G2_MASTER | static_cast<int>(Shiro::GameType::BIG_MODE), 10, "BIG MASTER"));
     m = &d->menu.back();
-    d6 = (struct game_multiopt_data *)m->data;
+    d6 = (Shiro::GameMultiOptionData *)m->data;
     if(d->main_menu_data.selection == 6)
         d6->selection = d->main_menu_data.opt_selection;
     else
@@ -1201,30 +1022,30 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0x40FF40FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "MULTI-EDITOR"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "MULTI-EDITOR"));
     m = &d->menu.back();
-    d1 = (struct action_opt_data *)m->data;
+    d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_practice;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 16 * 16;
 
-    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "REPLAY"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "REPLAY"));
     m = &d->menu.back();
-    d1 = (struct action_opt_data *)m->data;
+    d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_replay;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 17 * 16;
 
-    d->menu.push_back(menu_opt_create(MENU_LABEL, NULL, "SETTINGS"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "SETTINGS"));
     m = &d->menu.back();
     m->x = 4 * 16;
     m->y = 20 * 16;
 
-    d->menu.push_back(menu_opt_create(MENU_MULTIOPT, NULL, "MASTER VOLUME"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "MASTER VOLUME"));
     m = &d->menu.back();
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->masterVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
@@ -1243,9 +1064,9 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu.push_back(menu_opt_create(MENU_MULTIOPT, NULL, "SFX VOLUME"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "SFX VOLUME"));
     m = &d->menu.back();
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->sfxVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
@@ -1264,9 +1085,9 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu.push_back(menu_opt_create(MENU_MULTIOPT, NULL, "MUSIC VOLUME"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "MUSIC VOLUME"));
     m = &d->menu.back();
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
     d2->param = &g->origin->settings->musicVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
@@ -1285,23 +1106,23 @@ int mload_main(game_t *g, int val)
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
 
-    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "LUA MODES"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "LUA MODES"));
     m = &d->menu.back();
-    d1 = (struct action_opt_data*)m->data;
+    d1 = (Shiro::ActionOptionData*)m->data;
     d1->action = menu_action_lua_modes;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 26 * 16;
 
-    d->menu.push_back(menu_opt_create(MENU_ACTION, NULL, "QUIT"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "QUIT"));
     m = &d->menu.back();
-    d1 = (struct action_opt_data *)m->data;
+    d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = menu_action_quit;
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 27 * 16;
 
-    d->menu.push_back(menu_opt_create(MENU_LABEL, NULL, "Pentomino C rev 1.3"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "Pentomino C rev 1.3"));
     m = &d->menu.back();
     m->x = 638 - (19 * 15);
     m->y = 2;
@@ -1314,11 +1135,11 @@ int mload_practice(game_t *g, int val)
 {
     CoreState *cs = g->origin;
     menudata *d = (menudata *)(g->data);
-    struct menu_opt *m = NULL;
-    struct action_opt_data *d1 = NULL;
-    struct multi_opt_data *d2 = NULL;
-    struct text_opt_data *d7 = NULL;
-    struct toggle_opt_data *d8 = NULL;
+    Shiro::MenuOption *m = NULL;
+    Shiro::ActionOptionData *d1 = NULL;
+    Shiro::MultiOptionData *d2 = NULL;
+    Shiro::TextOptionData *d7 = NULL;
+    Shiro::ToggleOptionData *d8 = NULL;
     int i = 0;
     int pracdata_mirror_existed = 0;
 
@@ -1367,9 +1188,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[0] = menu_opt_create(MENU_ACTION, NULL, "RETURN");
+    d->menu[0] = Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "RETURN");
     m = &d->menu[0];
-    d1 = (struct action_opt_data *)m->data;
+    d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_main;
     d1->val = 0;
     m->x = 16 * 16;
@@ -1380,9 +1201,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[1] = menu_opt_create(MENU_ACTION, NULL, "PLAY");
+    d->menu[1] = Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "PLAY");
     m = &d->menu[1];
-    d1 = (struct action_opt_data *)m->data;
+    d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = qs_game_pracinit;
     d1->val = 0;
     m->x = 16 * 16;
@@ -1393,9 +1214,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[2] = menu_opt_create(MENU_MULTIOPT, NULL, "GRAVITY");
+    d->menu[2] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "GRAVITY");
     m = &d->menu[2];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 135;
     d2->param = &q->pracdata->usr_timings->grav;
     d2->vals = (int *)malloc(135 * sizeof(int));
@@ -1474,9 +1295,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[3] = menu_opt_create(MENU_MULTIOPT, NULL, "LOCK");
+    d->menu[3] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK");
     m = &d->menu[3];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
     d2->param = &q->pracdata->usr_timings->lock;
     d2->vals = (int *)malloc(101 * sizeof(int));
@@ -1515,9 +1336,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[4] = menu_opt_create(MENU_MULTIOPT, NULL, "ARE");
+    d->menu[4] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "ARE");
     m = &d->menu[4];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->are;
     d2->vals = (int *)malloc(100 * sizeof(int));
@@ -1554,9 +1375,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[5] = menu_opt_create(MENU_MULTIOPT, NULL, "LINE ARE");
+    d->menu[5] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LINE ARE");
     m = &d->menu[5];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineare;
     d2->vals = (int *)malloc(100 * sizeof(int));
@@ -1593,9 +1414,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[6] = menu_opt_create(MENU_MULTIOPT, NULL, "LINE CLEAR");
+    d->menu[6] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LINE CLEAR");
     m = &d->menu[6];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineclear;
     d2->vals = (int *)malloc(100 * sizeof(int));
@@ -1632,9 +1453,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[7] = menu_opt_create(MENU_MULTIOPT, NULL, "DAS");
+    d->menu[7] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "DAS");
     m = &d->menu[7];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 99;
     d2->param = &q->pracdata->usr_timings->das;
     d2->vals = (int *)malloc(99 * sizeof(int));
@@ -1671,9 +1492,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[8] = menu_opt_create(MENU_MULTIOPT, qs_update_pracdata, "WIDTH");
+    d->menu[8] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "WIDTH");
     m = &d->menu[8];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 5;
     d2->param = &q->pracdata->field_w;
     d2->vals = (int *)malloc(5 * sizeof(int));
@@ -1707,9 +1528,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[9] = menu_opt_create(MENU_MULTIOPT, qs_update_pracdata, "GAME TYPE");
+    d->menu[9] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GAME TYPE");
     m = &d->menu[9];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 4;
     // TODO: This will be rewritten in another way.
     // d2->param = &q->pracdata->game_type;
@@ -1763,9 +1584,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[10] = menu_opt_create(MENU_TOGGLE, qs_update_pracdata, "INVISIBLE");
+    d->menu[10] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, qs_update_pracdata, "INVISIBLE");
     m = &d->menu[10];
-    d8 = (struct toggle_opt_data *)m->data;
+    d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->invisible;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
@@ -1780,9 +1601,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[11] = menu_opt_create(MENU_TOGGLE, qs_update_pracdata, "BRACKETS");
+    d->menu[11] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, qs_update_pracdata, "BRACKETS");
     m = &d->menu[11];
-    d8 = (struct toggle_opt_data *)m->data;
+    d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->brackets;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
@@ -1797,9 +1618,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[12] = menu_opt_create(MENU_TOGGLE, NULL, "INFINITE\nFLOORKICKS");
+    d->menu[12] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "INFINITE\nFLOORKICKS");
     m = &d->menu[12];
-    d8 = (struct toggle_opt_data *)m->data;
+    d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->infinite_floorkicks;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
@@ -1815,9 +1636,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[13] = menu_opt_create(MENU_MULTIOPT, NULL, "LOCK PROTECT");
+    d->menu[13] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK PROTECT");
     m = &d->menu[13];
-    d2 = (struct multi_opt_data *)m->data;
+    d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 3;
     d2->param = &q->pracdata->lock_protect;
     d2->vals = (int *)malloc(3 * sizeof(int));
@@ -1853,9 +1674,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[MENU_PRACTICE_NUMOPTS - 1] = menu_opt_create(MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE");
+    d->menu[MENU_PRACTICE_NUMOPTS - 1] = Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE");
     m = &d->menu[MENU_PRACTICE_NUMOPTS - 1];
-    d7 = (struct text_opt_data *)m->data;
+    d7 = (Shiro::TextOptionData *)m->data;
     d7->visible_chars = 16;
     m->x = 16 * 16;
     m->y = 8 * 16 + 15 * 16;
@@ -1897,9 +1718,9 @@ int mload_options(game_t *g, int val)
 int mload_replay(game_t *g, int val)
 {
     menudata *d = (menudata *)(g->data);
-    struct menu_opt *m = NULL;
-    struct action_opt_data *d1 = NULL;
-    struct game_opt_data *d4 = NULL;
+    Shiro::MenuOption *m = NULL;
+    Shiro::ActionOptionData *d1 = NULL;
+    Shiro::GameOptionData *d4 = NULL;
 
     struct replay *r = NULL;
     int replayCount = 0;
@@ -1925,9 +1746,9 @@ int mload_replay(game_t *g, int val)
     {
         d->numopts = replayCount + 1;
         d->menu.resize(d->numopts);
-        d->menu[0] = menu_opt_create(MENU_ACTION, NULL, "RETURN");
+        d->menu[0] = Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "RETURN");
         m = &d->menu[0];
-        d1 = (struct action_opt_data *)m->data;
+        d1 = (Shiro::ActionOptionData *)m->data;
         d1->action = mload_main;
         d1->val = 0;
         m->x = 20;
@@ -1936,12 +1757,12 @@ int mload_replay(game_t *g, int val)
 
         for(int i = 1; i < replayCount + 1; i++)
         {
-            d->menu[i] = menu_opt_create(MENU_GAME, NULL, "");
+            d->menu[i] = Shiro::create_menu_option(Shiro::ElementType::MENU_GAME, NULL, "");
             r = &replaylist[i - 1];
 
             d->menu[i].label = get_replay_descriptor(r);
             m = &d->menu[i];
-            d4 = (struct game_opt_data *)m->data;
+            d4 = (Shiro::GameOptionData *)m->data;
             d4->mode = QUINTESSE;
             d4->args.num = 4;
             d4->args.ptrs = (void **)malloc(4 * sizeof(void *));

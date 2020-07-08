@@ -6,6 +6,8 @@
 #include "gfx.h"
 #include "gfx_qs.h"
 #include "qrs.h"
+#include "Menu/ElementType.h"
+#include "Menu/TextOption.h"
 #include "random.h"
 #include "RefreshRates.h"
 #include "replay.h"
@@ -2812,9 +2814,9 @@ int qs_update_pracdata(CoreState *cs)
 
     // and now for the hackiest check ever to see if we need to update the usr_seq
 
-    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1].type == MENU_TEXTINPUT)
+    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1].type == Shiro::ElementType::MENU_TEXTINPUT)
     {
-        std::string seqStr = ((struct text_opt_data*)(md->menu[md->numopts - 1].data))->text;
+        std::string seqStr = ((Shiro::TextOptionData*)(md->menu[md->numopts - 1].data))->text;
         for(i = 0; i < seqStr.size(); i++)
         {
             c = seqStr[i];

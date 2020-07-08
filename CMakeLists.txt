@@ -89,6 +89,7 @@ set(SOURCES
     src/GuiGridCanvas.cpp
     src/GuiScreenManager.cpp
     src/main.cpp
+    src/MenuOption.cc
     src/Mode/BaseMode.cpp
     src/MultiEditor.cpp
     src/PieceDefinition.cpp
@@ -129,6 +130,16 @@ set(HEADERS
     src/GuiScreenManager.h
     src/images.h
     src/Input.h
+    src/Menu/ActionOption.h
+    src/Menu/ElementType.h
+    src/Menu/GameArguments.h
+    src/Menu/GameMultiOption.h
+    src/Menu/GameOption.h
+    src/Menu/MetaGameOption.h
+    src/Menu/MultiOption.h
+    src/Menu/TextOption.h
+    src/Menu/ToggleOption.h
+    src/MenuOption.h
     src/Mode/BaseMode.hpp
     src/MultiEditor.hpp
     src/music.h
@@ -158,7 +169,7 @@ source_group("Header Files" FILES ${HEADERS})
 
 add_executable(Shiromino ${SOURCES} ${HEADERS})
 
-target_include_directories(Shiromino SYSTEM PUBLIC third-party)
+target_include_directories(Shiromino SYSTEM PUBLIC src third-party)
 
 if(${VCPKG_TOOLCHAIN})
     # For whatever reason, the proper include directory for SQLite3 isn't set when
@@ -192,4 +203,6 @@ target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${INCL
 
 set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 
-target_link_libraries(Shiromino PRIVATE ${LIBRARIES})
+target_link_libraries(Shiromino PRIVATE ${LIBRARIES}
+#     -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error
+)

@@ -2,6 +2,12 @@
 #include "CoreState.h"
 #include "game_menu.h"
 #include "gfx.h"
+#include "Menu/ElementType.h"
+#include "Menu/GameMultiOption.h"
+#include "Menu/MultiOption.h"
+#include "Menu/TextOption.h"
+#include "Menu/ToggleOption.h"
+#include "MenuOption.h"
 #include <cstdlib>
 #include <iostream>
 #include <SDL.h>
@@ -24,11 +30,11 @@ int gfx_drawmenu(game_t *g)
     SDL_Rect baroutlinedest = { 0, 0, 102, 16 };
 
     menudata *d = (menudata *)(g->data);
-    struct menu_opt *m = NULL;
-    struct multi_opt_data *d2 = NULL;
-    struct game_multiopt_data *d3 = NULL;
-    struct text_opt_data *d7 = NULL;
-    struct toggle_opt_data *d8 = NULL;
+    Shiro::MenuOption *m = NULL;
+    Shiro::MultiOptionData *d2 = NULL;
+    Shiro::GameMultiOptionData *d3 = NULL;
+    Shiro::TextOptionData *d7 = NULL;
+    Shiro::ToggleOptionData *d8 = NULL;
 
     std::string textinput_display;
     std::string page_str;
@@ -122,9 +128,9 @@ int gfx_drawmenu(game_t *g)
         free(fmt);
         fmt = NULL;
 
-        if(m->type == MENU_MULTIOPT)
+        if(m->type == Shiro::ElementType::MENU_MULTIOPT)
         {
-            d2 = (struct multi_opt_data *)m->data;
+            d2 = (Shiro::MultiOptionData *)m->data;
             fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
             monofont = monofont_square;
 
@@ -179,9 +185,9 @@ int gfx_drawmenu(game_t *g)
             }
         }
 
-        if(m->type == MENU_GAME_MULTIOPT)
+        if(m->type == Shiro::ElementType::MENU_GAME_MULTIOPT)
         {
-            d3 = (struct game_multiopt_data *)m->data;
+            d3 = (Shiro::GameMultiOptionData *)m->data;
             if(d3->labels.size())
             {
                 if(d3->labels[d3->selection] != "")
@@ -206,9 +212,9 @@ int gfx_drawmenu(game_t *g)
             }
         }
 
-        if(m->type == MENU_TEXTINPUT)
+        if(m->type == Shiro::ElementType::MENU_TEXTINPUT)
         {
-            d7 = (struct text_opt_data *)m->data;
+            d7 = (Shiro::TextOptionData *)m->data;
 
             if(d7->text != "")
             {
@@ -336,9 +342,9 @@ int gfx_drawmenu(game_t *g)
             }
         }
 
-        if(m->type == MENU_TOGGLE)
+        if(m->type == Shiro::ElementType::MENU_TOGGLE)
         {
-            d8 = (struct toggle_opt_data *)m->data;
+            d8 = (Shiro::ToggleOptionData *)m->data;
 
             fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
             monofont = monofont_square;
