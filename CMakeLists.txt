@@ -34,7 +34,7 @@ else()
     find_package(sdl2 REQUIRED)
     find_package(sdl2-image REQUIRED)
     find_package(sdl2-mixer REQUIRED)
-    find_package(sqlite3 REQUIRED)
+    find_package(SQLite3 REQUIRED)
     if(${VCPKG_TOOLCHAIN})
         # When using dynamically linked libraries, Vcpkg doesn't automatically
         # copy over the OGG/Vorbis libraries needed to play OGG files with

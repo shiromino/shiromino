@@ -52,10 +52,10 @@ bool img_load(gfx_image *img, std::filesystem::path&& pathWithoutExtension, Core
     SDL_Surface *s = NULL;
 
     std::filesystem::path& imagePath = pathWithoutExtension.concat(".png");
-    s = IMG_Load(imagePath.c_str());
+    s = IMG_Load(imagePath.string().c_str());
 
     if(!s) {
-        s = IMG_Load(imagePath.replace_extension(".jpg").c_str());
+        s = IMG_Load(imagePath.replace_extension(".jpg").string().c_str());
     }
 
     if(s) {
