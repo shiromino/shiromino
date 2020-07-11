@@ -1,0 +1,4 @@
+# shellcheck shell=bash
+set -eE
+git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+git fetch --prune --unshallow

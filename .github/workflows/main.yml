@@ -1,0 +1,86 @@
+jobs:
+  linux:
+    # TODO: Replace `ubuntu-20.04` with `ubuntu-latest` once GitHub updates the alias.
+    # See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@master
+    - name: Fetch history for all tags
+      run: .github/workflows/fetch-tags
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -yq clang cmake coreutils gcc libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libogg-dev libvorbis-dev libsqlite3-dev
+    - name: Build targets
+      run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
+    strategy:
+      matrix:
+        compiler:
+          - clang++
+          - g++
+        build-type:
+          - Debug
+          - Release
+  mac-os:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Fetch history for all tags
+      run: .github/workflows/fetch-tags
+    - name: Install mac OS dependencies
+      run: brew install bash cmake gcc libogg libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
+    - name: Build targets
+      run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
+    strategy:
+      matrix:
+        compiler:
+          - clang++
+          - g++
+        build-type:
+          - Debug
+          - Release
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Fetch history for all tags
+      run: .github/workflows/fetch-tags
+      shell: bash
+    - name: Run vcpkg
+      uses: lukka/run-vcpkg@v2
+      with:
+        vcpkgArguments: libogg libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+        vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+        vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
+        vcpkgTriplet: x64-windows
+    - name: Build targets
+      uses: lukka/run-cmake@v2
+      with:
+        buildDirectory: ${{ runner.workspace }}/build
+        cmakeBuildType: ${{ matrix.build-type }}
+        useVcpkgToolchainFile: true
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: shiromino-${{ matrix.build-type }}-${{ github.sha }}
+        path: ${{ runner.workspace }}/build/Shiromino.exe
+    - name: Upload DSOs
+      uses: actions/upload-artifact@v2
+      with:
+        name: shiromino-${{ matrix.build-type }}-${{ github.sha }}
+        path: ${{ runner.workspace }}/build/*.dll
+    - name: Filter assets
+      run: find . -maxdepth 1 ! -name audio ! -name gfx ! -name game.ini ! -name 'LICENSE*' ! -name README.md ! -name scores.db -exec rm -r {} \;
+      shell: bash
+    - name: Upload assets
+      uses: actions/upload-artifact@v2
+      with:
+        name: shiromino-${{ matrix.build-type }}-${{ github.sha }}
+        path: ${{ github.workspace }}
+    strategy:
+      matrix:
+        build-type:
+          - Debug
+          - Release
+name: build
+on:
+  - pull_request
+  - push

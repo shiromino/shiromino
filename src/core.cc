@@ -496,23 +496,30 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
         }
 #endif
-        check(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
-              "SDL_Init: Error: %s\n",
-              SDL_GetError());
-        check(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem: Error: %s\n", SDL_GetError());
+        if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+            std::cerr << "SDL_Init: Error: " <<  SDL_GetError() << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) != 0) {
+            std::cerr << "SDL_InitSubSystem: Error: " << SDL_GetError() << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
         if (SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH) != 0) {
             std::cerr << "Failed to set high thread priority; continuing without changing thread priority" << std::endl;
         }
-        check(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG,
-            "IMG_Init: Failed to initialize PNG support: %s\n",
-            IMG_GetError());  // IMG_GetError() not necessarily reliable here
-        check(Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG,
-            "Mix_Init: Failed to initialize OGG support: %s\n",
-            Mix_GetError());
-        check(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != -1, "Mix_OpenAudio: Error\n");
-
+        if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
+            std::cerr << "IMG_Init: Failed to initialize PNG support: " << IMG_GetError() << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG) {
+            std::cerr << "Mix_Init: Failed to initialize OGG support: " <<  Mix_GetError() << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
+            std::cerr <<  "Mix_OpenAudio: Error: " << Mix_GetError() << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
         Mix_AllocateChannels(32);
-
         if (SDL_NumJoysticks()) {
             const int numJoysticks = SDL_NumJoysticks();
             for (int i = 0; i < numJoysticks; i++) {
@@ -525,7 +532,6 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
                     std::cerr << "Joystick at index " << i << " not attached" << std::endl;
                 }
             }
-
             cs->joystick = nullptr;
             if (cs->settings->gamepadBindings.name != "") {
                 const int numJoysticks = SDL_NumJoysticks();
@@ -543,13 +549,11 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
                     }
                 }
             }
-
             if (!cs->joystick && cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->settings->gamepadBindings.gamepadIndex < SDL_NumJoysticks()) {
                 if ((cs->joystick = SDL_JoystickOpen(cs->settings->gamepadBindings.gamepadIndex))) {
                     cs->settings->gamepadBindings.gamepadID = SDL_JoystickInstanceID(cs->joystick);
                 }
             }
-
             if (cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->joystick) {
                 std::cerr
                     << "Joysticks are enabled" << std::endl
@@ -567,13 +571,11 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
         else {
             std::cerr << "No joysticks are attached" << std::endl;
         }
-
         cs->screen.w = cs->settings->videoScale * 640u;
         cs->screen.h = cs->settings->videoScale * 480u;
         unsigned int w = cs->screen.w;
         unsigned int h = cs->screen.h;
         name = cs->screen.name;
-
         Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
 #ifdef OPENGL_INTERPOLATION
         // TODO: Figure out whether OpenGL 2.0 should be used for desktop. Also
@@ -585,7 +587,6 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             windowFlags |= SDL_WINDOW_OPENGL;
         }
 #endif
-
         cs->screen.window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, windowFlags);
         check(cs->screen.window != NULL, "SDL_CreateWindow: Error: %s\n", SDL_GetError());
         cs->screen.renderer =

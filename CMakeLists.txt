@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(Shiromino VERSION 0.1 LANGUAGES CXX)
+set(CMAKE_VERBOSE_MAKEFILE on)
 
 if(${VCPKG_TOOLCHAIN})
     set(VCPKG_CRT_LINKAGE dynamic)
@@ -18,29 +19,31 @@ else()
 endif()
 
 find_package(PkgConfig)
-if(${PKG_CONFIG_FOUND})
+if(${PKG_CONFIG_FOUND} AND NOT MSVC)
     pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
     pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
     pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
     pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
     set(LIBRARIES
+        m
         ${SDL2_LIBRARIES}
         ${SDL2_image_LIBRARIES}
         ${SDL2_mixer_LIBRARIES}
         ${sqlite3_LIBRARIES}
         ${OPENGL_LIBRARY}
-        ${CMAKE_DL_LIBS})
+        ${CMAKE_DL_LIBS}
+    )
 else()
-    find_package(sdl2 REQUIRED)
+    find_package(SDL2 REQUIRED)
     find_package(sdl2-image REQUIRED)
     find_package(sdl2-mixer REQUIRED)
-    find_package(SQLite3 REQUIRED)
+    find_package(sqlite3 REQUIRED)
     if(${VCPKG_TOOLCHAIN})
         # When using dynamically linked libraries, Vcpkg doesn't automatically
         # copy over the OGG/Vorbis libraries needed to play OGG files with
         # SDL_mixer, so they have to be explicitly added as dependencies to
         # Shiromino to work around that bug.
-        find_package(ogg REQUIRED)
+        find_package(Ogg REQUIRED)
         find_library(VORBIS_LIBRARY vorbis)
         find_library(VORBISFILE_LIBRARY vorbisfile)
         set(LIBRARIES
@@ -51,18 +54,19 @@ else()
             ${OPENGL_LIBRARY}
             ${OGG_LIBARIES}
             ${VORBIS_LIBRARY}
-            ${VORBISFILE_LIBRARY})
-
+            ${VORBISFILE_LIBRARY}
+        )
         add_compile_definitions(VCPKG_TOOLCHAIN)
     else()
         set(LIBRARIES
+            m
             SDL2::SDL2 SDL2::SDL2main
             SDL2::SDL2_image
             SDL2::SDL2_mixer
             SQLite::SQLite3
-            ${OPENGL_LIBRARY})
+            ${OPENGL_LIBRARY}
+        )
     endif()
-# TODO: Other platforms; macOS for sure.
 endif()
 
 configure_file(include/Config.h.in Config.h @ONLY)
@@ -107,8 +111,8 @@ set(SOURCES
     src/SGUIL/SGUIL_GuiTextField.cc
     src/SGUIL/SGUIL_GuiWindow.cc
     src/SGUIL/SGUIL.cc
-    ${OPENGL_SOURCES})
-
+    ${OPENGL_SOURCES}
+)
 set(HEADERS
     src/AssetStore.h
     src/Audio.h
@@ -160,13 +164,11 @@ set(HEADERS
     src/TGM.h
     src/Timer.h
     src/SGUIL/SGUIL.h
-    ${OPENGL_HEADERS})
+    ${OPENGL_HEADERS}
+)
 source_group("Header Files" FILES ${HEADERS})
-
 add_executable(Shiromino ${SOURCES} ${HEADERS})
-
 target_include_directories(Shiromino SYSTEM PUBLIC src third-party)
-
 if(${VCPKG_TOOLCHAIN})
     # For whatever reason, the proper include directory for SQLite3 isn't set when
     # using Vcpkg and Visual Studio, so the include directory has to be manually
@@ -199,6 +201,7 @@ target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${INCL
 
 set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 
-target_link_libraries(Shiromino PRIVATE ${LIBRARIES}
+target_link_libraries(Shiromino PRIVATE
+    ${LIBRARIES}
 #     -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error
 )
