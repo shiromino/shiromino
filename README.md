@@ -26,14 +26,14 @@ $ brew install cmake libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
 $ cmake -B build -S . && cmake --build build -j$(sysctl -n hw.ncpu)
 ```
 #### Windows (Visual Studio, x64)
-Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/).
+Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/). You may have to add the `vcpkg` installation directory to your `Path` environment variable to be able to use the command in this fashion. Instead, you can also change into the `vcpkg` installation directory and run the `vcpkg` command there.
 
 ```shell
 $ vcpkg install --triplet x64-windows libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
 $ cmake -B build -S . && cmake --build build -j
 ```
 #### Windows (MSYS2, x64)
-Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/).
+Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/). If during linking, you see errors about the linker not being able to find `-lmingw32`, reboot your computer before trying again. The following commands need to be run in a "MSYS2 MinGW 64-bit" shell.
 
 ```shell
 $ pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{dlfcn,libvorbis,SDL2{,_image,_mixer}} sqlite3
@@ -42,8 +42,10 @@ $ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j$(nproc)
 ## Running
 You can find your compiled executable in `./build/Shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows.
 
-To ensure that the game finds its assets, make sure to use the project root directory as your current working directory when running the game, or use `game.ini` to set `BASE_PATH` accordingly. The easiest way to check if everything worked should be:
+To ensure that the game finds its assets, make sure to use the project root directory as your current working directory when running the game, or use `game.ini` to set `BASE_PATH` accordingly. The easiest way to check if everything works should be:
 
 ```shell
 $ ./build/Shiromino
 ```
+
+Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
