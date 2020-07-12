@@ -1,56 +1,48 @@
-# Shiromino
-
+# shiromino
 ## Building
-Dependencies: Compiler supporting C++17, CMake (version >= 3.10), SDL2,
-SDL2_image, SDL2_mixer, OGG, vorbis, vorbisfile, SQLite3
+The following table displays a set of build options. To enable them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each option that you want to enable in the CMake configuration step (which is the first CMake command you run).
 
-SDL2 2.0.5 is required when not building with optional features. SDL2 2.0.10 is
-required when building with interpolation enabled.
-
-Create a directory to build in somewhere, change to that directory, run `cmake
-<shiromino-source-base-directory>` in the build directory, then build with the
-build tool on your platform (such as `make`). When building on Windows with
-Visual Studio, use [Vcpkg](https://github.com/Microsoft/vcpkg) for installing
-the libraries and use the official [CMake Windows
-distribution](https://cmake.org/download/). You can also build on Windows in an
-[MSYS2](https://www.msys2.org/) environment.
-
-There's a CMake variable, OPENGL_INTERPOLATION, that when set, enables support
-for an interpolated scaling INI option, best when combined with the video
-stretch option; interpolation isn't compiled in by default, and for now
-requires OpenGL 3.3 Core Profile support.
-
-## Building and running on Windows with Visual Studio and Vcpkg
-TODO
-
-## Building and running on Linux or similar command line environments
+For instance, if you wanted to enable the `OPENGL_INTERPOLATION` option, the flag that you would need to provide would be `-DOPENGL_INTERPOLATION=1`.
+### Build options
+| Option                 | Values    | Description                                                                              |
+| ---------------------- | --------- | ---------------------------------------------------------------------------------------- |
+| `OPENGL_INTERPOLATION` | `0`, `1`  | Enables (`1`) or disables (`0`) support for the `INTERPOLATE` option in `game.ini`, which works best when combined with the video stretch option. Note that this option requires SDL2 ≥ 2.0.10 and OpenGL 3.3 Core Profile support.
+### Installing dependencies and compiling
+In order to build this project, you will need a C++17 compiler, CMake (≥ 3.10), SDL2 (≥ 2.0.5), SDL2_image, SDL2_mixer, libvorbis and SQLite3. In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
+#### Linux (Arch-Linux-based)
 ```shell
-# Install packages on Debian-based distributions.
-# GCC 7 or newer (g++-7, g++-8, etc. for Debian) is required, for C++17 language support.
-$ sudo apt install g++-7 cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libogg-dev libvorbis-dev libsqlite3-dev
+$ sudo pacman -S gcc cmake sdl2 sdl2_image sdl2_mixer libvorbis sqlite
+$ cmake -B build -S . && cmake --build build -j$(nproc)
+```
+#### Linux (Debian-based)
+```shell
+$ sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libvorbis-dev libsqlite3-dev
+$ cmake -B build -S . && cmake --build build -j$(nproc)
+```
+#### macOS
+```shell
+$ brew install cmake libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
+$ cmake -B build -S . && cmake --build build -j$(sysctl -n hw.ncpu)
+```
+#### Windows (Visual Studio, x64)
+Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/).
 
-# Install packages on Arch Linux-based (Manjaro, etc.) distributions.
-$ sudo pacman -S gcc cmake sdl2 sdl2_image sdl2_mixer libogg libvorbis sqlite
+```shell
+$ vcpkg install libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+$ cmake -B build -S . && cmake --build build -j
+```
+#### Windows (MSYS2, x64)
+Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/).
 
-# Install packages in a Windows MSYS2 64-bit environment.
-$ pacman -S gcc cmake mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-libogg  mingw-w64-x86_64-libvorbis sqlite3
+```shell
+$ pacman -S gcc cmake mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-libvorbis sqlite3
+$ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j
+```
+## Running
+You can find your compiled executable in `./build/Shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows.
 
-$ cd shiromino
-$ mkdir build
-$ cd build
+To ensure that the game finds its assets, make sure to use the project root directory as your current working directory when running the game, or use `game.ini` to set `BASE_PATH` accordingly. The easiest way to check if everything worked should be:
 
-# Use this for Linux.
-$ cmake ..
-# Enable support for the interpolation option.
-$ cmake -D OPENGL_INTERPOLATION=1 ..
-
-# Use this on Windows with MSYS2.
-$ cmake -G "MSYS Makefiles" ..
-# Enable support for the interpolation option.
-$ cmake -G "MSYS Makefiles" -D OPENGL_INTERPOLATION=1 ..
-
-# Omit -j$(nproc) if your platform doesn't have nproc.
-$ make -j$(nproc)
-$ cd ..
+```shell
 $ ./build/Shiromino
 ```

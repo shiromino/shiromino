@@ -8,7 +8,7 @@ jobs:
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -yq clang cmake coreutils gcc libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libvorbis-dev libsqlite3-dev
+      run: sudo apt-get update && sudo apt-get install -yq build-essential cmake coreutils gcc libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libvorbis-dev libsqlite3-dev
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
     strategy:
