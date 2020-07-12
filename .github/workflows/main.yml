@@ -26,7 +26,7 @@ jobs:
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install mac OS dependencies
-      run: brew install bash cmake gcc libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
+      run: brew install bash cmake gcc libvorbis pkg-config sdl2 sdl2_image sdl2_mixer
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
     strategy:

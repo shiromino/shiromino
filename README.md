@@ -9,7 +9,7 @@ For instance, if you wanted to enable the `OPENGL_INTERPOLATION` option, the fla
 | ---------------------- | --------- | ---------------------------------------------------------------------------------------- |
 | `OPENGL_INTERPOLATION` | `0`, `1`  | Enables (`1`) or disables (`0`) support for the `INTERPOLATE` option in `game.ini`, which works best when combined with the video stretch option. Note that this option requires SDL2 ≥ 2.0.10 and OpenGL 3.3 Core Profile support.
 ### Installing dependencies and compiling
-In order to build this project, you will need a C++17 compiler, CMake (≥ 3.10), SDL2 (≥ 2.0.5), SDL2_image, SDL2_mixer, libvorbis and SQLite3. In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
+In order to build this project, you will need a C++17 compiler, CMake (≥ 3.10), SDL2 (≥ 2.0.5), SDL2_image, SDL2_mixer, libvorbis, and SQLite3. In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 #### Linux (Arch-Linux-based)
 ```shell
 $ sudo pacman -S gcc cmake sdl2 sdl2_image sdl2_mixer libvorbis sqlite
@@ -21,9 +21,15 @@ $ sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-m
 $ cmake -B build -S . && cmake --build build -j$(nproc)
 ```
 #### macOS
+Before running these instructions, make sure to install [Homebrew](https://brew.sh/).
 ```shell
-$ brew install cmake libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
+$ brew install cmake libvorbis pkg-config sdl2 sdl2_image sdl2_mixer
 $ cmake -B build -S . && cmake --build build -j$(sysctl -n hw.ncpu)
+```
+In case you're faced with a package-related error after running the `cmake` command, you're likely using an outdated `brew` and need to update first:
+```shell
+$ brew update
+$ brew upgrade pkg-config
 ```
 #### Windows (Visual Studio, x64)
 Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/). You may have to add the `vcpkg` installation directory to your `Path` environment variable to be able to use the command in this fashion. Instead, you can also change into the `vcpkg` installation directory and run the `vcpkg` command there.
