@@ -1,5 +1,5 @@
 jobs:
-  linux:
+  x64-linux:
     # TODO: Replace `ubuntu-20.04` with `ubuntu-latest` once GitHub updates the alias.
     # See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     runs-on: ubuntu-20.04
@@ -19,7 +19,7 @@ jobs:
         build-type:
           - Debug
           - Release
-  mac-os:
+  x64-mac-os:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@master
@@ -50,22 +50,23 @@ jobs:
         vcpkgArguments: libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
         vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
-        vcpkgTriplet: x64-windows
+        vcpkgTriplet: ${{ matrix.triplet }}
     - name: Build targets
       uses: lukka/run-cmake@v2
       with:
         buildDirectory: ${{ runner.workspace }}/build
+        cmakeAppendedArgs: -A ${{ matrix.cmake-architecture }}
         cmakeBuildType: ${{ matrix.build-type }}
         useVcpkgToolchainFile: true
     - name: Upload binary
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.build-type }}-${{ github.sha }}
+        name: shiromino-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ github.sha }}
         path: ${{ runner.workspace }}/build/Shiromino.exe
     - name: Upload DSOs
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.build-type }}-${{ github.sha }}
+        name: shiromino-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ github.sha }}
         path: ${{ runner.workspace }}/build/*.dll
     - name: Filter assets
       run: find . -maxdepth 1 ! -name audio ! -name gfx ! -name game.ini ! -name 'LICENSE*' ! -name README.md ! -name scores.db -exec rm -r {} \;
@@ -73,13 +74,23 @@ jobs:
     - name: Upload assets
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.build-type }}-${{ github.sha }}
+        name: shiromino-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ github.sha }}
         path: ${{ github.workspace }}
     strategy:
       matrix:
+        triplet:
+          - x64-windows
+          - x86-windows
         build-type:
           - Debug
           - Release
+        include:
+          - architecture: x64
+            cmake-architecture: x64
+            triplet: x64-windows
+          - architecture: x86
+            cmake-architecture: Win32
+            triplet: x86-windows
 name: build
 on:
   - pull_request

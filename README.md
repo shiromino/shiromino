@@ -1,4 +1,5 @@
 # shiromino
+<a href="https://github.com/nightmareci/shiromino/actions" rel="Build status">![build](https://github.com/nightmareci/shiromino/workflows/build/badge.svg)</a>
 ## Building
 The following table displays a set of build options. To enable them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each option that you want to enable in the CMake configuration step (which is the first CMake command you run).
 
@@ -28,7 +29,7 @@ $ cmake -B build -S . && cmake --build build -j$(sysctl -n hw.ncpu)
 Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/).
 
 ```shell
-$ vcpkg install libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+$ vcpkg install --triplet x64-windows libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
 $ cmake -B build -S . && cmake --build build -j
 ```
 #### Windows (MSYS2, x64)
