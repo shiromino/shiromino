@@ -36,8 +36,8 @@ $ cmake -B build -S . && cmake --build build -j
 Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/).
 
 ```shell
-$ pacman -S gcc cmake mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-libvorbis sqlite3
-$ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j
+$ pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{dlfcn,libvorbis,SDL2{,_image,_mixer}} sqlite3
+$ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j$(nproc)
 ```
 ## Running
 You can find your compiled executable in `./build/Shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows.

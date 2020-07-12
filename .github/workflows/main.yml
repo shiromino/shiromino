@@ -37,7 +37,7 @@ jobs:
         build-type:
           - Debug
           - Release
-  windows:
+  windows-visual-studio:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@master
@@ -58,23 +58,27 @@ jobs:
         cmakeAppendedArgs: -A ${{ matrix.cmake-architecture }}
         cmakeBuildType: ${{ matrix.build-type }}
         useVcpkgToolchainFile: true
-    - name: Upload binary
+    - if: matrix.build-type == 'Release'
+      name: Upload executable
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ github.sha }}
+        name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
         path: ${{ runner.workspace }}/build/Shiromino.exe
-    - name: Upload DSOs
+    - if: matrix.build-type == 'Release'
+      name: Upload DSOs
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ github.sha }}
+        name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
         path: ${{ runner.workspace }}/build/*.dll
-    - name: Filter assets
+    - if: matrix.build-type == 'Release'
+      name: Filter assets
       run: find . -maxdepth 1 ! -name audio ! -name gfx ! -name game.ini ! -name 'LICENSE*' ! -name README.md ! -name scores.db -exec rm -r {} \;
       shell: bash
-    - name: Upload assets
+    - if: matrix.build-type == 'Release'
+      name: Upload assets
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ github.sha }}
+        name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
         path: ${{ github.workspace }}
     strategy:
       matrix:
@@ -91,6 +95,27 @@ jobs:
           - architecture: x86
             cmake-architecture: Win32
             triplet: x86-windows
+  x64-windows-msys2:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Fetch history for all tags
+      run: .github/workflows/fetch-tags
+    - uses: msys2/setup-msys2@v1
+    - name: Install dependencies
+      run: pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{clang,dlfcn,libvorbis,SDL2{,_image,_mixer}} sqlite3
+      shell: msys2 {0}
+    - name: Build targets
+      run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
+      shell: msys2 {0}
+    strategy:
+      matrix:
+        build-type:
+          - Debug
+          - Release
+        compiler:
+          - clang++
+          - g++
 name: build
 on:
   - pull_request
