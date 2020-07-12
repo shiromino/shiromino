@@ -1,23 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
-
 project(Shiromino VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_VERBOSE_MAKEFILE on)
-
 if(${VCPKG_TOOLCHAIN})
     set(VCPKG_CRT_LINKAGE dynamic)
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
 if(${OPENGL_INTERPOLATION})
     find_package(OpenGL REQUIRED)
     set(OPENGL_LIBRARY OpenGL::GL)
 else()
     set(OPENGL_LIBRARY "")
 endif()
-
 find_package(PkgConfig)
 if(${PKG_CONFIG_FOUND} AND NOT MSVC)
     pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
@@ -37,7 +32,7 @@ else()
     find_package(SDL2 REQUIRED)
     find_package(sdl2-image REQUIRED)
     find_package(sdl2-mixer REQUIRED)
-    find_package(sqlite3 REQUIRED)
+    find_package(SQLite3 REQUIRED)
     if(${VCPKG_TOOLCHAIN})
         # When using dynamically linked libraries, Vcpkg doesn't automatically
         # copy over the vorbis library needed to play ogg files with SDL_mixer,
@@ -64,9 +59,7 @@ else()
         )
     endif()
 endif()
-
 configure_file(include/Config.h.in Config.h @ONLY)
-
 if(${OPENGL_INTERPOLATION})
     set(OPENGL_SOURCES third-party/glad.cc)
     set(OPENGL_HEADERS
@@ -164,19 +157,14 @@ set(HEADERS
 )
 source_group("Header Files" FILES ${HEADERS})
 add_executable(Shiromino ${SOURCES} ${HEADERS})
+set_property(TARGET Shiromino PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 target_include_directories(Shiromino SYSTEM PUBLIC src third-party)
-if(${VCPKG_TOOLCHAIN})
-    # For whatever reason, the proper include directory for SQLite3 isn't set when
-    # using Vcpkg and Visual Studio, so the include directory has to be manually
-    # added.
-    find_path(INCLUDE_DIRS sqlite3.h)
-elseif(${PKG_CONFIG_FOUND})
+if(${PKG_CONFIG_FOUND})
     target_compile_options(Shiromino PUBLIC
         ${SDL2_CFLAGS}
         ${SDL2_image_CFLAGS}
         ${SDL2_mixer_CFLAGS}
         ${sqlite3_CFLAGS}
-
         ${SDL2_CFLAGS_OTHER}
         ${SDL2_image_CFLAGS_OTHER}
         ${SDL2_mixer_CFLAGS_OTHER}
@@ -192,11 +180,8 @@ elseif(${PKG_CONFIG_FOUND})
         ${SDL2_mixer_INCLUDE_DIRS}
         ${sqlite3_INCLUDE_DIRS})
 endif()
-
 target_include_directories(Shiromino PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${INCLUDE_DIRS})
-
 set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
-
 target_link_libraries(Shiromino PRIVATE
     ${LIBRARIES}
 #     -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error
