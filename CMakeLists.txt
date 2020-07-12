@@ -40,20 +40,16 @@ else()
     find_package(sqlite3 REQUIRED)
     if(${VCPKG_TOOLCHAIN})
         # When using dynamically linked libraries, Vcpkg doesn't automatically
-        # copy over the OGG/Vorbis libraries needed to play OGG files with
-        # SDL_mixer, so they have to be explicitly added as dependencies to
-        # Shiromino to work around that bug.
-        find_package(Ogg REQUIRED)
-        find_library(VORBIS_LIBRARY vorbis)
-        find_library(VORBISFILE_LIBRARY vorbisfile)
+        # copy over the vorbis library needed to play ogg files with SDL_mixer,
+        # so they have to be explicitly added as dependencies to Shiromino to
+        # work around that bug.
+        find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
         set(LIBRARIES
             SDL2::SDL2 SDL2::SDL2main
             SDL2::SDL2_image
             SDL2::SDL2_mixer
             SQLite::SQLite3
             ${OPENGL_LIBRARY}
-            ${OGG_LIBARIES}
-            ${VORBIS_LIBRARY}
             ${VORBISFILE_LIBRARY}
         )
         add_compile_definitions(VCPKG_TOOLCHAIN)

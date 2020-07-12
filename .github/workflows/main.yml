@@ -8,7 +8,7 @@ jobs:
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -yq clang cmake coreutils gcc libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libogg-dev libvorbis-dev libsqlite3-dev
+      run: sudo apt-get update && sudo apt-get install -yq clang cmake coreutils gcc libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libvorbis-dev libsqlite3-dev
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
     strategy:
@@ -26,7 +26,7 @@ jobs:
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install mac OS dependencies
-      run: brew install bash cmake gcc libogg libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
+      run: brew install bash cmake gcc libvorbis pkg-config sdl2 sdl2_image sdl2_mixer sqlite
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
     strategy:
@@ -47,7 +47,7 @@ jobs:
     - name: Run vcpkg
       uses: lukka/run-vcpkg@v2
       with:
-        vcpkgArguments: libogg libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+        vcpkgArguments: libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
         vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
         vcpkgTriplet: x64-windows
