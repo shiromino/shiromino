@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <SDL.h>
 #include <vector>
+#include <deque>
 #ifdef OPENGL_INTERPOLATION
         #include "glad.h"
 #endif
@@ -138,7 +139,7 @@ int init(CoreState *cs, Shiro::Settings* s, const std::filesystem::path& executa
 void quit(CoreState *cs);
 
 int run(CoreState *cs);
-int process_events(CoreState *cs, GuiWindow& window);
+int process_events(CoreState* cs, GuiWindow& window, const std::deque<SDL_Event>::iterator startEvent, const std::deque<SDL_Event>::iterator endEvent);
 int procgame(game_t *g, int input_enabled);
 
 void handle_replay_input(CoreState* cs);

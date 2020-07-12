@@ -29,6 +29,8 @@
 #include <SDL_mixer.h>
 #include <string>
 #include <vector>
+#include <deque>
+#include <algorithm>
 #ifdef OPENGL_INTERPOLATION
 #define GL_GLEXT_PROTOTYPES
 #include "glad.h"
@@ -907,6 +909,7 @@ int run(CoreState *cs)
     double fpsTimeFrameStart = 0.0;
 #endif
 
+    std::deque<SDL_Event> events;
     while(running)
     {
         double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
@@ -918,25 +921,31 @@ int run(CoreState *cs)
 
         timeAccumulator += renderFrameTime;
 
+        for (SDL_Event event; SDL_PollEvent(&event);) {
+            events.push_back(event);
+        }
+        std::sort(
+            events.begin(),
+            events.end(),
+            [](const SDL_Event& a, const SDL_Event& b) {
+                return a.common.timestamp < b.common.timestamp;
+            }
+        );
+
         unsigned newFrames = 0u;
+        std::deque<SDL_Event>::iterator startEvent = events.begin();
+        for (
 #ifdef DEBUG_FRAME_TIMING
-        for (
             double gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
-            timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
-            timeAccumulator -= gameFrameTime,
-            newFrames++,
-            cs->frames++
-            )
 #else
-        for (
             double gameFrameTime = 1.0 / cs->fps;
+#endif
             timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
             timeAccumulator -= gameFrameTime,
+            newTime += gameFrameTime,
             newFrames++,
             cs->frames++
-            )
-#endif
-        {
+            ) {
             // TODO: Move input polling out of the game frame update loop?
             // Requires reworking input handling, because moving this code
             // outside the game frame update loop results in incorrect input
@@ -944,10 +953,17 @@ int run(CoreState *cs)
             cs->prev_keys_raw = cs->keys_raw;
             cs->prev_keys = cs->keys;
 
-            if (process_events(cs, window))
-            {
+            while (startEvent->common.timestamp < newTime) {
+                startEvent++;
+            }
+            auto endEvent = startEvent + 1;
+            while (endEvent != events.end() && endEvent->common.timestamp < newTime + gameFrameTime) {
+                endEvent++;
+            }
+            if (process_events(cs, window, startEvent, endEvent)) {
                 return 1;
             }
+            events.erase(events.begin(), endEvent);
 
             handle_replay_input(cs);
 
@@ -1147,19 +1163,79 @@ int run(CoreState *cs)
         return 2;
 }
 
-int process_events(CoreState *cs, GuiWindow& window)
-{
+void update_mouse(CoreState* cs, const int windowW, const int windowH) {
+    if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+    {
+        cs->mouse_left_down = 1;
+    }
+    if(cs->mouse_right_down == BUTTON_PRESSED_THIS_FRAME)
+    {
+        cs->mouse_right_down = 1;
+    }
+
+    if(cs->select_all)
+    {
+        cs->select_all = 0;
+    }
+    if(cs->undo)
+    {
+        cs->undo = 0;
+    }
+    if(cs->redo)
+    {
+        cs->redo = 0;
+    }
+
+    if(windowW == (windowH * 4) / 3)
+    {
+        float scale_ = (float)windowW / 640.0;
+        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
+        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
+    }
+    else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
+    {
+        float scale_ = (float)windowW / 640.0;
+        int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
+        if(cs->mouse_y < yOffset || cs->mouse_y >= windowH - yOffset)
+        {
+            cs->logical_mouse_y = -1;
+        }
+        else
+        {
+            cs->logical_mouse_y = (int)((float)(cs->mouse_y - yOffset) / scale_);
+        }
+
+        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
+    }
+    else
+    {
+        float scale_ = (float)windowH / 480.0;
+        int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
+        if(cs->mouse_x < xOffset || cs->mouse_x >= windowW - xOffset)
+        {
+            cs->logical_mouse_x = -1;
+        }
+        else
+        {
+            cs->logical_mouse_x = (int)((float)(cs->mouse_x - xOffset) / scale_);
+        }
+
+        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
+    }
+}
+
+int process_events(CoreState *cs, GuiWindow& window, const std::deque<SDL_Event>::iterator startEvent, const std::deque<SDL_Event>::iterator endEvent) {
     if(!cs)
         return -1;
 
     struct keyflags *k = NULL;
     //struct keyflags joyflags{0};
 
-    SDL_Event event;
     SDL_Keycode keyCode;
     Shiro::KeyBindings& keyBindings = cs->settings->keyBindings;
     Shiro::GamepadBindings& gamepadBindings = cs->settings->gamepadBindings;
 
+#if 0
     if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
     {
         cs->mouse_left_down = 1;
@@ -1224,477 +1300,500 @@ int process_events(CoreState *cs, GuiWindow& window)
 
         cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
     }
+#endif
 
-    while(SDL_PollEvent(&event))
-    {
+    int windowW, windowH;
+    SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
+    for (auto eventIterator = startEvent; eventIterator != endEvent; eventIterator++) {
+        auto& event = *eventIterator;
         switch (event.type) {
-            case SDL_QUIT:
-                return 1;
+        case SDL_QUIT:
+            return 1;
 
-            case SDL_JOYAXISMOTION:
-                k = &cs->keys_raw;
+        case SDL_JOYAXISMOTION:
+            k = &cs->keys_raw;
 
-                if (event.jaxis.which == gamepadBindings.gamepadID) {
-                    if (event.jaxis.axis == gamepadBindings.axes.x) {
-                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.right) {
-                            k->right = 1;
-                            k->left = 0;
-                        }
-                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.right) {
-                            k->left = 1;
-                            k->right = 0;
-                        }
-                        else {
-                            k->right = 0;
-                            k->left = 0;
-                        }
+            if (event.jaxis.which == gamepadBindings.gamepadID) {
+                if (event.jaxis.axis == gamepadBindings.axes.x) {
+                    if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.right) {
+                        k->right = 1;
+                        k->left = 0;
                     }
-                    else if (event.jaxis.axis == gamepadBindings.axes.y) {
-                        if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.down) {
-                            k->down = 1;
-                            k->up = 0;
-                        }
-                        else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.down) {
-                            k->up = 1;
-                            k->down = 0;
-                        }
-                        else {
-                            k->up = 0;
-                            k->down = 0;
-                        }
+                    else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.right) {
+                        k->left = 1;
+                        k->right = 0;
                     }
-                }
-
-                break;
-
-            case SDL_JOYHATMOTION:
-                k = &cs->keys_raw;
-
-                if (event.jhat.which == gamepadBindings.gamepadID && event.jhat.hat == gamepadBindings.hatIndex) {
-                    if (event.jhat.value == SDL_HAT_CENTERED) {
+                    else {
                         k->right = 0;
                         k->left = 0;
+                    }
+                }
+                else if (event.jaxis.axis == gamepadBindings.axes.y) {
+                    if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.down) {
+                        k->down = 1;
                         k->up = 0;
+                    }
+                    else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.down) {
+                        k->up = 1;
                         k->down = 0;
                     }
                     else {
-                        if ((event.jhat.value & (SDL_HAT_LEFT | SDL_HAT_RIGHT)) != (SDL_HAT_LEFT | SDL_HAT_RIGHT)) {
-                            k->left = !!(event.jhat.value & SDL_HAT_LEFT);
-                            k->right = !!(event.jhat.value & SDL_HAT_RIGHT);
-                        }
-                        else {
-                            k->left = 0;
-                            k->right = 0;
-                        }
-
-                        if ((event.jhat.value & (SDL_HAT_UP | SDL_HAT_DOWN)) != (SDL_HAT_UP | SDL_HAT_DOWN)) {
-                            k->up = !!(event.jhat.value & SDL_HAT_UP);
-                            k->down = !!(event.jhat.value & SDL_HAT_DOWN);
-                        }
-                        else {
-                            k->up = 0;
-                            k->down = 0;
-                        }
+                        k->up = 0;
+                        k->down = 0;
                     }
                 }
+            }
 
-                break;
+            break;
 
-            case SDL_JOYBUTTONDOWN:
-            case SDL_JOYBUTTONUP:
-                k = &cs->keys_raw;
-                if (event.jbutton.which == gamepadBindings.gamepadID) {
-                    #define CHECK_BUTTON(name) \
+        case SDL_JOYHATMOTION:
+            k = &cs->keys_raw;
+
+            if (event.jhat.which == gamepadBindings.gamepadID && event.jhat.hat == gamepadBindings.hatIndex) {
+                if (event.jhat.value == SDL_HAT_CENTERED) {
+                    k->right = 0;
+                    k->left = 0;
+                    k->up = 0;
+                    k->down = 0;
+                }
+                else {
+                    if ((event.jhat.value & (SDL_HAT_LEFT | SDL_HAT_RIGHT)) != (SDL_HAT_LEFT | SDL_HAT_RIGHT)) {
+                        k->left = !!(event.jhat.value & SDL_HAT_LEFT);
+                        k->right = !!(event.jhat.value & SDL_HAT_RIGHT);
+                    }
+                    else {
+                        k->left = 0;
+                        k->right = 0;
+                    }
+
+                    if ((event.jhat.value & (SDL_HAT_UP | SDL_HAT_DOWN)) != (SDL_HAT_UP | SDL_HAT_DOWN)) {
+                        k->up = !!(event.jhat.value & SDL_HAT_UP);
+                        k->down = !!(event.jhat.value & SDL_HAT_DOWN);
+                    }
+                    else {
+                        k->up = 0;
+                        k->down = 0;
+                    }
+                }
+            }
+
+            break;
+
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+            k = &cs->keys_raw;
+            if (event.jbutton.which == gamepadBindings.gamepadID) {
+#define CHECK_BUTTON(name) \
                     if (event.jbutton.button == gamepadBindings.buttons.name) { \
                         k->name = event.type == SDL_JOYBUTTONDOWN; \
                     }
 
-                    CHECK_BUTTON(left);
-                    CHECK_BUTTON(right);
-                    CHECK_BUTTON(up);
-                    CHECK_BUTTON(down);
-                    CHECK_BUTTON(start);
-                    CHECK_BUTTON(a);
-                    CHECK_BUTTON(b);
-                    CHECK_BUTTON(c);
-                    CHECK_BUTTON(d);
-                    CHECK_BUTTON(escape);
+                CHECK_BUTTON(left);
+                CHECK_BUTTON(right);
+                CHECK_BUTTON(up);
+                CHECK_BUTTON(down);
+                CHECK_BUTTON(start);
+                CHECK_BUTTON(a);
+                CHECK_BUTTON(b);
+                CHECK_BUTTON(c);
+                CHECK_BUTTON(d);
+                CHECK_BUTTON(escape);
 
-                    #undef CHECK_BUTTON
-                }
+#undef CHECK_BUTTON
+            }
 
+            break;
+
+        case SDL_KEYDOWN:
+            if (event.key.repeat)
                 break;
 
-            case SDL_KEYDOWN:
-                if(event.key.repeat)
-                    break;
+            keyCode = event.key.keysym.sym;
 
-                keyCode = event.key.keysym.sym;
+            k = &cs->keys_raw;
 
-                k = &cs->keys_raw;
+            if (keyCode == keyBindings.left)
+                k->left = 1;
 
-                if(keyCode == keyBindings.left)
-                    k->left = 1;
+            if (keyCode == keyBindings.right)
+                k->right = 1;
 
-                if(keyCode == keyBindings.right)
-                    k->right = 1;
+            if (keyCode == keyBindings.up)
+                k->up = 1;
 
-                if(keyCode == keyBindings.up)
-                    k->up = 1;
+            if (keyCode == keyBindings.down)
+                k->down = 1;
 
-                if(keyCode == keyBindings.down)
-                    k->down = 1;
+            if (keyCode == keyBindings.start)
+                k->start = 1;
 
-                if(keyCode == keyBindings.start)
-                    k->start = 1;
+            if (keyCode == keyBindings.a)
+                k->a = 1;
 
-                if(keyCode == keyBindings.a)
-                    k->a = 1;
+            if (keyCode == keyBindings.b)
+                k->b = 1;
 
-                if(keyCode == keyBindings.b)
-                    k->b = 1;
+            if (keyCode == keyBindings.c)
+                k->c = 1;
 
-                if(keyCode == keyBindings.c)
-                    k->c = 1;
+            if (keyCode == keyBindings.d)
+                k->d = 1;
 
-                if(keyCode == keyBindings.d)
-                    k->d = 1;
+            if (keyCode == keyBindings.escape)
+                k->escape = 1;
 
-                if(keyCode == keyBindings.escape)
-                    k->escape = 1;
-
-                if(keyCode == SDLK_v && SDL_GetModState() & KMOD_CTRL)
-                {
-                    if(cs->text_editing && cs->text_insert)
-                        cs->text_insert(cs, SDL_GetClipboardText());
-
-                    break;
-                }
-
-                if(keyCode == SDLK_c && SDL_GetModState() & KMOD_CTRL)
-                {
-                    if(cs->text_editing && cs->text_copy)
-                        cs->text_copy(cs);
-
-                    break;
-                }
-
-                if(keyCode == SDLK_x && SDL_GetModState() & KMOD_CTRL)
-                {
-                    if(cs->text_editing && cs->text_cut)
-                        cs->text_cut(cs);
-
-                    break;
-                }
-
-                if(keyCode == SDLK_a && SDL_GetModState() & KMOD_CTRL)
-                {
-                    if(cs->text_editing && cs->text_select_all)
-                        cs->text_select_all(cs);
-                    cs->select_all = 1;
-                    break;
-                }
-
-                if(keyCode == SDLK_z && SDL_GetModState() & KMOD_CTRL)
-                {
-                    cs->undo = 1;
-                    break;
-                }
-
-                if(keyCode == SDLK_y && SDL_GetModState() & KMOD_CTRL)
-                {
-                    cs->redo = 1;
-                    break;
-                }
-
-                if(keyCode == SDLK_BACKSPACE)
-                {
-                    cs->backspace_das = 1;
-                }
-
-                if(keyCode == SDLK_DELETE)
-                {
-                    cs->delete_das = 1;
-                }
-
-                if(keyCode == SDLK_HOME)
-                {
-                    if(cs->text_editing && cs->text_seek_home)
-                        cs->text_seek_home(cs);
-                }
-
-                if(keyCode == SDLK_END)
-                {
-                    if(cs->text_editing && cs->text_seek_end)
-                        cs->text_seek_end(cs);
-                }
-
-                if(keyCode == SDLK_RETURN)
-                {
-                    if(cs->text_toggle)
-                        cs->text_toggle(cs);
-                }
-
-                if(keyCode == SDLK_LEFT)
-                {
-                    cs->left_arrow_das = 1;
-                }
-
-                if(keyCode == SDLK_RIGHT)
-                {
-                    cs->right_arrow_das = 1;
-                }
-
-                if(keyCode == SDLK_F8)
-                {
-                    switch(cs->displayMode)
-                    {
-                        case Shiro::DisplayMode::DEFAULT:
-                            cs->displayMode = Shiro::DisplayMode::DETAILED;
-                            break;
-                        case Shiro::DisplayMode::DETAILED:
-                            cs->displayMode = Shiro::DisplayMode::CENTERED;
-                            break;
-                        default:
-                            cs->displayMode = Shiro::DisplayMode::DEFAULT;
-                            break;
-                    }
-                }
-
-                if(keyCode == SDLK_F9)
-                {
-                    cs->motionBlur = !cs->motionBlur;
-                }
-
-                if(keyCode == SDLK_F11)
-                {
-                    if(cs->settings->fullscreen)
-                    {
-                        cs->settings->fullscreen = false;
-                        SDL_SetWindowFullscreen(cs->screen.window, 0);
-                        SDL_SetWindowSize(cs->screen.window, 640.0*cs->settings->videoScale, 480.0*cs->settings->videoScale);
-                    }
-                    else
-                    {
-                        cs->settings->fullscreen = true;
-                        SDL_SetWindowSize(cs->screen.window, 640, 480);
-                        SDL_WindowFlags flags = (SDL_GetModState() & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
-                        if(SDL_SetWindowFullscreen(cs->screen.window, flags) < 0)
-                        {
-                            std::cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << std::endl;
-                        }
-                    }
-                }
-
-                if(keyCode == SDLK_F4 && SDL_GetModState() & KMOD_ALT)
-                {
-                    return 1;
-                }
-
-                if(keyCode == SDLK_0)
-                {
-                    cs->zero_pressed = 1;
-                }
-
-                if(keyCode == SDLK_1)
-                {
-                    if(SDL_GetModState() & KMOD_ALT)
-                    {
-                        cs->settings->videoScale = 1;
-                        SDL_SetWindowSize(cs->screen.window, 640, 480);
-                    }
-
-                    cs->one_pressed = 1;
-                }
-
-                if(keyCode == SDLK_2)
-                {
-                    if(SDL_GetModState() & KMOD_ALT)
-                    {
-                        cs->settings->videoScale = 2;
-                        SDL_SetWindowSize(cs->screen.window, 2*640, 2*480);
-                    }
-
-                    cs->two_pressed = 1;
-                }
-
-                if(keyCode == SDLK_3)
-                {
-                    if(SDL_GetModState() & KMOD_ALT)
-                    {
-                        cs->settings->videoScale = 3;
-                        SDL_SetWindowSize(cs->screen.window, 3*640, 3*480);
-                    }
-
-                    cs->three_pressed = 1;
-                }
-
-                if(keyCode == SDLK_4)
-                {
-                    if(SDL_GetModState() & KMOD_ALT)
-                    {
-                        cs->settings->videoScale = 4;
-                        SDL_SetWindowSize(cs->screen.window, 4*640, 4*480);
-                    }
-
-                    cs->four_pressed = 1;
-                }
-
-                if(keyCode == SDLK_5)
-                {
-                    if(SDL_GetModState() & KMOD_ALT)
-                    {
-                        cs->settings->videoScale = 5;
-                        SDL_SetWindowSize(cs->screen.window, 5*640, 5*480);
-                    }
-
-                    cs->five_pressed = 1;
-                }
-
-                if(keyCode == SDLK_6)
-                {
-                    cs->six_pressed = 1;
-                }
-
-                if(keyCode == SDLK_7)
-                {
-                    cs->seven_pressed = 1;
-                }
-
-                if(keyCode == SDLK_9)
-                {
-                    cs->nine_pressed = 1;
-                }
+            if (keyCode == SDLK_v && SDL_GetModState() & KMOD_CTRL)
+            {
+                if (cs->text_editing && cs->text_insert)
+                    cs->text_insert(cs, SDL_GetClipboardText());
 
                 break;
+            }
 
-            case SDL_KEYUP:
-                keyCode = event.key.keysym.sym;
-
-                k = &cs->keys_raw;
-
-                if(keyCode == keyBindings.left)
-                    k->left = 0;
-
-                if(keyCode == keyBindings.right)
-                    k->right = 0;
-
-                if(keyCode == keyBindings.up)
-                    k->up = 0;
-
-                if(keyCode == keyBindings.down)
-                    k->down = 0;
-
-                if(keyCode == keyBindings.start)
-                    k->start = 0;
-
-                if(keyCode == keyBindings.a)
-                    k->a = 0;
-
-                if(keyCode == keyBindings.b)
-                    k->b = 0;
-
-                if(keyCode == keyBindings.c)
-                    k->c = 0;
-
-                if(keyCode == keyBindings.d)
-                    k->d = 0;
-
-                if(keyCode == keyBindings.escape)
-                    k->escape = 0;
-
-                if(keyCode == SDLK_LEFT)
-                    cs->left_arrow_das = 0;
-
-                if(keyCode == SDLK_RIGHT)
-                    cs->right_arrow_das = 0;
-
-                if(keyCode == SDLK_BACKSPACE)
-                    cs->backspace_das = 0;
-
-                if(keyCode == SDLK_DELETE)
-                    cs->delete_das = 0;
-
-                if(keyCode == SDLK_0)
-                {
-                    cs->zero_pressed = 0;
-                }
-
-                if(keyCode == SDLK_1)
-                {
-                    cs->one_pressed = 0;
-                }
-
-                if(keyCode == SDLK_2)
-                {
-                    cs->two_pressed = 0;
-                }
-
-                if(keyCode == SDLK_3)
-                {
-                    cs->three_pressed = 0;
-                }
-
-                if(keyCode == SDLK_4)
-                {
-                    cs->four_pressed = 0;
-                }
-
-                if(keyCode == SDLK_5)
-                {
-                    cs->five_pressed = 0;
-                }
-
-                if(keyCode == SDLK_6)
-                {
-                    cs->six_pressed = 0;
-                }
-
-                if(keyCode == SDLK_7)
-                {
-                    cs->seven_pressed = 0;
-                }
-
-                if(keyCode == SDLK_9)
-                {
-                    cs->nine_pressed = 0;
-                }
+            if (keyCode == SDLK_c && SDL_GetModState() & KMOD_CTRL)
+            {
+                if (cs->text_editing && cs->text_copy)
+                    cs->text_copy(cs);
 
                 break;
+            }
 
-            case SDL_TEXTINPUT:
-                if(cs->text_editing)
+            if (keyCode == SDLK_x && SDL_GetModState() & KMOD_CTRL)
+            {
+                if (cs->text_editing && cs->text_cut)
+                    cs->text_cut(cs);
+
+                break;
+            }
+
+            if (keyCode == SDLK_a && SDL_GetModState() & KMOD_CTRL)
+            {
+                if (cs->text_editing && cs->text_select_all)
+                    cs->text_select_all(cs);
+                cs->select_all = 1;
+                break;
+            }
+
+            if (keyCode == SDLK_z && SDL_GetModState() & KMOD_CTRL)
+            {
+                cs->undo = 1;
+                break;
+            }
+
+            if (keyCode == SDLK_y && SDL_GetModState() & KMOD_CTRL)
+            {
+                cs->redo = 1;
+                break;
+            }
+
+            if (keyCode == SDLK_BACKSPACE)
+            {
+                cs->backspace_das = 1;
+            }
+
+            if (keyCode == SDLK_DELETE)
+            {
+                cs->delete_das = 1;
+            }
+
+            if (keyCode == SDLK_HOME)
+            {
+                if (cs->text_editing && cs->text_seek_home)
+                    cs->text_seek_home(cs);
+            }
+
+            if (keyCode == SDLK_END)
+            {
+                if (cs->text_editing && cs->text_seek_end)
+                    cs->text_seek_end(cs);
+            }
+
+            if (keyCode == SDLK_RETURN)
+            {
+                if (cs->text_toggle)
+                    cs->text_toggle(cs);
+            }
+
+            if (keyCode == SDLK_LEFT)
+            {
+                cs->left_arrow_das = 1;
+            }
+
+            if (keyCode == SDLK_RIGHT)
+            {
+                cs->right_arrow_das = 1;
+            }
+
+            if (keyCode == SDLK_F8)
+            {
+                switch (cs->displayMode)
                 {
-                    if(!((event.text.text[0] == 'c' || event.text.text[0] == 'C') &&
-                         (event.text.text[0] == 'v' || event.text.text[0] == 'V') &&
-                         (event.text.text[0] == 'x' || event.text.text[0] == 'X') &&
-                         (event.text.text[0] == 'a' || event.text.text[0] == 'A') && SDL_GetModState() & KMOD_CTRL))
+                case Shiro::DisplayMode::DEFAULT:
+                    cs->displayMode = Shiro::DisplayMode::DETAILED;
+                    break;
+                case Shiro::DisplayMode::DETAILED:
+                    cs->displayMode = Shiro::DisplayMode::CENTERED;
+                    break;
+                default:
+                    cs->displayMode = Shiro::DisplayMode::DEFAULT;
+                    break;
+                }
+            }
+
+            if (keyCode == SDLK_F9)
+            {
+                cs->motionBlur = !cs->motionBlur;
+            }
+
+            if (keyCode == SDLK_F11)
+            {
+                if (cs->settings->fullscreen)
+                {
+                    cs->settings->fullscreen = false;
+                    SDL_SetWindowFullscreen(cs->screen.window, 0);
+                    SDL_SetWindowSize(cs->screen.window, 640.0 * cs->settings->videoScale, 480.0 * cs->settings->videoScale);
+                }
+                else
+                {
+                    cs->settings->fullscreen = true;
+                    SDL_SetWindowSize(cs->screen.window, 640, 480);
+                    SDL_WindowFlags flags = (SDL_GetModState() & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
+                    if (SDL_SetWindowFullscreen(cs->screen.window, flags) < 0)
                     {
-                        if(cs->text_insert)
-                            cs->text_insert(cs, event.text.text);
+                        std::cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << std::endl;
                     }
                 }
+            }
 
-                break;
+            if (keyCode == SDLK_F4 && SDL_GetModState() & KMOD_ALT)
+            {
+                return 1;
+            }
 
-            case SDL_MOUSEBUTTONDOWN:
-                if(event.button.button == SDL_BUTTON_LEFT)
+            if (keyCode == SDLK_0)
+            {
+                cs->zero_pressed = 1;
+            }
+
+            if (keyCode == SDLK_1)
+            {
+                if (SDL_GetModState() & KMOD_ALT)
                 {
-                    cs->mouse_left_down = BUTTON_PRESSED_THIS_FRAME;
+                    cs->settings->videoScale = 1;
+                    SDL_SetWindowSize(cs->screen.window, 640, 480);
                 }
-                if(event.button.button == SDL_BUTTON_RIGHT)
-                    cs->mouse_right_down = BUTTON_PRESSED_THIS_FRAME;
-                break;
 
-            case SDL_MOUSEBUTTONUP:
-                if(event.button.button == SDL_BUTTON_LEFT)
-                    cs->mouse_left_down = 0;
-                if(event.button.button == SDL_BUTTON_RIGHT)
-                    cs->mouse_right_down = 0;
+                cs->one_pressed = 1;
+            }
+
+            if (keyCode == SDLK_2)
+            {
+                if (SDL_GetModState() & KMOD_ALT)
+                {
+                    cs->settings->videoScale = 2;
+                    SDL_SetWindowSize(cs->screen.window, 2 * 640, 2 * 480);
+                }
+
+                cs->two_pressed = 1;
+            }
+
+            if (keyCode == SDLK_3)
+            {
+                if (SDL_GetModState() & KMOD_ALT)
+                {
+                    cs->settings->videoScale = 3;
+                    SDL_SetWindowSize(cs->screen.window, 3 * 640, 3 * 480);
+                }
+
+                cs->three_pressed = 1;
+            }
+
+            if (keyCode == SDLK_4)
+            {
+                if (SDL_GetModState() & KMOD_ALT)
+                {
+                    cs->settings->videoScale = 4;
+                    SDL_SetWindowSize(cs->screen.window, 4 * 640, 4 * 480);
+                }
+
+                cs->four_pressed = 1;
+            }
+
+            if (keyCode == SDLK_5)
+            {
+                if (SDL_GetModState() & KMOD_ALT)
+                {
+                    cs->settings->videoScale = 5;
+                    SDL_SetWindowSize(cs->screen.window, 5 * 640, 5 * 480);
+                }
+
+                cs->five_pressed = 1;
+            }
+
+            if (keyCode == SDLK_6)
+            {
+                cs->six_pressed = 1;
+            }
+
+            if (keyCode == SDLK_7)
+            {
+                cs->seven_pressed = 1;
+            }
+
+            if (keyCode == SDLK_9)
+            {
+                cs->nine_pressed = 1;
+            }
+
+            break;
+
+        case SDL_KEYUP:
+            keyCode = event.key.keysym.sym;
+
+            k = &cs->keys_raw;
+
+            if (keyCode == keyBindings.left)
+                k->left = 0;
+
+            if (keyCode == keyBindings.right)
+                k->right = 0;
+
+            if (keyCode == keyBindings.up)
+                k->up = 0;
+
+            if (keyCode == keyBindings.down)
+                k->down = 0;
+
+            if (keyCode == keyBindings.start)
+                k->start = 0;
+
+            if (keyCode == keyBindings.a)
+                k->a = 0;
+
+            if (keyCode == keyBindings.b)
+                k->b = 0;
+
+            if (keyCode == keyBindings.c)
+                k->c = 0;
+
+            if (keyCode == keyBindings.d)
+                k->d = 0;
+
+            if (keyCode == keyBindings.escape)
+                k->escape = 0;
+
+            if (keyCode == SDLK_LEFT)
+                cs->left_arrow_das = 0;
+
+            if (keyCode == SDLK_RIGHT)
+                cs->right_arrow_das = 0;
+
+            if (keyCode == SDLK_BACKSPACE)
+                cs->backspace_das = 0;
+
+            if (keyCode == SDLK_DELETE)
+                cs->delete_das = 0;
+
+            if (keyCode == SDLK_0)
+            {
+                cs->zero_pressed = 0;
+            }
+
+            if (keyCode == SDLK_1)
+            {
+                cs->one_pressed = 0;
+            }
+
+            if (keyCode == SDLK_2)
+            {
+                cs->two_pressed = 0;
+            }
+
+            if (keyCode == SDLK_3)
+            {
+                cs->three_pressed = 0;
+            }
+
+            if (keyCode == SDLK_4)
+            {
+                cs->four_pressed = 0;
+            }
+
+            if (keyCode == SDLK_5)
+            {
+                cs->five_pressed = 0;
+            }
+
+            if (keyCode == SDLK_6)
+            {
+                cs->six_pressed = 0;
+            }
+
+            if (keyCode == SDLK_7)
+            {
+                cs->seven_pressed = 0;
+            }
+
+            if (keyCode == SDLK_9)
+            {
+                cs->nine_pressed = 0;
+            }
+
+            break;
+
+        case SDL_TEXTINPUT:
+            if (cs->text_editing)
+            {
+                if (!((event.text.text[0] == 'c' || event.text.text[0] == 'C') &&
+                    (event.text.text[0] == 'v' || event.text.text[0] == 'V') &&
+                    (event.text.text[0] == 'x' || event.text.text[0] == 'X') &&
+                    (event.text.text[0] == 'a' || event.text.text[0] == 'A') && SDL_GetModState() & KMOD_CTRL))
+                {
+                    if (cs->text_insert)
+                        cs->text_insert(cs, event.text.text);
+                }
+            }
+
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            if (event.button.button == SDL_BUTTON_LEFT)
+            {
+                cs->mouse_left_down = BUTTON_PRESSED_THIS_FRAME;
+            }
+            if (event.button.button == SDL_BUTTON_RIGHT)
+                cs->mouse_right_down = BUTTON_PRESSED_THIS_FRAME;
+            update_mouse(cs, windowW, windowH);
+            break;
+
+        case SDL_MOUSEBUTTONUP:
+            if (event.button.button == SDL_BUTTON_LEFT)
+                cs->mouse_left_down = 0;
+            if (event.button.button == SDL_BUTTON_RIGHT)
+                cs->mouse_right_down = 0;
+            update_mouse(cs, windowW, windowH);
+            break;
+
+        case SDL_MOUSEMOTION:
+            cs->mouse_x = event.motion.x;
+            cs->mouse_y = event.motion.y;
+            update_mouse(cs, windowW, windowH);
+            break;
+
+        case SDL_WINDOWEVENT:
+            switch (event.window.event) {
+            case SDL_WINDOWEVENT_RESIZED:
+                SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
+                update_mouse(cs, windowW, windowH);
                 break;
 
             default:
                 break;
+            }
+            break;
+
+        default:
+            break;
         }
     }
 
