@@ -908,6 +908,8 @@ int run(CoreState *cs)
     double fpsTimeFrameStart = 0.0;
 #endif
 
+    // We append events to the end, then erase them from the start, so this is
+    // the right choice of container.
     std::deque<SDL_Event> events;
     while(running)
     {
@@ -917,13 +919,15 @@ int run(CoreState *cs)
             renderFrameTime = 0.25;
         }
         currentTime = newTime;
-
         timeAccumulator += renderFrameTime;
+        double frameStartTicks = SDL_GetTicks() - 1000.0 * timeAccumulator;
 
         for (SDL_Event event; SDL_PollEvent(&event);) {
             events.push_back(event);
         }
 #if 0
+        // TODO: Verify that SDL2 always gives events in strictly increasing
+        // timestamp order; if so, sorting is unnecessary.
         std::sort(
             events.begin(),
             events.end(),
@@ -934,10 +938,7 @@ int run(CoreState *cs)
 #endif
 
         unsigned newFrames = 0u;
-#if 0
         std::deque<SDL_Event>::iterator startEvent = events.begin(), endEvent = events.begin();
-        double newTicks = SDL_GetTicks();
-#endif
         for (
 #ifdef DEBUG_FRAME_TIMING
             double gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
@@ -946,19 +947,14 @@ int run(CoreState *cs)
 #endif
             timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
             timeAccumulator -= gameFrameTime,
-            //newTicks += 1000.0f * gameFrameTime,
+            frameStartTicks += 1000.0f * gameFrameTime,
             newFrames++,
             cs->frames++
             ) {
-            // TODO: Move input polling out of the game frame update loop?
-            // Requires reworking input handling, because moving this code
-            // outside the game frame update loop results in incorrect input
-            // behavior.
             cs->prev_keys_raw = cs->keys_raw;
             cs->prev_keys = cs->keys;
 
-#if 0
-            while (startEvent != events.end() && startEvent->common.timestamp < (Uint32)(newTicks)) {
+            while (startEvent != events.end() && startEvent->common.timestamp < (Uint32)(frameStartTicks)) {
                 startEvent++;
             }
             if (startEvent != events.end()) {
@@ -967,15 +963,13 @@ int run(CoreState *cs)
             else {
                 endEvent = events.end();
             }
-            while (endEvent != events.end() && endEvent->common.timestamp < (Uint32)(newTicks + 1000.0f * gameFrameTime)) {
+            while (endEvent != events.end() && endEvent->common.timestamp < (Uint32)(frameStartTicks + 1000.0f * gameFrameTime)) {
                 endEvent++;
             }
-            if (process_events(cs, window, startEvent, endEvent))
-#endif
-            if (process_events(cs, window, events.begin(), events.end())) {
+            if (process_events(cs, window, startEvent, endEvent)) {
                 return 1;
             }
-            //startEvent = endEvent;
+            startEvent = endEvent;
 
             handle_replay_input(cs);
 
@@ -1053,8 +1047,7 @@ int run(CoreState *cs)
                 timeAccumulator = 0.0;
             }
         }
-        //events.erase(events.begin(), endEvent);
-        events.clear();
+        events.erase(events.begin(), endEvent);
 
 #ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
