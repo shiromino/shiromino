@@ -7,6 +7,7 @@ indent_style = space
 insert_final_newline = false
 trim_trailing_whitespace = true
 [*.md]
+[*.txt]
 indent_size = unset
 indent_style = tab
 [*.yml]
