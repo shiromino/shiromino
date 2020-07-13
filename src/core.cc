@@ -923,6 +923,7 @@ int run(CoreState *cs)
         for (SDL_Event event; SDL_PollEvent(&event);) {
             events.push_back(event);
         }
+#if 0
         std::sort(
             events.begin(),
             events.end(),
@@ -930,9 +931,13 @@ int run(CoreState *cs)
                 return a.common.timestamp < b.common.timestamp;
             }
         );
+#endif
 
         unsigned newFrames = 0u;
-        std::deque<SDL_Event>::iterator startEvent = events.begin();
+#if 0
+        std::deque<SDL_Event>::iterator startEvent = events.begin(), endEvent = events.begin();
+        double newTicks = SDL_GetTicks();
+#endif
         for (
 #ifdef DEBUG_FRAME_TIMING
             double gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
@@ -941,7 +946,7 @@ int run(CoreState *cs)
 #endif
             timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
             timeAccumulator -= gameFrameTime,
-            newTime += gameFrameTime,
+            //newTicks += 1000.0f * gameFrameTime,
             newFrames++,
             cs->frames++
             ) {
@@ -952,17 +957,25 @@ int run(CoreState *cs)
             cs->prev_keys_raw = cs->keys_raw;
             cs->prev_keys = cs->keys;
 
-            while (startEvent->common.timestamp < newTime) {
+#if 0
+            while (startEvent != events.end() && startEvent->common.timestamp < (Uint32)(newTicks)) {
                 startEvent++;
             }
-            auto endEvent = startEvent + 1;
-            while (endEvent != events.end() && endEvent->common.timestamp < newTime + gameFrameTime) {
+            if (startEvent != events.end()) {
+                endEvent = startEvent + 1;
+            }
+            else {
+                endEvent = events.end();
+            }
+            while (endEvent != events.end() && endEvent->common.timestamp < (Uint32)(newTicks + 1000.0f * gameFrameTime)) {
                 endEvent++;
             }
-            if (process_events(cs, window, startEvent, endEvent)) {
+            if (process_events(cs, window, startEvent, endEvent)) 
+#endif
+            if (process_events(cs, window, events.begin(), events.end())) {
                 return 1;
             }
-            events.erase(events.begin(), endEvent);
+            //startEvent = endEvent;
 
             handle_replay_input(cs);
 
@@ -1040,6 +1053,8 @@ int run(CoreState *cs)
                 timeAccumulator = 0.0;
             }
         }
+        //events.erase(events.begin(), endEvent);
+        events.clear();
 
 #ifdef OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
