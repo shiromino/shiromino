@@ -947,7 +947,7 @@ int run(CoreState *cs)
 #endif
             timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
             timeAccumulator -= gameFrameTime,
-            frameStartTicks += 1000.0f * gameFrameTime,
+            frameStartTicks += 1000.0 * gameFrameTime,
             newFrames++,
             cs->frames++
             ) {
