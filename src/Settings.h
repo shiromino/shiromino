@@ -1,5 +1,5 @@
 #pragma once
-#include "Config.h"
+#include "configuration.h"
 #include "PDINI.h"
 #include <filesystem>
 #include <string>
@@ -79,7 +79,7 @@ namespace Shiro {
         int vsync;
         int frameDelay;
         int vsyncTimestep;
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         int interpolate;
 #endif
 

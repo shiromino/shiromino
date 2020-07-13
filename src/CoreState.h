@@ -12,7 +12,7 @@
 #include <SDL.h>
 #include <vector>
 #include <deque>
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         #include "glad.h"
 #endif
 #define RECENT_FRAMES 60
@@ -59,7 +59,7 @@ struct CoreState
         unsigned int h;
         SDL_Window *window;
         SDL_Renderer *renderer;
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         SDL_Texture *target_tex;
         GLuint interpolate_shading_prog;
 #endif

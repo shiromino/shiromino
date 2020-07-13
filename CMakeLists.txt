@@ -1,75 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(shiromino VERSION 0.1 LANGUAGES CXX)
-set(GAME_EXECUTABLE_NAME "${PROJECT_NAME}")
+set(GAME_EXECUTABLE "${PROJECT_NAME}")
 set(CMAKE_VERBOSE_MAKEFILE on)
-if(${VCPKG_TOOLCHAIN})
-	set(VCPKG_CRT_LINKAGE dynamic)
-	set(VCPKG_LIBRARY_LINKAGE dynamic)
-endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-if(${OPENGL_INTERPOLATION})
-	find_package(OpenGL REQUIRED)
-	set(OPENGL_LIBRARY OpenGL::GL)
-else()
-	set(OPENGL_LIBRARY "")
-endif()
-find_package(PkgConfig)
-if(${PKG_CONFIG_FOUND} AND NOT MSVC)
-	pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
-	pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
-	pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
-	pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
-	set(LIBRARIES
-		m
-		${SDL2_LIBRARIES}
-		${SDL2_image_LIBRARIES}
-		${SDL2_mixer_LIBRARIES}
-		${sqlite3_LIBRARIES}
-		${OPENGL_LIBRARY}
-		${CMAKE_DL_LIBS}
-	)
-else()
-	find_package(SDL2 REQUIRED)
-	find_package(sdl2-image REQUIRED)
-	find_package(sdl2-mixer REQUIRED)
-	find_package(SQLite3 REQUIRED)
-	if(${VCPKG_TOOLCHAIN})
-		# When using dynamically linked libraries, Vcpkg doesn't automatically
-		# copy over the vorbis library needed to play ogg files with SDL_mixer,
-		# so they have to be explicitly added as dependencies to shiromino to
-		# work around that bug.
-		find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
-		set(LIBRARIES
-			SDL2::SDL2 SDL2::SDL2main
-			SDL2::SDL2_image
-			SDL2::SDL2_mixer
-			SQLite::SQLite3
-			${OPENGL_LIBRARY}
-			${VORBISFILE_LIBRARY}
-		)
-		add_compile_definitions(VCPKG_TOOLCHAIN)
-	else()
-		set(LIBRARIES
-			m
-			SDL2::SDL2 SDL2::SDL2main
-			SDL2::SDL2_image
-			SDL2::SDL2_mixer
-			SQLite::SQLite3
-			${OPENGL_LIBRARY}
-		)
-	endif()
-endif()
-configure_file(include/Config.h.in Config.h @ONLY)
-if(${OPENGL_INTERPOLATION})
-	set(OPENGL_SOURCES third-party/glad.cc)
-	set(OPENGL_HEADERS
-		third-party/glad.h
-		third-party/khrplatform.h)
-else()
-	set(OPENGL_SOURCES "")
-	set(OPENGL_HEADERS "")
-endif()
+configure_file(include/configuration.h.in configuration.h @ONLY)
 set(SOURCES
 	src/Audio.cc
 	src/core.cc
@@ -156,23 +91,83 @@ set(HEADERS
 	src/SGUIL/SGUIL.h
 	${OPENGL_HEADERS}
 )
+find_package(OpenGL)
+if (OPENGL_FOUND)
+	set(ENABLE_OPENGL_INTERPOLATION ON)
+endif()
+if(ENABLE_OPENGL_INTERPOLATION)
+	set(OpenGL_GL_PREFERENCE GLVND)
+	find_package(OpenGL REQUIRED)
+	set(SOURCES
+		${SOURCES}
+		third-party/glad.cc
+	)
+	set(HEADERS
+		${HEADERS}
+		third-party/glad.h
+		third-party/khrplatform.h
+	)
+endif()
+add_executable("${GAME_EXECUTABLE}" ${SOURCES} ${HEADERS})
 source_group("Header Files" FILES ${HEADERS})
-add_executable("${GAME_EXECUTABLE_NAME}" ${SOURCES} ${HEADERS})
+target_include_directories("${GAME_EXECUTABLE}" SYSTEM PRIVATE third-party)
+target_include_directories("${GAME_EXECUTABLE}" PUBLIC src)
+# TODO: This is pretty dirty. Replace this with a generator.
+target_include_directories("${GAME_EXECUTABLE}" PUBLIC ${PROJECT_BINARY_DIR})
 set_property(
-	TARGET "${GAME_EXECUTABLE_NAME}"
+	TARGET "${GAME_EXECUTABLE}"
 	PROPERTY VS_DEBUGGER_WORKING_DIRECTORY
 	${CMAKE_SOURCE_DIR}
 )
-target_include_directories("${GAME_EXECUTABLE_NAME}" SYSTEM PUBLIC src third-party)
-if(${PKG_CONFIG_FOUND})
-	set(INCLUDE_DIRS
-		${SDL2_INCLUDE_DIRS}
-	)
+if(ENABLE_OPENGL_INTERPOLATION)
+	target_link_libraries("${GAME_EXECUTABLE}" PRIVATE OpenGL::GL)
 endif()
-target_include_directories("${GAME_EXECUTABLE_NAME}" PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${INCLUDE_DIRS})
-target_link_libraries("${GAME_EXECUTABLE_NAME}" PRIVATE
-	${LIBRARIES}
-	# -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error
-)
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
+	pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+	pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
+	pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
+	pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
+	target_link_libraries("${GAME_EXECUTABLE}" PRIVATE
+		m
+		${CMAKE_DL_LIBS}
+		${SDL2_LIBRARIES}
+		${SDL2_image_LIBRARIES}
+		${SDL2_mixer_LIBRARIES}
+		${sqlite3_LIBRARIES}
+	)
+	if(APPLE)
+		# Homebrew doesn't appear to append entries to `LD_LIBRARY_PATH`, so we have to do that ourselves.
+		target_link_directories("${GAME_EXECUTABLE}" PUBLIC
+			${SDL2_LIBRARY_DIRS}
+			${SDL2_image_LIBRARY_DIRS}
+			${SDL2_mixer_LIBRARY_DIRS}
+			${sqlite3_LIBRARY_DIRS}
+		)
+	endif()
+	target_include_directories("${GAME_EXECUTABLE}" SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+else()
+	find_package(SDL2 REQUIRED)
+	find_package(sdl2-image REQUIRED)
+	find_package(sdl2-mixer REQUIRED)
+	find_package(SQLite3 REQUIRED)
+	target_link_libraries("${GAME_EXECUTABLE}" PRIVATE
+		SDL2::SDL2
+		SDL2::SDL2main
+		SDL2::SDL2_image
+		SDL2::SDL2_mixer
+		SQLite::SQLite3
+	)
+	if(VCPKG_TOOLCHAIN)
+		# When using dynamically linked libraries, Vcpkg doesn't automatically copy over the vorbis library needed to play ogg files with SDL_mixer,
+		# so they have to be explicitly added as dependencies to shiromino to work around that bug.
+		find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
+		target_link_libraries("${GAME_EXECUTABLE}" PRIVATE ${VORBISFILE_LIBRARY})
+		add_compile_definitions(VCPKG_TOOLCHAIN)
+		set(VCPKG_CRT_LINKAGE dynamic)
+		set(VCPKG_LIBRARY_LINKAGE dynamic)
+	endif()
+endif()
+# target_link_libraries("${GAME_EXECUTABLE}" PRIVATE -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error)
 install(DIRECTORY assets DESTINATION "usr/share/${PROJECT_NAME}")
-install(TARGETS "${GAME_EXECUTABLE_NAME}" RUNTIME)
+install(TARGETS "${GAME_EXECUTABLE}" RUNTIME)

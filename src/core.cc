@@ -1,5 +1,5 @@
+#include "configuration.h"
 #include "CoreState.h"
-#include "Config.h"
 #include "Debug.h"
 #include "DisplayMode.h"
 #include "gfx.h"
@@ -31,7 +31,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
 #define GL_GLEXT_PROTOTYPES
 #include "glad.h"
 #endif
@@ -239,7 +239,7 @@ void CoreState_initialize(CoreState *cs)
     cs->screen.h = 480;
     cs->screen.window = NULL;
     cs->screen.renderer = NULL;
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
     cs->screen.target_tex = NULL;
 #endif
 
@@ -380,7 +380,7 @@ int load_files(CoreState *cs)
     return 0;
 }
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
 GLuint CompileShader(GLenum shaderType, const GLchar* shaderSource) {
     GLint compileOK;
     GLuint shader = glCreateShader(shaderType);
@@ -493,7 +493,7 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             cs->settings = new Shiro::Settings(executablePath);
         }
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
             SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
         }
@@ -579,7 +579,7 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
         unsigned int h = cs->screen.h;
         name = cs->screen.name;
         Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         // TODO: Figure out whether OpenGL 2.0 should be used for desktop. Also
         // support OpenGL ES 2.0.
         if (cs->settings->interpolate) {
@@ -610,7 +610,7 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             SDL_RenderSetIntegerScale(cs->screen.renderer, SDL_TRUE);
         }
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
             cs->screen.target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_GetWindowPixelFormat(cs->screen.window),  SDL_TEXTUREACCESS_TARGET, 640, 480);
         }
@@ -795,7 +795,7 @@ void quit(CoreState *cs)
         delete cs->assets;
     }
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
     if (cs->screen.target_tex) {
         SDL_DestroyTexture(cs->screen.target_tex);
     }
@@ -970,7 +970,7 @@ int run(CoreState *cs)
             while (endEvent != events.end() && endEvent->common.timestamp < (Uint32)(newTicks + 1000.0f * gameFrameTime)) {
                 endEvent++;
             }
-            if (process_events(cs, window, startEvent, endEvent)) 
+            if (process_events(cs, window, startEvent, endEvent))
 #endif
             if (process_events(cs, window, events.begin(), events.end())) {
                 return 1;
@@ -1056,7 +1056,7 @@ int run(CoreState *cs)
         //events.erase(events.begin(), endEvent);
         events.clear();
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
             SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
         }
@@ -1083,7 +1083,7 @@ int run(CoreState *cs)
         gfx_drawmessages(cs, EMERGENCY_OVERRIDE);
         gfx_drawanimations(cs, EMERGENCY_OVERRIDE);
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
             SDL_RenderFlush(cs->screen.renderer);
             SDL_SetRenderTarget(cs->screen.renderer, NULL);

@@ -47,7 +47,7 @@ jobs:
     - name: Run vcpkg
       uses: lukka/run-vcpkg@v2
       with:
-        vcpkgArguments: libvorbis sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+        vcpkgArguments: libvorbis opengl sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
         vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
         vcpkgTriplet: ${{ matrix.triplet }}
@@ -103,7 +103,7 @@ jobs:
       run: .github/workflows/fetch-tags
     - uses: msys2/setup-msys2@v1
     - name: Install dependencies
-      run: pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{clang,dlfcn,libvorbis,SDL2{,_image,_mixer}} sqlite3
+      run: pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer}} sqlite3
       shell: msys2 {0}
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}

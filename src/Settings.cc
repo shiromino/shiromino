@@ -182,7 +182,7 @@ Shiro::Settings::Settings(std::filesystem::path executablePath) :
     vsync(0),
     frameDelay(1),
     vsyncTimestep(0),
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
     interpolate(0),
 #endif
     masterVolume(80),
@@ -289,7 +289,7 @@ bool Shiro::Settings::read(std::string filename) {
         this->vsyncTimestep = !!vsyncTimestep;
     }
 
-#ifdef OPENGL_INTERPOLATION
+#ifdef ENABLE_OPENGL_INTERPOLATION
     int interpolate;
     if (!ini.get("SCREEN", "INTERPOLATE", interpolate)) {
         defaultUsed = true;

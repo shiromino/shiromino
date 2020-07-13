@@ -5,9 +5,9 @@
  * directory for the full text of the license.
  */
 #include "Audio.h"
-#include "SDL_mixer.h"
-#include "Config.h"
+#include "configuration.h"
 #include <filesystem>
+#include <SDL_mixer.h>
 namespace Shiro {
     Music::Music() : volume(0.0f), data(nullptr) {
     }
