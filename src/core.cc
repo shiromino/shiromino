@@ -296,7 +296,7 @@ void CoreState_destroy(CoreState *cs)
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
 {
     std::filesystem::path path { cs->settings->basePath };
-    if(!img_load(img, path / "gfx" / filename, cs))
+    if(!img_load(img, path / "assets" / "image" / filename, cs))
     {
         log_warn("Failed to load image '%s'", filename);
     }
@@ -315,8 +315,8 @@ static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char*
 {
     std::filesystem::path basePath { cs->settings->basePath };
     *s = new Shiro::Sfx();
-    if (!(*s)->load(basePath / "audio" / filename)) {
-        log_warn("Failed to load sfx '%s'", filename);
+    if (!(*s)->load(basePath / "assets" / "audio" / filename)) {
+        log_warn("Failed to load audio '%s'", filename);
     }
     float volume;
     if (!ini.get("", filename, volume) || volume < 0.0f || volume > 100.0f) {
@@ -331,7 +331,7 @@ static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const c
 {
     std::filesystem::path basePath { cs->settings->basePath };
     m = new Shiro::Music();
-    if (!m->load(basePath / "audio" / name)) {
+    if (!m->load(basePath / "assets" / "audio" / name)) {
         log_warn("Failed to load music '%s'", name);
     }
 
@@ -365,7 +365,7 @@ int load_files(CoreState *cs)
     {
         PDINI::INI ini(false);
         std::filesystem::path basePath { cs->settings->basePath };
-        ini.read(basePath / "audio" / "volume.ini");
+        ini.read(basePath / "assets" / "audio" / "volume.ini");
 
 #define MUSIC(name, i) load_music(cs, ini, cs->assets->name[i], #name #i);
 #include "music.h"
@@ -707,7 +707,6 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
             }
         }
 #endif
-
         check(load_files(cs) == 0, "load_files() returned failure\n");
 
         check(Gui_Init(cs->screen.renderer, NULL), "Gui_Init() returned failure\n");
