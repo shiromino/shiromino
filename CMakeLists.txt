@@ -4,8 +4,21 @@ set(GAME_EXECUTABLE "${PROJECT_NAME}")
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-configure_file(include/configuration.h.in configuration.h @ONLY)
-set(SOURCES
+find_package(Git)
+if(GIT_FOUND)
+	set(GIT_COMMIT_HASH unknown)
+	execute_process(COMMAND
+		"${GIT_EXECUTABLE}" describe --always --dirty=*
+		ERROR_QUIET
+		OUTPUT_VARIABLE GIT_COMMIT_HASH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	)
+endif()
+set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY ${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include)
+configure_file(include/definitions.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h" @ONLY)
+configure_file(include/Version.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h" @ONLY)
+set(EXECUTABLE_SOURCES
 	src/Audio.cc
 	src/core.cc
 	src/game_menu.cc
@@ -36,9 +49,9 @@ set(SOURCES
 	src/SGUIL/SGUIL_GuiTextField.cc
 	src/SGUIL/SGUIL_GuiWindow.cc
 	src/SGUIL/SGUIL.cc
-	${OPENGL_SOURCES}
+	${OPENGL_EXECUTABLE_SOURCES}
 )
-set(HEADERS
+set(EXECUTABLE_HEADERS
 	src/AssetStore.h
 	src/Audio.h
 	src/CoreState.h
@@ -89,7 +102,9 @@ set(HEADERS
 	src/TGM.h
 	src/Timer.h
 	src/SGUIL/SGUIL.h
-	${OPENGL_HEADERS}
+	${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h
+	${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h
+	${OPENGL_EXECUTABLE_HEADERS}
 )
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
@@ -98,22 +113,21 @@ if (OPENGL_FOUND)
 endif()
 if(ENABLE_OPENGL_INTERPOLATION)
 	find_package(OpenGL REQUIRED)
-	set(SOURCES
-		${SOURCES}
-		third-party/glad.cc
+	set(EXECUTABLE_SOURCES
+		${EXECUTABLE_SOURCES}
+		third-party/glad/glad.cc
 	)
-	set(HEADERS
-		${HEADERS}
-		third-party/glad.h
-		third-party/khrplatform.h
+	set(EXECUTABLE_HEADERS
+		${EXECUTABLE_HEADERS}
+		third-party/glad/glad.h
+		third-party/glad/khrplatform.h
 	)
 endif()
-add_executable("${GAME_EXECUTABLE}" ${SOURCES} ${HEADERS})
-source_group("Header Files" FILES ${HEADERS})
-target_include_directories("${GAME_EXECUTABLE}" SYSTEM PRIVATE third-party)
+add_executable("${GAME_EXECUTABLE}" ${EXECUTABLE_SOURCES} ${EXECUTABLE_HEADERS})
+source_group("Header Files" FILES ${EXECUTABLE_HEADERS})
 target_include_directories("${GAME_EXECUTABLE}" PUBLIC src)
-# TODO: This is pretty dirty. Replace this with a generator.
-target_include_directories("${GAME_EXECUTABLE}" PUBLIC ${PROJECT_BINARY_DIR})
+target_include_directories("${GAME_EXECUTABLE}" PUBLIC ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY})
+target_include_directories("${GAME_EXECUTABLE}" SYSTEM PRIVATE third-party)
 set_property(
 	TARGET "${GAME_EXECUTABLE}"
 	PROPERTY VS_DEBUGGER_WORKING_DIRECTORY

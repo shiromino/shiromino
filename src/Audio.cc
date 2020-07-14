@@ -5,7 +5,7 @@
  * directory for the full text of the license.
  */
 #include "Audio.h"
-#include "configuration.h"
+#include "definitions.h"
 #include <filesystem>
 #include <SDL_mixer.h>
 namespace Shiro {

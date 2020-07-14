@@ -1,7 +1,0 @@
-#pragma once
-#define STR1(text) #text
-#define STR2(text) STR1(text)
-#define SHIROMINO_VERSION_MAJOR @Shiromino_VERSION_MAJOR@
-#define SHIROMINO_VERSION_MINOR @Shiromino_VERSION_MINOR@
-#define SHIROMINO_VERSION_STRING STR2(Shiromino_VERSION_MAJOR) "." STR2(Shiromino_VERSION_MINOR)
-#cmakedefine ENABLE_OPENGL_INTERPOLATION

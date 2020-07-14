@@ -1,5 +1,5 @@
 #pragma once
-#include "configuration.h"
+#include "definitions.h"
 #include "PDINI.h"
 #include <filesystem>
 #include <string>

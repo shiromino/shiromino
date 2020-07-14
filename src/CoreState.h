@@ -13,7 +13,7 @@
 #include <vector>
 #include <deque>
 #ifdef ENABLE_OPENGL_INTERPOLATION
-        #include "glad.h"
+        #include "glad/glad.h"
 #endif
 #define RECENT_FRAMES 60
 struct CoreState

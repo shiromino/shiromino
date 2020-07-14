@@ -1,6 +1,6 @@
-#include "configuration.h"
 #include "CoreState.h"
 #include "Debug.h"
+#include "definitions.h"
 #include "DisplayMode.h"
 #include "gfx.h"
 #include "gfx_structures.h"
@@ -15,6 +15,7 @@
 #include "SGUIL/SGUIL.h"
 #include "ShiroPhysoMino.h"
 #include "SPM_Spec.h"
+#include "Version.h"
 #include <array>
 #include <cinttypes>
 #include <cmath>
@@ -33,7 +34,7 @@
 #include <algorithm>
 #ifdef ENABLE_OPENGL_INTERPOLATION
 #define GL_GLEXT_PROTOTYPES
-#include "glad.h"
+#include "glad/glad.h"
 #endif
 
 #define PENTOMINO_C_REVISION_STRING "rev 1.3"
@@ -234,7 +235,7 @@ void CoreState_initialize(CoreState *cs)
     cs->mouse_left_down = 0;
     cs->mouse_right_down = 0;
 
-    cs->screen.name = "Shiromino " SHIROMINO_VERSION_STRING;
+    cs->screen.name = Shiro::Version::DESCRIPTOR;
     cs->screen.w = 640;
     cs->screen.h = 480;
     cs->screen.window = NULL;
