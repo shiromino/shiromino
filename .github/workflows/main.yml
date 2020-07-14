@@ -63,7 +63,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
-        path: ${{ runner.workspace }}/build/Shiromino.exe
+        path: ${{ runner.workspace }}/build/shiromino.exe
     - if: matrix.build-type == 'Release'
       name: Upload DSOs
       uses: actions/upload-artifact@v2
