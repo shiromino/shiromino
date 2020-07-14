@@ -72,7 +72,7 @@ jobs:
         path: ${{ runner.workspace }}/build/*.dll
     - if: matrix.build-type == 'Release'
       name: Filter assets
-      run: find . -maxdepth 1 ! -name audio ! -name gfx ! -name game.ini ! -name 'LICENSE*' ! -name README.md ! -name scores.db -exec rm -r {} \;
+      run: find . -maxdepth 1 ! -name assets ! -name game.ini ! -name 'LICENSE*' ! -name README.md ! -name scores.db -exec rm -r {} \;
       shell: bash
     - if: matrix.build-type == 'Release'
       name: Upload assets
