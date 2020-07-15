@@ -8,6 +8,7 @@
 #include "definitions.h"
 #include <filesystem>
 #include <SDL_mixer.h>
+#include <iostream>
 namespace Shiro {
     Music::Music() : volume(0.0f), data(nullptr) {
     }
@@ -18,14 +19,14 @@ namespace Shiro {
         }
     }
 
-    bool Music::load(std::filesystem::path&& path) {
+    bool Music::load(const std::filesystem::path& path) {
         data = nullptr;
         volume = 100.0f;
-        data = Mix_LoadMUS(path.concat(".ogg").string().c_str());
+        data = Mix_LoadMUS(path.string().append(".ogg").c_str());
         if(data) {
             return true;
         }
-        data = Mix_LoadMUS(path.concat(".wav").string().c_str());
+        data = Mix_LoadMUS(path.string().append(".wav").c_str());
         return data != nullptr;
     }
 
@@ -48,10 +49,14 @@ namespace Shiro {
         }
     }
 
-    bool Sfx::load(std::filesystem::path&& filenameWithoutExtension) {
+    bool Sfx::load(const std::filesystem::path& filenameWithoutExtension) {
         data = nullptr;
         volume = 100.0f;
-        data = Mix_LoadWAV(filenameWithoutExtension.concat(".wav").string().c_str());
+        data = Mix_LoadWAV(filenameWithoutExtension.string().append(".ogg").c_str());
+        if (data) {
+            return true;
+        }
+        data = Mix_LoadWAV(filenameWithoutExtension.string().append(".wav").c_str());
         return data != nullptr;
     }
 
