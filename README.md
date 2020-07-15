@@ -1,5 +1,5 @@
 # shiromino
-<a href="https://github.com/nightmareci/shiromino/actions" rel="Build status">![build](https://github.com/nightmareci/shiromino/workflows/build/badge.svg)</a>
+<a href="https://github.com/shiromino/shiromino/actions" rel="Build status">![build](https://github.com/shiromino/shiromino/workflows/build/badge.svg)</a>
 ## Building
 The following table displays a set of build options. To enable them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each option that you want to enable in the CMake configuration step (which is the first CMake command you run).
 
