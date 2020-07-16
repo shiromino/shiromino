@@ -26,11 +26,9 @@ endif()
 if(ENABLE_OPENGL_INTERPOLATION)
 	find_package(OpenGL REQUIRED)
 	set(EXECUTABLE_SOURCES
-		${OPENGL_SOURCES}
 		third-party/glad/glad.cc
 	)
 	set(EXECUTABLE_HEADERS
-		${OPENGL_HEADERS}
 		third-party/glad/glad.h
 		third-party/glad/khrplatform.h
 	)
