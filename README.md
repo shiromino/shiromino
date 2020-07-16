@@ -12,7 +12,7 @@ For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option,
 In order to build this project, you will need a C++17 compiler, CMake (≥ 3.10), SDL2 (≥ 2.0.5), SDL2_image, SDL2_mixer, libvorbis, and SQLite3. In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 #### Linux (Arch-Linux-based)
 ```shell
-$ sudo pacman -S gcc cmake sdl2 sdl2_image sdl2_mixer libvorbis sqlite
+$ sudo pacman --needed -S gcc cmake sdl2 sdl2_image sdl2_mixer libvorbis sqlite
 $ cmake -B build -S . && cmake --build build -j$(nproc)
 ```
 #### Linux (Debian-based)
