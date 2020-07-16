@@ -253,6 +253,21 @@ set_property(
 	PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--configuration-file ${NATIVE_CONFIGURATION_PATH}"
 )
 #
+# On Windows, doing this is needed to get rid of the `cmd.exe` process that spawns with the game.
+# Usually, you could just compile against `WinMain` directly, but as SDL2 already defines it in order to call `main`,
+# we're forced to provide `main`, which in turn spawns `cmd.exe` on Windows.
+# While that may be useful for debugging, it's very much undesired in actual release builds, so let's disable it here.
+#
+if(MSVC)
+	target_link_options(${GAME_EXECUTABLE}
+		PRIVATE
+			$<$<NOT:$<CONFIG:Debug>>:
+				/ENTRY:mainCRTStartup
+				/SUBSYSTEM:WINDOWS
+			>
+	)
+endif()
+#
 # On clang and gcc, add a few sanitizers in the `Debug` configuration.
 # Support for this is currently only partially available on MSYS2, so we disable it for WIN32.
 #
