@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(shiromino VERSION 0.1 LANGUAGES CXX)
-set(GAME_EXECUTABLE "${PROJECT_NAME}")
+set(GAME_EXECUTABLE ${PROJECT_NAME})
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -8,16 +8,16 @@ find_package(Git)
 if(GIT_FOUND)
 	set(GIT_COMMIT_HASH unknown)
 	execute_process(COMMAND
-		"${GIT_EXECUTABLE}" describe --always --dirty=*
+		${GIT_EXECUTABLE} describe --always --dirty=*
 		ERROR_QUIET
 		OUTPUT_VARIABLE GIT_COMMIT_HASH
 		OUTPUT_STRIP_TRAILING_WHITESPACE
-		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	)
 endif()
 set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY ${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include)
-configure_file(include/definitions.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h" @ONLY)
-configure_file(include/Version.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h" @ONLY)
+configure_file(include/definitions.h.in ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h @ONLY)
+configure_file(include/Version.h.in ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h @ONLY)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 if (OPENGL_FOUND)
@@ -126,18 +126,18 @@ set(EXECUTABLE_HEADERS
 	src/Timer.h
 	src/SGUIL/SGUIL.h
 )
-add_executable("${GAME_EXECUTABLE}" ${EXECUTABLE_SOURCES} ${EXECUTABLE_HEADERS})
+add_executable(${GAME_EXECUTABLE} ${EXECUTABLE_SOURCES} ${EXECUTABLE_HEADERS})
 source_group("Header Files" FILES ${EXECUTABLE_HEADERS})
-target_include_directories("${GAME_EXECUTABLE}" PUBLIC src)
-target_include_directories("${GAME_EXECUTABLE}" PUBLIC ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY})
-target_include_directories("${GAME_EXECUTABLE}" SYSTEM PRIVATE third-party)
+target_include_directories(${GAME_EXECUTABLE} PUBLIC src)
+target_include_directories(${GAME_EXECUTABLE} PUBLIC ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY})
+target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
 set_property(
-	TARGET "${GAME_EXECUTABLE}"
+	TARGET ${GAME_EXECUTABLE}
 	PROPERTY VS_DEBUGGER_WORKING_DIRECTORY
 	${CMAKE_SOURCE_DIR}
 )
 if(ENABLE_OPENGL_INTERPOLATION)
-	target_link_libraries("${GAME_EXECUTABLE}" PRIVATE OpenGL::GL)
+	target_link_libraries(${GAME_EXECUTABLE} PRIVATE OpenGL::GL)
 endif()
 find_package(PkgConfig)
 if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
@@ -145,7 +145,7 @@ if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
 	pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
 	pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
 	pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
-	target_link_libraries("${GAME_EXECUTABLE}" PRIVATE
+	target_link_libraries(${GAME_EXECUTABLE} PRIVATE
 		m
 		${CMAKE_DL_LIBS}
 		${SDL2_LIBRARIES}
@@ -155,20 +155,20 @@ if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
 	)
 	if(APPLE)
 		# Homebrew doesn't appear to append entries to `LD_LIBRARY_PATH`, so we have to do that ourselves.
-		target_link_directories("${GAME_EXECUTABLE}" PUBLIC
+		target_link_directories(${GAME_EXECUTABLE} PUBLIC
 			${SDL2_LIBRARY_DIRS}
 			${SDL2_image_LIBRARY_DIRS}
 			${SDL2_mixer_LIBRARY_DIRS}
 			${sqlite3_LIBRARY_DIRS}
 		)
 	endif()
-	target_include_directories("${GAME_EXECUTABLE}" SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+	target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 else()
 	find_package(SDL2 REQUIRED)
 	find_package(sdl2-image REQUIRED)
 	find_package(sdl2-mixer REQUIRED)
 	find_package(SQLite3 REQUIRED)
-	target_link_libraries("${GAME_EXECUTABLE}" PRIVATE
+	target_link_libraries(${GAME_EXECUTABLE} PRIVATE
 		SDL2::SDL2
 		SDL2::SDL2main
 		SDL2::SDL2_image
@@ -179,7 +179,7 @@ else()
 		# When using dynamically linked libraries, Vcpkg doesn't automatically copy over the vorbis library needed to play ogg files with SDL_mixer,
 		# so they have to be explicitly added as dependencies to shiromino to work around that bug.
 		find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
-		target_link_libraries("${GAME_EXECUTABLE}" PRIVATE ${VORBISFILE_LIBRARY})
+		target_link_libraries(${GAME_EXECUTABLE} PRIVATE ${VORBISFILE_LIBRARY})
 		add_compile_definitions(VCPKG_TOOLCHAIN)
 		set(VCPKG_CRT_LINKAGE dynamic)
 		set(VCPKG_LIBRARY_LINKAGE dynamic)
@@ -189,6 +189,6 @@ file(
 	COPY assets game.ini
 	DESTINATION ${CMAKE_BINARY_DIR}
 )
-# target_link_libraries("${GAME_EXECUTABLE}" PRIVATE -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error)
-install(DIRECTORY assets DESTINATION "usr/share/${PROJECT_NAME}")
-install(TARGETS "${GAME_EXECUTABLE}" RUNTIME)
+# target_link_libraries(${GAME_EXECUTABLE} PRIVATE -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error)
+install(DIRECTORY assets DESTINATION usr/share/${PROJECT_NAME})
+install(TARGETS ${GAME_EXECUTABLE} RUNTIME)
