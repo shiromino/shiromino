@@ -48,38 +48,27 @@ jobs:
       uses: lukka/run-vcpkg@v2
       with:
         vcpkgArguments: libvorbis opengl sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
-        vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+        vcpkgDirectory: vcpkg
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
         vcpkgTriplet: ${{ matrix.triplet }}
     - name: Build targets
       uses: lukka/run-cmake@v2
       with:
-        buildDirectory: ${{ runner.workspace }}/build
+        buildDirectory: build
         cmakeAppendedArgs: -A ${{ matrix.cmake-architecture }}
         cmakeBuildType: ${{ matrix.build-type }}
         useVcpkgToolchainFile: true
-    - if: matrix.build-type == 'Release'
-      name: Upload executable
-      uses: actions/upload-artifact@v2
-      with:
-        name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
-        path: ${{ runner.workspace }}/build/shiromino.exe
-    - if: matrix.build-type == 'Release'
-      name: Upload DSOs
-      uses: actions/upload-artifact@v2
-      with:
-        name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
-        path: ${{ runner.workspace }}/build/*.dll
-    - if: matrix.build-type == 'Release'
-      name: Filter assets
-      run: find . -maxdepth 1 ! -name assets ! -name game.ini ! -name 'LICENSE*' ! -name README.md ! -name scores.db -exec rm -r {} \;
+    - name: Build artifact tree
+      run: |
+        mkdir artifacts
+        mv LICENSE* README.md build/{*.dll,assets,game.ini,shiromino.exe} artifacts
       shell: bash
     - if: matrix.build-type == 'Release'
-      name: Upload assets
+      name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-windows-${{ matrix.architecture }}-${{ github.sha }}
-        path: ${{ github.workspace }}
+        name: shiromino-${{ matrix.triplet }}-${{ github.sha }}
+        path: artifacts/*
     strategy:
       matrix:
         triplet:

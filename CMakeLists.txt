@@ -182,6 +182,10 @@ else()
 		set(VCPKG_LIBRARY_LINKAGE dynamic)
 	endif()
 endif()
+file(
+	COPY assets game.ini
+	DESTINATION ${CMAKE_BINARY_DIR}
+)
 # target_link_libraries("${GAME_EXECUTABLE}" PRIVATE -fsanitize=address,leak,pointer-compare,pointer-subtract,undefined -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error)
 install(DIRECTORY assets DESTINATION "usr/share/${PROJECT_NAME}")
 install(TARGETS "${GAME_EXECUTABLE}" RUNTIME)
