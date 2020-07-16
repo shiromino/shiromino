@@ -18,7 +18,29 @@ endif()
 set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY ${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include)
 configure_file(include/definitions.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h" @ONLY)
 configure_file(include/Version.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h" @ONLY)
+set(OpenGL_GL_PREFERENCE GLVND)
+find_package(OpenGL)
+if (OPENGL_FOUND)
+	set(ENABLE_OPENGL_INTERPOLATION ON)
+endif()
+if(ENABLE_OPENGL_INTERPOLATION)
+	find_package(OpenGL REQUIRED)
+	set(EXECUTABLE_SOURCES
+		${OPENGL_SOURCES}
+		third-party/glad/glad.cc
+	)
+	set(EXECUTABLE_HEADERS
+		${OPENGL_HEADERS}
+		third-party/glad/glad.h
+		third-party/glad/khrplatform.h
+	)
+endif()
+set(EXECUTABLE_DYNAMIC_HEADERS
+	${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h
+	${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h
+)
 set(EXECUTABLE_SOURCES
+	${EXECUTABLE_SOURCES}
 	src/Audio.cc
 	src/core.cc
 	src/game_menu.cc
@@ -49,9 +71,10 @@ set(EXECUTABLE_SOURCES
 	src/SGUIL/SGUIL_GuiTextField.cc
 	src/SGUIL/SGUIL_GuiWindow.cc
 	src/SGUIL/SGUIL.cc
-	${OPENGL_EXECUTABLE_SOURCES}
 )
 set(EXECUTABLE_HEADERS
+	${EXECUTABLE_HEADERS}
+	${EXECUTABLE_DYNAMIC_HEADERS}
 	src/AssetStore.h
 	src/Audio.h
 	src/CoreState.h
@@ -102,27 +125,7 @@ set(EXECUTABLE_HEADERS
 	src/TGM.h
 	src/Timer.h
 	src/SGUIL/SGUIL.h
-	${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h
-	${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h
-	${OPENGL_EXECUTABLE_HEADERS}
 )
-set(OpenGL_GL_PREFERENCE GLVND)
-find_package(OpenGL)
-if (OPENGL_FOUND)
-	set(ENABLE_OPENGL_INTERPOLATION ON)
-endif()
-if(ENABLE_OPENGL_INTERPOLATION)
-	find_package(OpenGL REQUIRED)
-	set(EXECUTABLE_SOURCES
-		${EXECUTABLE_SOURCES}
-		third-party/glad/glad.cc
-	)
-	set(EXECUTABLE_HEADERS
-		${EXECUTABLE_HEADERS}
-		third-party/glad/glad.h
-		third-party/glad/khrplatform.h
-	)
-endif()
 add_executable("${GAME_EXECUTABLE}" ${EXECUTABLE_SOURCES} ${EXECUTABLE_HEADERS})
 source_group("Header Files" FILES ${EXECUTABLE_HEADERS})
 target_include_directories("${GAME_EXECUTABLE}" PUBLIC src)
