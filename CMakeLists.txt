@@ -221,6 +221,12 @@ endif()
 #
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 #
+# Visual Studio doesn't know which project to start by default, so it defaults to `ALL_BUILD`, which just errors when you try to launch it.
+# Therefore, we set the startup project here.
+#
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE})
+#
+#
 # Make the executable independent from the source directory by providing assets
 #
 file(
