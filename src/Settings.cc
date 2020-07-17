@@ -39,7 +39,7 @@ Shiro::KeyBindings::KeyBindings(int playerNum) {
             escape = SDLK_ESCAPE;
             break;
 
-        case 1:    
+        case 1:
             left = SDLK_j;
             right = SDLK_l;
             up = SDLK_i;
@@ -175,7 +175,7 @@ bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName
 Shiro::GamepadBindings::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
 Shiro::GamepadBindings::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
 
-Shiro::Settings::Settings(std::filesystem::path executablePath) :
+Shiro::Settings::Settings(const std::filesystem::path &basePath) :
     videoScale(1.0f),
     videoStretch(1),
     fullscreen(0),
@@ -188,7 +188,7 @@ Shiro::Settings::Settings(std::filesystem::path executablePath) :
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),
-    basePath(std::filesystem::canonical(executablePath.remove_filename()).parent_path()),
+    basePath(basePath),
     playerName("ARK") {}
 
 bool Shiro::Settings::read(std::string filename) {
@@ -248,7 +248,7 @@ bool Shiro::Settings::read(std::string filename) {
     else {
         this->videoScale = videoScale;
     }
-    
+
     int videoStretch;
     if (!ini.get("SCREEN", "VIDEOSTRETCH", videoStretch)) {
         defaultUsed = true;
@@ -256,7 +256,7 @@ bool Shiro::Settings::read(std::string filename) {
     else {
         this->videoStretch = videoStretch;
     }
-    
+
     int fullscreen;
     if (!ini.get("SCREEN", "FULLSCREEN", fullscreen)) {
         defaultUsed = true;

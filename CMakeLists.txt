@@ -229,8 +229,9 @@ set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT
 #
 # Make the executable independent from the source directory by providing assets
 #
+configure_file(game.ini ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
 file(
-	COPY assets game.ini
+	COPY assets
 	DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
 #

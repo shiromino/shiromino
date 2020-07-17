@@ -40,16 +40,11 @@ int main(int argc, const char* argv[]) {
         else {
             CoreState cs;
             CoreState_initialize(&cs);
-            Shiro::Settings* settings = new Shiro::Settings(argv[0]);
+            auto executablePath = std::filesystem::path(argv[0]);
+            const auto basePath = std::filesystem::canonical(executablePath.remove_filename());
+            auto settings = Shiro::Settings(basePath);
             const char path[] = ".";
-
-            std::string currentWorkingDirectory{ path };
-            std::string iniFilename = "game.ini";
-            std::string slash = "/";
-            std::string cfg_filename;
-
-            cs.calling_path = (char*)malloc(strlen(path) + 1);
-            strcpy(cs.calling_path, path);
+            const auto configurationPath = basePath / "game.ini";
 
             g123_seeds_init();
             srand((unsigned int)time(0));
@@ -57,18 +52,16 @@ int main(int argc, const char* argv[]) {
             // TODO: Use an argument handler library here, rather than hard-coded
             // logic.
             if (argc == 1) {
-                if (!std::filesystem::exists(iniFilename)) {
+                if (!std::filesystem::exists(configurationPath)) {
                     std::cerr << "Couldn't find configuration file, aborting" << std::endl;
                     goto error;
                 }
 
-                if (settings->read(iniFilename)) {
+                if (settings.read(configurationPath.string())) {
                     std::cerr << "Using one or more default settings" << std::endl;
                 }
 
-                iniFilename = currentWorkingDirectory + slash + iniFilename;
-                cs.iniFilename = (char*)malloc(iniFilename.size() + 1);
-                strcpy(cs.iniFilename, iniFilename.c_str());
+                cs.configurationPath = configurationPath;
             }
             else if (argc >= 2) {
                 if (strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
@@ -81,17 +74,16 @@ int main(int argc, const char* argv[]) {
                     goto error;
                 }
 
-                if (settings->read(argv[1])) {
+                if (settings.read(argv[1])) {
                     std::cerr << "Using one or more default settings" << std::endl;
                 }
 
-                cs.iniFilename = (char*)malloc(strlen(argv[1]) + 1);
-                strcpy(cs.iniFilename, argv[1]);
+                cs.configurationPath = configurationPath;
             }
 
-            std::cerr << "Finished reading configuration file: " << cs.iniFilename << std::endl;
+            std::cerr << "Finished reading configuration file: " << configurationPath << std::endl;
 
-            if (init(&cs, settings, argv[0])) {
+            if (init(&cs, &settings, argv[0])) {
                 std::cerr << "Initialization failed, aborting." << std::endl;
                 quit(&cs);
                 CoreState_destroy(&cs);

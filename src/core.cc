@@ -283,15 +283,12 @@ void CoreState_initialize(CoreState *cs)
 
 void CoreState_destroy(CoreState *cs)
 {
-    if(!cs)
-    {
+    if(!cs) {
         return;
     }
-
-    delete cs->settings;
-
-    if(cs->pracdata_mirror)
+    if(cs->pracdata_mirror) {
         pracdata_destroy(cs->pracdata_mirror);
+    }
 }
 
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
@@ -899,7 +896,7 @@ int run(CoreState *cs)
     double videoFPS;
     {
         PDINI::INI ini;
-        ini.read(cs->iniFilename);
+        ini.read(cs->configurationPath);
         if (!ini.get("SCREEN", "VIDEOFPS", videoFPS) || videoFPS <= 0.0) {
             videoFPS = 0.0;
         }

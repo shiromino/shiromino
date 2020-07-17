@@ -65,8 +65,7 @@ struct CoreState
 #endif
     } screen;
 
-    char *iniFilename;
-    char *calling_path;
+    std::filesystem::path configurationPath;
 
     Shiro::Settings* settings;
     Shiro::AssetStore* assets;

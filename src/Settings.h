@@ -66,7 +66,7 @@ namespace Shiro {
 
     class Settings {
     public:
-        Settings(std::filesystem::path executablePath);
+        Settings(const std::filesystem::path &basePath);
 
         bool read(const std::string filename);
 
