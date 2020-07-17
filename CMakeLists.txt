@@ -26,7 +26,7 @@ if(GIT_FOUND)
 		ERROR_QUIET
 		OUTPUT_VARIABLE GIT_COMMIT_HASH
 		OUTPUT_STRIP_TRAILING_WHITESPACE
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
 endif()
 #
@@ -36,15 +36,15 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 #
 # Dynamic headers
 #
-set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY ${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include)
-configure_file(include/definitions.h.in ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h @ONLY)
-configure_file(include/Version.h.in ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h @ONLY)
+set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY "${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include")
+configure_file(include/definitions.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h" @ONLY)
+configure_file(include/Version.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h" @ONLY)
 target_sources(${GAME_EXECUTABLE}
 	PRIVATE
-		${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h
-		${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h
+		"${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h"
+		"${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h"
 )
-target_include_directories(${GAME_EXECUTABLE} PRIVATE ${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY})
+target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}")
 #
 # Support for OpenGL
 #
@@ -186,13 +186,13 @@ if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
 		# Homebrew doesn't appear to append entries to `LD_LIBRARY_PATH`, so we have to do that ourselves.
 		target_link_directories(${GAME_EXECUTABLE}
 			PRIVATE
-				${SDL2_LIBRARY_DIRS}
-				${SDL2_image_LIBRARY_DIRS}
-				${SDL2_mixer_LIBRARY_DIRS}
-				${sqlite3_LIBRARY_DIRS}
+				"${SDL2_LIBRARY_DIRS}"
+				"${SDL2_image_LIBRARY_DIRS}"
+				"${SDL2_mixer_LIBRARY_DIRS}"
+				"${sqlite3_LIBRARY_DIRS}"
 		)
 	endif()
-	target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+	target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE "${SDL2_INCLUDE_DIRS}")
 else()
 	find_package(SDL2 REQUIRED)
 	find_package(sdl2-image REQUIRED)
@@ -224,7 +224,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 # Visual Studio doesn't know which project to start by default, so it defaults to `ALL_BUILD`, which just errors when you try to launch it.
 # Therefore, we set the startup project here.
 #
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE})
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE})
 #
 #
 # Make the executable independent from the source directory by providing assets
