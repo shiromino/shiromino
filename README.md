@@ -1,15 +1,15 @@
 # shiromino
 <a href="https://github.com/shiromino/shiromino/actions" rel="Build status">![build](https://github.com/shiromino/shiromino/workflows/build/badge.svg)</a>
 ## Building
-The following table displays a set of build options. To enable them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each option that you want to enable in the CMake configuration step (which is the first CMake command you run).
+The following table displays a set of build definitions. To set them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each definition that you want to enable in the CMake configuration step (which is the first CMake command you run).
 
 For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option, the flag that you would need to provide would be `-DENABLE_OPENGL_INTERPOLATION=0`.
-### Build options
-| Option                        | Values    | Description                                                                         |
+### Build definitions
+| Definition                    | Values    | Description                                                                         |
 | ----------------------------- | --------- |  -----------------------------------------------------------------------------------|
-| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`  | Enables support for the `INTERPOLATE` option in `game.ini`, which works best when combined with the video stretch option. Note that this option requires SDL2 ≥ 2.0.10 and OpenGL 3.3 Core Profile support. This option defaults to `1` if OpenGL can be found on your system.
+| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`  | Enables support for the `INTERPOLATE` option in `game.ini`, which works best when combined with the video stretch option. Note that this definition requires SDL2 ≥ 2.0.10 and OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system.
 ### Installing dependencies and compiling
-In order to build this project, you will need a C++17 compiler, CMake (≥ 3.10), SDL2 (≥ 2.0.5), SDL2_image, SDL2_mixer, libvorbis, and SQLite3. In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
+In order to build this project, you will need a C++17 compiler, CMake (≥ 3.15), SDL2 (≥ 2.0.5), SDL2_image, SDL2_mixer, libvorbis, and SQLite3. In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 #### Linux (Arch-Linux-based)
 ```shell
 $ sudo pacman --needed -S gcc cmake sdl2 sdl2_image sdl2_mixer libvorbis sqlite
