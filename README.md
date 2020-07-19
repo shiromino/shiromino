@@ -47,12 +47,21 @@ $ pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{dlfcn,libvorbi
 $ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j$(nproc)
 ```
 ## Running
-You can find your compiled executable in `./build/shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows.
+Usually, you can find your compiled game executable in `./build/shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows. If you've built the game with Visual Studio, the executable is put into `.\build\Release\shiromino.exe`. For the rest of this section, we're going to assume that your executable is located at `./build/shiromino`.
 
-To ensure that the game finds its assets, make sure to use the project root directory as your current working directory when running the game, or use `game.ini` to set `BASE_PATH` accordingly. The easiest way to check if everything works should be:
+Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
 
+Besides the game executable, the game needs a few files in order to run properly. For one, there's `game.ini`, a configuration file that you can use to specify key bindings and other settings. Then, there's also the `assets` directory which includes audio and image files.
+
+There are two ways to make the game find these files. The first way is to just put them into the same directory as the `shiromino` executable. After doing that, you can run the game via:
 ```shell
 $ ./build/shiromino
 ```
-
-Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
+Especially during development, this approach is very inflexible. A second way is to specify a path to the configuration file (`game.ini`) with `--configuration-file` or `-c` on the command line. For example, you could provide the flag like this from the source directory:
+```shell
+$ ./build/shiromino --configuration-file ./game.ini
+```
+The path to `assets` is resolved in the following order:
+- If `--configuration-file` is left unspecified, try `<directory of executable>/assets`.
+- Otherwise, if the configuration file sets `BASE_PATH`, try `${BASE_PATH}/assets`.
+- Otherwise, try: `<directory of configuration file>/assets`.

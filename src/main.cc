@@ -20,7 +20,7 @@
 #undef main
 #endif
 void printHelp(const char* argv[]) {
-    std::cerr << "Usage: " << argv[0] << " --base-path <base path>" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " --configuration-file <configuration file>" << std::endl;
 }
 void handleCommandLineArguments(int argc, const char* argv[], CoreState& coreState, Shiro::Settings& settings) {
     /* TODO: Use an argument handler library here */
@@ -39,7 +39,7 @@ void handleCommandLineArguments(int argc, const char* argv[], CoreState& coreSta
     else if (argc == 3) {
         const auto firstArgument = std::string(argv[1]);
         const auto secondArgument = std::string(argv[2]);
-        if (firstArgument == "--configuration-path" || firstArgument == "-c") {
+        if (firstArgument == "--configuration-file" || firstArgument == "-c") {
             const auto configurationPath = std::filesystem::path(secondArgument);
             coreState.configurationPath = configurationPath;
             auto basePath = std::filesystem::canonical(configurationPath);

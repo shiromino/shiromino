@@ -220,12 +220,21 @@ endif()
 # Visual Studio doesn't know which project to start by default, so it defaults to `ALL_BUILD`, which just errors when you try to launch it.
 # Therefore, we set the startup project here.
 #
-set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE})
+set_property(
+	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE}
+)
 #
 # Visual Studio won't find the assets by default, since they're nowhere to be found in the build directory.
 #
-set_property(TARGET ${GAME_EXECUTABLE} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+# However, it allows us to specify command-line flags for the debugger.
+# We use this to specify the configuration file.
 #
+file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/game.ini" NATIVE_CONFIGURATION_PATH)
+set_property(
+	TARGET ${GAME_EXECUTABLE}
+	PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--configuration-file ${NATIVE_CONFIGURATION_PATH}"
+)
 #
 # On clang and gcc, add a few sanitizers in the `Debug` configuration.
 # Support for this is currently only partially available on MSYS2, so we disable it for WIN32.
