@@ -18,7 +18,11 @@ struct CoreState;
 bool img_load(gfx_image *img, std::filesystem::path&& pathWithoutExtension, CoreState *cs);
 void img_destroy(gfx_image *img);
 
-enum text_alignment { ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER };
+enum text_alignment {
+    ALIGN_LEFT,
+    ALIGN_RIGHT,
+    ALIGN_CENTER
+};
 
 struct png_monofont {
     SDL_Texture *sheet;
@@ -67,8 +71,8 @@ struct gfx_button {
     std::string text;
     int x;
     int y;
-    int w;
-    int h;
+    std::size_t w;
+    std::size_t h;
     unsigned int flags;
     int highlighted;
     int clicked;

@@ -72,6 +72,5 @@ int mload_replay(game_t *g, int val);
 int mload_options(game_t *g, int val);
 
 int menu_action_quit(game_t *g, int val);
-int menu_action_lua_modes(game_t* g, int val);
 int menu_is_practice(game_t *g);
 int menu_is_main(game_t *g);

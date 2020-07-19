@@ -64,9 +64,6 @@ void handleCommandLineArguments(int argc, const char* argv[], CoreState& coreSta
     std::cerr << "Base path: " << settings.basePath << std::endl;
 }
 int main(int argc, const char* argv[]) {
-    bool luaModes = false;
-    bool running = true;
-
 #ifdef VCPKG_TOOLCHAIN
     {
         // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
@@ -77,37 +74,21 @@ int main(int argc, const char* argv[]) {
     }
 #endif
 
-    while (running) {
-        if (luaModes) {
-            running = false;
-        }
-        else {
-            CoreState cs;
-            CoreState_initialize(&cs);
-            auto executablePath = std::filesystem::path(argv[0]);
-            const auto basePath = std::filesystem::canonical(executablePath.remove_filename());
-            auto settings = Shiro::Settings(basePath);
-            g123_seeds_init();
-            srand((unsigned int)time(0));
-            handleCommandLineArguments(argc, argv, cs, settings);
-            if (init(&cs, &settings, argv[0])) {
-                std::cerr << "Initialization failed, aborting." << std::endl;
-                quit(&cs);
-                CoreState_destroy(&cs);
-                return 1;
-            }
-            int status = run(&cs);
-            quit(&cs);
-            CoreState_destroy(&cs);
-            if (status == 2) {
-                std::cerr << "Opening Lua modes menu." << std::endl;
-                luaModes = true;
-                continue;
-            }
-            else {
-                break;
-            }
-        }
+    CoreState cs;
+    CoreState_initialize(&cs);
+    auto executablePath = std::filesystem::path(argv[0]);
+    const auto basePath = std::filesystem::canonical(executablePath.remove_filename());
+    auto settings = Shiro::Settings(basePath);
+    g123_seeds_init();
+    srand((unsigned int)time(0));
+    handleCommandLineArguments(argc, argv, cs, settings);
+    if (init(&cs, &settings, argv[0])) {
+        std::cerr << "Initialization failed, aborting." << std::endl;
+        quit(&cs);
+        CoreState_destroy(&cs);
+        return EXIT_FAILURE;
     }
-    return 0;
+    int status = run(&cs);
+    quit(&cs);
+    CoreState_destroy(&cs);
 }

@@ -907,7 +907,7 @@ int mload_main(game_t *g, int val)
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 16;
+    d->numopts = 15;
     d->title = "MAIN MENU";
     d->x = 4 * 16;
     d->y = 3 * 16;
@@ -1106,14 +1106,6 @@ int mload_main(game_t *g, int val)
     m->value_x = 21 * 16;
     m->value_y = m->y;
     m->value_text_flags = DRAWTEXT_ALIGN_RIGHT | DRAWTEXT_VALUE_BAR;
-
-    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "LUA MODES"));
-    m = &d->menu.back();
-    d1 = (Shiro::ActionOptionData*)m->data;
-    d1->action = menu_action_lua_modes;
-    d1->val = 0;
-    m->x = 4 * 16;
-    m->y = 26 * 16;
 
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "QUIT"));
     m = &d->menu.back();
@@ -1788,10 +1780,6 @@ int mload_replay(game_t *g, int val)
 }
 
 int menu_action_quit(game_t *g, int val) { return 1; }
-
-int menu_action_lua_modes(game_t* g, int val) {
-    return 2;
-}
 
 int menu_is_practice(game_t *g)
 {
