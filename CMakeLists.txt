@@ -217,23 +217,15 @@ else()
 	endif()
 endif()
 #
-# Visual Studio will by default just put the output into uncommon directories. Let's fix that.
-#
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-#
 # Visual Studio doesn't know which project to start by default, so it defaults to `ALL_BUILD`, which just errors when you try to launch it.
 # Therefore, we set the startup project here.
 #
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE})
 #
+# Visual Studio won't find the assets by default, since they're nowhere to be found in the build directory.
 #
-# Make the executable independent from the source directory by providing assets
+set_property(TARGET ${GAME_EXECUTABLE} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 #
-configure_file(game.ini ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
-file(
-	COPY assets
-	DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-)
 #
 # On clang and gcc, add a few sanitizers in the `Debug` configuration.
 # Support for this is currently only partially available on MSYS2, so we disable it for WIN32.

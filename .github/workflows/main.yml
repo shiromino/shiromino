@@ -61,7 +61,7 @@ jobs:
     - name: Build artifact tree
       run: |
         mkdir artifacts
-        mv LICENSE* README.md build/{assets,*.dll,game.ini,shiromino.exe} artifacts
+        mv assets game.ini LICENSE* README.md build/{*.dll,shiromino.exe} artifacts
       shell: bash
     - if: matrix.build-type == 'Release'
       name: Upload artifacts
