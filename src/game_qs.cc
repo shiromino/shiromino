@@ -1540,7 +1540,7 @@ int qs_game_frame(game_t *g)
 
     if((*s) & PSSPAWN)
     {
-        qs_process_fall(g);
+        qs_process_fall(g, false);
         (*s) &= ~PSSPAWN;
         std::cerr << "First piece" << std::endl;
     }
@@ -1558,13 +1558,14 @@ int qs_game_frame(game_t *g)
 
         if((*s) & PSSPAWN)
         {
-            qs_process_fall(g);
+            qs_process_fall(g, false);
             (*s) &= ~PSSPAWN;
         }
         else
         {
             qs_process_prelockflash(g);
-            qs_process_fall(g);
+	    // TODO: Change "false" to be true when down is currently pressed.
+            qs_process_fall(g, g->origin->keys.down != 0);
             qs_process_lock(g);
             qs_process_lockflash(g);
             qs_process_lineclear(g);
@@ -1580,7 +1581,7 @@ int qs_game_frame(game_t *g)
 
             if((*s) & PSSPAWN)
             {
-                qs_process_fall(g);
+                qs_process_fall(g, false);
                 (*s) &= ~PSSPAWN;
             }
         }
@@ -1993,8 +1994,7 @@ int qs_process_lock(game_t *g)
     return 0;
 }
 
-int qs_process_fall(game_t *g)
-{
+int qs_process_fall(game_t *g, bool soft_drop) {
     // CoreState *cs = g->origin;
     qrsdata *q = (qrsdata *)g->data;
     unsigned int *s = &q->p1->state;
@@ -2002,14 +2002,40 @@ int qs_process_fall(game_t *g)
 
     int row = 0;
 
-    if((*s) & PSFALL)
-    {
+    const bool lock_protect_enabled = q->is_practice ? q->pracdata->lock_protect : q->lock_protect;
+    const bool should_lock_protect = lock_protect_enabled && q->lock_held;
+
+    if ((*s) & PSFALL) {
         row = YTOROW(q->p1->y);
-        qrs_fall(g, q->p1, 0);
-        if(YTOROW(q->p1->y) < row)
-        {
+
+        int grav;
+        if (q->p1->speeds->grav >= 256 || !soft_drop) {
+            grav = 0;
+        }
+	else {
+            grav = 256;
+        }
+        qrs_fall(g, q->p1, grav);
+
+	if (YTOROW(q->p1->y) < row) {
             c->lock = 0;
         }
+
+	if (soft_drop) {
+            q->p1->y &= ~0xFF;
+            q->soft_drop_counter++;
+            if (qrs_isonground(g, q->p1) && !should_lock_protect) {
+                q->lock_held = 1;
+                q->p1->state &= ~PSLOCK;
+                q->p1->state &= ~PSFALL;
+                q->p1->state |= PSLOCKPRESSED;
+            }
+	}
+    }
+    else if (soft_drop && (*s) & PSLOCK && !should_lock_protect) {
+        q->lock_held = 1;
+        q->p1->state &= ~PSLOCK;
+        q->p1->state |= PSLOCKPRESSED;
     }
 
     return 0;

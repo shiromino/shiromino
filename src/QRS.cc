@@ -882,32 +882,6 @@ int qrs_input(game_t *g)
             p->state |= PSFALL;
         }
 
-        if(k->down)
-        {
-            const bool lock_protect_enabled = q->is_practice ? q->pracdata->lock_protect : q->lock_protect;
-            const bool should_lock_protect = lock_protect_enabled && q->lock_held;
-
-            q->soft_drop_counter++;
-            if(p->state & PSFALL)
-            {
-                qrs_fall(g, p, 256);
-                if(qrs_isonground(g, p) && !should_lock_protect)
-                {
-                    qrs_fall(g, p, 256);
-                    q->lock_held = 1;
-                    p->state &= ~PSLOCK;
-                    p->state &= ~PSFALL;
-                    p->state |= PSLOCKPRESSED;
-                }
-            }
-            else if(p->state & PSLOCK && !should_lock_protect)
-            {
-                q->lock_held = 1;
-                p->state &= ~PSLOCK;
-                p->state |= PSLOCKPRESSED;
-            }
-        }
-
         if(k->up == 1)
         {
             if(!(q->game_type == Shiro::GameType::SIMULATE_G1))

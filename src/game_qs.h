@@ -133,7 +133,7 @@ int qs_game_frame(game_t *g);
 
 int qs_process_are(game_t *g);
 int qs_process_prelockflash(game_t *g);
-int qs_process_fall(game_t *g);
+int qs_process_fall(game_t *g, bool soft_drop);
 int qs_process_lock(game_t *g);
 int qs_process_lockflash(game_t *g);
 int qs_process_lineclear(game_t *g);
