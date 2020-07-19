@@ -6,10 +6,10 @@
 #include "Debug.h"
 #include "random.h"
 #include <iostream>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <string>
-#include <time.h>
 #include <sys/stat.h>
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
@@ -19,6 +19,50 @@
 #ifdef main
 #undef main
 #endif
+void printHelp(const char* argv[]) {
+    std::cerr << "Usage: " << argv[0] << " --base-path <base path>" << std::endl;
+}
+void handleCommandLineArguments(int argc, const char* argv[], CoreState& coreState, Shiro::Settings& settings) {
+    /* TODO: Use an argument handler library here */
+    if (argc == 1) {
+        const auto configurationPath = settings.basePath / "game.ini";
+        if (!std::filesystem::exists(configurationPath)) {
+            std::cerr << "Couldn't find configuration file, aborting" << std::endl;
+            CoreState_destroy(&coreState);
+            std::exit(EXIT_FAILURE);
+        }
+        if (settings.read(configurationPath.string())) {
+            std::cerr << "Using one or more default settings" << std::endl;
+        }
+        coreState.configurationPath = configurationPath;
+    }
+    else if (argc == 3) {
+        const auto firstArgument = std::string(argv[1]);
+        const auto secondArgument = std::string(argv[2]);
+        if (firstArgument == "--configuration-path" || firstArgument == "-c") {
+            const auto configurationPath = std::filesystem::path(secondArgument);
+            coreState.configurationPath = configurationPath;
+            auto basePath = std::filesystem::canonical(configurationPath);
+            basePath.remove_filename();
+            settings.basePath = basePath;
+            if (settings.read(configurationPath.string())) {
+                std::cerr << "Using one or more default settings" << std::endl;
+            }
+        }
+        else {
+            printHelp(argv);
+            CoreState_destroy(&coreState);
+            std::exit(EXIT_SUCCESS);
+        }
+    }
+    else {
+        printHelp(argv);
+        CoreState_destroy(&coreState);
+        std::exit(EXIT_FAILURE);
+    }
+    std::cerr << "Configuration file: " << coreState.configurationPath << std::endl;
+    std::cerr << "Base path: " << settings.basePath << std::endl;
+}
 int main(int argc, const char* argv[]) {
     bool luaModes = false;
     bool running = true;
@@ -43,72 +87,26 @@ int main(int argc, const char* argv[]) {
             auto executablePath = std::filesystem::path(argv[0]);
             const auto basePath = std::filesystem::canonical(executablePath.remove_filename());
             auto settings = Shiro::Settings(basePath);
-            const char path[] = ".";
-            const auto configurationPath = basePath / "game.ini";
-
             g123_seeds_init();
             srand((unsigned int)time(0));
-
-            // TODO: Use an argument handler library here, rather than hard-coded
-            // logic.
-            if (argc == 1) {
-                if (!std::filesystem::exists(configurationPath)) {
-                    std::cerr << "Couldn't find configuration file, aborting" << std::endl;
-                    goto error;
-                }
-
-                if (settings.read(configurationPath.string())) {
-                    std::cerr << "Using one or more default settings" << std::endl;
-                }
-
-                cs.configurationPath = configurationPath;
-            }
-            else if (argc >= 2) {
-                if (strcmp(argv[1], "-?") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-                    std::cerr << "Usage: " << argv[0] << " [path to *.ini configuration file]" << std::endl;
-                    CoreState_destroy(&cs);
-                    return 0;
-                }
-                else if (strlen(argv[1]) >= 4 && strcmp(&argv[1][strlen(argv[1]) - 4], ".ini") != 0) {
-                    std::cerr << "Usage: " << argv[0] << " [path to *.ini configuration file]" << std::endl;
-                    goto error;
-                }
-
-                if (settings.read(argv[1])) {
-                    std::cerr << "Using one or more default settings" << std::endl;
-                }
-
-                cs.configurationPath = configurationPath;
-            }
-
-            std::cerr << "Finished reading configuration file: " << configurationPath << std::endl;
-
+            handleCommandLineArguments(argc, argv, cs, settings);
             if (init(&cs, &settings, argv[0])) {
                 std::cerr << "Initialization failed, aborting." << std::endl;
                 quit(&cs);
                 CoreState_destroy(&cs);
                 return 1;
             }
-
-            {
-                int status = run(&cs);
-
-                quit(&cs);
-                CoreState_destroy(&cs);
-
-                if (status == 2) {
-                    std::cerr << "Opening Lua modes menu." << std::endl;
-                    luaModes = true;
-                    continue;
-                }
-                else {
-                    break;
-                }
-            }
-
-        error:
+            int status = run(&cs);
+            quit(&cs);
             CoreState_destroy(&cs);
-            return 1;
+            if (status == 2) {
+                std::cerr << "Opening Lua modes menu." << std::endl;
+                luaModes = true;
+                continue;
+            }
+            else {
+                break;
+            }
         }
     }
     return 0;

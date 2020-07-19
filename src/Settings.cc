@@ -195,7 +195,7 @@ bool Shiro::Settings::read(std::string filename) {
     PDINI::INI ini;
     auto readStatus = ini.read(filename);
     if (readStatus.second > 0) {
-        std::cerr << "Error reading configuation INI \"" << filename << "\" on line " << readStatus.second << std::endl;
+        std::cerr << "Error reading configuration INI \"" << filename << "\" on line " << readStatus.second << std::endl;
     }
     if (!readStatus.first) {
         std::cerr << "Failed opening configuration INI \"" << filename << "\"." << std::endl;
@@ -211,9 +211,19 @@ bool Shiro::Settings::read(std::string filename) {
     }
 
     // [PATHS]
-    std::filesystem::path basePath;
-    if (ini.get("PATHS", "BASE_PATH", basePath)) {
-        this->basePath = basePath;
+    std::filesystem::path specifiedBasePath;
+    if (ini.get("PATHS", "BASE_PATH", specifiedBasePath)) {
+        if (specifiedBasePath.is_relative()) {
+            std::filesystem::path filenamePath = { filename };
+            const auto fileNameDirectory = filenamePath.remove_filename();
+            const auto resolvedPath = std::filesystem::canonical(
+                std::filesystem::path(specifiedBasePath) / fileNameDirectory
+            );
+            this->basePath = resolvedPath;
+        }
+        else {
+            this->basePath = specifiedBasePath;
+        }
     }
     else {
         defaultUsed = true;
