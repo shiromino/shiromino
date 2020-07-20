@@ -54,6 +54,7 @@ if(OPENGL_FOUND)
 	set(ENABLE_OPENGL_INTERPOLATION ON CACHE BOOL "Enables support for the `INTERPOLATE` option in `game.ini`.")
 endif()
 if(ENABLE_OPENGL_INTERPOLATION)
+	set(MINIMUM_SDL2_VERSION 2.0.10)
 	find_package(OpenGL REQUIRED)
 	target_sources(${GAME_EXECUTABLE}
 		PRIVATE
@@ -166,34 +167,48 @@ list(JOIN EXECUTABLE_THIRD_PARTY " " EXECUTABLE_THIRD_PARTY)
 source_group("Third-party" FILES "${EXECUTABLE_THIRD_PARTY}")
 #
 # Dependency management
-# TODO: Port this to CONFIG-mode `find_package` calls, see if we can drop `PkgConfig` entirely.
 #
 find_package(PkgConfig)
+if(NOT DEFINED MINIMUM_SDL2_VERSION)
+	set(MINIMUM_SDL2_VERSION 2.0.5)
+endif()
+set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
+set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
+set(MINIMUM_SQLITE3_VERSION 3.24.0)
+function(target_pkg_config_import TARGET DEPENDENCY)
+	string(TOUPPER ${DEPENDENCY} DEPENDENCY_VARIABLE)
+	set(MINIMUM_VERSION ${MINIMUM_${DEPENDENCY_VARIABLE}_VERSION})
+	pkg_check_modules(${DEPENDENCY_VARIABLE} REQUIRED ${DEPENDENCY}>=${MINIMUM_VERSION})
+	target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS}")
+	target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS_OTHER}")
+	target_include_directories(${TARGET} SYSTEM PRIVATE "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
+	target_link_directories(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARY_DIRS}")
+	target_link_libraries(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARIES}")
+	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
+	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
+endfunction()
 if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
-	pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
-	pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
-	pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
-	pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
 	target_link_libraries(${GAME_EXECUTABLE} PRIVATE
 		m
 		${CMAKE_DL_LIBS}
-		${SDL2_LIBRARIES}
-		${SDL2_image_LIBRARIES}
-		${SDL2_mixer_LIBRARIES}
-		${sqlite3_LIBRARIES}
 	)
-	if(APPLE)
-		# Homebrew doesn't appear to append entries to `LD_LIBRARY_PATH`, so we have to do that ourselves.
-		target_link_directories(${GAME_EXECUTABLE}
-			PRIVATE
-				"${SDL2_LIBRARY_DIRS}"
-				"${SDL2_image_LIBRARY_DIRS}"
-				"${SDL2_mixer_LIBRARY_DIRS}"
-				"${sqlite3_LIBRARY_DIRS}"
-		)
-	endif()
-	target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE "${SDL2_INCLUDE_DIRS}")
+	set(DEPENDENCIES
+		sdl2
+		SDL2_image
+		SDL2_mixer
+		sqlite3
+	)
+	foreach(DEPENDENCY ${DEPENDENCIES})
+		target_pkg_config_import(${GAME_EXECUTABLE} ${DEPENDENCY})
+	endforeach()
 else()
+	#
+	# We *could* check for minimum version requirements here, but vcpkg packages don't have any
+	# version information attached that we could query for from CMake.
+	#
+	# According to https://github.com/Microsoft/vcpkg/issues/1681, package versioning in vcpkg hasn't been fully conceptualized yet.
+	# For now, we won't check the minimum version requirements here.
+	#
 	find_package(SDL2 REQUIRED)
 	find_package(sdl2-image REQUIRED)
 	find_package(sdl2-mixer REQUIRED)
@@ -207,8 +222,10 @@ else()
 			SQLite::SQLite3
 	)
 	if(VCPKG_TOOLCHAIN)
+		#
 		# When using dynamically linked libraries, vcpkg doesn't automatically copy over the vorbis library needed to play ogg files with SDL_mixer,
 		# so they have to be explicitly added as dependencies to shiromino to work around that bug.
+		#
 		find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
 		target_link_libraries(${GAME_EXECUTABLE} PRIVATE ${VORBISFILE_LIBRARY})
 		add_compile_definitions(VCPKG_TOOLCHAIN)

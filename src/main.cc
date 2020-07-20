@@ -1,7 +1,3 @@
-/*
-   main.cpp - handle command line arguments, load game settings, manage main
-   data structures
-*/
 #include "CoreState.h"
 #include "Debug.h"
 #include "random.h"
@@ -14,15 +10,10 @@
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
 #endif
-// When building with GCC on Windows, this fixes the error where WinMain is
-// undefined.
-#ifdef main
-#undef main
-#endif
-void printHelp(const char* argv[]) {
+void printHelp(char* argv[]) {
     std::cerr << "Usage: " << argv[0] << " --configuration-file <configuration file>" << std::endl;
 }
-void handleCommandLineArguments(int argc, const char* argv[], CoreState& coreState, Shiro::Settings& settings) {
+void handleCommandLineArguments(int argc, char* argv[], CoreState& coreState, Shiro::Settings& settings) {
     /* TODO: Use an argument handler library here */
     if (argc == 1) {
         const auto configurationPath = settings.basePath / "game.ini";
@@ -63,7 +54,7 @@ void handleCommandLineArguments(int argc, const char* argv[], CoreState& coreSta
     std::cerr << "Configuration file: " << coreState.configurationPath << std::endl;
     std::cerr << "Base path: " << settings.basePath << std::endl;
 }
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
 #ifdef VCPKG_TOOLCHAIN
     {
         // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
