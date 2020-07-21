@@ -79,7 +79,8 @@ int main(int argc, char* argv[]) {
         CoreState_destroy(&cs);
         return EXIT_FAILURE;
     }
-    int status = run(&cs);
+    run(&cs);
     quit(&cs);
     CoreState_destroy(&cs);
+    return EXIT_SUCCESS;
 }
