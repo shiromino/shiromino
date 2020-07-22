@@ -1,4 +1,5 @@
 #include "Settings.h"
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cinttypes>
@@ -17,14 +18,12 @@ static std::array<std::string, 10> keyBindingNames = {
     "ESCAPE"
 };
 Shiro::KeyBindings::KeyBindings() : KeyBindings(0) {}
-
 /**
- * We have to guarantee some default control option for fresh installs, so
- * keyboard is the best option. Other inputs, like joysticks, don't have any
- * defaults set.
+ * We have to guarantee some default control option for fresh installations, so
+ * keyboard is the best option. Controllers don't currently have any defaults set.
  */
-Shiro::KeyBindings::KeyBindings(int playerNum) {
-    switch (playerNum) {
+Shiro::KeyBindings::KeyBindings(int playerNumber) {
+    switch (playerNumber) {
         default:
         case 0:
             left = SDLK_LEFT;
@@ -38,7 +37,6 @@ Shiro::KeyBindings::KeyBindings(int playerNum) {
             d = SDLK_a;
             escape = SDLK_ESCAPE;
             break;
-
         case 1:
             left = SDLK_j;
             right = SDLK_l;
@@ -53,10 +51,20 @@ Shiro::KeyBindings::KeyBindings(int playerNum) {
             break;
     }
 }
-
 bool Shiro::KeyBindings::read(PDINI::INI& ini, const std::string sectionName) {
     bool defaultUsed = false;
-    SDL_Keycode* const keycodes[] = {&left, &right, &up, &down, &start, &a, &b, &c, &d, &escape};
+    SDL_Keycode* const keycodes[] = {
+        &left,
+        &right,
+        &up,
+        &down,
+        &start,
+        &a,
+        &b,
+        &c,
+        &d,
+        &escape
+    };
     SDL_Keycode* const* keycode = keycodes;
     for (const auto& keyBindingName : keyBindingNames) {
         std::string keyName;
@@ -67,56 +75,48 @@ bool Shiro::KeyBindings::read(PDINI::INI& ini, const std::string sectionName) {
         else {
             **keycode = SDL_GetKeyFromName(keyName.c_str());
         }
-        keycode++;
+        ++keycode;
     }
     return defaultUsed;
 }
-
-Shiro::GamepadBindings::GamepadBindings() : name(""), gamepadIndex(-1), gamepadID(-1), hatIndex(-1) {}
-
-bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName) {
-    bool defaultUsed = false;
-
-    if (!ini.get(sectionName, "JOYNAME", name) && !ini.get(sectionName, "JOYINDEX", gamepadIndex)) {
-        // When no joystick name nor index is set in the INI, just disable
-        // joystick input completely.
+Shiro::GamepadBindings::GamepadBindings() :
+    name(""),
+    gamepadIndex(-1),
+    gamepadID(-1),
+    hatIndex(-1) {}
+void Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName) {
+    if (!ini.get(sectionName, "CONTROLLER_NAME", name) && !ini.get(sectionName, "CONTROLLER_INDEX", gamepadIndex)) {
+        // When no controller name nor index is set in the INI, just disable
+        // controller input completely.
         name = "";
         gamepadIndex = -1;
-        return defaultUsed;
     }
-
-    // A joystick was selected; joystick axes and hat settings have defaults,
+    // A controller was selected; controller axes and hat settings have defaults,
     // but buttons don't.
-
     unsigned buttonGets = 0u;
-    buttonGets += ini.get(sectionName, "BUTTONLEFT", buttons.left) && buttons.left >= 0;
-    buttonGets += ini.get(sectionName, "BUTTONRIGHT", buttons.right) && buttons.right >= 0;
-    buttonGets += ini.get(sectionName, "BUTTONUP", buttons.up) && buttons.up >= 0;
-    buttonGets += ini.get(sectionName, "BUTTONDOWN", buttons.down) && buttons.down >= 0;
-    buttonGets += ini.get(sectionName, "BUTTONSTART", buttons.start) ? buttons.start >= 0 : 0u;
-    buttonGets += ini.get(sectionName, "BUTTONA", buttons.a) ? buttons.a >= 0 : 0u;
-    buttonGets += ini.get(sectionName, "BUTTONB", buttons.b) ? buttons.b >= 0 : 0u;
-    buttonGets += ini.get(sectionName, "BUTTONC", buttons.c) ? buttons.c >= 0 : 0u;
-    buttonGets += ini.get(sectionName, "BUTTOND", buttons.d) ? buttons.d >= 0 : 0u;
-    buttonGets += ini.get(sectionName, "BUTTONESCAPE", buttons.escape) ? buttons.escape >= 0 : 0u;
-    if (buttonGets != 10u) {
-        defaultUsed = true;
-    }
-
+    buttonGets += ini.get(sectionName, "BUTTON_LEFT", buttons.left) && buttons.left >= 0;
+    buttonGets += ini.get(sectionName, "BUTTON_RIGHT", buttons.right) && buttons.right >= 0;
+    buttonGets += ini.get(sectionName, "BUTTON_UP", buttons.up) && buttons.up >= 0;
+    buttonGets += ini.get(sectionName, "BUTTON_DOWN", buttons.down) && buttons.down >= 0;
+    buttonGets += ini.get(sectionName, "BUTTON_START", buttons.start) ? buttons.start >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTON_A", buttons.a) ? buttons.a >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTON_B", buttons.b) ? buttons.b >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTON_C", buttons.c) ? buttons.c >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTON_D", buttons.d) ? buttons.d >= 0 : 0u;
+    buttonGets += ini.get(sectionName, "BUTTON_ESCAPE", buttons.escape) ? buttons.escape >= 0 : 0u;
     unsigned axisGets = 0u;
-    axisGets += ini.get(sectionName, "AXISX", axes.x) && axes.x >= 0;
-    axisGets += ini.get(sectionName, "AXISY", axes.y) && axes.y >= 0;
+    axisGets += ini.get(sectionName, "AXIS_X", axes.x) && axes.x >= 0;
+    axisGets += ini.get(sectionName, "AXIS_Y", axes.y) && axes.y >= 0;
     if (axisGets == 0u) {
         axes.x = 0;
         axes.right = 1;
         axes.y = 1;
         axes.down = 1;
-        defaultUsed = true;
     }
     else {
         if (axes.x >= 0) {
             std::string axisDirection = "";
-            if (ini.get(sectionName, "AXISRIGHT", axisDirection)) {
+            if (ini.get(sectionName, "AXIS_RIGHT", axisDirection)) {
                 if (axisDirection == "+") {
                     axes.right = 1;
                 }
@@ -126,18 +126,15 @@ bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName
             }
             if (axes.right == 0) {
                 axes.right = 1;
-                defaultUsed = true;
             }
         }
         else {
             axes.x = 0;
             axes.right = 1;
-            defaultUsed = true;
         }
-
         if (axes.y >= 0) {
             std::string axisDirection = "";
-            if (ini.get(sectionName, "AXISDOWN", axisDirection)) {
+            if (ini.get(sectionName, "AXIS_DOWN", axisDirection)) {
                 if (axisDirection == "+") {
                     axes.down = 1;
                 }
@@ -147,15 +144,12 @@ bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName
             }
             if (axes.down == 0) {
                 axes.down = 1;
-                defaultUsed = true;
             }
         }
         else {
             axes.y = 1;
             axes.down = 1;
-            defaultUsed = true;
         }
-
         // Use default axis numbers if the user accidentally makes them
         // identical.
         if (axes.x == axes.y) {
@@ -163,18 +157,26 @@ bool Shiro::GamepadBindings::read(PDINI::INI& ini, const std::string sectionName
             axes.y = 1;
         }
     }
-
-    if (!ini.get(sectionName, "HATINDEX", hatIndex) || hatIndex < 0) {
+    if (!ini.get(sectionName, "HAT_INDEX", hatIndex) || hatIndex < 0) {
         hatIndex = 0;
-        defaultUsed = true;
     }
-
-    return defaultUsed;
 }
-
-Shiro::GamepadBindings::Buttons::Buttons() : left(-1), right(-1), up(-1), down(-1), start(-1), a(-1), b(-1), c(-1), d(-1), escape(-1) {}
-Shiro::GamepadBindings::Axes::Axes() : x(-1), right(0), y(-1), down(0) {}
-
+Shiro::GamepadBindings::Buttons::Buttons() :
+    left(-1),
+    right(-1),
+    up(-1),
+    down(-1),
+    start(-1),
+    a(-1),
+    b(-1),
+    c(-1),
+    d(-1),
+    escape(-1) {}
+Shiro::GamepadBindings::Axes::Axes() :
+    x(-1),
+    right(0),
+    y(-1),
+    down(0) {}
 Shiro::Settings::Settings(const std::filesystem::path &basePath) :
     videoScale(1.0f),
     videoStretch(1),
@@ -190,34 +192,24 @@ Shiro::Settings::Settings(const std::filesystem::path &basePath) :
     musicVolume(90),
     basePath(basePath),
     playerName("ARK") {}
-
-bool Shiro::Settings::read(std::string filename) {
+void Shiro::Settings::read(std::string filename) {
     PDINI::INI ini;
-    auto readStatus = ini.read(filename);
-    if (readStatus.second > 0) {
-        std::cerr << "Error reading configuration INI \"" << filename << "\" on line " << readStatus.second << std::endl;
+    auto [wasReadSuccessful, lineNumber] = ini.read(filename);
+    if (lineNumber > 0) {
+        std::cerr << "Error reading configuration INI \"" << filename << "\" on line " << lineNumber << std::endl;
     }
-    if (!readStatus.first) {
+    if (!wasReadSuccessful) {
         std::cerr << "Failed opening configuration INI \"" << filename << "\"." << std::endl;
-        return true;
     }
-
-    // [P1KEYBINDS]
-    bool defaultUsed = this->keyBindings.read(ini, "P1KEYBINDS");
-
-    // [P1JOYBINDS]
-    if (!this->gamepadBindings.read(ini, "P1JOYBINDS")) {
-        defaultUsed = true;
-    }
-
-    // [PATHS]
+    this->keyBindings.read(ini, "PLAYER_1_KEY_BINDINGS");
+    this->gamepadBindings.read(ini, "PLAYER_1_CONTROLLER_BINDINGS");
     std::filesystem::path specifiedBasePath;
     if (ini.get("PATHS", "BASE_PATH", specifiedBasePath)) {
         if (specifiedBasePath.is_relative()) {
             std::filesystem::path filenamePath = { filename };
-            const auto fileNameDirectory = filenamePath.remove_filename();
+            const auto filenameDirectory = filenamePath.remove_filename();
             const auto resolvedPath = std::filesystem::canonical(
-                std::filesystem::path(specifiedBasePath) / fileNameDirectory
+                std::filesystem::path(specifiedBasePath) / filenameDirectory
             );
             this->basePath = resolvedPath;
         }
@@ -225,98 +217,51 @@ bool Shiro::Settings::read(std::string filename) {
             this->basePath = specifiedBasePath;
         }
     }
-    else {
-        defaultUsed = true;
+    unsigned int masterVolume;
+    if (ini.get("AUDIO", "MASTER_VOLUME", masterVolume)) {
+        this->masterVolume = std::clamp(masterVolume, 0u, 100u);
     }
-
-    // [AUDIO]
-    int volume;
-    if (!ini.get("AUDIO", "MASTERVOLUME", volume) || (volume < 0 && volume > 100)) {
-        defaultUsed = true;
+    unsigned int sfxVolume;
+    if (ini.get("AUDIO", "SFX_VOLUME", sfxVolume)) {
+        this->sfxVolume = std::clamp(sfxVolume, 0u, 100u);
     }
-    else {
-        this->masterVolume = volume;
+    unsigned int musicVolume;
+    if (ini.get("AUDIO", "MUSIC_VOLUME", musicVolume)) {
+        this->musicVolume = std::clamp(musicVolume, 0u, 100u);
     }
-    if (!ini.get("AUDIO", "SFXVOLUME", volume) || (volume < 0 && volume > 100)) {
-        defaultUsed = true;
-    }
-    else {
-        this->sfxVolume = volume;
-    }
-    if (!ini.get("AUDIO", "MUSICVOLUME", volume) || (volume < 0 && volume > 100)) {
-        defaultUsed = true;
-    }
-    else {
-        this->musicVolume = volume;
-    }
-
-    // [SCREEN]
     float videoScale;
-    if (!ini.get("SCREEN", "VIDEOSCALE", videoScale) || videoScale <= 0.0f) {
-        defaultUsed = true;
+    if (ini.get("SCREEN", "VIDEO_SCALE", videoScale)) {
+        const auto epsilon = std::numeric_limits<decltype(videoScale)>::epsilon();
+        this->videoScale = std::min(epsilon, videoScale);
     }
-    else {
-        this->videoScale = videoScale;
-    }
-
     int videoStretch;
-    if (!ini.get("SCREEN", "VIDEOSTRETCH", videoStretch)) {
-        defaultUsed = true;
-    }
-    else {
+    if (ini.get("SCREEN", "VIDEO_STRETCH", videoStretch)) {
         this->videoStretch = videoStretch;
     }
-
     int fullscreen;
-    if (!ini.get("SCREEN", "FULLSCREEN", fullscreen)) {
-        defaultUsed = true;
-    }
-    else {
+    if (ini.get("SCREEN", "FULL_SCREEN", fullscreen)) {
         this->fullscreen = !!fullscreen;
     }
-
     int vsync;
-    if (!ini.get("SCREEN", "VSYNC", vsync)) {
-        defaultUsed = true;
-    }
-    else {
+    if (ini.get("SCREEN", "V_SYNC", vsync)) {
         this->vsync = !!vsync;
     }
-
     int frameDelay;
-    if (!ini.get("SCREEN", "FRAMEDELAY", frameDelay) || frameDelay < 0) {
-        defaultUsed = true;
+    if (ini.get("SCREEN", "FRAME_DELAY", frameDelay)) {
+        this->frameDelay = std::min(0, frameDelay);
     }
-    else {
-        this->frameDelay = frameDelay;
-    }
-
     int vsyncTimestep;
-    if (!ini.get("SCREEN", "VSYNCTIMESTEP", vsyncTimestep)) {
-        defaultUsed = true;
-    }
-    else {
+    if (ini.get("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep)) {
         this->vsyncTimestep = !!vsyncTimestep;
     }
-
 #ifdef ENABLE_OPENGL_INTERPOLATION
     int interpolate;
-    if (!ini.get("SCREEN", "INTERPOLATE", interpolate)) {
-        defaultUsed = true;
-    }
-    else {
-        this->interpolate = interpolate;
+    if (ini.get("SCREEN", "INTERPOLATE", interpolate)) {
+        this->interpolate = !!interpolate;
     }
 #endif
-
-    // [ACCOUNT]
     std::string playerName;
-    if (ini.get("ACCOUNT", "PLAYERNAME", playerName)) {
+    if (ini.get("ACCOUNT", "PLAYER_NAME", playerName)) {
         this->playerName = playerName;
     }
-    else {
-        defaultUsed = true;
-    }
-
-    return defaultUsed;
 }

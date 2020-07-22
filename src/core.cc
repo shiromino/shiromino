@@ -891,13 +891,13 @@ int run(CoreState *cs)
 #ifdef DEBUG_FRAME_TIMING
     // Due to limitations in SDL's display refresh rate reporting, FPS
     // debugging can't be made to display the correct monitor FPS when vsync
-    // and vsyncTimestep are enabled. So use the VIDEOFPS INI option to get
+    // and vsyncTimestep are enabled. So use the VIDEO_FPS INI option to get
     // correct FPS information.
     double videoFPS;
     {
         PDINI::INI ini;
         ini.read(cs->configurationPath);
-        if (!ini.get("SCREEN", "VIDEOFPS", videoFPS) || videoFPS <= 0.0) {
+        if (!ini.get("SCREEN", "VIDEO_FPS", videoFPS) || videoFPS <= 0.0) {
             videoFPS = 0.0;
         }
     }

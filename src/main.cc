@@ -22,9 +22,7 @@ void handleCommandLineArguments(int argc, char* argv[], CoreState& coreState, Sh
             CoreState_destroy(&coreState);
             std::exit(EXIT_FAILURE);
         }
-        if (settings.read(configurationPath.string())) {
-            std::cerr << "Using one or more default settings" << std::endl;
-        }
+        settings.read(configurationPath.string());
         coreState.configurationPath = configurationPath;
     }
     else if (argc == 3) {
@@ -36,9 +34,7 @@ void handleCommandLineArguments(int argc, char* argv[], CoreState& coreState, Sh
             auto basePath = std::filesystem::canonical(configurationPath);
             basePath.remove_filename();
             settings.basePath = basePath;
-            if (settings.read(configurationPath.string())) {
-                std::cerr << "Using one or more default settings" << std::endl;
-            }
+            settings.read(configurationPath.string());
         }
         else {
             printHelp(argv);
