@@ -533,13 +533,13 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
                 }
             }
             cs->joystick = nullptr;
-            if (cs->settings->gamepadBindings.name != "") {
+            if (cs->settings->controllerBindings.name != "") {
                 const int numJoysticks = SDL_NumJoysticks();
                 for (int i = 0; i < numJoysticks; i++) {
                     if ((cs->joystick = SDL_JoystickOpen(i))) {
-                        if (SDL_JoystickName(cs->joystick) == cs->settings->gamepadBindings.name) {
-                            cs->settings->gamepadBindings.gamepadIndex = i;
-                            cs->settings->gamepadBindings.gamepadID = SDL_JoystickInstanceID(cs->joystick);
+                        if (SDL_JoystickName(cs->joystick) == cs->settings->controllerBindings.name) {
+                            cs->settings->controllerBindings.controllerIndex = i;
+                            cs->settings->controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
                             break;
                         }
                         else {
@@ -549,16 +549,16 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
                     }
                 }
             }
-            if (!cs->joystick && cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->settings->gamepadBindings.gamepadIndex < SDL_NumJoysticks()) {
-                if ((cs->joystick = SDL_JoystickOpen(cs->settings->gamepadBindings.gamepadIndex))) {
-                    cs->settings->gamepadBindings.gamepadID = SDL_JoystickInstanceID(cs->joystick);
+            if (!cs->joystick && cs->settings->controllerBindings.controllerIndex >= 0 && cs->settings->controllerBindings.controllerIndex < SDL_NumJoysticks()) {
+                if ((cs->joystick = SDL_JoystickOpen(cs->settings->controllerBindings.controllerIndex))) {
+                    cs->settings->controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
                 }
             }
-            if (cs->settings->gamepadBindings.gamepadIndex >= 0 && cs->joystick) {
+            if (cs->settings->controllerBindings.controllerIndex >= 0 && cs->joystick) {
                 std::cerr
                     << "Joysticks are enabled" << std::endl
-                    << "Name: " << SDL_JoystickNameForIndex(cs->settings->gamepadBindings.gamepadIndex) << std::endl
-                    << "Index: " << cs->settings->gamepadBindings.gamepadIndex << std::endl
+                    << "Name: " << SDL_JoystickNameForIndex(cs->settings->controllerBindings.controllerIndex) << std::endl
+                    << "Index: " << cs->settings->controllerBindings.controllerIndex << std::endl
                     << "Buttons: " << SDL_JoystickNumButtons(cs->joystick) << std::endl
                     << "Axes: " << SDL_JoystickNumAxes(cs->joystick) << std::endl
                     << "Hats: " << SDL_JoystickNumHats(cs->joystick) << std::endl;
@@ -1238,7 +1238,7 @@ int process_events(CoreState *cs, GuiWindow& window, const std::deque<SDL_Event>
 
     SDL_Keycode keyCode;
     Shiro::KeyBindings& keyBindings = cs->settings->keyBindings;
-    Shiro::GamepadBindings& gamepadBindings = cs->settings->gamepadBindings;
+    Shiro::ControllerBindings& controllerBindings = cs->settings->controllerBindings;
 
 #if 0
     if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
@@ -1318,13 +1318,13 @@ int process_events(CoreState *cs, GuiWindow& window, const std::deque<SDL_Event>
         case SDL_JOYAXISMOTION:
             k = &cs->keys_raw;
 
-            if (event.jaxis.which == gamepadBindings.gamepadID) {
-                if (event.jaxis.axis == gamepadBindings.axes.x) {
-                    if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.right) {
+            if (event.jaxis.which == controllerBindings.controllerID) {
+                if (event.jaxis.axis == controllerBindings.axes.x) {
+                    if (event.jaxis.value > JOYSTICK_DEAD_ZONE * controllerBindings.axes.right) {
                         k->right = 1;
                         k->left = 0;
                     }
-                    else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.right) {
+                    else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -controllerBindings.axes.right) {
                         k->left = 1;
                         k->right = 0;
                     }
@@ -1333,12 +1333,12 @@ int process_events(CoreState *cs, GuiWindow& window, const std::deque<SDL_Event>
                         k->left = 0;
                     }
                 }
-                else if (event.jaxis.axis == gamepadBindings.axes.y) {
-                    if (event.jaxis.value > JOYSTICK_DEAD_ZONE * gamepadBindings.axes.down) {
+                else if (event.jaxis.axis == controllerBindings.axes.y) {
+                    if (event.jaxis.value > JOYSTICK_DEAD_ZONE * controllerBindings.axes.down) {
                         k->down = 1;
                         k->up = 0;
                     }
-                    else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -gamepadBindings.axes.down) {
+                    else if (event.jaxis.value < JOYSTICK_DEAD_ZONE * -controllerBindings.axes.down) {
                         k->up = 1;
                         k->down = 0;
                     }
@@ -1354,7 +1354,7 @@ int process_events(CoreState *cs, GuiWindow& window, const std::deque<SDL_Event>
         case SDL_JOYHATMOTION:
             k = &cs->keys_raw;
 
-            if (event.jhat.which == gamepadBindings.gamepadID && event.jhat.hat == gamepadBindings.hatIndex) {
+            if (event.jhat.which == controllerBindings.controllerID && event.jhat.hat == controllerBindings.hatIndex) {
                 if (event.jhat.value == SDL_HAT_CENTERED) {
                     k->right = 0;
                     k->left = 0;
@@ -1387,9 +1387,9 @@ int process_events(CoreState *cs, GuiWindow& window, const std::deque<SDL_Event>
         case SDL_JOYBUTTONDOWN:
         case SDL_JOYBUTTONUP:
             k = &cs->keys_raw;
-            if (event.jbutton.which == gamepadBindings.gamepadID) {
+            if (event.jbutton.which == controllerBindings.controllerID) {
 #define CHECK_BUTTON(name) \
-                    if (event.jbutton.button == gamepadBindings.buttons.name) { \
+                    if (event.jbutton.button == controllerBindings.buttons.name) { \
                         k->name = event.type == SDL_JOYBUTTONDOWN; \
                     }
 

@@ -98,6 +98,10 @@ target_sources(${GAME_EXECUTABLE}
 		src/GuiScreenManager.h
 		src/images.h
 		src/Input.h
+		src/input/ControllerBindings.cc
+		src/input/ControllerBindings.h
+		src/input/KeyBindings.cc
+		src/input/KeyBindings.h
 		src/main.cc
 		src/Menu/ActionOption.h
 		src/Menu/ElementType.h
