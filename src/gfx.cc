@@ -1,4 +1,5 @@
 #include "CoreState.h"
+#include "input/KeyFlags.h"
 #include "game_qs.h"
 #include "gfx.h"
 #include "gfx_structures.h"
@@ -827,7 +828,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     return 0;
 }
 
-int gfx_drawkeys(CoreState *cs, struct keyflags *k, int x, int y, Uint32 rgba)
+int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Uint32 rgba)
 {
     if(!cs)
         return -1;

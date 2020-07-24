@@ -97,12 +97,12 @@ target_sources(${GAME_EXECUTABLE}
 		src/GuiScreenManager.cc
 		src/GuiScreenManager.h
 		src/images.h
-		src/Input.h
 		src/input/ControllerBindings.cc
 		src/input/ControllerBindings.h
 		src/input/KeyBindings.cc
 		src/input/KeyBindings.h
 		src/main.cc
+		src/Magic.h
 		src/Menu/ActionOption.h
 		src/Menu/ElementType.h
 		src/Menu/GameArguments.h
@@ -116,8 +116,6 @@ target_sources(${GAME_EXECUTABLE}
 		src/Menu/ToggleOption.h
 		src/Mode/BaseMode.cc
 		src/Mode/BaseMode.h
-		src/MultiEditor.cc
-		src/MultiEditor.h
 		src/music.h
 		src/PieceDefinition.cc
 		src/PieceDefinition.h

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreState.h"
 #include "Grid.h"
+#include "input/KeyFlags.h"
 #include "Timer.h"
 #include "PieceDefinition.h"
 #include "gfx_structures.h"
@@ -93,7 +94,7 @@ int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int
 int gfx_drawbuttons(CoreState *cs, int type);
 
 int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsigned int flags, int x, int y);
-int gfx_drawkeys(CoreState *cs, struct keyflags *k, int x, int y, Uint32 rgba);
+int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Uint32 rgba);
 
 int gfx_drawtext(CoreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt);

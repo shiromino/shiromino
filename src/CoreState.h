@@ -1,10 +1,11 @@
 #pragma once
 #include "AssetStore.h"
+#include "DASDirection.h"
 #include "DisplayMode.h"
 #include "Game.h"
 #include "GuiScreenManager.h"
 #include "gfx_structures.h"
-#include "Input.h"
+#include "input/KeyFlags.h"
 #include "Player.h"
 #include "Settings.h"
 #include "RecordList.h"
@@ -84,12 +85,12 @@ struct CoreState
     std::size_t gfx_animations_max;
     std::size_t gfx_buttons_max;
 
-    struct keyflags prev_keys_raw;
-    struct keyflags keys_raw;
-    struct keyflags prev_keys;
-    struct keyflags keys;
-    struct keyflags pressed;
-    das_direction hold_dir;
+    Shiro::KeyFlags prev_keys_raw;
+    Shiro::KeyFlags keys_raw;
+    Shiro::KeyFlags prev_keys;
+    Shiro::KeyFlags keys;
+    Shiro::KeyFlags pressed;
+    Shiro::DASDirection hold_dir;
     int hold_time;
 
     SDL_Joystick *joystick;

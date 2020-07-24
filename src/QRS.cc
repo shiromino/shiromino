@@ -6,7 +6,8 @@
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"
 #include "Grid.h"
-#include "Input.h"
+#include "input/KeyFlags.h"
+#include "Magic.h"
 #include "PieceDefinition.h"
 #include "QRS0.h"
 #include "random.h"
@@ -21,7 +22,7 @@
 #include <utility>
 const char *qrspiece_names[25] = {"I", "J", "L",  "X",  "S", "Z",       "N",  "G",  "U",  "T", "Fa", "Fb", "P",
                                   "Q", "W", "Ya", "Yb", "V", /**/ "I4", "T4", "J4", "L4", "O", "S4", "Z4"};
-                                  
+
 QRS_Timings::QRS_Timings() : QRS_Timings(0u, 4, 30, 14, 30, 30, 40) {}
 
 QRS_Timings::QRS_Timings(unsigned level, int grav, int lock, int das, int are, int lineare, int lineclear) :
@@ -354,7 +355,7 @@ int usr_field_undo_clear(CoreState *cs, void *data)
 int qrs_input(game_t *g)
 {
     CoreState *cs = g->origin;
-    struct keyflags *k = NULL;
+    Shiro::KeyFlags *k = NULL;
 
     qrsdata *q = (qrsdata *)g->data;
     pracdata *d = q->pracdata;
@@ -413,7 +414,7 @@ int qrs_input(game_t *g)
 
             if(SDL_GetModState() & KMOD_SHIFT && cs->mouse_left_down)
             {
-                if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+                if(cs->mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
                 {
                     d->field_selection = 1;
                     d->field_selection_vertex1_x = cell_x;
@@ -487,7 +488,7 @@ int qrs_input(game_t *g)
                     }
                     else if(d->field_selection)
                     {
-                        if(cs->mouse_left_down == BUTTON_PRESSED_THIS_FRAME)
+                        if(cs->mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
                         {
                             d->field_selection = 0;
                             cs->mouse_left_down = 0;
@@ -520,7 +521,7 @@ int qrs_input(game_t *g)
                 {
                     if(d->field_selection)
                     {
-                        if(cs->mouse_right_down == BUTTON_PRESSED_THIS_FRAME)
+                        if(cs->mouse_right_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
                         {
                             d->field_selection = 0;
                             cs->mouse_right_down = 0;
@@ -1058,7 +1059,7 @@ int qrs_proc_initials(game_t *g)
         return -1;
 
     qrsdata *q = (qrsdata *)(g->data);
-    struct keyflags *k = &g->origin->keys;
+    Shiro::KeyFlags *k = &g->origin->keys;
     qrs_player *p = q->p1;
 
     if(k->d && q->hold_enabled)
@@ -1082,7 +1083,7 @@ int qrs_irs(game_t *g)
         return -1;
 
     qrsdata *q = (qrsdata *)(g->data);
-    struct keyflags *k = &g->origin->keys;
+    Shiro::KeyFlags *k = &g->origin->keys;
     qrs_player *p = q->p1;
 
     int direction = 0;

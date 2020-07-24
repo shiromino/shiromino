@@ -28,6 +28,13 @@ void Shiro::ControllerBindings::read(PDINI::INI& ini) {
     unsigned axisGets = 0u;
     axisGets += ini.get(sectionName, "AXIS_X", axes.x) && axes.x >= 0;
     axisGets += ini.get(sectionName, "AXIS_Y", axes.y) && axes.y >= 0;
+    auto appliedDeadZone = deadZone;
+    if (ini.get(sectionName, "DEAD_ZONE", appliedDeadZone)) {
+        this->deadZone = std::clamp(appliedDeadZone, 0.0f, 1.0f);
+    }
+    else {
+        this->deadZone = 0.5f;
+    }
     if (axisGets == 0u) {
         axes.x = 0;
         axes.right = 1;

@@ -1,6 +1,6 @@
 #include "replay.h"
 #include "game_qs.h"
-#include "Input.h"
+#include "input/KeyFlags.h"
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
@@ -18,7 +18,7 @@ enum packed_input_mask {
     pi_d      = 1 << 7,
 };
 
-struct packed_input pack_input(struct keyflags *k)
+struct packed_input pack_input(Shiro::KeyFlags *k)
 {
     struct packed_input i = { 0 };
 
@@ -34,7 +34,7 @@ struct packed_input pack_input(struct keyflags *k)
     return i;
 }
 
-void unpack_input(struct packed_input p, struct keyflags *out_keys)
+void unpack_input(struct packed_input p, Shiro::KeyFlags *out_keys)
 {
     out_keys->left  = (p.data & pi_left) ? 1 : 0;
     out_keys->right = (p.data & pi_right) ? 1 : 0;

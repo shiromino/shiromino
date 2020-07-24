@@ -409,7 +409,6 @@ int menu_input(game_t *g)
         return -1;
 
     CoreState *cs = g->origin;
-    //struct keyflags *k = &cs->keys;
 
     menudata *d = (menudata *)(g->data);
 
@@ -907,7 +906,7 @@ int mload_main(game_t *g, int val)
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 15;
+    d->numopts = 14;
     d->title = "MAIN MENU";
     d->x = 4 * 16;
     d->y = 3 * 16;
@@ -1023,21 +1022,13 @@ int mload_main(game_t *g, int val)
     m->label_text_rgba = 0x40FF40FF;
     m->value_text_rgba = 0xA0A0FFFF;
 
-    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "MULTI-EDITOR"));
-    m = &d->menu.back();
-    d1 = (Shiro::ActionOptionData *)m->data;
-    d1->action = mload_practice;
-    d1->val = 0;
-    m->x = 4 * 16;
-    m->y = 16 * 16;
-
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "REPLAY"));
     m = &d->menu.back();
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_replay;
     d1->val = 0;
     m->x = 4 * 16;
-    m->y = 17 * 16;
+    m->y = 14 * 16;
 
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "SETTINGS"));
     m = &d->menu.back();

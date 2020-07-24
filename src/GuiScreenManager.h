@@ -61,7 +61,7 @@ public:
 
     void scrollSelection(int amount)
     {
-        
+
     }
 
 protected:

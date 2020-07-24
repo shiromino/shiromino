@@ -1,10 +1,12 @@
 #pragma once
+#include "types.h"
 #include "PDINI.h"
 #include <SDL.h>
 #include <string>
 namespace Shiro {
     class ControllerBindings {
     public:
+        static constexpr i16 MAXIMUM_DEAD_ZONE = std::numeric_limits<i16>::max();
         ControllerBindings();
         void read(PDINI::INI& ini);
         std::string name;
@@ -32,5 +34,6 @@ namespace Shiro {
             // TODO: Axis bindings for non-directional inputs.
         } axes;
         int hatIndex;
+        float deadZone;
     };
 };
