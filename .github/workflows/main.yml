@@ -4,7 +4,7 @@ jobs:
     # See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install dependencies
@@ -22,7 +22,7 @@ jobs:
   x64-mac-os:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install mac OS dependencies
@@ -40,7 +40,7 @@ jobs:
   windows-visual-studio:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
       shell: bash
@@ -87,7 +87,7 @@ jobs:
   x64-windows-msys2:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - uses: msys2/setup-msys2@v1
