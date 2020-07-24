@@ -732,8 +732,8 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
 
         // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
-        // TODO: Configurable scores.db directory
-        static const char scoredb_file[] = "scores.db";
+        // TODO: Configurable directory
+        static const char scoredb_file[] = "shiromino.sqlite";
         scoredb_init(&cs->records, scoredb_file);
         scoredb_create_player(&cs->records, &cs->player, cs->settings->playerName.c_str());
 

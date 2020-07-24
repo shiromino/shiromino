@@ -1,20 +1,12 @@
-# Developer replays #
-#####################
-replay/*
-scores.db
-
-# Files generated while debugging #
-###################################
+# Developer replays
+*.sqlite
+# Files generated while debugging
 *.vgcore
-
-# Misc #
-########
+# Miscellaneous
 *.kate-swp
 *.swp
 tags
-
-# Output files #
-################
+# Output files
 *.log
 *.com
 *.class
@@ -25,9 +17,7 @@ tags
 /.vs/*
 /build*
 CMakeLists.txt.user
-
-# Packages #
-############
+# Packages
 *.7z
 *.dmg
 *.gz
@@ -36,9 +26,7 @@ CMakeLists.txt.user
 *.rar
 *.tar
 *.zip
-
-# OS generated files #
-######################
+# OS-generated files
 .DS_Store
 .DS_Store?
 ._*
