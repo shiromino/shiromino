@@ -29,8 +29,8 @@ void Shiro::Settings::read(std::string filename) {
     if (!wasReadSuccessful) {
         std::cerr << "Failed opening configuration INI \"" << filename << "\"." << std::endl;
     }
-    this->keyBindings.read(ini, "PLAYER_1_KEY_BINDINGS");
-    this->controllerBindings.read(ini, "PLAYER_1_CONTROLLER_BINDINGS");
+    this->keyBindings.read(ini);
+    this->controllerBindings.read(ini);
     std::filesystem::path specifiedBasePath;
     if (ini.get("PATHS", "BASE_PATH", specifiedBasePath)) {
         if (specifiedBasePath.is_relative()) {

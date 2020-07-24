@@ -7,7 +7,7 @@ namespace Shiro {
     public:
         KeyBindings();
         KeyBindings(const int playerNumber);
-        void read(PDINI::INI& ini, const std::string sectionName);
+        void read(PDINI::INI& ini);
         SDL_Keycode left;
         SDL_Keycode right;
         SDL_Keycode up;

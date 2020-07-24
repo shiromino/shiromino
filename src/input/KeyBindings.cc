@@ -47,7 +47,8 @@ Shiro::KeyBindings::KeyBindings(int playerNumber) {
             break;
     }
 }
-void Shiro::KeyBindings::read(PDINI::INI& ini, const std::string sectionName) {
+void Shiro::KeyBindings::read(PDINI::INI& ini) {
+    const auto sectionName = "PLAYER_1_KEY_BINDINGS";
     SDL_Keycode* const keycodes[] = {
         &left,
         &right,

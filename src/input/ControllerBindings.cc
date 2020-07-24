@@ -4,7 +4,8 @@ Shiro::ControllerBindings::ControllerBindings() :
     controllerIndex(-1),
     controllerID(-1),
     hatIndex(-1) {}
-void Shiro::ControllerBindings::read(PDINI::INI& ini, const std::string sectionName) {
+void Shiro::ControllerBindings::read(PDINI::INI& ini) {
+    const auto sectionName = "PLAYER_1_CONTROLLER_BINDINGS";
     if (!ini.get(sectionName, "CONTROLLER_NAME", name) && !ini.get(sectionName, "CONTROLLER_INDEX", controllerIndex)) {
         // When no controller name nor index is set in the INI, just disable
         // controller input completely.

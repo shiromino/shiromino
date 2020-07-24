@@ -6,7 +6,7 @@ namespace Shiro {
     class ControllerBindings {
     public:
         ControllerBindings();
-        void read(PDINI::INI& ini, const std::string sectionName);
+        void read(PDINI::INI& ini);
         std::string name;
         int controllerIndex;
         SDL_JoystickID controllerID;
