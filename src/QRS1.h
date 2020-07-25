@@ -39,7 +39,7 @@
 #define QRS_ARS_S 5
 #define QRS_ARS_Z 6
 
-// IZSJLOT - arkia's arbitrary tetromino ordering
+// IZSJLOT - Arika's arbitrary tetromino ordering
 #define ARS_I 0
 #define ARS_Z 1
 #define ARS_S 2
