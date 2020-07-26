@@ -7,7 +7,7 @@ For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option,
 ### Build definitions
 | Definition                    | Values    | Description                                                                         |
 | ----------------------------- | --------- |  -----------------------------------------------------------------------------------|
-| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`  | Enables support for the `INTERPOLATE` option in `game.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system.
+| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`  | Enables support for the `INTERPOLATE` option in `shiromino.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system.
 ### Installing dependencies and compiling
 In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 #### Linux (Arch-Linux-based)
@@ -51,15 +51,15 @@ Usually, you can find your compiled game executable in `./build/shiromino`. Note
 
 Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
 
-Besides the game executable, the game needs a few files in order to run properly. For one, there's `game.ini`, a configuration file that you can use to specify key bindings and other settings. Then, there's also the `assets` directory which includes audio and image files.
+Besides the game executable, the game needs a few files in order to run properly. For one, there's `shiromino.ini`, a configuration file that you can use to specify key bindings and other settings. Then, there's also the `assets` directory which includes audio and image files.
 
 There are two ways to make the game find these files. The first way is to just put them into the same directory as the `shiromino` executable. After doing that, you can run the game via:
 ```shell
 $ ./build/shiromino
 ```
-Especially during development, this approach is very inflexible. A second way is to specify a path to the configuration file (`game.ini`) with `--configuration-file` or `-c` on the command line. For example, you could provide the flag like this from the source directory:
+Especially during development, this approach is very inflexible. A second way is to specify a path to the configuration file (`shiromino.ini`) with `--configuration-file` or `-c` on the command line. For example, you could provide the flag like this from the source directory:
 ```shell
-$ ./build/shiromino --configuration-file ./game.ini
+$ ./build/shiromino --configuration-file ./shiromino.ini
 ```
 The path to `assets` is resolved in the following order:
 - If `--configuration-file` is left unspecified, try `<directory of executable>/assets`.

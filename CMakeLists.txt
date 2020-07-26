@@ -51,7 +51,7 @@ target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEAD
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 if(OPENGL_FOUND)
-	set(ENABLE_OPENGL_INTERPOLATION ON CACHE BOOL "Enables support for the `INTERPOLATE` option in `game.ini`.")
+	set(ENABLE_OPENGL_INTERPOLATION ON CACHE BOOL "Enables support for the `INTERPOLATE` option in `shiromino.ini`.")
 endif()
 if(ENABLE_OPENGL_INTERPOLATION)
 	set(MINIMUM_SDL2_VERSION 2.0.10)
@@ -249,7 +249,7 @@ set_property(
 # However, it allows us to specify command-line flags for the debugger.
 # We use this to specify the configuration file.
 #
-file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/game.ini" NATIVE_CONFIGURATION_PATH)
+file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/shiromino.ini" NATIVE_CONFIGURATION_PATH)
 set_property(
 	TARGET ${GAME_EXECUTABLE}
 	PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--configuration-file ${NATIVE_CONFIGURATION_PATH}"
@@ -288,3 +288,4 @@ endif()
 #
 install(DIRECTORY assets DESTINATION usr/share/${PROJECT_NAME})
 install(TARGETS ${GAME_EXECUTABLE} RUNTIME)
+install(FILES shiromino.ini DESTINATION etc)

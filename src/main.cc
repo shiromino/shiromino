@@ -16,7 +16,7 @@ void printHelp(char* argv[]) {
 void handleCommandLineArguments(int argc, char* argv[], CoreState& coreState, Shiro::Settings& settings) {
     /* TODO: Use an argument handler library here */
     if (argc == 1) {
-        const auto configurationPath = settings.basePath / "game.ini";
+        const auto configurationPath = settings.basePath / "shiromino.ini";
         if (!std::filesystem::exists(configurationPath)) {
             std::cerr << "Couldn't find configuration file, aborting" << std::endl;
             CoreState_destroy(&coreState);
