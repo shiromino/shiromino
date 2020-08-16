@@ -1350,12 +1350,11 @@ int process_events(CoreState *cs) {
                 break;
 
             case SDL_JOYBUTTONDOWN:
-            case SDL_JOYBUTTONUP:
                 k = &cs->keys_raw;
                 if (event.jbutton.which == controllerBindings.controllerID) {
 #define CHECK_BUTTON(name) \
                     if (event.jbutton.button == controllerBindings.buttons.name) { \
-                        k->name = event.type == SDL_JOYBUTTONDOWN; \
+                        k->name = 1; \
                     }
 
                     CHECK_BUTTON(left);
@@ -1368,7 +1367,29 @@ int process_events(CoreState *cs) {
                     CHECK_BUTTON(c);
                     CHECK_BUTTON(d);
                     CHECK_BUTTON(escape);
+#undef CHECK_BUTTON
+                }
 
+                break;
+
+            case SDL_JOYBUTTONUP:
+                k = &cs->keys_raw;
+                if (event.jbutton.which == controllerBindings.controllerID) {
+#define CHECK_BUTTON(name) \
+                    if (event.jbutton.button == controllerBindings.buttons.name) { \
+                        k->name = 0; \
+                    }
+
+                    CHECK_BUTTON(left);
+                    CHECK_BUTTON(right);
+                    CHECK_BUTTON(up);
+                    CHECK_BUTTON(down);
+                    CHECK_BUTTON(start);
+                    CHECK_BUTTON(a);
+                    CHECK_BUTTON(b);
+                    CHECK_BUTTON(c);
+                    CHECK_BUTTON(d);
+                    CHECK_BUTTON(escape);
 #undef CHECK_BUTTON
                 }
 
