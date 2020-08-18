@@ -932,7 +932,10 @@ int run(CoreState *cs)
             cs->prev_keys_raw = cs->keys_raw;
             cs->prev_keys = cs->keys;
 
-            process_events(cs);
+            if (process_events(cs)) {
+                running = false;
+                break;
+            }
 
             handle_replay_input(cs);
 
@@ -1010,7 +1013,6 @@ int run(CoreState *cs)
                 timeAccumulator = 0.0;
             }
         }
-        //events.erase(events.begin(), endEvent);
 
 #ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
@@ -1377,6 +1379,7 @@ int process_events(CoreState *cs) {
                 break;
 
             case SDL_JOYBUTTONUP:
+                k = &cs->keys_raw;
                 if (event.jbutton.which == controllerBindings.controllerID) {
 #define CHECK_JOYBUTTONUP(name) \
                     if (event.jbutton.button == controllerBindings.buttons.name) { \
@@ -1387,6 +1390,8 @@ int process_events(CoreState *cs) {
                 }
 
                 break;
+#if 0
+#endif
 
             case SDL_KEYDOWN:
                 if (event.key.repeat) {
