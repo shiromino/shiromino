@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <string>
 namespace Shiro {
+    // TODO: Rename this to JoystickBindings, then create a new GameControllerBindings, which would provide support for the "game controller" SDL2 API (XInput style controllers).
     class ControllerBindings {
     public:
         static constexpr i16 MAXIMUM_DEAD_ZONE = std::numeric_limits<i16>::max();

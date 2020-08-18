@@ -1194,12 +1194,13 @@ void update_mouse(CoreState* cs, const int windowW, const int windowH) {
     }
 }
 
+// TODO: Make this only read in events and update state; move out all logic interpreting the new state into the game/menu code, such as DAS processing. And rename this to poll_events once that's all done.
 int process_events(CoreState *cs) {
-    if(!cs)
+    if (!cs) {
         return -1;
+    }
 
     Shiro::KeyFlags *k = NULL;
-    //Shiro::KeyFlags joyflags{0};
 
     SDL_Keycode keyCode;
     Shiro::KeyBindings& keyBindings = cs->settings->keyBindings;
@@ -1285,11 +1286,11 @@ int process_events(CoreState *cs) {
                 k = &cs->keys_raw;
                 if (event.jaxis.which == controllerBindings.controllerID) {
                     if (event.jaxis.axis == controllerBindings.axes.x) {
-                        if (event.jaxis.value > currentDeadZone * controllerBindings.axes.right) {
+                        if (event.jaxis.value * controllerBindings.axes.right > currentDeadZone) {
                             k->right = 1;
                             k->left = 0;
                         }
-                        else if (event.jaxis.value < currentDeadZone * -controllerBindings.axes.right) {
+                        else if (event.jaxis.value * controllerBindings.axes.right < -currentDeadZone) {
                             k->left = 1;
                             k->right = 0;
                         }
@@ -1299,11 +1300,11 @@ int process_events(CoreState *cs) {
                         }
                     }
                     else if (event.jaxis.axis == controllerBindings.axes.y) {
-                        if (event.jaxis.value > currentDeadZone * controllerBindings.axes.down) {
+                        if (event.jaxis.value * controllerBindings.axes.down > currentDeadZone) {
                             k->down = 1;
                             k->up = 0;
                         }
-                        else if (event.jaxis.value < currentDeadZone * -controllerBindings.axes.down) {
+                        else if (event.jaxis.value * controllerBindings.axes.down < -currentDeadZone) {
                             k->up = 1;
                             k->down = 0;
                         }
@@ -1352,22 +1353,22 @@ int process_events(CoreState *cs) {
             case SDL_JOYBUTTONDOWN:
                 k = &cs->keys_raw;
                 if (event.jbutton.which == controllerBindings.controllerID) {
-#define CHECK_BUTTON(name) \
+#define CHECK_JOYBUTTONDOWN(name) \
                     if (event.jbutton.button == controllerBindings.buttons.name) { \
                         k->name = 1; \
                     }
 
-                    CHECK_BUTTON(left);
-                    CHECK_BUTTON(right);
-                    CHECK_BUTTON(up);
-                    CHECK_BUTTON(down);
-                    CHECK_BUTTON(start);
-                    CHECK_BUTTON(a);
-                    CHECK_BUTTON(b);
-                    CHECK_BUTTON(c);
-                    CHECK_BUTTON(d);
-                    CHECK_BUTTON(escape);
-#undef CHECK_BUTTON
+                    CHECK_JOYBUTTONDOWN(left);
+                    CHECK_JOYBUTTONDOWN(right);
+                    CHECK_JOYBUTTONDOWN(up);
+                    CHECK_JOYBUTTONDOWN(down);
+                    CHECK_JOYBUTTONDOWN(start);
+                    CHECK_JOYBUTTONDOWN(a);
+                    CHECK_JOYBUTTONDOWN(b);
+                    CHECK_JOYBUTTONDOWN(c);
+                    CHECK_JOYBUTTONDOWN(d);
+                    CHECK_JOYBUTTONDOWN(escape);
+#undef CHECK_JOYBUTTONDOWN
                 }
 
                 break;
@@ -1375,22 +1376,22 @@ int process_events(CoreState *cs) {
             case SDL_JOYBUTTONUP:
                 k = &cs->keys_raw;
                 if (event.jbutton.which == controllerBindings.controllerID) {
-#define CHECK_BUTTON(name) \
+#define CHECK_JOYBUTTONUP(name) \
                     if (event.jbutton.button == controllerBindings.buttons.name) { \
                         k->name = 0; \
                     }
 
-                    CHECK_BUTTON(left);
-                    CHECK_BUTTON(right);
-                    CHECK_BUTTON(up);
-                    CHECK_BUTTON(down);
-                    CHECK_BUTTON(start);
-                    CHECK_BUTTON(a);
-                    CHECK_BUTTON(b);
-                    CHECK_BUTTON(c);
-                    CHECK_BUTTON(d);
-                    CHECK_BUTTON(escape);
-#undef CHECK_BUTTON
+                    CHECK_JOYBUTTONUP(left);
+                    CHECK_JOYBUTTONUP(right);
+                    CHECK_JOYBUTTONUP(up);
+                    CHECK_JOYBUTTONUP(down);
+                    CHECK_JOYBUTTONUP(start);
+                    CHECK_JOYBUTTONUP(a);
+                    CHECK_JOYBUTTONUP(b);
+                    CHECK_JOYBUTTONUP(c);
+                    CHECK_JOYBUTTONUP(d);
+                    CHECK_JOYBUTTONUP(escape);
+#undef CHECK_JOYBUTTONUP
                 }
 
                 break;
