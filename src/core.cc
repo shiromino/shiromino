@@ -934,7 +934,6 @@ int run(CoreState *cs)
 
             if (process_events(cs)) {
                 running = false;
-                break;
             }
 
             handle_replay_input(cs);
