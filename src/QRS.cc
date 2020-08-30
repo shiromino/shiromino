@@ -1160,6 +1160,15 @@ int qrs_wallkick(game_t *g, qrs_player *p)
     {
         if(qrs_move(g, p, MOVE_LEFT))
         {
+            if(c == QRS_P && p->orient == Shiro::FLIP)
+            {
+                return qrs_move(g, p, -2);
+            }
+            if(c == QRS_Q && p->orient == Shiro::FLIP)
+            {
+                return qrs_move(g, p, 2);
+            }
+
             if(p->def->rotationTable[0].getWidth() == 4 && c != QRS_I4)
                 return 1;
             if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
