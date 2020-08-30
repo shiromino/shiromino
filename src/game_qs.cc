@@ -1897,7 +1897,10 @@ int qs_process_lineclear(game_t *g)
             (*s) |= PSLINEARE;
 
             c->lineclear = 0;
-            qrs_dropfield(g);
+            if(!(q->mode_type & (MODE_G1_MASTER | MODE_G1_20G) && q->grade == GRADE_GM))
+            {
+                qrs_dropfield(g);
+            }
             cs->assets->dropfield->play(*cs->settings);
 
             switch(q->mode_type)
