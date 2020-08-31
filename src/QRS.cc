@@ -789,7 +789,7 @@ int qrs_input(game_t *g)
     }
 
     // hacky way to go back to the practice menu if a game is running from that menu
-    if(cs->pressed.escape)
+    if(cs->pressed.escape || ((cs->pressed.a == 1 | cs->pressed.b == 1 | cs->pressed.c == 1) && (q->state_flags & GAMESTATE_GAMEOVER)))
     {
         if(menu_is_practice(cs->menu))
         {
