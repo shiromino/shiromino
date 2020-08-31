@@ -968,7 +968,7 @@ int run(CoreState *cs)
                     cs->menu = NULL;
 
                     if (!cs->p1game) {
-                        running = 0;
+                        running = false;
                     }
                 }
             }
