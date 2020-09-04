@@ -10,6 +10,10 @@
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
 #endif
+
+using namespace Shiro;
+using namespace std;
+
 void printHelp(char* argv[]) {
     std::cerr << "Usage: " << argv[0] << " --configuration-file <configuration file>" << std::endl;
 }

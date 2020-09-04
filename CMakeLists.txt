@@ -81,6 +81,10 @@ target_sources(${GAME_EXECUTABLE}
 		src/game_menu.h
 		src/game_qs.cc
 		src/game_qs.h
+		src/Gfx/Animation.cc
+		src/Gfx/Animation.h
+		src/Gfx/Gfx.cc
+		src/Gfx/Gfx.h
 		src/gfx.cc
 		src/gfx.h
 		src/gfx_helpers.cc

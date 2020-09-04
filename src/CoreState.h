@@ -4,6 +4,7 @@
 #include "DisplayMode.h"
 #include "Game.h"
 #include "GuiScreenManager.h"
+#include "Gfx/Animation.h"
 #include "gfx_structures.h"
 #include "input/KeyFlags.h"
 #include "Player.h"
@@ -73,17 +74,13 @@ struct CoreState
     SDL_Texture *bg;
     SDL_Texture *bg_old;
     Sint16 bg_r, bg_g, bg_b;
-    //gfx_animation *g2_bgs[10];
-
-    //gfx_animation *anim_bg;
-    //gfx_animation *anim_bg_old;
 
     std::vector<gfx_message> gfx_messages;
-    std::vector<gfx_animation> gfx_animations;
     std::vector<gfx_button> gfx_buttons;
     std::size_t gfx_messages_max;
-    std::size_t gfx_animations_max;
     std::size_t gfx_buttons_max;
+    // TODO: Replace all gfx_* code with the new Gfx system.
+    Shiro::Gfx gfx;
 
     Shiro::KeyFlags prev_keys_raw;
     Shiro::KeyFlags keys_raw;
@@ -132,7 +129,6 @@ int is_down_input_repeat(CoreState *cs, int delay);
 
 struct bindings *bindings_copy(struct bindings *src);
 
-gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_multiplier);
 int load_files(CoreState *cs);
 
 int init(CoreState *cs, Shiro::Settings* s, const std::filesystem::path& executablePath);

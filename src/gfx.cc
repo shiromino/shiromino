@@ -142,10 +142,8 @@ int gfx_init(CoreState *cs)
 void gfx_quit(CoreState *cs)
 {
     cs->gfx_messages.clear();
-    cs->gfx_animations.clear();
     cs->gfx_buttons.clear();
     cs->gfx_messages_max = 0;
-    cs->gfx_animations_max = 0;
     cs->gfx_buttons_max = 0;
 
     free(monofont_tiny);
@@ -274,79 +272,6 @@ int gfx_drawmessages(CoreState *cs, int type)
         std::size_t i = toErase.size() - 1;
         do {
             cs->gfx_messages.erase(cs->gfx_messages.begin() + toErase[i]);
-        } while (i-- > 0);
-    }
-
-    return 0;
-}
-
-int gfx_pushanimation(CoreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba)
-{
-    gfx_animation a;
-    a.first_frame = first_frame;
-    a.x = x;
-    a.y = y;
-    a.flags = 0;
-    a.num_frames = num_frames;
-    a.frame_multiplier = frame_multiplier;
-    a.rgba_mod = rgba;
-    a.counter = 0;
-
-    cs->gfx_animations_max++;
-    cs->gfx_animations.push_back(a);
-
-    return 0;
-}
-
-int gfx_drawanimations(CoreState *cs, int type)
-{
-    if(!cs)
-        return -1;
-
-    if(!cs->gfx_animations.size())
-        return 0;
-
-    SDL_Rect dest = {};
-    SDL_Texture *t = NULL;
-
-    // TODO: This is terribly inelegant; refactor completely.
-    std::size_t i = 0;
-    std::vector<std::size_t> toErase;
-    for (auto it = cs->gfx_animations.begin(); it != cs->gfx_animations.end(); it++, i++) {
-        gfx_animation& a = cs->gfx_animations[i];
-
-        if(type == EMERGENCY_OVERRIDE && !(a.flags & ANIMATION_EMERGENCY))
-            continue;
-        if(type == 0 && (a.flags & ANIMATION_EMERGENCY))
-            continue;
-
-        if(a.counter == (unsigned int)(a.frame_multiplier * a.num_frames))
-        {
-            toErase.push_back(i);
-            cs->gfx_animations_max--;
-            continue;
-        }
-
-        int framenum = a.counter / a.frame_multiplier;
-        t = a.first_frame[framenum].tex;
-        if (!t) {
-            std::cerr << "NULL texture on frame " << framenum << std::endl;
-        }
-
-        dest.x = a.x;
-        dest.y = a.y;
-        SDL_QueryTexture(t, NULL, NULL, &dest.w, &dest.h);
-
-        SDL_SetTextureColorMod(t, R(a.rgba_mod), G(a.rgba_mod), B(a.rgba_mod));
-        SDL_SetTextureAlphaMod(t, A(a.rgba_mod));
-        SDL_RenderCopy(cs->screen.renderer, t, NULL, &dest);
-        SDL_SetTextureAlphaMod(t, 255);
-        SDL_SetTextureColorMod(t, 255, 255, 255);
-    }
-    if (toErase.size()) {
-        size_t i = toErase.size() - 1;
-        do {
-            cs->gfx_animations.erase(cs->gfx_animations.begin() + toErase[i]);
         } while (i-- > 0);
     }
 
@@ -542,19 +467,19 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     {
         case MODE_G1_MASTER:
         case MODE_G1_20G:
-            tetrion_qs = cs->assets->g1_tetrion_g1.tex;
+            tetrion_qs = cs->assets->g1_tetrion.tex;
             break;
 
         case MODE_G2_MASTER:
-            tetrion_qs = cs->assets->g2_tetrion_g2_master.tex;
+            tetrion_qs = cs->assets->g2_tetrion_master.tex;
             break;
 
         case MODE_G2_DEATH:
-            tetrion_qs = cs->assets->g2_tetrion_g2_death.tex;
+            tetrion_qs = cs->assets->g2_tetrion_death.tex;
             break;
 
         case MODE_G3_TERROR:
-            tetrion_qs = cs->assets->g3_tetrion_g3_terror.tex;
+            tetrion_qs = cs->assets->g3_tetrion_terror.tex;
             break;
 
         default:

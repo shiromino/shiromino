@@ -1023,7 +1023,7 @@ int qs_game_init(game_t *g)
 
     q->p1->state = PSFALL;
 
-    if(!g->origin->assets->bg0.tex) // used to check if we are in a testing environment
+    if(!g->origin->assets->bg[0].tex) // used to check if we are in a testing environment
         return 0;
 
     int bgnumber = q->section;
@@ -1032,7 +1032,7 @@ int qs_game_init(game_t *g)
 
     if(!q->pracdata)
     {
-        gfx_start_bg_fade_in(g->origin, (&g->origin->assets->bg0 + bgnumber)->tex);
+        gfx_start_bg_fade_in(g->origin, g->origin->assets->bg[bgnumber].tex);
 
         if(q->mode_type == MODE_G2_DEATH)
         {
@@ -2616,7 +2616,7 @@ int qs_process_lockflash(game_t *g)
                     cs->assets->newsection->play(*cs->settings);
                     if(q->section < 13)
                     {
-                        gfx_start_bg_fade_in(cs, (&cs->assets->bg0 + q->section)->tex);
+                        gfx_start_bg_fade_in(cs, cs->assets->bg[q->section].tex);
                     }
                 }
             }
@@ -3482,7 +3482,7 @@ int qs_get_usrseq_elem(pracdata *d, std::size_t index)
 //     std::cerr << "Expanded sequence:" << std::endl;
 //     for (i = 0; i < expand_count; i++) {
 //         std::cerr << " " << expand[i];
-//         
+//
 //     }
 //     std::cerr << std::endl;
 

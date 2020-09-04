@@ -154,37 +154,6 @@ int is_down_input_repeat(CoreState *cs, int delay)
     return cs->keys.down && cs->hold_dir == Shiro::DASDirection::DOWN && cs->hold_time >= delay;
 }
 
-gfx_animation *load_anim_bg(CoreState *cs, const char *directory, int frame_multiplier)
-{
-    if(!directory)
-        return NULL;
-
-    gfx_animation *a = (gfx_animation *)malloc(sizeof(gfx_animation));
-    a->frame_multiplier = frame_multiplier;
-    a->x = 0;
-    a->y = 0;
-    a->flags = 0;
-    a->counter = 0;
-    a->rgba_mod = RGBA_DEFAULT;
-
-    struct stat s;
-    int err = stat(directory, &s);
-
-    if (err == -1) {
-        if(ENOENT == errno)
-        {
-            return NULL;
-        }
-    }
-    else {
-        if(!S_ISDIR(s.st_mode))
-        {
-            return NULL;
-        }
-    }
-    return a;
-}
-
 void CoreState_initialize(CoreState *cs)
 {
     cs->fps = Shiro::RefreshRates::menu;
@@ -250,10 +219,7 @@ void CoreState_initialize(CoreState *cs)
     cs->bg_r = 0u;
     cs->bg_g = 0u;
     cs->bg_b = 0u;
-    // cs->anim_bg = NULL;
-    // cs->anim_bg_old = NULL;
     cs->gfx_messages_max = 0;
-    cs->gfx_animations_max = 0;
     cs->gfx_buttons_max = 0;
 
     cs->settings = nullptr;
@@ -350,8 +316,10 @@ int load_files(CoreState *cs)
 
         // image assets
 
-#define IMG(name, filename) load_image(cs, &cs->assets->name, filename);
+#define IMG(name) load_image(cs, &cs->assets->name, #name);
+#define IMG_ARRAY(name, i) load_image(cs, &cs->assets->name[i], #name #i);
 #include "images.h"
+#undef IMG_ARRAY
 #undef IMG
 
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
@@ -768,8 +736,10 @@ void quit(CoreState *cs)
         // Already destroyed in the BitFont destructor previously; this prevents a double-free.
         cs->assets->font_fixedsys_excelsior.tex = nullptr;
 
-#define IMG(name, filename) img_destroy(&cs->assets->name);
+#define IMG(name) img_destroy(&cs->assets->name);
+#define IMG_ARRAY(name, i) img_destroy(&cs->assets->name[i]);
 #include "images.h"
+#undef IMG_ARRAY
 #undef IMG
 
         // All the textures have been destroyed, so prevent them being freed by
@@ -949,6 +919,8 @@ int run(CoreState *cs)
             SPMgame.draw();
             */
 
+            cs->gfx.clearLayers();
+
             if (cs->p1game) {
                 if (procgame(cs->p1game, !cs->button_emergency_override)) {
                     cs->p1game->quit(cs->p1game);
@@ -984,6 +956,7 @@ int run(CoreState *cs)
             }
 
             gfx_updatebg(cs);
+            cs->gfx.update();
 
 #ifndef DEBUG_FRAME_TIMING
             gameFrameTime = 1.0 / cs->fps;
@@ -1031,14 +1004,16 @@ int run(CoreState *cs)
 
         gfx_drawbuttons(cs, 0);
         gfx_drawmessages(cs, 0);
-        gfx_drawanimations(cs, 0);
+        //gfx_drawanimations(cs, 0);
 
         if (cs->button_emergency_override)
             gfx_draw_emergency_bg_darken(cs);
 
         gfx_drawbuttons(cs, EMERGENCY_OVERRIDE);
         gfx_drawmessages(cs, EMERGENCY_OVERRIDE);
-        gfx_drawanimations(cs, EMERGENCY_OVERRIDE);
+        //gfx_drawanimations(cs, EMERGENCY_OVERRIDE);
+
+        cs->gfx.draw();
 
 #ifdef ENABLE_OPENGL_INTERPOLATION
         if (cs->settings->interpolate) {
@@ -1110,16 +1085,6 @@ int run(CoreState *cs)
                 }
                 else {
                     cs->gfx_messages[i].counter = 0u;
-                }
-            }
-
-            for (size_t i = 0; i < cs->gfx_animations_max; i++) {
-                const unsigned maxFrames = static_cast<unsigned>(cs->gfx_animations[i].frame_multiplier * cs->gfx_animations[i].num_frames);
-                if (cs->gfx_animations[i].counter + newFrames < maxFrames) {
-                   cs->gfx_animations[i].counter += newFrames;
-                }
-                else {
-                    cs->gfx_animations[i].counter = maxFrames;
                 }
             }
         }

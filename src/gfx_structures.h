@@ -56,17 +56,6 @@ struct gfx_message {
     int (*delete_check)(CoreState *);
 };
 
-struct gfx_animation {
-    gfx_image *first_frame;
-    int x;
-    int y;
-    unsigned int flags;
-    int num_frames;
-    int frame_multiplier;
-    unsigned int counter;
-    Uint32 rgba_mod;
-};
-
 struct gfx_button {
     std::string text;
     int x;

@@ -843,7 +843,7 @@ int gfx_qs_lineclear(game_t *g, int row)
     int i = 0;
     int mod = 0;
     int c = 0;
-    gfx_image *first_frame = &g->origin->assets->animation_lineclear0;
+    gfx_image* frames = g->origin->assets->animation_lineclear;
 
     for(i = (QRS_FIELD_W - q->field_w) / 2; i < (QRS_FIELD_W + q->field_w) / 2; i += 2)
     {
@@ -864,11 +864,29 @@ int gfx_qs_lineclear(game_t *g, int row)
 
         if(row % 2)
         {
-            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16), q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)), 5, 3, mod);
+            g->origin->gfx.push(std::make_unique<Shiro::AnimationEntity>(
+                g->origin->screen.renderer,
+                frames,
+                static_cast<size_t>(GfxLayer::animations),
+                q->field_x + (i * 16),
+                q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
+                5,
+                3,
+                mod
+            ));
         }
         else
         {
-            gfx_pushanimation(g->origin, first_frame, q->field_x + (i * 16) + 16, q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)), 5, 3, mod);
+            g->origin->gfx.push(std::make_unique<Shiro::AnimationEntity>(
+                g->origin->screen.renderer,
+                frames,
+                static_cast<size_t>(GfxLayer::animations),
+                q->field_x + (i * 16) + 16,
+                q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
+                5,
+                3,
+                mod
+            ));
         }
     }
 
