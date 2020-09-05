@@ -11,8 +11,6 @@
 #include <memory>
 
 namespace Shiro {
-    struct AnimationGraphic;
-
     class AnimationEntity : public Entity {
     public:
         AnimationEntity() = delete;
@@ -31,12 +29,7 @@ namespace Shiro {
         bool update(Layers& layers);
 
     private:
-        SDL_Renderer* const renderer;
-        gfx_image* const frames;
-        const size_t layerNum;
-        size_t counter;
-        const size_t numFrames;
-        const size_t frameMultiplier;
-        std::shared_ptr<AnimationGraphic> graphic;
+        struct Impl;
+        std::shared_ptr<Impl> implPtr;
     };
 }
