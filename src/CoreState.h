@@ -11,7 +11,7 @@
 #include "Settings.h"
 #include "RecordList.h"
 #include <filesystem>
-#include <SDL.h>
+#include "SDL.h"
 #include <vector>
 #include <deque>
 #ifdef ENABLE_OPENGL_INTERPOLATION
@@ -75,7 +75,6 @@ struct CoreState
     SDL_Texture *bg_old;
     Sint16 bg_r, bg_g, bg_b;
 
-    std::vector<gfx_message> gfx_messages;
     std::vector<gfx_button> gfx_buttons;
     std::size_t gfx_messages_max;
     std::size_t gfx_buttons_max;

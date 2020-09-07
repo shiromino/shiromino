@@ -2,7 +2,7 @@
 #include "SGUIL/SGUIL.h"
 #include <functional>
 #include <memory>
-#include <SDL.h>
+#include "SDL.h"
 #include <utility>
 GuiGridCanvas::GuiGridCanvas(int ID, Shiro::Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
     : cells(cells), paletteTex(paletteTex), cellW(cellW), cellH(cellH), paletteVar(paletteVar)

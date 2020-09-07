@@ -1,7 +1,7 @@
 #include "CoreState.h"
 #include "input/KeyFlags.h"
 #include "game_qs.h"
-#include "gfx.h"
+#include "gfx_old.h"
 #include "gfx_structures.h"
 #include "Grid.h"
 #include "PieceDefinition.h"
@@ -11,8 +11,8 @@
 #include <cmath>
 #include <filesystem>
 #include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
+#include "SDL.h"
+#include "SDL_image.h"
 #include <string>
 #include <vector>
 /*
@@ -80,25 +80,25 @@ png_monofont *monofont_thin = NULL;
 png_monofont *monofont_square = NULL;
 png_monofont *monofont_fixedsys = NULL;
 
-struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba)
+struct text_formatting text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba)
 {
-    struct text_formatting *fmt = (struct text_formatting *)malloc(sizeof(struct text_formatting));
+    struct text_formatting fmt;
 
-    fmt->rgba = rgba;
-    fmt->outline_rgba = outline_rgba;
+    fmt.rgba = rgba;
+    fmt.outline_rgba = outline_rgba;
 
-    fmt->outlined = !(flags & DRAWTEXT_NO_OUTLINE);
-    fmt->shadow = flags & DRAWTEXT_SHADOW;
+    fmt.outlined = !(flags & DRAWTEXT_NO_OUTLINE);
+    fmt.shadow = flags & DRAWTEXT_SHADOW;
 
-    fmt->size_multiplier = 1.0;
-    fmt->line_spacing = 1.0;
-    fmt->align = ALIGN_LEFT;
-    fmt->wrap_length = 0;
+    fmt.size_multiplier = 1.0;
+    fmt.line_spacing = 1.0;
+    fmt.align = ALIGN_LEFT;
+    fmt.wrap_length = 0;
 
     if(flags & DRAWTEXT_CENTERED)
-        fmt->align = ALIGN_CENTER;
+        fmt.align = ALIGN_CENTER;
     if(flags & DRAWTEXT_ALIGN_RIGHT)
-        fmt->align = ALIGN_RIGHT;
+        fmt.align = ALIGN_RIGHT;
 
     return fmt;
 }
@@ -141,7 +141,6 @@ int gfx_init(CoreState *cs)
 
 void gfx_quit(CoreState *cs)
 {
-    cs->gfx_messages.clear();
     cs->gfx_buttons.clear();
     cs->gfx_messages_max = 0;
     cs->gfx_buttons_max = 0;
@@ -217,66 +216,6 @@ int gfx_darken_texture(SDL_Texture *tex, Uint8 amt)
 
 }
 */
-
-int gfx_pushmessage(CoreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter,
-                    int (*delete_check)(CoreState *))
-{
-    if(!text)
-        return -1;
-
-    gfx_message m;
-    m.text = text;
-    m.x = x;
-    m.y = y;
-    m.flags = flags;
-    m.font = font;
-    m.fmt = fmt;
-    m.counter = counter + 1;
-    m.delete_check = delete_check;
-
-    cs->gfx_messages_max++;
-    cs->gfx_messages.push_back(m);
-
-    return 0;
-}
-
-int gfx_drawmessages(CoreState *cs, int type)
-{
-    if(!cs)
-        return -1;
-
-    if(!cs->gfx_messages.size())
-        return 0;
-
-    // TODO: This is terribly inelegant; refactor completely.
-    std::size_t i = 0;
-    std::vector<std::size_t> toErase;
-    for (auto it = cs->gfx_messages.begin(), end = cs->gfx_messages.end(); it != end; it++, i++) {
-        gfx_message& m = *it;
-        if (type == EMERGENCY_OVERRIDE && !(m.flags & MESSAGE_EMERGENCY)) {
-            continue;
-        }
-        if (type == 0 && (m.flags & MESSAGE_EMERGENCY)) {
-            continue;
-        }
-
-        if (!m.counter || (m.delete_check && m.delete_check(cs))) {
-            toErase.push_back(i);
-            cs->gfx_messages_max--;
-            continue;
-        }
-
-        gfx_drawtext(cs, m.text, m.x, m.y, m.font, m.fmt);
-    }
-    if (toErase.size()) {
-        std::size_t i = toErase.size() - 1;
-        do {
-            cs->gfx_messages.erase(cs->gfx_messages.begin() + toErase[i]);
-        } while (i-- > 0);
-    }
-
-    return 0;
-}
 
 int gfx_draw_anim_bg() { return 0; }
 

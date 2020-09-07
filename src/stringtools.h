@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 namespace strtools {
     template<typename ... Args>
     inline std::string format(const std::string& formatStr, Args ... args) {
@@ -14,9 +15,10 @@ namespace strtools {
         std::snprintf(buf.get(), size, formatStr.c_str(), args ... );
         return std::string{buf.get(), buf.get() + size - 1}; // We don't want the '\0' inside
     }
-    inline std::vector<std::string> split(std::string& s, char delim) {
+
+    inline std::vector<std::string> split(const std::string& s, const char delim) {
         std::vector<std::string> tokens;
-        std::stringstream ss {s};
+        std::stringstream ss{s};
         std::string item;
         while(std::getline(ss, item, delim))
         {
@@ -24,7 +26,8 @@ namespace strtools {
         }
         return tokens;
     }
-    inline std::vector<std::string> words(std::string s) {
+
+    inline std::vector<std::string> words(const std::string& s) {
         std::istringstream iss (s);
         std::vector<std::string> tokens;
         std::copy(std::istream_iterator<std::string>(iss),

@@ -2,13 +2,13 @@
 #include "DisplayMode.h"
 #include "game_qs.h"
 #include "GameType.h"
-#include "gfx.h"
+#include "gfx_old.h"
 #include "gfx_qs.h"
 #include "QRS0.h"
 #include "stringtools.h"
 #include "random.h"
 #include "Timer.h"
-#include <SDL.h>
+#include "SDL.h"
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -867,7 +867,7 @@ int gfx_qs_lineclear(game_t *g, int row)
             g->origin->gfx.push(std::make_unique<Shiro::AnimationEntity>(
                 g->origin->screen.renderer,
                 frames,
-                static_cast<size_t>(GfxLayer::animations),
+                static_cast<size_t>(Shiro::GfxLayer::animations),
                 q->field_x + (i * 16),
                 q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
                 5,
@@ -880,7 +880,7 @@ int gfx_qs_lineclear(game_t *g, int row)
             g->origin->gfx.push(std::make_unique<Shiro::AnimationEntity>(
                 g->origin->screen.renderer,
                 frames,
-                static_cast<size_t>(GfxLayer::animations),
+                static_cast<size_t>(Shiro::GfxLayer::animations),
                 q->field_x + (i * 16) + 16,
                 q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
                 5,

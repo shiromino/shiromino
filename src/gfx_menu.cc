@@ -1,16 +1,17 @@
 #include "gfx_menu.h"
 #include "CoreState.h"
 #include "game_menu.h"
-#include "gfx.h"
+#include "gfx_old.h"
 #include "Menu/ElementType.h"
 #include "Menu/GameMultiOption.h"
 #include "Menu/MultiOption.h"
 #include "Menu/Option.h"
+#include "Menu/GameOption.h"
 #include "Menu/TextOption.h"
 #include "Menu/ToggleOption.h"
 #include <cstdlib>
 #include <iostream>
-#include <SDL.h>
+#include "SDL.h"
 int gfx_drawmenu(game_t *g)
 {
     if(!g)
@@ -47,7 +48,7 @@ int gfx_drawmenu(game_t *g)
     int initial_opt = 0;
     int final_opt = d->numopts - 1;
 
-    struct text_formatting *fmt = NULL;
+    text_formatting fmt;
     png_monofont *monofont = NULL;
 
     if(d->is_paged)
@@ -57,10 +58,7 @@ int gfx_drawmenu(game_t *g)
         page_str = ss.str();
         fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
 
-        gfx_drawtext(cs, page_str, d->page_text_x, d->page_text_y, monofont_square, fmt);
-
-        free(fmt);
-        fmt = NULL;
+        gfx_drawtext(cs, page_str, d->page_text_x, d->page_text_y, monofont_square, &fmt);
 
         initial_opt = d->page * d->page_length;
         final_opt = d->page * d->page_length + d->page_length - 1;
@@ -88,21 +86,30 @@ int gfx_drawmenu(game_t *g)
         }
     }
 
+    // TODO: Figure out why render-to-texture isn't working for the replay menu then reenable render-to-texture.
+#if 0
     if(d->use_target_tex)
     {
         SDL_SetRenderTarget(cs->screen.renderer, d->target_tex);
     }
+#endif
 
     for(i = initial_opt; i <= final_opt; i++)
     {
         m = &d->menu[i];
+
+        // TODO: Figure out why render-to-texture isn't working for the replay menu then reenable render-to-texture.
+#if 0
         if(d->use_target_tex && !m->render_update)
+        {
             continue;
+        }
         else if(d->use_target_tex && i == initial_opt)
         {
             SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
             SDL_RenderClear(g->origin->screen.renderer);
         }
+#endif
 
         fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
         monofont = monofont_square;
@@ -118,15 +125,12 @@ int gfx_drawmenu(game_t *g)
 
         if(i == d->selection)
         {
-            fmt->rgba = 0x9090FFFF;
-            fmt->outline_rgba = 0x2020AFFF;
-            fmt->shadow = true;
+            fmt.rgba = 0x9090FFFF;
+            fmt.outline_rgba = 0x2020AFFF;
+            fmt.shadow = true;
         }
 
-        gfx_drawtext(cs, m->label, m->x, m->y, monofont, fmt);
-
-        free(fmt);
-        fmt = NULL;
+        gfx_drawtext(cs, m->label, m->x, m->y, monofont, &fmt);
 
         if(m->type == Shiro::ElementType::MENU_MULTIOPT)
         {
@@ -143,10 +147,7 @@ int gfx_drawmenu(game_t *g)
             if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                 monofont = monofont_fixedsys;
 
-            gfx_drawtext(cs, d2->labels[d2->selection], m->value_x, m->value_y, monofont, fmt);
-
-            free(fmt);
-            fmt = NULL;
+            gfx_drawtext(cs, d2->labels[d2->selection], m->value_x, m->value_y, monofont, &fmt);
 
             if(m->value_text_flags & DRAWTEXT_VALUE_BAR)
             {
@@ -204,10 +205,7 @@ int gfx_drawmenu(game_t *g)
                     if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                         monofont = monofont_fixedsys;
 
-                    gfx_drawtext(cs, d3->labels[d3->selection], m->value_x, m->value_y, monofont, fmt);
-
-                    free(fmt);
-                    fmt = NULL;
+                    gfx_drawtext(cs, d3->labels[d3->selection], m->value_x, m->value_y, monofont, &fmt);
                 }
             }
         }
@@ -295,10 +293,7 @@ int gfx_drawmenu(game_t *g)
                 if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
                     monofont = monofont_fixedsys;
 
-                gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, fmt);
-
-                free(fmt);
-                fmt = NULL;
+                gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, &fmt);
 
                 if(d7->active)
                 {
@@ -359,18 +354,17 @@ int gfx_drawmenu(game_t *g)
                 monofont = monofont_fixedsys;
 
             if(*(d8->param))
-                gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, monofont, fmt);
+                gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, monofont, &fmt);
             else
-                gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, monofont, fmt);
-
-            free(fmt);
-            fmt = NULL;
+                gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, monofont, &fmt);
         }
     }
 
     SDL_SetRenderTarget(cs->screen.renderer, NULL);
     SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 255);
 
+    // TODO: Figure out why render-to-texture isn't working for the replay menu then reenable render-to-texture.
+#if 0
     if(d->use_target_tex)
     {
         for(i = 0; i < d->numopts; i++)
@@ -380,6 +374,7 @@ int gfx_drawmenu(game_t *g)
 
         SDL_RenderCopy(cs->screen.renderer, d->target_tex, NULL, NULL);
     }
+#endif
 
     return 0;
 }

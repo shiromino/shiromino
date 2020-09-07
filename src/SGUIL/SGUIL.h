@@ -10,7 +10,7 @@
 #include <functional>
 #include <list>
 #include <memory>
-#include <SDL.h>
+#include "SDL.h"
 #include <string>
 #include <utility>
 #include <vector>

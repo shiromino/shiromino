@@ -6,8 +6,8 @@
 #include <functional>
 #include <map>
 #include <sstream>
-#include <SDL.h>
-#include <SDL_image.h>
+#include "SDL.h"
+#include "SDL_image.h"
 
 GuiWindow::GuiWindow(CoreState *origin, std::string title, BitFont *titleFont, std::function<void(GuiInteractable&, GuiEvent&)> interactionEventCallback, SDL_Rect& destRect)
     : title(title)

@@ -35,39 +35,21 @@ namespace Shiro {
         Impl() = delete;
 
         Impl(
-            SDL_Renderer* const renderer,
             gfx_image* const frames,
             const size_t layerNum,
             const size_t numFrames,
             const size_t frameMultiplier,
-            shared_ptr<AnimationGraphic> graphic
+            const shared_ptr<AnimationGraphic> graphic
         );
 
-        SDL_Renderer* const renderer;
         gfx_image* const frames;
         const size_t layerNum;
         size_t counter;
         const size_t numFrames;
         const size_t frameMultiplier;
-        shared_ptr<AnimationGraphic> graphic;
+        const shared_ptr<AnimationGraphic> graphic;
     };
 }
-
-AnimationEntity::Impl::Impl(
-    SDL_Renderer* const renderer,
-    gfx_image* const frames,
-    const size_t layerNum,
-    const size_t numFrames,
-    const size_t frameMultiplier,
-    shared_ptr<AnimationGraphic> graphic
-) :
-    renderer(renderer),
-    frames(frames),
-    layerNum(layerNum),
-    counter(0u),
-    numFrames(numFrames),
-    frameMultiplier(frameMultiplier),
-    graphic(graphic) {}
 
 AnimationGraphic::AnimationGraphic(
     SDL_Renderer* const renderer,
@@ -95,6 +77,20 @@ void AnimationGraphic::draw() const {
     SDL_SetTextureColorMod(frame, 255, 255, 255);
 }
 
+AnimationEntity::Impl::Impl(
+    gfx_image* const frames,
+    const size_t layerNum,
+    const size_t numFrames,
+    const size_t frameMultiplier,
+    const shared_ptr<AnimationGraphic> graphic
+) :
+    frames(frames),
+    layerNum(layerNum),
+    counter(0u),
+    numFrames(numFrames),
+    frameMultiplier(frameMultiplier),
+    graphic(graphic) {}
+
 AnimationEntity::AnimationEntity(
     SDL_Renderer* const renderer,
     gfx_image* const frames,
@@ -105,16 +101,19 @@ AnimationEntity::AnimationEntity(
     const size_t frameMultiplier,
     const Uint32 rgbaMod
 ) :
-    implPtr(
-        make_shared<AnimationEntity::Impl>(
+    implPtr(make_shared<AnimationEntity::Impl>(
+        frames,
+        layerNum,
+        numFrames,
+        frameMultiplier,
+        make_shared<AnimationGraphic>(
             renderer,
-            frames,
-            layerNum,
-            numFrames,
-            frameMultiplier,
-            make_shared<AnimationGraphic>(renderer, nullptr, x, y, rgbaMod)
+            nullptr,
+            x,
+            y,
+            rgbaMod
         )
-    ) {}
+    )) {}
 
 bool AnimationEntity::update(Layers& layers) {
     implPtr->graphic->frame = implPtr->frames[implPtr->counter / implPtr->frameMultiplier].tex;

@@ -6,7 +6,7 @@
 #include "PieceDefinition.h"
 #include "gfx_structures.h"
 #include <cstdlib>
-#include <SDL.h>
+#include "SDL.h"
 #include <string>
 
 #define QRS_FIELD_X 4
@@ -68,7 +68,7 @@ extern png_monofont *monofont_thin;
 extern png_monofont *monofont_square;
 extern png_monofont *monofont_fixedsys;
 
-struct text_formatting *text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
+struct text_formatting text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
 
 int gfx_init(CoreState *cs);
 void gfx_quit(CoreState *cs);

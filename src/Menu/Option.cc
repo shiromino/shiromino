@@ -8,7 +8,7 @@
 #include "Menu/ToggleOption.h"
 #include "Option.h"
 #include "CoreState.h"
-#include "gfx.h"
+#include "gfx_old.h"
 #include "QRS0.h"
 namespace Shiro {
     MenuOption create_menu_option(ElementType type, int (*value_update_callback)(CoreState *cs), std::string label) {

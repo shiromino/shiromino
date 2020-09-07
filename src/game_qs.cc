@@ -3,7 +3,8 @@
 #include "game_menu.h"
 #include "game_qs.h"
 #include "GameType.h"
-#include "gfx.h"
+#include "Gfx/MessageEntity.h"
+#include "gfx_old.h"
 #include "gfx_qs.h"
 #include "QRS0.h"
 #include "Menu/ElementType.h"
@@ -12,14 +13,20 @@
 #include "RefreshRates.h"
 #include "replay.h"
 #include "Timer.h"
+#include "SDL.h"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <SDL.h>
 #include <string>
+#include <memory>
+#include <functional>
+
+using namespace Shiro;
+using namespace std;
+
 // clang-format off
 const char *grade_names[37] =
 {
@@ -1242,13 +1249,22 @@ int qs_game_frame(game_t *g)
     {
         if(c->init == 0 || c->init == 60)
         {
-            struct text_formatting *fmt = text_fmt_create(0, 0x00FF00FF, 0);
-            fmt->size_multiplier = 2.0;
-            fmt->outlined = false;
+            struct text_formatting fmt = text_fmt_create(0, 0x00FF00FF, 0);
+            fmt.size_multiplier = 2.0;
+            fmt.outlined = false;
             if(q->pracdata)
-                fmt->outlined = true;
+                fmt.outlined = true;
 
-            fmt->outline_rgba = 0x00000080;
+            fmt.outline_rgba = 0x00000080;
+
+            const auto gameIsInactive = [cs]() {
+                if (cs->p1game == nullptr || cs->p1game->data == nullptr) {
+                    return true;
+                }
+
+                const qrsdata* const q = static_cast<qrsdata*>(cs->p1game->data);
+                return q->pracdata != nullptr && q->pracdata->paused == QRS_FIELD_EDIT;
+            };
 
             if(c->init == 0)
             {
@@ -1265,15 +1281,37 @@ int qs_game_frame(game_t *g)
                     }
                 }
 
-                gfx_pushmessage(cs, "READY", (4 * 16 + 8 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+                //gfx_pushmessage(cs, "READY", (4 * 16 + 8 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+                cs->gfx.push(make_unique<MessageEntity>(
+                    cs->screen.renderer,
+                    "READY",
+                    static_cast<size_t>(GfxLayer::messages),
+                    (4 * 16 + 8 + q->field_x),
+                    (11 * 16 + q->field_y),
+                    *monofont_fixedsys,
+                    fmt,
+                    60u,
+                    gameIsInactive
+                ));
 
                 cs->assets->ready->play(*cs->settings);
             }
 
             else if(c->init == 60)
             {
-                fmt->rgba = 0xFF0000FF;
-                gfx_pushmessage(cs, "GO", (6 * 16 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+                fmt.rgba = 0xFF0000FF;
+                //gfx_pushmessage(cs, "GO", (6 * 16 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+                cs->gfx.push(make_unique<MessageEntity>(
+                    cs->screen.renderer,
+                    "GO",
+                    static_cast<size_t>(GfxLayer::messages),
+                    (6 * 16 + q->field_x),
+                    (11 * 16 + q->field_y),
+                    *monofont_fixedsys,
+                    fmt,
+                    60u,
+                    gameIsInactive
+                ));
 
                 cs->assets->go->play(*cs->settings);
             }

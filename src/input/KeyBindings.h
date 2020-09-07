@@ -1,6 +1,6 @@
 #pragma once
 #include "PDINI.h"
-#include <SDL.h>
+#include "SDL.h"
 #include <string>
 namespace Shiro {
     class KeyBindings {

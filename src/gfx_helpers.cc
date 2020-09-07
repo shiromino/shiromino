@@ -1,5 +1,5 @@
 #include "gfx_helpers.h"
-#include <SDL.h>
+#include "SDL.h"
 #include <vector>
 void gfx_drawCodedGrid(SDL_Renderer *renderer, Shiro::Grid *cells, SDL_Texture *paletteTex, SDL_Point position,
     int cellW, int cellH, std::vector<paletteMapEntry>& paletteValMap)

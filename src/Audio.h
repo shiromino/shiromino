@@ -6,8 +6,8 @@
  */
 #pragma once
 #include "Settings.h"
+#include "SDL_mixer.h"
 #include <filesystem>
-#include <SDL_mixer.h>
 #include <string>
 
 struct CoreState;

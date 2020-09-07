@@ -2,7 +2,8 @@
 #include "game_menu.h" // questionable dependency - TODO look into these
 #include "game_qs.h"   // questionable dependency
 #include "GameType.h"
-#include "gfx.h"       // questionable dependency
+#include "Gfx/MessageEntity.h"
+#include "gfx_old.h"   // questionable dependency
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"
 #include "Grid.h"
@@ -14,12 +15,13 @@
 #include "replay.h"
 #include "Timer.h"
 #include "RotationTables.h"
-#include <SDL.h>
+#include "SDL.h"
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <string>
 #include <utility>
+#include <memory>
 const char *qrspiece_names[25] = {"I", "J", "L",  "X",  "S", "Z",       "N",  "G",  "U",  "T", "Fa", "Fb", "P",
                                   "Q", "W", "Ya", "Yb", "V", /**/ "I4", "T4", "J4", "L4", "O", "S4", "Z4"};
 
@@ -308,12 +310,22 @@ int usr_field_redo(CoreState *cs, pracdata *d)
 
 int push_undo_clear_confirm(CoreState *cs, void *data)
 {
-    struct text_formatting *fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-
     cs->button_emergency_override = 1;
 
-    gfx_pushmessage(
-        cs, "CONFIRM DELETE\nUNDO HISTORY?", 640 / 2 - 7 * 16, 480 / 2 - 16, MESSAGE_EMERGENCY, monofont_square, fmt, -1, button_emergency_inactive);
+    struct text_formatting fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+    //gfx_pushmessage(
+        //cs, "CONFIRM DELETE\nUNDO HISTORY?", 640 / 2 - 7 * 16, 480 / 2 - 16, MESSAGE_EMERGENCY, monofont_square, fmt, -1, button_emergency_inactive);
+    cs->gfx.push(std::make_unique<Shiro::MessageEntity>(
+        cs->screen.renderer,
+        "CONFIRM DELETE\nUNDO HISTORY?",
+        static_cast<size_t>(Shiro::GfxLayer::emergencyMessages),
+        640 / 2 - 7 * 16,
+        480 / 2 - 16,
+        *monofont_square,
+        fmt,
+        SIZE_MAX,
+        [cs] { return (bool)button_emergency_inactive(cs); }
+    ));
 
     gfx_createbutton(
         cs, "YES", 640 / 2 - 6 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_yes, button_emergency_inactive, NULL, 0xB0FFB0FF);

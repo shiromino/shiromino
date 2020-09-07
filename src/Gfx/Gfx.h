@@ -9,14 +9,6 @@
 #include <forward_list>
 #include <memory>
 
-// TODO: Consider moving this somewhere when there's more than just one basic screen type, where each screen type needs its own layout of layers.
-enum class GfxLayer {
-    base, // For the game or menu.
-    buttons,
-    messages,
-    animations
-};
-
 // TODO: Create a struct type for portable colors and convert to backend format in each backend's Graphic subclass.
 #define R(N) ((N & 0xFF000000) / 0x1000000)
 #define G(N) ((N & 0x00FF0000) / 0x0010000)
@@ -24,6 +16,18 @@ enum class GfxLayer {
 #define A(N) (N & 0x000000FF)
 
 namespace Shiro {
+    // TODO: Consider moving this somewhere when there's more than just one basic screen type, where each screen type needs its own layout of layers.
+    enum class GfxLayer {
+        base, // For the game or menu.
+        buttons,
+        messages,
+        animations,
+        emergencyBgDarken,
+        emergencyButtons,
+        emergencyMessages,
+        emergencyAnimations
+    };
+
     struct Graphic {
         virtual ~Graphic();
 

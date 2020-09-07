@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 #include "PDINI.h"
-#include <SDL.h>
+#include "SDL.h"
 #include <string>
 namespace Shiro {
     // TODO: Rename this to JoystickBindings, then create a new GameControllerBindings, which would provide support for the "game controller" SDL2 API (XInput style controllers).

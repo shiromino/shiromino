@@ -85,8 +85,12 @@ target_sources(${GAME_EXECUTABLE}
 		src/Gfx/Animation.h
 		src/Gfx/Gfx.cc
 		src/Gfx/Gfx.h
+		src/Gfx/MessageEntity.cc
+		src/Gfx/MessageEntity.h
+		src/Gfx/TextGraphic.cc
+		src/Gfx/TextGraphic.h
 		src/gfx.cc
-		src/gfx.h
+		src/gfx_old.h
 		src/gfx_helpers.cc
 		src/gfx_helpers.h
 		src/gfx_menu.cc

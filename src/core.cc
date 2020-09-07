@@ -2,7 +2,7 @@
 #include "Debug.h"
 #include "definitions.h"
 #include "DisplayMode.h"
-#include "gfx.h"
+#include "gfx_old.h"
 #include "gfx_structures.h"
 #include "game_menu.h"
 #include "game_qs.h"
@@ -26,13 +26,14 @@
 #include <ctime>
 #include <filesystem>
 #include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
+#include "SDL.h"
+#include "SDL_image.h"
+#include "SDL_mixer.h"
 #include <string>
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <functional>
 #ifdef ENABLE_OPENGL_INTERPOLATION
 #define GL_GLEXT_PROTOTYPES
 #include "glad/glad.h"
@@ -1002,16 +1003,57 @@ int run(CoreState *cs)
             cs->menu->draw(cs->menu);
         }
 
-        gfx_drawbuttons(cs, 0);
-        gfx_drawmessages(cs, 0);
-        //gfx_drawanimations(cs, 0);
+        // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
+        struct OldGfxGraphic : public Shiro::Graphic {
+            OldGfxGraphic() = delete;
 
-        if (cs->button_emergency_override)
-            gfx_draw_emergency_bg_darken(cs);
+            OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
 
-        gfx_drawbuttons(cs, EMERGENCY_OVERRIDE);
-        gfx_drawmessages(cs, EMERGENCY_OVERRIDE);
-        //gfx_drawanimations(cs, EMERGENCY_OVERRIDE);
+            void draw() const {
+                drawLambda();
+            }
+
+            const std::function<void()> drawLambda;
+        };
+
+        class OldGfxEntity : public Shiro::Entity {
+        public:
+            OldGfxEntity(
+                const size_t layerNum,
+                const std::function<void()> drawLambda
+            ) :
+                layerNum(layerNum),
+                drawLambda(drawLambda) {}
+
+            bool update(Shiro::Layers& layers) {
+                layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
+                return false;
+            }
+
+        private:
+            const size_t layerNum;
+            const std::function<void()> drawLambda;
+        };
+
+        // TODO: Create entities in the code for buttons, then remove this.
+        cs->gfx.push(std::make_unique<OldGfxEntity>(
+            static_cast<size_t>(Shiro::GfxLayer::buttons),
+            [cs] { gfx_drawbuttons(cs, 0); }
+        ));
+
+        // Create an entity for the background darkening, then remove this.
+        if (cs->button_emergency_override) {
+            cs->gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::emergencyBgDarken),
+                [cs] { gfx_draw_emergency_bg_darken(cs); }
+            ));
+        }
+
+        // Create entities in the code for emergency buttons, then remove this.
+        cs->gfx.push(std::make_unique<OldGfxEntity>(
+            static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
+            [cs] { gfx_drawbuttons(cs, EMERGENCY_OVERRIDE); }
+        ));
 
         cs->gfx.draw();
 
@@ -1078,6 +1120,7 @@ int run(CoreState *cs)
         SDL_RenderPresent(cs->screen.renderer);
 #endif
 
+#if 0
         if (newFrames > 0u) {
             for (size_t i = 0; i < cs->gfx_messages_max; i++) {
                 if (cs->gfx_messages[i].counter >= newFrames) {
@@ -1088,6 +1131,7 @@ int run(CoreState *cs)
                 }
             }
         }
+#endif
         if (!cs->settings->vsync) {
             SDL_Delay(cs->settings->frameDelay);
         }
