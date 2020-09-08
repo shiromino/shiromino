@@ -958,6 +958,74 @@ int run(CoreState *cs)
             }
 
             gfx_updatebg(cs);
+
+            // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
+            struct OldGfxGraphic : public Shiro::Graphic {
+                OldGfxGraphic() = delete;
+
+                OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
+
+                void draw() const {
+                    drawLambda();
+                }
+
+                const std::function<void()> drawLambda;
+            };
+
+            class OldGfxEntity : public Shiro::Entity {
+            public:
+                OldGfxEntity(
+                    const size_t layerNum,
+                    const std::function<void()> drawLambda
+                ) :
+                    layerNum(layerNum),
+                    drawLambda(drawLambda) {}
+
+                bool update(Shiro::Layers& layers) {
+                    layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
+                    return false;
+                }
+
+            private:
+                const size_t layerNum;
+                const std::function<void()> drawLambda;
+            };
+
+            // TODO: Create entities in the code for the game and menu, then remove this.
+            // Or perhaps have the game and menu code push entities, and no longer
+            // have explicit game and menu drawing functions.
+            cs->gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::base),
+                [cs] {
+                    if (cs->p1game) {
+                        cs->p1game->draw(cs->p1game);
+                    }
+                    else if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
+                        cs->menu->draw(cs->menu);
+                    }
+                }
+            ));
+
+            // TODO: Create entities in the code for buttons, then remove this.
+            cs->gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::buttons),
+                [cs] { gfx_drawbuttons(cs, 0); }
+            ));
+
+            // TODO: Create an entity for the background darkening, then remove this.
+            if (cs->button_emergency_override) {
+                cs->gfx.push(std::make_unique<OldGfxEntity>(
+                    static_cast<size_t>(Shiro::GfxLayer::emergencyBgDarken),
+                    [cs] { gfx_draw_emergency_bg_darken(cs); }
+                ));
+            }
+
+            // TODO: Create entities in the code for emergency buttons, then remove this.
+            cs->gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
+                [cs] { gfx_drawbuttons(cs, EMERGENCY_OVERRIDE); }
+            ));
+
             cs->gfx.update();
 
 #ifndef DEBUG_FRAME_TIMING
@@ -992,65 +1060,6 @@ int run(CoreState *cs)
         SDL_RenderClear(cs->screen.renderer);
 
         gfx_drawbg(cs);
-
-        if (cs->p1game) {
-            cs->p1game->draw(cs->p1game);
-        }
-        else if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
-            cs->menu->draw(cs->menu);
-        }
-
-        // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
-        struct OldGfxGraphic : public Shiro::Graphic {
-            OldGfxGraphic() = delete;
-
-            OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
-
-            void draw() const {
-                drawLambda();
-            }
-
-            const std::function<void()> drawLambda;
-        };
-
-        class OldGfxEntity : public Shiro::Entity {
-        public:
-            OldGfxEntity(
-                const size_t layerNum,
-                const std::function<void()> drawLambda
-            ) :
-                layerNum(layerNum),
-                drawLambda(drawLambda) {}
-
-            bool update(Shiro::Layers& layers) {
-                layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
-                return false;
-            }
-
-        private:
-            const size_t layerNum;
-            const std::function<void()> drawLambda;
-        };
-
-        // TODO: Create entities in the code for buttons, then remove this.
-        cs->gfx.push(std::make_unique<OldGfxEntity>(
-            static_cast<size_t>(Shiro::GfxLayer::buttons),
-            [cs] { gfx_drawbuttons(cs, 0); }
-        ));
-
-        // Create an entity for the background darkening, then remove this.
-        if (cs->button_emergency_override) {
-            cs->gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::emergencyBgDarken),
-                [cs] { gfx_draw_emergency_bg_darken(cs); }
-            ));
-        }
-
-        // Create entities in the code for emergency buttons, then remove this.
-        cs->gfx.push(std::make_unique<OldGfxEntity>(
-            static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
-            [cs] { gfx_drawbuttons(cs, EMERGENCY_OVERRIDE); }
-        ));
 
         cs->gfx.draw();
 
