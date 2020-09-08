@@ -15,6 +15,8 @@
 namespace Shiro {
     class MessageEntity : public Entity {
     public:
+        DEFINE_ENTITY_PUSH(MessageEntity)
+
         MessageEntity() = delete;
 
         MessageEntity(

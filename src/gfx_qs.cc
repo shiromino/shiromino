@@ -864,7 +864,7 @@ int gfx_qs_lineclear(game_t *g, int row)
 
         if(row % 2)
         {
-            g->origin->gfx.push(std::make_unique<Shiro::AnimationEntity>(
+            Shiro::AnimationEntity::push(g->origin->gfx,
                 g->origin->screen.renderer,
                 frames,
                 static_cast<size_t>(Shiro::GfxLayer::animations),
@@ -873,11 +873,11 @@ int gfx_qs_lineclear(game_t *g, int row)
                 5,
                 3,
                 mod
-            ));
+            );
         }
         else
         {
-            g->origin->gfx.push(std::make_unique<Shiro::AnimationEntity>(
+            Shiro::AnimationEntity::push(g->origin->gfx,
                 g->origin->screen.renderer,
                 frames,
                 static_cast<size_t>(Shiro::GfxLayer::animations),
@@ -886,7 +886,7 @@ int gfx_qs_lineclear(game_t *g, int row)
                 5,
                 3,
                 mod
-            ));
+            );
         }
     }
 

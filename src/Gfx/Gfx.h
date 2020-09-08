@@ -15,6 +15,20 @@
 #define B(N) ((N & 0x0000FF00) / 0x0000100)
 #define A(N) (N & 0x000000FF)
 
+/**
+ * When put into an Entity subclass, this allows creating entities via
+ * EntityType::push(gfx, entityTypeConstructorArgs...).
+ *
+ * This can't be put into the Gfx class, because then an attempt to instantiate
+ * multiple push() functions with the same signature for different entity types
+ * might occur.
+ */
+#define DEFINE_ENTITY_PUSH(EntityType) \
+template<typename... Args> \
+static inline void push(Shiro::Gfx& gfx, Args&&... args) { \
+    gfx.push(std::make_unique<Shiro::EntityType>(args...)); \
+}
+
 namespace Shiro {
     // TODO: Consider moving this somewhere when there's more than just one basic screen type, where each screen type needs its own layout of layers.
     enum class GfxLayer {

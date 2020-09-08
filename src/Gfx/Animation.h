@@ -13,6 +13,8 @@
 namespace Shiro {
     class AnimationEntity : public Entity {
     public:
+        DEFINE_ENTITY_PUSH(AnimationEntity)
+
         AnimationEntity() = delete;
 
         AnimationEntity(

@@ -1281,7 +1281,18 @@ int qs_game_frame(game_t *g)
                     }
                 }
 
-                //gfx_pushmessage(cs, "READY", (4 * 16 + 8 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+                MessageEntity::push(cs->gfx,
+                    cs->screen.renderer,
+                    "READY",
+                    static_cast<size_t>(GfxLayer::messages),
+                    (4 * 16 + 8 + q->field_x),
+                    (11 * 16 + q->field_y),
+                    *monofont_fixedsys,
+                    fmt,
+                    60u,
+                    gameIsInactive
+                );
+#if 0
                 cs->gfx.push(make_unique<MessageEntity>(
                     cs->screen.renderer,
                     "READY",
@@ -1293,6 +1304,7 @@ int qs_game_frame(game_t *g)
                     60u,
                     gameIsInactive
                 ));
+#endif
 
                 cs->assets->ready->play(*cs->settings);
             }
@@ -1300,7 +1312,18 @@ int qs_game_frame(game_t *g)
             else if(c->init == 60)
             {
                 fmt.rgba = 0xFF0000FF;
-                //gfx_pushmessage(cs, "GO", (6 * 16 + q->field_x), (11 * 16 + q->field_y), 0, monofont_fixedsys, fmt, 60, qrs_game_is_inactive);
+                MessageEntity::push(cs->gfx,
+                    cs->screen.renderer,
+                    "GO",
+                    static_cast<size_t>(GfxLayer::messages),
+                    (6 * 16 + q->field_x),
+                    (11 * 16 + q->field_y),
+                    *monofont_fixedsys,
+                    fmt,
+                    60u,
+                    gameIsInactive
+                );
+#if 0
                 cs->gfx.push(make_unique<MessageEntity>(
                     cs->screen.renderer,
                     "GO",
@@ -1312,6 +1335,7 @@ int qs_game_frame(game_t *g)
                     60u,
                     gameIsInactive
                 ));
+#endif
 
                 cs->assets->go->play(*cs->settings);
             }
