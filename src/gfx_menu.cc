@@ -86,20 +86,15 @@ int gfx_drawmenu(game_t *g)
         }
     }
 
-    // TODO: Figure out why render-to-texture isn't working for the replay menu then reenable render-to-texture.
-#if 0
     if(d->use_target_tex)
     {
         SDL_SetRenderTarget(cs->screen.renderer, d->target_tex);
     }
-#endif
 
     for(i = initial_opt; i <= final_opt; i++)
     {
         m = &d->menu[i];
 
-        // TODO: Figure out why render-to-texture isn't working for the replay menu then reenable render-to-texture.
-#if 0
         if(d->use_target_tex && !m->render_update)
         {
             continue;
@@ -109,7 +104,6 @@ int gfx_drawmenu(game_t *g)
             SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0);
             SDL_RenderClear(g->origin->screen.renderer);
         }
-#endif
 
         fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
         monofont = monofont_square;
@@ -360,11 +354,9 @@ int gfx_drawmenu(game_t *g)
         }
     }
 
-    SDL_SetRenderTarget(cs->screen.renderer, NULL);
+    SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
     SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 255);
 
-    // TODO: Figure out why render-to-texture isn't working for the replay menu then reenable render-to-texture.
-#if 0
     if(d->use_target_tex)
     {
         for(i = 0; i < d->numopts; i++)
@@ -374,7 +366,6 @@ int gfx_drawmenu(game_t *g)
 
         SDL_RenderCopy(cs->screen.renderer, d->target_tex, NULL, NULL);
     }
-#endif
 
     return 0;
 }

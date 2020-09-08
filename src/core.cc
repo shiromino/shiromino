@@ -211,8 +211,9 @@ void CoreState_initialize(CoreState *cs)
     cs->screen.h = 480;
     cs->screen.window = NULL;
     cs->screen.renderer = NULL;
-#ifdef ENABLE_OPENGL_INTERPOLATION
     cs->screen.target_tex = NULL;
+#ifdef ENABLE_OPENGL_INTERPOLATION
+    cs->screen.interpolate_shading_prog = 0u;
 #endif
 
     cs->bg = NULL;
@@ -987,11 +988,7 @@ int run(CoreState *cs)
             }
         }
 
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        if (cs->settings->interpolate) {
-            SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
-        }
-#endif
+        SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
         SDL_RenderClear(cs->screen.renderer);
 
         gfx_drawbg(cs);

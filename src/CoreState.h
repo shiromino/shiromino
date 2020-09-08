@@ -61,8 +61,8 @@ struct CoreState
         unsigned int h;
         SDL_Window *window;
         SDL_Renderer *renderer;
-#ifdef ENABLE_OPENGL_INTERPOLATION
         SDL_Texture *target_tex;
+#ifdef ENABLE_OPENGL_INTERPOLATION
         GLuint interpolate_shading_prog;
 #endif
     } screen;
