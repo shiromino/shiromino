@@ -161,13 +161,20 @@ void Shiro::Settings::write() const {
     ini.set("SCREEN", "V_SYNC", vsync);
     ini.set("SCREEN", "FRAME_DELAY", frameDelay);
     ini.set("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep);
+#ifdef ENABLE_OPENGL_INTERPOLATION
     ini.set("SCREEN", "INTERPOLATE", interpolate);
+#endif
 
     ini.set("ACCOUNT", "PLAYER_NAME", playerName);
 
-    ini.write(configurationPath);
+    // Unfortunately, Microsoft left operator std::string() out of
+    // std::filesystem::path. We can still get by with
+    // std::filesystem::string(), though.
+    // TODO: If operator std::string() gets added to MSVC, change this to use
+    // that operator.
+    ini.write(configurationPath.string());
 }
 
-void printHelp(const char* executableName) {
+static void printHelp(const char* executableName) {
     std::cerr << "Usage: " << executableName << " --configuration-file <configuration file>" << std::endl;
 }
