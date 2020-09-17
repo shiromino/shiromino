@@ -16,9 +16,9 @@ Screen::Screen(const std::string& name, const unsigned w, const unsigned h) :
     h(h),
     window(nullptr),
     renderer(nullptr),
-    target_tex(nullptr),
+    target_tex(nullptr)
 #ifdef ENABLE_OPENGL_INTERPOLATION
-    interpolate_shading_prog(0u)
+    , interpolate_shading_prog(0u)
 #endif
 {}
 
