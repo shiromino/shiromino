@@ -477,7 +477,7 @@ int menu_input(game_t *g)
             {
                 d->selection = i;
                 if(cs->pressed.up == 1) {
-                    cs->assets->menu_choose->play(*cs->settings);
+                    cs->assets->menu_choose->play(cs->settings);
                 }
                 if(d->menu[d->selection].type == Shiro::ElementType::MENU_TEXTINPUT)
                 {
@@ -540,7 +540,7 @@ int menu_input(game_t *g)
             {
                 d->selection = i;
                 if(cs->pressed.down == 1) {
-                    cs->assets->menu_choose->play(*cs->settings);
+                    cs->assets->menu_choose->play(cs->settings);
                 }
                 if(d->menu[d->selection].type == Shiro::ElementType::MENU_TEXTINPUT)
                 {
@@ -1039,7 +1039,7 @@ int mload_main(game_t *g, int val)
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
-    d2->param = &g->origin->settings->masterVolume;
+    d2->param = &g->origin->settings.masterVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
     d2->labels.clear();
     for(i = 0; i < 101; i++)
@@ -1049,7 +1049,7 @@ int mload_main(game_t *g, int val)
         d2->labels.push_back(ss.str());
         d2->vals[i] = i;
     }
-    d2->selection = g->origin->settings->masterVolume;
+    d2->selection = g->origin->settings.masterVolume;
     m->x = 4 * 16;
     m->y = 22 * 16;
     m->value_x = 21 * 16;
@@ -1060,7 +1060,7 @@ int mload_main(game_t *g, int val)
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
-    d2->param = &g->origin->settings->sfxVolume;
+    d2->param = &g->origin->settings.sfxVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
     d2->labels.clear();
     for(i = 0; i < 101; i++)
@@ -1070,7 +1070,7 @@ int mload_main(game_t *g, int val)
         d2->labels.push_back(ss.str());
         d2->vals[i] = i;
     }
-    d2->selection = g->origin->settings->sfxVolume;
+    d2->selection = g->origin->settings.sfxVolume;
     m->x = 4 * 16;
     m->y = 23 * 16;
     m->value_x = 21 * 16;
@@ -1081,7 +1081,7 @@ int mload_main(game_t *g, int val)
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
-    d2->param = &g->origin->settings->musicVolume;
+    d2->param = &g->origin->settings.musicVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
     d2->labels.clear();
     for(i = 0; i < 101; i++)
@@ -1091,7 +1091,7 @@ int mload_main(game_t *g, int val)
         d2->labels.push_back(ss.str());
         d2->vals[i] = i;
     }
-    d2->selection = g->origin->settings->musicVolume;
+    d2->selection = g->origin->settings.musicVolume;
     m->x = 4 * 16;
     m->y = 24 * 16;
     m->value_x = 21 * 16;

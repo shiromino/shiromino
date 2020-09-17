@@ -20,7 +20,6 @@ namespace Shiro {
         MessageEntity() = delete;
 
         MessageEntity(
-            SDL_Renderer* const renderer,
             const std::string text,
             const size_t layerNum,
             const int x,

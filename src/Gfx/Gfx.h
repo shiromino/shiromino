@@ -5,6 +5,7 @@
  * directory for the full text of the license.
  */
 #pragma once
+#include "Gfx/Screen.h"
 #include <vector>
 #include <forward_list>
 #include <memory>
@@ -45,7 +46,7 @@ namespace Shiro {
     struct Graphic {
         virtual ~Graphic();
 
-        virtual void draw() const = 0;
+        virtual void draw(const Screen& screen) const = 0;
     };
 
     class Gfx;
@@ -53,6 +54,10 @@ namespace Shiro {
         friend Gfx;
 
     public:
+        Layers() = delete;
+
+        Layers(const Screen& screen);
+
         /**
          * Pushes a new graphic onto the end of a layer's graphic list.
          * You can hold a shared_ptr to the graphic in an entity if you want to reuse it over multiple updates.
@@ -72,6 +77,7 @@ namespace Shiro {
          */
         void clear();
 
+        const Screen& screen;
         std::vector<std::vector<std::shared_ptr<Graphic>>> graphics;
     };
 
@@ -88,6 +94,10 @@ namespace Shiro {
 
     class Gfx {
     public:
+        Gfx() = delete;
+
+        Gfx(const Screen& screen);
+
         /**
          * Pushes a new entity.
          */
@@ -116,6 +126,7 @@ namespace Shiro {
         void clearLayers();
 
     private:
+        const Screen& screen;
         Layers layers;
         std::forward_list<std::unique_ptr<Entity>> entities;
     };

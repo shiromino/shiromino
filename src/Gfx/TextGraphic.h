@@ -15,7 +15,6 @@ namespace Shiro {
         TextGraphic() = delete;
 
         TextGraphic(
-            SDL_Renderer* const renderer,
             const std::string& text,
             const size_t pos,
             const size_t len,
@@ -26,7 +25,6 @@ namespace Shiro {
         );
 
         TextGraphic(
-            SDL_Renderer* const renderer,
             const std::string& text,
             const int x,
             const int y,
@@ -34,9 +32,8 @@ namespace Shiro {
             const text_formatting& fmt
         );
 
-        void draw() const;
+        void draw(const Screen& screen) const;
 
-        SDL_Renderer* const renderer;
         const std::string text;
         const size_t pos;
         const size_t len;

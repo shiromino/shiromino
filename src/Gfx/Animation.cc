@@ -15,16 +15,14 @@ namespace Shiro {
         AnimationGraphic() = delete;
 
         AnimationGraphic(
-            SDL_Renderer* const renderer,
             SDL_Texture* const frame,
             const int x,
             const int y,
             const Uint32 rgbaMod
         );
 
-        void draw() const;
+        void draw(const Screen& screen) const;
 
-        SDL_Renderer* const renderer;
         SDL_Texture* frame;
         const int x;
         const int y;
@@ -52,19 +50,17 @@ namespace Shiro {
 }
 
 AnimationGraphic::AnimationGraphic(
-    SDL_Renderer* const renderer,
     SDL_Texture* const frame,
     const int x,
     const int y,
     const Uint32 rgbaMod
 ) :
-    renderer(renderer),
     frame(frame),
     x(x),
     y(y),
     rgbaMod(rgbaMod) {}
 
-void AnimationGraphic::draw() const {
+void AnimationGraphic::draw(const Screen& screen) const {
     SDL_Rect dest;
     dest.x = x;
     dest.y = y;
@@ -72,7 +68,7 @@ void AnimationGraphic::draw() const {
 
     SDL_SetTextureColorMod(frame, R(rgbaMod), G(rgbaMod), B(rgbaMod));
     SDL_SetTextureAlphaMod(frame, A(rgbaMod));
-    SDL_RenderCopy(renderer, frame, NULL, &dest);
+    SDL_RenderCopy(screen.renderer, frame, NULL, &dest);
     SDL_SetTextureAlphaMod(frame, 255);
     SDL_SetTextureColorMod(frame, 255, 255, 255);
 }
@@ -92,7 +88,6 @@ AnimationEntity::Impl::Impl(
     graphic(graphic) {}
 
 AnimationEntity::AnimationEntity(
-    SDL_Renderer* const renderer,
     gfx_image* const frames,
     const size_t layerNum,
     const int x,
@@ -107,7 +102,6 @@ AnimationEntity::AnimationEntity(
         numFrames,
         frameMultiplier,
         make_shared<AnimationGraphic>(
-            renderer,
             nullptr,
             x,
             y,

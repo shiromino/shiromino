@@ -4,6 +4,7 @@
 #include "DisplayMode.h"
 #include "Game.h"
 #include "GuiScreenManager.h"
+#include "Gfx/Screen.h"
 #include "Gfx/Animation.h"
 #include "gfx_structures.h"
 #include "input/KeyFlags.h"
@@ -14,13 +15,17 @@
 #include "SDL.h"
 #include <vector>
 #include <deque>
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        #include "glad/glad.h"
-#endif
 #define RECENT_FRAMES 60
-struct CoreState
-{
-    CoreState() {}
+
+struct CoreState {
+    CoreState() = delete;
+
+    CoreState(Shiro::Settings& settings);
+    ~CoreState();
+
+    bool init();
+
+    Shiro::Screen screen;
 
     double fps;        // because tap fps = 61.68
 
@@ -55,21 +60,9 @@ struct CoreState
     int seven_pressed;
     int nine_pressed;
 
-    struct {
-        const char *name;
-        unsigned int w;
-        unsigned int h;
-        SDL_Window *window;
-        SDL_Renderer *renderer;
-        SDL_Texture *target_tex;
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        GLuint interpolate_shading_prog;
-#endif
-    } screen;
-
     std::filesystem::path configurationPath;
 
-    Shiro::Settings* settings;
+    Shiro::Settings& settings;
     Shiro::AssetStore* assets;
     SDL_Texture *bg;
     SDL_Texture *bg_old;
@@ -119,8 +112,6 @@ struct CoreState
     // struct scoredb archive;
     Shiro::Player player;
 };
-void CoreState_initialize(CoreState *cs);
-void CoreState_destroy(CoreState *cs);
 int is_left_input_repeat(CoreState *cs, int delay);
 int is_right_input_repeat(CoreState *cs, int delay);
 int is_up_input_repeat(CoreState *cs, int delay);
@@ -130,7 +121,7 @@ struct bindings *bindings_copy(struct bindings *src);
 
 int load_files(CoreState *cs);
 
-int init(CoreState *cs, Shiro::Settings* s, const std::filesystem::path& executablePath);
+int init(CoreState *cs, Shiro::Settings& s);
 void quit(CoreState *cs);
 
 int run(CoreState *cs);

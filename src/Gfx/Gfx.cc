@@ -11,6 +11,8 @@ using namespace std;
 
 Graphic::~Graphic() {}
 
+Layers::Layers(const Screen& screen) : screen(screen) {}
+
 void Layers::push(const size_t layerNum, shared_ptr<Graphic> graphic) {
     if (layerNum >= graphics.size()) {
         graphics.resize(layerNum + 1);
@@ -21,7 +23,7 @@ void Layers::push(const size_t layerNum, shared_ptr<Graphic> graphic) {
 void Layers::draw() {
     for (auto& layer : graphics) {
         for (auto& graphic : layer) {
-            graphic->draw();
+            graphic->draw(screen);
         }
     }
 }
@@ -31,6 +33,8 @@ void Layers::clear() {
 }
 
 Entity::~Entity() {}
+
+Gfx::Gfx(const Screen& screen) : screen(screen), layers(screen) {}
 
 void Gfx::push(unique_ptr<Entity> entity) {
     entities.push_front(move(entity));

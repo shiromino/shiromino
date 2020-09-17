@@ -38,7 +38,6 @@ MessageEntity::Impl::Impl(
     graphic(graphic) {}
 
 MessageEntity::MessageEntity(
-    SDL_Renderer *const renderer,
     const std::string text,
     const size_t layerNum,
     const int x,
@@ -53,7 +52,6 @@ MessageEntity::MessageEntity(
         numFrames == SIZE_MAX ? SIZE_MAX : numFrames + 1,
         deleteCheck,
         make_shared<TextGraphic>(
-            renderer,
             text,
             x,
             y,

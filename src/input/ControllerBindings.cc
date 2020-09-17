@@ -11,6 +11,7 @@ void Shiro::ControllerBindings::read(PDINI::INI& ini) {
         // controller input completely.
         name = "";
         controllerIndex = -1;
+        return;
     }
     // A controller was selected; controller axes and hat settings have defaults,
     // but buttons don't.
@@ -89,6 +90,36 @@ void Shiro::ControllerBindings::read(PDINI::INI& ini) {
         hatIndex = 0;
     }
 }
+
+void Shiro::ControllerBindings::write(PDINI::INI& ini) const {
+    if (controllerIndex == -1) {
+        return;
+    }
+
+    const auto sectionName = "PLAYER_1_CONTROLLER_BINDINGS";
+    ini.set(sectionName, "CONTROLLER_NAME", name);
+    ini.set(sectionName, "CONTROLLER_INDEX", controllerIndex);
+
+    if (buttons.left >= 0) ini.set(sectionName, "BUTTON_LEFT", buttons.left);
+    if (buttons.right >= 0) ini.set(sectionName, "BUTTON_RIGHT", buttons.right);
+    if (buttons.up >= 0) ini.set(sectionName, "BUTTON_UP", buttons.up);
+    if (buttons.down >= 0) ini.set(sectionName, "BUTTON_DOWN", buttons.down);
+    if (buttons.start >= 0) ini.set(sectionName, "BUTTON_START", buttons.start);
+    if (buttons.a >= 0) ini.set(sectionName, "BUTTON_A", buttons.a);
+    if (buttons.b >= 0) ini.set(sectionName, "BUTTON_B", buttons.b);
+    if (buttons.c >= 0) ini.set(sectionName, "BUTTON_C", buttons.c);
+    if (buttons.d >= 0) ini.set(sectionName, "BUTTON_D", buttons.d);
+    if (buttons.escape >= 0) ini.set(sectionName, "BUTTON_ESCAPE", buttons.escape);
+
+    ini.set(sectionName, "AXIS_X", axes.x);
+    ini.set(sectionName, "AXIS_Y", axes.y);
+    ini.set(sectionName, "DEAD_ZONE", deadZone);
+    ini.set(sectionName, "AXIS_RIGHT", axes.right > 0 ? "+" : "-");
+    ini.set(sectionName, "AXIS_DOWN", axes.down > 0 ? "+" : "-");
+
+    ini.set(sectionName, "HAT_INDEX", hatIndex);
+}
+
 Shiro::ControllerBindings::Buttons::Buttons() :
     left(-1),
     right(-1),
@@ -100,6 +131,7 @@ Shiro::ControllerBindings::Buttons::Buttons() :
     c(-1),
     d(-1),
     escape(-1) {}
+
 Shiro::ControllerBindings::Axes::Axes() :
     x(-1),
     right(0),

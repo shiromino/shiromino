@@ -73,3 +73,24 @@ void Shiro::KeyBindings::read(PDINI::INI& ini) {
         ++keycode;
     }
 }
+
+void Shiro::KeyBindings::write(PDINI::INI& ini) const {
+    const auto sectionName = "PLAYER_1_KEY_BINDINGS";
+    const SDL_Keycode* const keycodes[] = {
+        &left,
+        &right,
+        &up,
+        &down,
+        &start,
+        &a,
+        &b,
+        &c,
+        &d,
+        &escape
+    };
+    const SDL_Keycode* const* keycode = keycodes;
+    for (const auto& keyBindingName : keyBindingNames) {
+        ini.set(sectionName, keyBindingName, std::string(SDL_GetKeyName(**keycode)));
+        ++keycode;
+    }
+}

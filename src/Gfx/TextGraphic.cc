@@ -12,7 +12,6 @@ using namespace Shiro;
 using namespace std;
 
 TextGraphic::TextGraphic(
-    SDL_Renderer* const renderer,
     const std::string& text,
     const size_t pos,
     const size_t len,
@@ -21,7 +20,6 @@ TextGraphic::TextGraphic(
     const png_monofont& font,
     const text_formatting& fmt
 ) :
-    renderer(renderer),
     text(text),
     pos(pos),
     len(len),
@@ -31,7 +29,6 @@ TextGraphic::TextGraphic(
     fmt(fmt) {}
 
 TextGraphic::TextGraphic(
-    SDL_Renderer* const renderer,
     const std::string& text,
     const int x,
     const int y,
@@ -39,7 +36,6 @@ TextGraphic::TextGraphic(
     const text_formatting& fmt
 ) :
     TextGraphic(
-        renderer,
         text,
         0,
         text.size(),
@@ -49,7 +45,7 @@ TextGraphic::TextGraphic(
         fmt
     ) {}
 
-void TextGraphic::draw() const {
+void TextGraphic::draw(const Screen& screen) const {
     if (text == "") {
         return;
     }
@@ -74,7 +70,7 @@ void TextGraphic::draw() const {
 
     bool usingTargetTex = false;
 
-    if (SDL_GetRenderTarget(renderer) != NULL) {
+    if (SDL_GetRenderTarget(screen.renderer) != NULL) {
         usingTargetTex = true;
     }
 
@@ -146,12 +142,12 @@ void TextGraphic::draw() const {
             SDL_SetTextureAlphaMod(font.sheet, A(fmt.outline_rgba));
 
             if (usingTargetTex) {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-                SDL_RenderFillRect(renderer, &dest);
-                SDL_RenderCopy(renderer, font.sheet, &src, &dest);
+                SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 0);
+                SDL_RenderFillRect(screen.renderer, &dest);
+                SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
             }
             else {
-                SDL_RenderCopy(renderer, font.sheet, &src, &dest);
+                SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
             }
 
             SDL_SetTextureColorMod(font.sheet, R(fmt.rgba), G(fmt.rgba), B(fmt.rgba));
@@ -174,10 +170,10 @@ void TextGraphic::draw() const {
                 SDL_SetTextureAlphaMod(font.outline_sheet, A(fmt.rgba) / 4);
             }
 
-            SDL_RenderCopy(renderer, font.sheet, &src, &dest);
+            SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
 
             if (fmt.outlined && font.outline_sheet) {
-                SDL_RenderCopy(renderer, font.outline_sheet, &src, &dest);
+                SDL_RenderCopy(screen.renderer, font.outline_sheet, &src, &dest);
             }
 
             dest.x += 2.0 * fmt.size_multiplier;
@@ -190,19 +186,19 @@ void TextGraphic::draw() const {
         }
 
         if (usingTargetTex) {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-            SDL_RenderFillRect(renderer, &dest);
-            SDL_RenderCopy(renderer, font.sheet, &src, &dest);
+            SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 0);
+            SDL_RenderFillRect(screen.renderer, &dest);
+            SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
 
             if (fmt.outlined && font.outline_sheet) {
-                SDL_RenderCopy(renderer, font.outline_sheet, &src, &dest);
+                SDL_RenderCopy(screen.renderer, font.outline_sheet, &src, &dest);
             }
         }
         else {
-            SDL_RenderCopy(renderer, font.sheet, &src, &dest);
+            SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
 
             if (fmt.outlined && font.outline_sheet) {
-                SDL_RenderCopy(renderer, font.outline_sheet, &src, &dest);
+                SDL_RenderCopy(screen.renderer, font.outline_sheet, &src, &dest);
             }
         }
 

@@ -18,7 +18,6 @@ namespace Shiro {
         AnimationEntity() = delete;
 
         AnimationEntity(
-            SDL_Renderer* const renderer,
             gfx_image* const frames,
             const size_t layerNum,
             const int x,

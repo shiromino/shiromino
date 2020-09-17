@@ -4,11 +4,15 @@
 #include "input/KeyBindings.h"
 #include <filesystem>
 #include <string>
+
 namespace Shiro {
-    class Settings {
-    public:
-        Settings(const std::filesystem::path &basePath);
+    struct Settings {
+        Settings();
+
+        bool init(const int argc, const char* const argv[]);
         void read(const std::string filename);
+        void write() const;
+
         KeyBindings keyBindings;
         ControllerBindings controllerBindings;
         float videoScale;
@@ -23,6 +27,7 @@ namespace Shiro {
         int masterVolume;
         int sfxVolume;
         int musicVolume;
+        std::filesystem::path configurationPath;
         std::filesystem::path basePath;
         std::string playerName;
     };

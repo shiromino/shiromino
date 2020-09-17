@@ -10,6 +10,7 @@ namespace Shiro {
         static constexpr i16 MAXIMUM_DEAD_ZONE = std::numeric_limits<i16>::max();
         ControllerBindings();
         void read(PDINI::INI& ini);
+        void write(PDINI::INI& ini) const;
         std::string name;
         int controllerIndex;
         SDL_JoystickID controllerID;

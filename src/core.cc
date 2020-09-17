@@ -155,114 +155,118 @@ int is_down_input_repeat(CoreState *cs, int delay)
     return cs->keys.down && cs->hold_dir == Shiro::DASDirection::DOWN && cs->hold_time >= delay;
 }
 
-void CoreState_initialize(CoreState *cs)
+CoreState::CoreState(Shiro::Settings& settings) :
+    screen(Shiro::Version::DESCRIPTOR, settings.videoScale * 640u, settings.videoScale * 480u),
+    settings(settings),
+    gfx(screen)
 {
-    cs->fps = Shiro::RefreshRates::menu;
-    // cs->keyquit = SDLK_F11;
-    cs->text_editing = 0;
-    cs->text_insert = NULL;
-    cs->text_backspace = NULL;
-    cs->text_delete = NULL;
-    cs->text_seek_left = NULL;
-    cs->text_seek_right = NULL;
-    cs->text_seek_home = NULL;
-    cs->text_seek_end = NULL;
-    cs->text_select_all = NULL;
-    cs->text_copy = NULL;
-    cs->text_cut = NULL;
-    cs->left_arrow_das = 0;
-    cs->right_arrow_das = 0;
-    cs->backspace_das = 0;
-    cs->delete_das = 0;
-    cs->select_all = 0;
-    cs->undo = 0;
-    cs->redo = 0;
+    fps = Shiro::RefreshRates::menu;
+    // keyquit = SDLK_F11;
+    text_editing = 0;
+    text_insert = NULL;
+    text_backspace = NULL;
+    text_delete = NULL;
+    text_seek_left = NULL;
+    text_seek_right = NULL;
+    text_seek_home = NULL;
+    text_seek_end = NULL;
+    text_select_all = NULL;
+    text_copy = NULL;
+    text_cut = NULL;
+    left_arrow_das = 0;
+    right_arrow_das = 0;
+    backspace_das = 0;
+    delete_das = 0;
+    select_all = 0;
+    undo = 0;
+    redo = 0;
 
-    cs->zero_pressed = 0;
-    cs->one_pressed = 0;
-    cs->two_pressed = 0;
-    cs->three_pressed = 0;
-    cs->four_pressed = 0;
-    cs->five_pressed = 0;
-    cs->six_pressed = 0;
-    cs->seven_pressed = 0;
-    cs->nine_pressed = 0;
+    zero_pressed = 0;
+    one_pressed = 0;
+    two_pressed = 0;
+    three_pressed = 0;
+    four_pressed = 0;
+    five_pressed = 0;
+    six_pressed = 0;
+    seven_pressed = 0;
+    nine_pressed = 0;
 
-    cs->assets = new Shiro::AssetStore();
+    assets = new Shiro::AssetStore();
 
-    cs->joystick = NULL;
-    cs->prev_keys_raw = {};
-    cs->keys_raw = {};
-    cs->prev_keys = {};
-    cs->keys = {};
-    cs->pressed = {};
-    cs->hold_dir = Shiro::DASDirection::NONE;
-    cs->hold_time = 0;
+    joystick = NULL;
+    prev_keys_raw = {};
+    keys_raw = {};
+    prev_keys = {};
+    keys = {};
+    pressed = {};
+    hold_dir = Shiro::DASDirection::NONE;
+    hold_time = 0;
 
-    cs->mouse_x = 0;
-    cs->mouse_y = 0;
-    cs->logical_mouse_x = 0;
-    cs->logical_mouse_y = 0;
-    cs->mouse_left_down = 0;
-    cs->mouse_right_down = 0;
+    mouse_x = 0;
+    mouse_y = 0;
+    logical_mouse_x = 0;
+    logical_mouse_y = 0;
+    mouse_left_down = 0;
+    mouse_right_down = 0;
 
-    cs->screen.name = Shiro::Version::DESCRIPTOR;
-    cs->screen.w = 640;
-    cs->screen.h = 480;
-    cs->screen.window = NULL;
-    cs->screen.renderer = NULL;
-    cs->screen.target_tex = NULL;
-#ifdef ENABLE_OPENGL_INTERPOLATION
-    cs->screen.interpolate_shading_prog = 0u;
-#endif
+    bg = NULL;
+    bg_old = NULL;
+    bg_r = 0u;
+    bg_g = 0u;
+    bg_b = 0u;
+    gfx_messages_max = 0;
+    gfx_buttons_max = 0;
 
-    cs->bg = NULL;
-    cs->bg_old = NULL;
-    cs->bg_r = 0u;
-    cs->bg_g = 0u;
-    cs->bg_b = 0u;
-    cs->gfx_messages_max = 0;
-    cs->gfx_buttons_max = 0;
+    this->settings = settings;
+    menu_input_override = 0;
+    button_emergency_override = 0;
+    p1game = NULL;
+    menu = NULL;
 
-    cs->settings = nullptr;
-    cs->menu_input_override = 0;
-    cs->button_emergency_override = 0;
-    cs->p1game = NULL;
-    cs->menu = NULL;
+    screenManager = new GuiScreenManager {};
 
-    cs->screenManager = new GuiScreenManager {};
+    displayMode = Shiro::DisplayMode::DEFAULT;
+    motionBlur = false;
+    pracdata_mirror = NULL;
 
-    cs->displayMode = Shiro::DisplayMode::DEFAULT;
-    cs->motionBlur = false;
-    cs->pracdata_mirror = NULL;
-
-    //cs->avg_sleep_ms = 0;
-    //cs->avg_sleep_ms_recent = 0;
-    cs->frames = 0;
+    //avg_sleep_ms = 0;
+    //avg_sleep_ms_recent = 0;
+    frames = 0;
 
 #if 0
     for(i = 0; i < RECENT_FRAMES; i++)
     {
-        cs->avg_sleep_ms_recent_array[i] = 0;
+        avg_sleep_ms_recent_array[i] = 0;
     }
 
-    cs->recent_frame_overload = -1;
+    recent_frame_overload = -1;
 #endif
 }
 
-void CoreState_destroy(CoreState *cs)
-{
-    if(!cs) {
-        return;
+CoreState::~CoreState() {
+    if (pracdata_mirror) {
+        pracdata_destroy(pracdata_mirror);
     }
-    if(cs->pracdata_mirror) {
-        pracdata_destroy(cs->pracdata_mirror);
+    quit(this);
+}
+
+bool CoreState::init() {
+    if (!screen.init(settings)) {
+        std::cerr << "Failed to init screen, aborting" << std::endl;
+        return false;
     }
+
+    if (::init(this, settings)) {
+        std::cerr << "Failed to init CoreState, aborting." << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
 {
-    std::filesystem::path path { cs->settings->basePath };
+    std::filesystem::path path { cs->settings.basePath };
     if(!img_load(img, path / "assets" / "image" / filename, cs))
     {
         log_warn("Failed to load image '%s'", filename);
@@ -280,7 +284,7 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
 
 static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char* filename)
 {
-    std::filesystem::path basePath { cs->settings->basePath };
+    std::filesystem::path basePath { cs->settings.basePath };
     *s = new Shiro::Sfx();
     if (!(*s)->load(basePath / "assets" / "audio" / filename)) {
         log_warn("Failed to load audio '%s'", filename);
@@ -296,7 +300,7 @@ static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char*
 
 static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const char* name)
 {
-    std::filesystem::path basePath { cs->settings->basePath };
+    std::filesystem::path basePath { cs->settings.basePath };
     m = new Shiro::Music();
     if (!m->load(basePath / "assets" / "audio" / name)) {
         log_warn("Failed to load music '%s'", name);
@@ -333,7 +337,7 @@ int load_files(CoreState *cs)
 
     {
         PDINI::INI ini(false);
-        std::filesystem::path basePath { cs->settings->basePath };
+        std::filesystem::path basePath { cs->settings.basePath };
         ini.read(basePath / "assets" / "audio" / "volume.ini");
 
 #define MUSIC(name, i) load_music(cs, ini, cs->assets->name[i], #name #i);
@@ -349,148 +353,16 @@ int load_files(CoreState *cs)
     return 0;
 }
 
-#ifdef ENABLE_OPENGL_INTERPOLATION
-GLuint CompileShader(GLenum shaderType, const GLchar* shaderSource) {
-    GLint compileOK;
-    GLuint shader = glCreateShader(shaderType);
-    glShaderSource(shader, 1, &shaderSource, NULL);
-    glCompileShader(shader);
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileOK);
-    if (compileOK) {
-        return shader;
-    }
-    else {
-        GLint infoLogLength;
-        char* infoLog;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
-        infoLog = new char[infoLogLength];
-        glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
-        const auto shaderTypeString = shaderType == GL_VERTEX_SHADER
-            ? "vertex"
-            : shaderType == GL_GEOMETRY_SHADER
-                ? "geometry"
-                : shaderType == GL_FRAGMENT_SHADER
-                    ? "fragment"
-                    : "unknown";
-        std::cerr << "Could not compile " << shaderTypeString << " shader." << std::endl;
-        std::cerr << infoLog << std::endl;
-        delete[] infoLog;
-        return 0u;
-    }
-}
-
-GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geometryShaderSource, const GLchar* fragmentShaderSource) {
-    GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    if (vertexShader == 0u) {
-        return 0u;
-    }
-
-    GLuint geometryShader = 0u;
-    if (geometryShaderSource != NULL) {
-        geometryShader = CompileShader(GL_GEOMETRY_SHADER, geometryShaderSource);
-        if (geometryShader == 0u) {
-            glDeleteShader(vertexShader);
-            return 0u;
-        }
-    }
-
-    GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    if (fragmentShader == 0u) {
-        if (geometryShader != 0u) glDeleteShader(geometryShader);
-        glDeleteShader(vertexShader);
-        return 0u;
-    }
-
-    GLuint program = glCreateProgram();
-    if (program == 0u) {
-        log_err("Could not create shading program.");
-        glDeleteShader(vertexShader);
-        if (geometryShader != 0u) glDeleteShader(geometryShader);
-        glDeleteShader(fragmentShader);
-        return 0u;
-    }
-
-    glAttachShader(program, vertexShader);
-    if (geometryShader != 0u) glAttachShader(program, geometryShader);
-    glAttachShader(program, fragmentShader);
-
-    glLinkProgram(program);
-
-    glDetachShader(program, vertexShader);
-    if (geometryShader != 0u) glDetachShader(program, geometryShader);
-    glDetachShader(program, fragmentShader);
-
-    glDeleteShader(vertexShader);
-    if (geometryShader != 0u) glDeleteShader(geometryShader);
-    glDeleteShader(fragmentShader);
-
-    GLint linkOK;
-    glGetProgramiv(program, GL_LINK_STATUS, &linkOK);
-    if (linkOK) {
-        return program;
-    }
-    else {
-        GLint infoLogLength;
-        char* infoLog;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
-        infoLog = new char[infoLogLength];
-        glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
-        log_err("Could not link shading program.\n");
-        log_err("%s", infoLog);
-        delete[] infoLog;
-        glDeleteProgram(program);
-        return 0u;
-    }
-}
-#endif
-
-int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &executablePath)
-{
+int init(CoreState *cs, Shiro::Settings& settings) {
     try {
         if(!cs)
             return -1;
 
-        const char *name = NULL;
         // SDL_Texture *blank = NULL;
 
         // copy settings into main game structure
+        cs->settings = settings;
 
-        if(settings) {
-            cs->settings = settings;
-        }
-        else {
-            cs->settings = new Shiro::Settings(executablePath);
-        }
-
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        if (cs->settings->interpolate) {
-            SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-        }
-#endif
-        if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-            std::cerr << "SDL_Init: Error: " <<  SDL_GetError() << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) != 0) {
-            std::cerr << "SDL_InitSubSystem: Error: " << SDL_GetError() << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        if (SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH) != 0) {
-            std::cerr << "Failed to set high thread priority; continuing without changing thread priority" << std::endl;
-        }
-        if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
-            std::cerr << "IMG_Init: Failed to initialize PNG support: " << IMG_GetError() << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG) {
-            std::cerr << "Mix_Init: Failed to initialize OGG support: " <<  Mix_GetError() << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
-            std::cerr <<  "Mix_OpenAudio: Error: " << Mix_GetError() << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        Mix_AllocateChannels(32);
         if (SDL_NumJoysticks()) {
             const int numJoysticks = SDL_NumJoysticks();
             for (int i = 0; i < numJoysticks; i++) {
@@ -504,13 +376,13 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
                 }
             }
             cs->joystick = nullptr;
-            if (cs->settings->controllerBindings.name != "") {
+            if (cs->settings.controllerBindings.name != "") {
                 const int numJoysticks = SDL_NumJoysticks();
                 for (int i = 0; i < numJoysticks; i++) {
                     if ((cs->joystick = SDL_JoystickOpen(i))) {
-                        if (SDL_JoystickName(cs->joystick) == cs->settings->controllerBindings.name) {
-                            cs->settings->controllerBindings.controllerIndex = i;
-                            cs->settings->controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
+                        if (SDL_JoystickName(cs->joystick) == cs->settings.controllerBindings.name) {
+                            cs->settings.controllerBindings.controllerIndex = i;
+                            cs->settings.controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
                             break;
                         }
                         else {
@@ -520,16 +392,16 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
                     }
                 }
             }
-            if (!cs->joystick && cs->settings->controllerBindings.controllerIndex >= 0 && cs->settings->controllerBindings.controllerIndex < SDL_NumJoysticks()) {
-                if ((cs->joystick = SDL_JoystickOpen(cs->settings->controllerBindings.controllerIndex))) {
-                    cs->settings->controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
+            if (!cs->joystick && cs->settings.controllerBindings.controllerIndex >= 0 && cs->settings.controllerBindings.controllerIndex < SDL_NumJoysticks()) {
+                if ((cs->joystick = SDL_JoystickOpen(cs->settings.controllerBindings.controllerIndex))) {
+                    cs->settings.controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
                 }
             }
-            if (cs->settings->controllerBindings.controllerIndex >= 0 && cs->joystick) {
+            if (cs->settings.controllerBindings.controllerIndex >= 0 && cs->joystick) {
                 std::cerr
                     << "Joysticks are enabled" << std::endl
-                    << "Name: " << SDL_JoystickNameForIndex(cs->settings->controllerBindings.controllerIndex) << std::endl
-                    << "Index: " << cs->settings->controllerBindings.controllerIndex << std::endl
+                    << "Name: " << SDL_JoystickNameForIndex(cs->settings.controllerBindings.controllerIndex) << std::endl
+                    << "Index: " << cs->settings.controllerBindings.controllerIndex << std::endl
                     << "Buttons: " << SDL_JoystickNumButtons(cs->joystick) << std::endl
                     << "Axes: " << SDL_JoystickNumAxes(cs->joystick) << std::endl
                     << "Hats: " << SDL_JoystickNumHats(cs->joystick) << std::endl;
@@ -542,140 +414,7 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
         else {
             std::cerr << "No joysticks are attached" << std::endl;
         }
-        cs->screen.w = cs->settings->videoScale * 640u;
-        cs->screen.h = cs->settings->videoScale * 480u;
-        unsigned int w = cs->screen.w;
-        unsigned int h = cs->screen.h;
-        name = cs->screen.name;
-        Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        // TODO: Figure out whether OpenGL 2.0 should be used for desktop. Also
-        // support OpenGL ES 2.0.
-        if (cs->settings->interpolate) {
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-            windowFlags |= SDL_WINDOW_OPENGL;
-        }
-#endif
-        cs->screen.window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, windowFlags);
-        check(cs->screen.window != NULL, "SDL_CreateWindow: Error: %s\n", SDL_GetError());
-        cs->screen.renderer =
-            SDL_CreateRenderer(cs->screen.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | (cs->settings->vsync ? SDL_RENDERER_PRESENTVSYNC : 0));
-        check(cs->screen.renderer != NULL, "SDL_CreateRenderer: Error: %s\n", SDL_GetError());
 
-        SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_BLEND);
-
-        SDL_SetWindowMinimumSize(cs->screen.window, 640, 480);
-        if(cs->settings->fullscreen)
-        {
-            SDL_SetWindowSize(cs->screen.window, 640, 480);
-            SDL_SetWindowFullscreen(cs->screen.window, SDL_WINDOW_FULLSCREEN);
-        }
-
-        SDL_RenderSetLogicalSize(cs->screen.renderer, 640, 480);
-        if(!cs->settings->videoStretch)
-        {
-            SDL_RenderSetIntegerScale(cs->screen.renderer, SDL_TRUE);
-        }
-
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        if (cs->settings->interpolate) {
-            cs->screen.target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_GetWindowPixelFormat(cs->screen.window),  SDL_TEXTUREACCESS_TARGET, 640, 480);
-        }
-        else {
-            cs->screen.target_tex = NULL;
-        }
-
-        cs->screen.interpolate_shading_prog = 0u;
-
-        if (cs->settings->interpolate) {
-            if (!gladLoadGL()) {
-                return 1;
-            }
-
-            glDisable(GL_DEPTH_TEST);
-            glEnable(GL_TEXTURE_2D);
-
-            /*
-            Vertex layout (triangle strip):
-
-            0 - 2
-            | / |
-            1 - 3
-            */
-
-            // By avoiding as much client-to-server data transfer as possible,
-            // performance should be better; memory access on modern systems is much
-            // more expensive than just generating the data with computation, in many
-            // cases. So just calculate positions from gl_VertexID, rather than using
-            // vertex arrays. And take advantage of hardware linear interpolation,
-            // rather than sampling in the fragment shader multiple times and doing
-            // our own interpolation.
-            cs->screen.interpolate_shading_prog = CompileShadingProgram(
-                "#version 330\n"
-                "out vec2 texCoord;\n"
-                "void main() {\n"
-                "   vec4 pos = vec4(float(gl_VertexID / 2 != 0) * 2 - 1, float(gl_VertexID % 2 == 0) * 2 - 1, 0.0, 1.0);\n"
-                "   gl_Position = pos;\n"
-                "   texCoord = (pos.xy + vec2(1.0, -1.0)) / vec2(2.0, -2.0);\n"
-                "}\n",
-
-                NULL,
-
-                "#version 330\n"
-                "in vec2 texCoord;\n"
-                "uniform sampler2D tex;\n"
-                "uniform vec2 viewportSize;\n"
-                "layout(location = 0) out vec4 outColor;\n"
-                "const vec2 texSize = vec2(640.0, 480.0);\n"
-
-                // filterCoord provided by PARTY MAN X ( https://github.com/PARTYMANX ).
-                // It's better than the thing I hacked together before. -Brandon McGriff
-                "vec2 filterCoord(vec2 uv, vec2 srcRes) {\n"
-                    "vec2 invSrc = 1.0 / srcRes;\n"
-
-                    // calculate destination resolution
-                    "vec2 duv = vec2(dFdx(uv.x), dFdy(uv.y));\n"
-                    "vec2 dstRes = 1.0 / abs(duv);\n"
-
-                    "vec2 scale = dstRes * invSrc;\n"                   // (dstRes / invSrc)
-
-                    "vec2 scaleFactor = floor(scale) + 1.0;\n"          // add one to integer scale factor so we scale down, not up
-
-                    "vec2 texelCoord = uv * srcRes;\n"                  // coordinate in texel space
-
-                    "vec2 roundCoord = floor(texelCoord) + 0.5;\n"      // center of nearest texel of uv
-                    "vec2 fractCoord = fract(texelCoord) - 0.5;\n"      // offset from nearest texel
-
-                    "vec2 offset = abs(fractCoord * scaleFactor);\n"    // absolute offset multiplied by scale factor
-                    "offset -= 0.5 * (scaleFactor - 1.0);\n"            // subtract border of scaled texel
-                    "offset = max(offset, 0.0) * sign(fractCoord);\n"   // get rid of wrong direction offsets, restore sign
-
-                    "return (roundCoord + offset) * invSrc;\n"
-                "}\n"
-
-                "void main() {\n"
-                "   outColor = texture(tex, filterCoord(texCoord, texSize));\n"
-                "}\n");
-            if (!cs->screen.interpolate_shading_prog) {
-                return 1;
-            }
-
-            glUseProgram(cs->screen.interpolate_shading_prog);
-            glUniform1i(glGetUniformLocation(cs->screen.interpolate_shading_prog, "tex"), 0);
-            glUseProgram(0u);
-
-            if (SDL_GL_BindTexture(cs->screen.target_tex, NULL, NULL) < 0) {
-                std::cerr << "Failed to bind `target_tex`." << std::endl;
-            }
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            if (SDL_GL_UnbindTexture(cs->screen.target_tex) < 0) {
-                std::cerr << "Failed to unbind `target_tex`." << std::endl;
-            }
-        }
-#endif
         check(load_files(cs) == 0, "load_files() returned failure\n");
 
         check(Gui_Init(cs->screen.renderer, NULL), "Gui_Init() returned failure\n");
@@ -705,12 +444,12 @@ int init(CoreState *cs, Shiro::Settings* settings, const std::filesystem::path &
         // TODO: Configurable directory
         static const char scoredb_file[] = "shiromino.sqlite";
         scoredb_init(&cs->records, scoredb_file);
-        scoredb_create_player(&cs->records, &cs->player, cs->settings->playerName.c_str());
+        scoredb_create_player(&cs->records, &cs->player, cs->settings.playerName.c_str());
 
         /*
         static const char archive_file[] = "archive.db";
         scoredb_init(&cs->archive, archive_file);
-        scoredb_create_player(&cs->archive, &cs->player, cs->settings->player_name);
+        scoredb_create_player(&cs->archive, &cs->player, cs->settings.player_name);
         */
 
         cs->menu = menu_create(cs);
@@ -766,24 +505,6 @@ void quit(CoreState *cs)
         delete cs->assets;
     }
 
-#ifdef ENABLE_OPENGL_INTERPOLATION
-    if (cs->screen.target_tex) {
-        SDL_DestroyTexture(cs->screen.target_tex);
-    }
-    if (cs->screen.interpolate_shading_prog) {
-        glDeleteProgram(cs->screen.interpolate_shading_prog);
-    }
-#endif
-
-    if(cs->screen.renderer)
-        SDL_DestroyRenderer(cs->screen.renderer);
-
-    if(cs->screen.window)
-        SDL_DestroyWindow(cs->screen.window);
-
-    cs->screen.window = NULL;
-    cs->screen.renderer = NULL;
-
     if(cs->joystick && SDL_JoystickGetAttached(cs->joystick))
     {
         SDL_JoystickClose(cs->joystick);
@@ -810,10 +531,6 @@ void quit(CoreState *cs)
     }*/
 
     gfx_quit(cs);
-
-    IMG_Quit();
-    Mix_Quit();
-    SDL_Quit();
 }
 
 int run(CoreState *cs)
@@ -892,11 +609,11 @@ int run(CoreState *cs)
         unsigned newFrames = 0u;
         for (
 #ifdef DEBUG_FRAME_TIMING
-            double gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
+            double gameFrameTime = 1.0 / (cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
 #else
             double gameFrameTime = 1.0 / cs->fps;
 #endif
-            timeAccumulator >= gameFrameTime || (cs->settings->vsyncTimestep && cs->settings->vsync && newFrames == 0u);
+            timeAccumulator >= gameFrameTime || (cs->settings.vsyncTimestep && cs->settings.vsync && newFrames == 0u);
             timeAccumulator -= gameFrameTime,
             newFrames++,
             cs->frames++
@@ -965,7 +682,7 @@ int run(CoreState *cs)
 
                 OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
 
-                void draw() const {
+                void draw(const Shiro::Screen& screen) const {
                     drawLambda();
                 }
 
@@ -1031,18 +748,18 @@ int run(CoreState *cs)
 #ifndef DEBUG_FRAME_TIMING
             gameFrameTime = 1.0 / cs->fps;
 #else
-            gameFrameTime = 1.0 / (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
+            gameFrameTime = 1.0 / (cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
             timeFromFrames += gameFrameTime;
             // TODO: From testing with this, the game apparently doesn't reset
             // FPS to 60 when returning to the menu from a game, so fix that.
             // Though each mode does use its correct FPS.
             double realTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime;
             std::cerr
-                << "real FPS: " << (realTime / timeFromFrames) * (cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0
+                << "real FPS: " << (realTime / timeFromFrames) * (cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0
                     ? videoFPS
                     : cs->fps
                 ) << std::endl
-                << "game FPS: " << cs->settings->vsync && cs->settings->vsyncTimestep && videoFPS > 0.0
+                << "game FPS: " << cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0
                     ? videoFPS
                     : cs->fps
                 ) << std::endl;
@@ -1051,7 +768,7 @@ int run(CoreState *cs)
                 fpsTimeFrameStart = realTime;
             }
 #endif
-            if (cs->settings->vsync && cs->settings->vsyncTimestep) {
+            if (cs->settings.vsync && cs->settings.vsyncTimestep) {
                 timeAccumulator = 0.0;
             }
         }
@@ -1064,7 +781,7 @@ int run(CoreState *cs)
         cs->gfx.draw();
 
 #ifdef ENABLE_OPENGL_INTERPOLATION
-        if (cs->settings->interpolate) {
+        if (cs->settings.interpolate) {
             SDL_RenderFlush(cs->screen.renderer);
             SDL_SetRenderTarget(cs->screen.renderer, NULL);
 
@@ -1073,18 +790,18 @@ int run(CoreState *cs)
             SDL_GL_GetDrawableSize(cs->screen.window, &w, &h);
             if ((SDL_GetWindowFlags(cs->screen.window) & ~SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN) {
                 double widthFactor, heightFactor;
-                if (cs->settings->videoStretch) {
+                if (cs->settings.videoStretch) {
                     widthFactor = w / 640.0;
                     heightFactor = h / 480.0;
                 }
                 else {
                     widthFactor = w / 640;
                     heightFactor = h / 480;
-                    if (widthFactor > cs->settings->videoScale) {
-                        widthFactor = cs->settings->videoScale;
+                    if (widthFactor > cs->settings.videoScale) {
+                        widthFactor = cs->settings.videoScale;
                     }
-                    if (heightFactor > cs->settings->videoScale) {
-                        heightFactor = cs->settings->videoScale;
+                    if (heightFactor > cs->settings.videoScale) {
+                        heightFactor = cs->settings.videoScale;
                     }
                 }
                 GLsizei viewportWidth, viewportHeight;
@@ -1138,8 +855,8 @@ int run(CoreState *cs)
             }
         }
 #endif
-        if (!cs->settings->vsync) {
-            SDL_Delay(cs->settings->frameDelay);
+        if (!cs->settings.vsync) {
+            SDL_Delay(cs->settings.frameDelay);
         }
     }
 
@@ -1220,9 +937,9 @@ int process_events(CoreState *cs) {
 
     SDL_Keycode keyCode;
     SDL_Keymod keyMod;
-    Shiro::KeyBindings& keyBindings = cs->settings->keyBindings;
+    Shiro::KeyBindings& keyBindings = cs->settings.keyBindings;
 
-    Shiro::ControllerBindings& controllerBindings = cs->settings->controllerBindings;
+    Shiro::ControllerBindings& controllerBindings = cs->settings.controllerBindings;
 
 #if 0
     if(cs->mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
@@ -1525,13 +1242,13 @@ int process_events(CoreState *cs) {
                     break;
 
                 case SDLK_F11:
-                    if (cs->settings->fullscreen) {
-                        cs->settings->fullscreen = false;
+                    if (cs->settings.fullscreen) {
+                        cs->settings.fullscreen = false;
                         SDL_SetWindowFullscreen(cs->screen.window, 0);
-                        SDL_SetWindowSize(cs->screen.window, 640.0 * cs->settings->videoScale, 480.0 * cs->settings->videoScale);
+                        SDL_SetWindowSize(cs->screen.window, 640.0 * cs->settings.videoScale, 480.0 * cs->settings.videoScale);
                     }
                     else {
-                        cs->settings->fullscreen = true;
+                        cs->settings.fullscreen = true;
                         SDL_SetWindowSize(cs->screen.window, 640, 480);
                         SDL_WindowFlags flags = (keyMod & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
                         if (SDL_SetWindowFullscreen(cs->screen.window, flags) < 0) {
@@ -1546,7 +1263,7 @@ int process_events(CoreState *cs) {
 
                 case SDLK_1:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings->videoScale = 1;
+                        cs->settings.videoScale = 1;
                         SDL_SetWindowSize(cs->screen.window, 640, 480);
                     }
                     cs->one_pressed = 1;
@@ -1554,7 +1271,7 @@ int process_events(CoreState *cs) {
 
                 case SDLK_2:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings->videoScale = 2;
+                        cs->settings.videoScale = 2;
                         SDL_SetWindowSize(cs->screen.window, 2 * 640, 2 * 480);
                     }
                     cs->two_pressed = 1;
@@ -1562,7 +1279,7 @@ int process_events(CoreState *cs) {
 
                 case SDLK_3:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings->videoScale = 3;
+                        cs->settings.videoScale = 3;
                         SDL_SetWindowSize(cs->screen.window, 3 * 640, 3 * 480);
                     }
                     cs->three_pressed = 1;
@@ -1570,7 +1287,7 @@ int process_events(CoreState *cs) {
 
                 case SDLK_4:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings->videoScale = 4;
+                        cs->settings.videoScale = 4;
                         SDL_SetWindowSize(cs->screen.window, 4 * 640, 4 * 480);
                     }
                     cs->four_pressed = 1;
@@ -1578,7 +1295,7 @@ int process_events(CoreState *cs) {
 
                 case SDLK_5:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings->videoScale = 5;
+                        cs->settings.videoScale = 5;
                         SDL_SetWindowSize(cs->screen.window, 5 * 640, 5 * 480);
                     }
                     cs->five_pressed = 1;
@@ -1793,9 +1510,9 @@ int process_events(CoreState *cs) {
         SDL_Joystick *joy = cs->joystick;
         const uint8_t *keystates = SDL_GetKeyboardState(NULL);
 
-        if (cs->settings->keyBindings) {
+        if (cs->settings.keyBindings) {
             k = &cs->keys_raw;
-            kb = cs->settings->keyBindings;
+            kb = cs->settings.keyBindings;
 
             *k = (Shiro::KeyFlags) { 0 };
 
@@ -2031,11 +1748,7 @@ int gfx_buttons_input(CoreState *cs)
     int scaled_w = 0;
     int scaled_h = 0;
 
-    int scale = 1;
-    if(cs->settings)
-    {
-        scale = cs->settings->videoScale;
-    }
+    int scale = cs->settings.videoScale;
 
     for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
         gfx_button& b = *it;

@@ -316,7 +316,6 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
     //gfx_pushmessage(
         //cs, "CONFIRM DELETE\nUNDO HISTORY?", 640 / 2 - 7 * 16, 480 / 2 - 16, MESSAGE_EMERGENCY, monofont_square, fmt, -1, button_emergency_inactive);
     cs->gfx.push(std::make_unique<Shiro::MessageEntity>(
-        cs->screen.renderer,
         "CONFIRM DELETE\nUNDO HISTORY?",
         static_cast<size_t>(Shiro::GfxLayer::emergencyMessages),
         640 / 2 - 7 * 16,
@@ -393,10 +392,7 @@ int qrs_input(game_t *g)
 
     int scale = 1;
 
-    if(cs->settings)
-    {
-        scale = cs->settings->videoScale;
-    }
+    scale = cs->settings.videoScale;
 
     init = q->p1counters->init;
 
@@ -1116,7 +1112,7 @@ int qrs_irs(game_t *g)
         p->orient = 0;
     else if(direction)
     {
-        g->origin->assets->prerotate->play(*g->origin->settings);
+        g->origin->assets->prerotate->play(g->origin->settings);
     }
 
     return 0;
@@ -1347,7 +1343,7 @@ int qrs_fall(game_t *g, qrs_player *p, int grav)
 
             if(p->state & PSFALL && grav != 28 * 256)
             {
-                g->origin->assets->land->play(*g->origin->settings);
+                g->origin->assets->land->play(g->origin->settings);
             }
             p->state &= ~PSFALL;
             p->state |= PSLOCK;
@@ -1392,7 +1388,7 @@ int qrs_lock(game_t *g, qrs_player *p)
 
     p->state &= ~(PSLOCK | PSFALL);
     // p->state |= PSPRELOCKFLASH1;
-    g->origin->assets->lock->play(*g->origin->settings);
+    g->origin->assets->lock->play(g->origin->settings);
 
     return 0;
 }

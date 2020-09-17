@@ -1,14 +1,15 @@
 # shiromino version history
-## 0.1
+## 0.1.0
 ### New features
 - Joystick input is now fully configurable; no joystick input is enabled by default
 - Vertical sync option added; off by default
 - Frame delay setting added; set to 1 ms by default. Only applies when not using vertical sync
 - "Vsync timestep" setting added; disabled by default. Allows forcing game frame rate to be in step with display refresh rate when vsync and vsync timestep are both enabled.
 - The G1, G2, and G3 modes now all run at the FPS of the original games they're based on
+- Interpolation option added; forces OpenGL rendering and applies a smoothing filter to the screen, where the filtration tries to keep the graphics looking pixelated.
 ### Updated features
 - Build system changed to CMake; the old Makefile is no longer available
-- Change to an INI file loader, replacing the CFG loader; game.cfg is now game.ini, audio/volume.cfg is now audio/volume.ini
+- Change to an INI file loader, replacing the CFG loader; game.cfg is now shiromino.ini, audio/volume.cfg is now assets/audio/volume.ini
 ### Bug fixes
 - Preview sounds now play
 - Sound volume settings for individual music tracks and sound effects works now

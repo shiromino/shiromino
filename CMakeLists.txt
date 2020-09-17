@@ -87,8 +87,13 @@ target_sources(${GAME_EXECUTABLE}
 		src/Gfx/Gfx.h
 		src/Gfx/MessageEntity.cc
 		src/Gfx/MessageEntity.h
+		src/Gfx/Screen.cc
+		src/Gfx/Screen.h
 		src/Gfx/TextGraphic.cc
 		src/Gfx/TextGraphic.h
+		src/Main/Global.cc
+		src/Main/Global.h
+		src/Main/Main.cc
 		src/gfx.cc
 		src/gfx_old.h
 		src/gfx_helpers.cc
@@ -109,7 +114,6 @@ target_sources(${GAME_EXECUTABLE}
 		src/input/ControllerBindings.h
 		src/input/KeyBindings.cc
 		src/input/KeyBindings.h
-		src/main.cc
 		src/Magic.h
 		src/Menu/ActionOption.h
 		src/Menu/ElementType.h
