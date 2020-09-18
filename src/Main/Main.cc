@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
         {
             CoreState cs(settings);
-            returnCode = cs.init() && run(&cs) ? EXIT_FAILURE : EXIT_SUCCESS;
+            returnCode = cs.init() && !run(&cs) ? EXIT_SUCCESS : EXIT_FAILURE;
         }
 
         Shiro::GlobalQuit();
