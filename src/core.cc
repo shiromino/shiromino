@@ -247,7 +247,71 @@ CoreState::~CoreState() {
     if (pracdata_mirror) {
         pracdata_destroy(pracdata_mirror);
     }
-    quit(this);
+    //quit(this);
+
+    scoredb_terminate(&records);
+    // scoredb_terminate(&archive);
+
+    if(assets)
+    {
+
+        // Already destroyed in the BitFont destructor previously; this prevents a double-free.
+        assets->font_fixedsys_excelsior.tex = nullptr;
+
+#define IMG(name) img_destroy(&assets->name);
+#define IMG_ARRAY(name, i) img_destroy(&assets->name[i]);
+#include "images.h"
+#undef IMG_ARRAY
+#undef IMG
+
+        // All the textures have been destroyed, so prevent them being freed by
+        // the GuiWindow destructor.
+#define FONT(name, sheetName, outlineSheetName, charW, charH) \
+        assets->name.isValid = false; \
+        assets->name.sheet = nullptr; \
+        assets->name.outlineSheet = nullptr
+#include "fonts.h"
+#undef FONT
+
+#define MUSIC(name, i) delete assets->name[i];
+#include "music.h"
+#undef MUSIC
+
+#define SFX(name) delete assets->name;
+#define SFX_ARRAY(name, i) delete assets->name[i];
+#include "sfx.h"
+#undef SFX_ARRAY
+#undef SFX
+
+        delete assets;
+    }
+
+    if(joystick && SDL_JoystickGetAttached(joystick))
+    {
+        SDL_JoystickClose(joystick);
+    }
+
+    if(p1game)
+    {
+        std::cerr << "quit(): Found leftover game struct, attempting ->quit" << std::endl;
+        p1game->quit(p1game);
+        free(p1game);
+        p1game = NULL;
+    }
+
+    if(menu)
+    {
+        menu->quit(menu);
+        free(menu);
+        menu = NULL;
+    }
+
+    /*for(int i = 0; i < 10; i++) {
+       if(g2_bgs[i])
+          gfx_animation_destroy(g2_bgs[i]);
+    }*/
+
+    gfx_quit(this);
 }
 
 bool CoreState::init() {
@@ -256,12 +320,429 @@ bool CoreState::init() {
         return false;
     }
 
-    if (::init(this, settings)) {
+    try {
+        // SDL_Texture *blank = NULL;
+
+        // copy settings into main game structure
+        if (SDL_NumJoysticks()) {
+            const int numJoysticks = SDL_NumJoysticks();
+            for (int i = 0; i < numJoysticks; i++) {
+                SDL_Joystick* joystick;
+                if ((joystick = SDL_JoystickOpen(i))) {
+                    std::cerr << "Attached joystick \"" << SDL_JoystickName(joystick) << "\" at index " << i << std::endl;
+                    SDL_JoystickClose(joystick);
+                }
+                else {
+                    std::cerr << "Joystick at index " << i << " not attached" << std::endl;
+                }
+            }
+            joystick = nullptr;
+            if (settings.controllerBindings.name != "") {
+                const int numJoysticks = SDL_NumJoysticks();
+                for (int i = 0; i < numJoysticks; i++) {
+                    if ((joystick = SDL_JoystickOpen(i))) {
+                        if (SDL_JoystickName(joystick) == settings.controllerBindings.name) {
+                            settings.controllerBindings.controllerIndex = i;
+                            settings.controllerBindings.controllerID = SDL_JoystickInstanceID(joystick);
+                            break;
+                        }
+                        else {
+                            SDL_JoystickClose(joystick);
+                            joystick = nullptr;
+                        }
+                    }
+                }
+            }
+            if (!joystick && settings.controllerBindings.controllerIndex >= 0 && settings.controllerBindings.controllerIndex < SDL_NumJoysticks()) {
+                if ((joystick = SDL_JoystickOpen(settings.controllerBindings.controllerIndex))) {
+                    settings.controllerBindings.controllerID = SDL_JoystickInstanceID(joystick);
+                }
+            }
+            if (settings.controllerBindings.controllerIndex >= 0 && joystick) {
+                std::cerr
+                    << "Joysticks are enabled" << std::endl
+                    << "Name: " << SDL_JoystickNameForIndex(settings.controllerBindings.controllerIndex) << std::endl
+                    << "Index: " << settings.controllerBindings.controllerIndex << std::endl
+                    << "Buttons: " << SDL_JoystickNumButtons(joystick) << std::endl
+                    << "Axes: " << SDL_JoystickNumAxes(joystick) << std::endl
+                    << "Hats: " << SDL_JoystickNumHats(joystick) << std::endl;
+            }
+            else {
+                joystick = nullptr;
+                std::cerr << "Joysticks are disabled" << std::endl;
+            }
+        }
+        else {
+            std::cerr << "No joysticks are attached" << std::endl;
+        }
+
+        check(load_files(this) == 0, "load_files() returned failure\n");
+
+        check(Gui_Init(screen.renderer, NULL), "Gui_Init() returned failure\n");
+        check(gfx_init(this) == 0, "gfx_init returned failure\n");
+
+        bg = assets->bg_temp.tex;
+        bg_old = bg;
+        bg_r = 255;
+        bg_g = 255;
+        bg_b = 255;
+        // blank = assets->blank.tex;
+
+        // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+
+        menu = menu_create(this);
+        check(menu != NULL, "menu_create returned failure\n");
+
+        menu->init(menu);
+
+        screenManager->addScreen("main", mainMenu_create(this, screenManager, assets->fixedsys));
+        //SDL_Rect gameScreenRect = {0, 0, 640, 480};
+        //screenManager->addScreen("game", new GuiScreen {this, "game", NULL, gameScreenRect});
+        screenManager->loadScreen("main");
+
+        // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+
+        // TODO: Configurable directory
+        static const char scoredb_file[] = "shiromino.sqlite";
+        scoredb_init(&records, scoredb_file);
+        scoredb_create_player(&records, &player, settings.playerName.c_str());
+
+        /*
+        static const char archive_file[] = "archive.db";
+        scoredb_init(&archive, archive_file);
+        scoredb_create_player(&archive, &player, settings.player_name);
+        */
+
+        std::cerr << "PENTOMINO C: " << PENTOMINO_C_REVISION_STRING << std::endl;
+    }
+    catch (const std::logic_error& error) {
         std::cerr << "Failed to init CoreState, aborting." << std::endl;
         return false;
     }
 
     return true;
+}
+
+void CoreState::run() {
+    bool running = true;
+
+    int windowWidth = 620;
+    int windowHeight = 460;
+    SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
+
+    Shiro::Grid* g = new Shiro::Grid(gridRect.w / 16, gridRect.h / 16);
+    SDL_Texture *paletteTex = assets->tets_bright_qs.tex;
+
+    BindableInt paletteVar {"paletteVar", 0, 25};
+
+    GuiGridCanvas *gridCanvas = new GuiGridCanvas {
+        0,
+        g,
+        paletteVar,
+        paletteTex,
+        32, 32,
+        gridRect
+    };
+
+    SDL_Rect windowRect = { 10, 10, windowWidth, windowHeight };
+    // TODO: Fix how fixedsys is loaded/unloaded; currently, both SGUIL and
+    // Shiromio try to free it, with SGUIL freeing it first in the GuiWindow
+    // destructor.
+    GuiWindow window {this, "Shiromino", &assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
+
+    window.addControlElement(gridCanvas);
+
+    // SPM_Spec spec;
+    QRS spec { qrs_variant_P, false };
+    TestSPM SPMgame { *this, &spec };
+    SPMgame.init();
+
+    //p1game = qs_game_create(this, 0, MODE_PENTOMINO, NO_REPLAY);
+    //p1game->init(p1game);
+
+    double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
+    double timeAccumulator = 0.0;
+// #define DEBUG_FRAME_TIMING
+#ifdef DEBUG_FRAME_TIMING
+    // Due to limitations in SDL's display refresh rate reporting, FPS
+    // debugging can't be made to display the correct monitor FPS when vsync
+    // and vsyncTimestep are enabled. So use the VIDEO_FPS INI option to get
+    // correct FPS information.
+    double videoFPS;
+    {
+        PDINI::INI ini;
+        ini.read(configurationPath);
+        if (!ini.get("SCREEN", "VIDEO_FPS", videoFPS) || videoFPS <= 0.0) {
+            videoFPS = 0.0;
+        }
+    }
+    double timeFromFrames = 0.0;
+    const double fpsTimeFrameDuration = 1.0;
+    double fpsTimeFrameStart = 0.0;
+#endif
+
+    while(running)
+    {
+        double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
+        double renderFrameTime = newTime - currentTime;
+        if (renderFrameTime > 0.25) {
+            renderFrameTime = 0.25;
+        }
+        currentTime = newTime;
+        timeAccumulator += renderFrameTime;
+
+        unsigned newFrames = 0u;
+        for (
+#ifdef DEBUG_FRAME_TIMING
+            double gameFrameTime = 1.0 / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
+#else
+            double gameFrameTime = 1.0 / fps;
+#endif
+            timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync && newFrames == 0u);
+            timeAccumulator -= gameFrameTime,
+            newFrames++,
+            frames++
+            ) {
+            prev_keys_raw = keys_raw;
+            prev_keys = keys;
+
+            if (process_events(this)) {
+                running = false;
+            }
+
+            handle_replay_input(this);
+
+            update_input_repeat(this);
+            update_pressed(this);
+
+            gfx_buttons_input(this);
+
+            /*
+            SPMgame.input();
+            SPMgame.frame();
+            SPMgame.draw();
+            */
+
+            gfx.clearLayers();
+
+            if (p1game) {
+                if (!procgame(p1game, !button_emergency_override)) {
+                    p1game->quit(p1game);
+                    free(p1game);
+                    p1game = NULL;
+
+                    gfx_start_bg_fade_in(this, assets->bg_temp.tex);
+                    break;
+                }
+            }
+            if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
+                if (!procgame(menu, !button_emergency_override)) {
+                    menu->quit(menu);
+                    free(menu);
+
+                    menu = NULL;
+
+                    if (!p1game) {
+                        running = false;
+                    }
+                }
+            }
+
+            if (!menu && !p1game) {
+                running = false;
+            }
+            else if (p1game) {
+                p1game->frame_counter++;
+            }
+            else if (menu && (!p1game || menu_input_override)) {
+                menu->frame_counter++;
+            }
+
+            gfx_updatebg(this);
+
+            // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
+            struct OldGfxGraphic : public Shiro::Graphic {
+                OldGfxGraphic() = delete;
+
+                OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
+
+                void draw(const Shiro::Screen& screen) const {
+                    drawLambda();
+                }
+
+                const std::function<void()> drawLambda;
+            };
+
+            class OldGfxEntity : public Shiro::Entity {
+            public:
+                OldGfxEntity(
+                    const size_t layerNum,
+                    const std::function<void()> drawLambda
+                ) :
+                    layerNum(layerNum),
+                    drawLambda(drawLambda) {}
+
+                bool update(Shiro::Layers& layers) {
+                    layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
+                    return false;
+                }
+
+            private:
+                const size_t layerNum;
+                const std::function<void()> drawLambda;
+            };
+
+            // TODO: Create entities in the code for the game and menu, then remove this.
+            // Or perhaps have the game and menu code push entities, and no longer
+            // have explicit game and menu drawing functions.
+            gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::base),
+                [this] {
+                    if (p1game) {
+                        p1game->draw(p1game);
+                    }
+                    else if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
+                        menu->draw(menu);
+                    }
+                }
+            ));
+
+            // TODO: Create entities in the code for buttons, then remove this.
+            gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::buttons),
+                [this] { gfx_drawbuttons(this, 0); }
+            ));
+
+            // TODO: Create an entity for the background darkening, then remove this.
+            if (button_emergency_override) {
+                gfx.push(std::make_unique<OldGfxEntity>(
+                    static_cast<size_t>(Shiro::GfxLayer::emergencyBgDarken),
+                    [this] { gfx_draw_emergency_bg_darken(this); }
+                ));
+            }
+
+            // TODO: Create entities in the code for emergency buttons, then remove this.
+            gfx.push(std::make_unique<OldGfxEntity>(
+                static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
+                [this] { gfx_drawbuttons(this, EMERGENCY_OVERRIDE); }
+            ));
+
+            gfx.update();
+
+#ifndef DEBUG_FRAME_TIMING
+            gameFrameTime = 1.0 / fps;
+#else
+            gameFrameTime = 1.0 / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
+            timeFromFrames += gameFrameTime;
+            // TODO: From testing with this, the game apparently doesn't reset
+            // FPS to 60 when returning to the menu from a game, so fix that.
+            // Though each mode does use its correct FPS.
+            double realTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime;
+            std::cerr
+                << "real FPS: " << (realTime / timeFromFrames) * (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
+                    ? videoFPS
+                    : fps
+                ) << std::endl
+                << "game FPS: " << settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
+                    ? videoFPS
+                    : fps
+                ) << std::endl;
+            if (realTime - fpsTimeFrameStart >= fpsTimeFrameDuration) {
+                timeFromFrames = realTime;
+                fpsTimeFrameStart = realTime;
+            }
+#endif
+            if (settings.vsync && settings.vsyncTimestep) {
+                timeAccumulator = 0.0;
+            }
+        }
+
+        SDL_SetRenderTarget(screen.renderer, screen.target_tex);
+        SDL_RenderClear(screen.renderer);
+
+        gfx_drawbg(this);
+
+        gfx.draw();
+
+#ifdef ENABLE_OPENGL_INTERPOLATION
+        if (settings.interpolate) {
+            SDL_RenderFlush(screen.renderer);
+            SDL_SetRenderTarget(screen.renderer, NULL);
+
+            glUseProgram(screen.interpolate_shading_prog);
+            int w, h;
+            SDL_GL_GetDrawableSize(screen.window, &w, &h);
+            if ((SDL_GetWindowFlags(screen.window) & ~SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN) {
+                double widthFactor, heightFactor;
+                if (settings.videoStretch) {
+                    widthFactor = w / 640.0;
+                    heightFactor = h / 480.0;
+                }
+                else {
+                    widthFactor = w / 640;
+                    heightFactor = h / 480;
+                    if (widthFactor > settings.videoScale) {
+                        widthFactor = settings.videoScale;
+                    }
+                    if (heightFactor > settings.videoScale) {
+                        heightFactor = settings.videoScale;
+                    }
+                }
+                GLsizei viewportWidth, viewportHeight;
+                if (widthFactor > heightFactor) {
+                    viewportWidth = heightFactor * 640;
+                    viewportHeight = heightFactor * 480;
+                }
+                else {
+                    viewportWidth = widthFactor * 640;
+                    viewportHeight = widthFactor * 480;
+                }
+                glViewport((w - viewportWidth) / 2, (h - viewportHeight) / 2, viewportWidth, viewportHeight);
+                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), viewportWidth, viewportHeight);
+            }
+            else {
+                // TODO: Change this once a fullscreen resolution setting is supported.
+                glViewport(0, 0, w, h);
+                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), w, h);
+            }
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glActiveTexture(GL_TEXTURE0);
+            if (SDL_GL_BindTexture(screen.target_tex, NULL, NULL) < 0) {
+                std::cerr << "Failed to bind `target_tex`." << std::endl;
+            }
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4u);
+            glUseProgram(0u);
+            if (SDL_GL_UnbindTexture(screen.target_tex) < 0) {
+                std::cerr << "Failed to unbind `target_tex`." << std::endl;
+            }
+
+            SDL_GL_SwapWindow(screen.window);
+        }
+        else {
+            SDL_RenderPresent(screen.renderer);
+        }
+#else
+        SDL_RenderPresent(screen.renderer);
+#endif
+
+#if 0
+        if (newFrames > 0u) {
+            for (size_t i = 0; i < gfx_messages_max; i++) {
+                if (gfx_messages[i].counter >= newFrames) {
+                    gfx_messages[i].counter -= newFrames;
+                }
+                else {
+                    gfx_messages[i].counter = 0u;
+                }
+            }
+        }
+#endif
+        if (!settings.vsync) {
+            SDL_Delay(settings.frameDelay);
+        }
+    }
 }
 
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
@@ -353,119 +834,6 @@ int load_files(CoreState *cs)
     return 0;
 }
 
-int init(CoreState *cs, Shiro::Settings& settings) {
-    try {
-        if(!cs)
-            return -1;
-
-        // SDL_Texture *blank = NULL;
-
-        // copy settings into main game structure
-        cs->settings = settings;
-
-        if (SDL_NumJoysticks()) {
-            const int numJoysticks = SDL_NumJoysticks();
-            for (int i = 0; i < numJoysticks; i++) {
-                SDL_Joystick* joystick;
-                if ((joystick = SDL_JoystickOpen(i))) {
-                    std::cerr << "Attached joystick \"" << SDL_JoystickName(joystick) << "\" at index " << i << std::endl;
-                    SDL_JoystickClose(joystick);
-                }
-                else {
-                    std::cerr << "Joystick at index " << i << " not attached" << std::endl;
-                }
-            }
-            cs->joystick = nullptr;
-            if (cs->settings.controllerBindings.name != "") {
-                const int numJoysticks = SDL_NumJoysticks();
-                for (int i = 0; i < numJoysticks; i++) {
-                    if ((cs->joystick = SDL_JoystickOpen(i))) {
-                        if (SDL_JoystickName(cs->joystick) == cs->settings.controllerBindings.name) {
-                            cs->settings.controllerBindings.controllerIndex = i;
-                            cs->settings.controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
-                            break;
-                        }
-                        else {
-                            SDL_JoystickClose(cs->joystick);
-                            cs->joystick = nullptr;
-                        }
-                    }
-                }
-            }
-            if (!cs->joystick && cs->settings.controllerBindings.controllerIndex >= 0 && cs->settings.controllerBindings.controllerIndex < SDL_NumJoysticks()) {
-                if ((cs->joystick = SDL_JoystickOpen(cs->settings.controllerBindings.controllerIndex))) {
-                    cs->settings.controllerBindings.controllerID = SDL_JoystickInstanceID(cs->joystick);
-                }
-            }
-            if (cs->settings.controllerBindings.controllerIndex >= 0 && cs->joystick) {
-                std::cerr
-                    << "Joysticks are enabled" << std::endl
-                    << "Name: " << SDL_JoystickNameForIndex(cs->settings.controllerBindings.controllerIndex) << std::endl
-                    << "Index: " << cs->settings.controllerBindings.controllerIndex << std::endl
-                    << "Buttons: " << SDL_JoystickNumButtons(cs->joystick) << std::endl
-                    << "Axes: " << SDL_JoystickNumAxes(cs->joystick) << std::endl
-                    << "Hats: " << SDL_JoystickNumHats(cs->joystick) << std::endl;
-            }
-            else {
-                cs->joystick = nullptr;
-                std::cerr << "Joysticks are disabled" << std::endl;
-            }
-        }
-        else {
-            std::cerr << "No joysticks are attached" << std::endl;
-        }
-
-        check(load_files(cs) == 0, "load_files() returned failure\n");
-
-        check(Gui_Init(cs->screen.renderer, NULL), "Gui_Init() returned failure\n");
-        check(gfx_init(cs) == 0, "gfx_init returned failure\n");
-
-        cs->bg = cs->assets->bg_temp.tex;
-        cs->bg_old = cs->bg;
-        cs->bg_r = 255;
-        cs->bg_g = 255;
-        cs->bg_b = 255;
-        // blank = cs->assets->blank.tex;
-
-        // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
-
-        cs->menu = menu_create(cs);
-        check(cs->menu != NULL, "menu_create returned failure\n");
-
-        cs->menu->init(cs->menu);
-
-        cs->screenManager->addScreen("main", mainMenu_create(cs, cs->screenManager, cs->assets->fixedsys));
-        //SDL_Rect gameScreenRect = {0, 0, 640, 480};
-        //cs->screenManager->addScreen("game", new GuiScreen {cs, "game", NULL, gameScreenRect});
-        cs->screenManager->loadScreen("main");
-
-        // check(SDL_RenderCopy(cs->screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
-
-        // TODO: Configurable directory
-        static const char scoredb_file[] = "shiromino.sqlite";
-        scoredb_init(&cs->records, scoredb_file);
-        scoredb_create_player(&cs->records, &cs->player, cs->settings.playerName.c_str());
-
-        /*
-        static const char archive_file[] = "archive.db";
-        scoredb_init(&cs->archive, archive_file);
-        scoredb_create_player(&cs->archive, &cs->player, cs->settings.player_name);
-        */
-
-        cs->menu = menu_create(cs);
-        check(cs->menu != NULL, "menu_create returned failure\n");
-
-        cs->menu->init(cs->menu);
-
-        std::cerr << "PENTOMINO C: " << PENTOMINO_C_REVISION_STRING << std::endl;
-
-        return 0;
-    }
-    catch (const std::logic_error& error) {
-        return 1;
-    }
-}
-
 void quit(CoreState *cs)
 {
     scoredb_terminate(&cs->records);
@@ -531,339 +899,6 @@ void quit(CoreState *cs)
     }*/
 
     gfx_quit(cs);
-}
-
-int run(CoreState *cs)
-{
-    int procStatus = 0;
-    if(!cs)
-        return -1;
-
-    bool running = true;
-
-    int windowWidth = 620;
-    int windowHeight = 460;
-    SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
-
-    Shiro::Grid* g = new Shiro::Grid(gridRect.w / 16, gridRect.h / 16);
-    SDL_Texture *paletteTex = cs->assets->tets_bright_qs.tex;
-
-    BindableInt paletteVar {"paletteVar", 0, 25};
-
-    GuiGridCanvas *gridCanvas = new GuiGridCanvas {
-        0,
-        g,
-        paletteVar,
-        paletteTex,
-        32, 32,
-        gridRect
-    };
-
-    SDL_Rect windowRect = { 10, 10, windowWidth, windowHeight };
-    // TODO: Fix how fixedsys is loaded/unloaded; currently, both SGUIL and
-    // Shiromio try to free it, with SGUIL freeing it first in the GuiWindow
-    // destructor.
-    GuiWindow window {cs, "Shiromino", &cs->assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
-
-    window.addControlElement(gridCanvas);
-
-    // SPM_Spec spec;
-    QRS spec { qrs_variant_P, false };
-    TestSPM SPMgame { *cs, &spec };
-    SPMgame.init();
-
-    //cs->p1game = qs_game_create(cs, 0, MODE_PENTOMINO, NO_REPLAY);
-    //cs->p1game->init(cs->p1game);
-
-    double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
-    double timeAccumulator = 0.0;
-// #define DEBUG_FRAME_TIMING
-#ifdef DEBUG_FRAME_TIMING
-    // Due to limitations in SDL's display refresh rate reporting, FPS
-    // debugging can't be made to display the correct monitor FPS when vsync
-    // and vsyncTimestep are enabled. So use the VIDEO_FPS INI option to get
-    // correct FPS information.
-    double videoFPS;
-    {
-        PDINI::INI ini;
-        ini.read(cs->configurationPath);
-        if (!ini.get("SCREEN", "VIDEO_FPS", videoFPS) || videoFPS <= 0.0) {
-            videoFPS = 0.0;
-        }
-    }
-    double timeFromFrames = 0.0;
-    const double fpsTimeFrameDuration = 1.0;
-    double fpsTimeFrameStart = 0.0;
-#endif
-
-    while(running)
-    {
-        double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
-        double renderFrameTime = newTime - currentTime;
-        if (renderFrameTime > 0.25) {
-            renderFrameTime = 0.25;
-        }
-        currentTime = newTime;
-        timeAccumulator += renderFrameTime;
-
-        unsigned newFrames = 0u;
-        for (
-#ifdef DEBUG_FRAME_TIMING
-            double gameFrameTime = 1.0 / (cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
-#else
-            double gameFrameTime = 1.0 / cs->fps;
-#endif
-            timeAccumulator >= gameFrameTime || (cs->settings.vsyncTimestep && cs->settings.vsync && newFrames == 0u);
-            timeAccumulator -= gameFrameTime,
-            newFrames++,
-            cs->frames++
-            ) {
-            cs->prev_keys_raw = cs->keys_raw;
-            cs->prev_keys = cs->keys;
-
-            if (process_events(cs)) {
-                running = false;
-            }
-
-            handle_replay_input(cs);
-
-            update_input_repeat(cs);
-            update_pressed(cs);
-
-            gfx_buttons_input(cs);
-
-            /*
-            SPMgame.input();
-            SPMgame.frame();
-            SPMgame.draw();
-            */
-
-            cs->gfx.clearLayers();
-
-            if (cs->p1game) {
-                if (procgame(cs->p1game, !cs->button_emergency_override)) {
-                    cs->p1game->quit(cs->p1game);
-                    free(cs->p1game);
-                    cs->p1game = NULL;
-
-                    gfx_start_bg_fade_in(cs, cs->assets->bg_temp.tex);
-                    break;
-                }
-            }
-            if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
-                procStatus = procgame(cs->menu, !cs->button_emergency_override);
-                if (procStatus) {
-                    cs->menu->quit(cs->menu);
-                    free(cs->menu);
-
-                    cs->menu = NULL;
-
-                    if (!cs->p1game) {
-                        running = false;
-                    }
-                }
-            }
-
-            if (!cs->menu && !cs->p1game) {
-                running = false;
-            }
-            else if (cs->p1game) {
-                cs->p1game->frame_counter++;
-            }
-            else if (cs->menu && (!cs->p1game || cs->menu_input_override)) {
-                cs->menu->frame_counter++;
-            }
-
-            gfx_updatebg(cs);
-
-            // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
-            struct OldGfxGraphic : public Shiro::Graphic {
-                OldGfxGraphic() = delete;
-
-                OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
-
-                void draw(const Shiro::Screen& screen) const {
-                    drawLambda();
-                }
-
-                const std::function<void()> drawLambda;
-            };
-
-            class OldGfxEntity : public Shiro::Entity {
-            public:
-                OldGfxEntity(
-                    const size_t layerNum,
-                    const std::function<void()> drawLambda
-                ) :
-                    layerNum(layerNum),
-                    drawLambda(drawLambda) {}
-
-                bool update(Shiro::Layers& layers) {
-                    layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
-                    return false;
-                }
-
-            private:
-                const size_t layerNum;
-                const std::function<void()> drawLambda;
-            };
-
-            // TODO: Create entities in the code for the game and menu, then remove this.
-            // Or perhaps have the game and menu code push entities, and no longer
-            // have explicit game and menu drawing functions.
-            cs->gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::base),
-                [cs] {
-                    if (cs->p1game) {
-                        cs->p1game->draw(cs->p1game);
-                    }
-                    else if (cs->menu && ((!cs->p1game || cs->menu_input_override) ? 1 : 0)) {
-                        cs->menu->draw(cs->menu);
-                    }
-                }
-            ));
-
-            // TODO: Create entities in the code for buttons, then remove this.
-            cs->gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::buttons),
-                [cs] { gfx_drawbuttons(cs, 0); }
-            ));
-
-            // TODO: Create an entity for the background darkening, then remove this.
-            if (cs->button_emergency_override) {
-                cs->gfx.push(std::make_unique<OldGfxEntity>(
-                    static_cast<size_t>(Shiro::GfxLayer::emergencyBgDarken),
-                    [cs] { gfx_draw_emergency_bg_darken(cs); }
-                ));
-            }
-
-            // TODO: Create entities in the code for emergency buttons, then remove this.
-            cs->gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
-                [cs] { gfx_drawbuttons(cs, EMERGENCY_OVERRIDE); }
-            ));
-
-            cs->gfx.update();
-
-#ifndef DEBUG_FRAME_TIMING
-            gameFrameTime = 1.0 / cs->fps;
-#else
-            gameFrameTime = 1.0 / (cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : cs->fps);
-            timeFromFrames += gameFrameTime;
-            // TODO: From testing with this, the game apparently doesn't reset
-            // FPS to 60 when returning to the menu from a game, so fix that.
-            // Though each mode does use its correct FPS.
-            double realTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime;
-            std::cerr
-                << "real FPS: " << (realTime / timeFromFrames) * (cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0
-                    ? videoFPS
-                    : cs->fps
-                ) << std::endl
-                << "game FPS: " << cs->settings.vsync && cs->settings.vsyncTimestep && videoFPS > 0.0
-                    ? videoFPS
-                    : cs->fps
-                ) << std::endl;
-            if (realTime - fpsTimeFrameStart >= fpsTimeFrameDuration) {
-                timeFromFrames = realTime;
-                fpsTimeFrameStart = realTime;
-            }
-#endif
-            if (cs->settings.vsync && cs->settings.vsyncTimestep) {
-                timeAccumulator = 0.0;
-            }
-        }
-
-        SDL_SetRenderTarget(cs->screen.renderer, cs->screen.target_tex);
-        SDL_RenderClear(cs->screen.renderer);
-
-        gfx_drawbg(cs);
-
-        cs->gfx.draw();
-
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        if (cs->settings.interpolate) {
-            SDL_RenderFlush(cs->screen.renderer);
-            SDL_SetRenderTarget(cs->screen.renderer, NULL);
-
-            glUseProgram(cs->screen.interpolate_shading_prog);
-            int w, h;
-            SDL_GL_GetDrawableSize(cs->screen.window, &w, &h);
-            if ((SDL_GetWindowFlags(cs->screen.window) & ~SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN) {
-                double widthFactor, heightFactor;
-                if (cs->settings.videoStretch) {
-                    widthFactor = w / 640.0;
-                    heightFactor = h / 480.0;
-                }
-                else {
-                    widthFactor = w / 640;
-                    heightFactor = h / 480;
-                    if (widthFactor > cs->settings.videoScale) {
-                        widthFactor = cs->settings.videoScale;
-                    }
-                    if (heightFactor > cs->settings.videoScale) {
-                        heightFactor = cs->settings.videoScale;
-                    }
-                }
-                GLsizei viewportWidth, viewportHeight;
-                if (widthFactor > heightFactor) {
-                    viewportWidth = heightFactor * 640;
-                    viewportHeight = heightFactor * 480;
-                }
-                else {
-                    viewportWidth = widthFactor * 640;
-                    viewportHeight = widthFactor * 480;
-                }
-                glViewport((w - viewportWidth) / 2, (h - viewportHeight) / 2, viewportWidth, viewportHeight);
-                glUniform2f(glGetUniformLocation(cs->screen.interpolate_shading_prog, "viewportSize"), viewportWidth, viewportHeight);
-            }
-            else {
-                // TODO: Change this once a fullscreen resolution setting is supported.
-                glViewport(0, 0, w, h);
-                glUniform2f(glGetUniformLocation(cs->screen.interpolate_shading_prog, "viewportSize"), w, h);
-            }
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            glActiveTexture(GL_TEXTURE0);
-            if (SDL_GL_BindTexture(cs->screen.target_tex, NULL, NULL) < 0) {
-                std::cerr << "Failed to bind `target_tex`." << std::endl;
-            }
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4u);
-            glUseProgram(0u);
-            if (SDL_GL_UnbindTexture(cs->screen.target_tex) < 0) {
-                std::cerr << "Failed to unbind `target_tex`." << std::endl;
-            }
-
-            SDL_GL_SwapWindow(cs->screen.window);
-        }
-        else {
-            SDL_RenderPresent(cs->screen.renderer);
-        }
-#else
-        SDL_RenderPresent(cs->screen.renderer);
-#endif
-
-#if 0
-        if (newFrames > 0u) {
-            for (size_t i = 0; i < cs->gfx_messages_max; i++) {
-                if (cs->gfx_messages[i].counter >= newFrames) {
-                    cs->gfx_messages[i].counter -= newFrames;
-                }
-                else {
-                    cs->gfx_messages[i].counter = 0u;
-                }
-            }
-        }
-#endif
-        if (!cs->settings.vsync) {
-            SDL_Delay(cs->settings.frameDelay);
-        }
-    }
-
-    if (procStatus != 2)
-        return 0;
-    else
-        return 2;
 }
 
 void update_mouse(CoreState* cs, const int windowW, const int windowH) {
@@ -1594,23 +1629,20 @@ int process_events(CoreState *cs) {
     return 0;
 }
 
-int procgame(game_t *g, int input_enabled)
-{
+bool procgame(game_t *g, int input_enabled) {
     if(!g)
-        return -1;
+        return false;
 
     if(g->preframe)
     {
         if(g->preframe(g))
-            return 1;
+            return false;
     }
 
     if(g->input && input_enabled)
     {
-        int inputStatus = g->input(g);
-        if (inputStatus) {
-            return inputStatus;
-        }
+        bool inputStatus = !g->input(g);
+        if (!inputStatus) return false;
     }
 
     Uint64 benchmark = SDL_GetPerformanceCounter();
@@ -1618,13 +1650,13 @@ int procgame(game_t *g, int input_enabled)
     if(g->frame)
     {
         if(g->frame(g))
-            return 1;
+            return false;
     }
 
     benchmark = SDL_GetPerformanceCounter() - benchmark;
 //     std::cerr << (double) (benchmark) * 1000 / (double) SDL_GetPerformanceFrequency() << " ms" << std::endl;
 
-    return 0;
+    return true;
 }
 
 void handle_replay_input(CoreState *cs)

@@ -25,6 +25,8 @@ struct CoreState {
 
     bool init();
 
+    void run();
+
     Shiro::Screen screen;
 
     double fps;        // because tap fps = 61.68
@@ -59,8 +61,6 @@ struct CoreState {
     int six_pressed;
     int seven_pressed;
     int nine_pressed;
-
-    std::filesystem::path configurationPath;
 
     Shiro::Settings& settings;
     Shiro::AssetStore* assets;
@@ -112,6 +112,7 @@ struct CoreState {
     // struct scoredb archive;
     Shiro::Player player;
 };
+
 int is_left_input_repeat(CoreState *cs, int delay);
 int is_right_input_repeat(CoreState *cs, int delay);
 int is_up_input_repeat(CoreState *cs, int delay);
@@ -121,12 +122,8 @@ struct bindings *bindings_copy(struct bindings *src);
 
 int load_files(CoreState *cs);
 
-int init(CoreState *cs, Shiro::Settings& s);
-void quit(CoreState *cs);
-
-int run(CoreState *cs);
 int process_events(CoreState* cs);
-int procgame(game_t *g, int input_enabled);
+bool procgame(game_t *g, int input_enabled);
 
 void handle_replay_input(CoreState* cs);
 void update_input_repeat(CoreState *cs);
