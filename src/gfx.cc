@@ -1,5 +1,5 @@
 #include "CoreState.h"
-#include "input/KeyFlags.h"
+#include "Input/KeyFlags.h"
 #include "game_qs.h"
 #include "gfx_old.h"
 #include "gfx_structures.h"

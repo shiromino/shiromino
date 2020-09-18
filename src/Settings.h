@@ -1,7 +1,7 @@
 #pragma once
 #include "definitions.h"
-#include "input/ControllerBindings.h"
-#include "input/KeyBindings.h"
+#include "Input/ControllerBindings.h"
+#include "Input/KeyBindings.h"
 #include <filesystem>
 #include <string>
 

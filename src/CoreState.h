@@ -7,7 +7,7 @@
 #include "Gfx/Screen.h"
 #include "Gfx/Animation.h"
 #include "gfx_structures.h"
-#include "input/KeyFlags.h"
+#include "Input/KeyFlags.h"
 #include "Player.h"
 #include "Settings.h"
 #include "RecordList.h"

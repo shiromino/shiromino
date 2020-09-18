@@ -8,7 +8,7 @@
 #include "game_qs.h"
 #include "GuiGridCanvas.h"
 #include "GuiScreenManager.h"
-#include "input/KeyFlags.h"
+#include "Input/KeyFlags.h"
 #include "Magic.h"
 #include "QRS1.h"
 #include "RefreshRates.h"

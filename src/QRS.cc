@@ -7,7 +7,7 @@
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"
 #include "Grid.h"
-#include "input/KeyFlags.h"
+#include "Input/KeyFlags.h"
 #include "Magic.h"
 #include "PieceDefinition.h"
 #include "QRS0.h"

@@ -110,10 +110,10 @@ target_sources(${GAME_EXECUTABLE}
 		src/GuiScreenManager.cc
 		src/GuiScreenManager.h
 		src/images.h
-		src/input/ControllerBindings.cc
-		src/input/ControllerBindings.h
-		src/input/KeyBindings.cc
-		src/input/KeyBindings.h
+		src/Input/ControllerBindings.cc
+		src/Input/ControllerBindings.h
+		src/Input/KeyBindings.cc
+		src/Input/KeyBindings.h
 		src/Magic.h
 		src/Menu/ActionOption.h
 		src/Menu/ElementType.h

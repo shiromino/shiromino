@@ -1,7 +1,7 @@
 #pragma once
 #define NO_REPLAY -1
 #define MAX_KEYFLAGS 72000 // 20 minutes of inputs (@ 60 fps)
-#include "input/KeyFlags.h"
+#include "Input/KeyFlags.h"
 #include <string>
 #include <ctime>
 #include <cstdint>
