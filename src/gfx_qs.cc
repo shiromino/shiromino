@@ -2,6 +2,7 @@
 #include "DisplayMode.h"
 #include "game_qs.h"
 #include "GameType.h"
+#include "Gfx/Animation.h"
 #include "gfx_old.h"
 #include "gfx_qs.h"
 #include "QRS0.h"
