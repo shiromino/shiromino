@@ -44,23 +44,15 @@ struct CoreState {
     int (*text_copy)(CoreState *);
     int (*text_cut)(CoreState *);
 
-    int left_arrow_das;
-    int right_arrow_das;
-    int backspace_das;
-    int delete_das;
-    int select_all;
-    int undo;
-    int redo;
+    unsigned left_arrow_das;
+    unsigned right_arrow_das;
+    unsigned backspace_das;
+    unsigned delete_das;
+    bool select_all;
+    bool undo;
+    bool redo;
 
-    int zero_pressed;
-    int one_pressed;
-    int two_pressed;
-    int three_pressed;
-    int four_pressed;
-    int five_pressed;
-    int six_pressed;
-    int seven_pressed;
-    int nine_pressed;
+    bool pressedDigits[10];
 
     Shiro::Settings& settings;
     Shiro::AssetStore* assets;
@@ -88,8 +80,8 @@ struct CoreState {
     int mouse_left_down;
     int mouse_right_down;
 
-    int menu_input_override;
-    int button_emergency_override;
+    bool menu_input_override;
+    bool button_emergency_override;
 
     game_t *p1game;
     game_t *menu;
@@ -101,7 +93,7 @@ struct CoreState {
 
     //long double avg_sleep_ms;
     //long double avg_sleep_ms_recent;
-    long frames;
+    unsigned long frames;
 
     //long double avg_sleep_ms_recent_array[RECENT_FRAMES];
     //int recent_frame_overload;

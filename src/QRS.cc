@@ -310,7 +310,7 @@ int usr_field_redo(CoreState *cs, pracdata *d)
 
 int push_undo_clear_confirm(CoreState *cs, void *data)
 {
-    cs->button_emergency_override = 1;
+    cs->button_emergency_override = true;
 
     struct text_formatting fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
     //gfx_pushmessage(
@@ -341,14 +341,14 @@ int undo_clear_confirm_yes(CoreState *cs, void *data)
     if(q->pracdata->field_edit_in_progress)
         q->pracdata->field_edit_in_progress = 0;
 
-    cs->button_emergency_override = 0;
+    cs->button_emergency_override = false;
     cs->mouse_left_down = 0;
     return 0;
 }
 
 int undo_clear_confirm_no(CoreState *cs, void *data)
 {
-    cs->button_emergency_override = 0;
+    cs->button_emergency_override = false;
     cs->mouse_left_down = 0;
     return 0;
 }
@@ -598,59 +598,59 @@ int qrs_input(game_t *g)
             }
 
             c = 0;
-            if(cs->zero_pressed)
+            if(cs->pressedDigits[0])
             {
                 c = d->palette_selection;
                 if(d->field_selection)
-                    cs->zero_pressed = 0;
+                    cs->pressedDigits[0] = false;
             }
-            if(cs->one_pressed)
+            if(cs->pressedDigits[1])
             {
                 c = 19;
                 if(d->field_selection)
-                    cs->one_pressed = 0;
+                    cs->pressedDigits[1] = false;
             }
-            if(cs->two_pressed)
+            if(cs->pressedDigits[2])
             {
                 c = 20;
                 if(d->field_selection)
-                    cs->two_pressed = 0;
+                    cs->pressedDigits[2] = false;
             }
-            if(cs->three_pressed)
+            if(cs->pressedDigits[3])
             {
                 c = 21;
                 if(d->field_selection)
-                    cs->three_pressed = 0;
+                    cs->pressedDigits[3] = false;
             }
-            if(cs->four_pressed)
+            if(cs->pressedDigits[4])
             {
                 c = 22;
                 if(d->field_selection)
-                    cs->four_pressed = 0;
+                    cs->pressedDigits[4] = false;
             }
-            if(cs->five_pressed)
+            if(cs->pressedDigits[5])
             {
                 c = 23;
                 if(d->field_selection)
-                    cs->five_pressed = 0;
+                    cs->pressedDigits[5] = false;
             }
-            if(cs->six_pressed)
+            if(cs->pressedDigits[6])
             {
                 c = 24;
                 if(d->field_selection)
-                    cs->six_pressed = 0;
+                    cs->pressedDigits[6] = false;
             }
-            if(cs->seven_pressed)
+            if(cs->pressedDigits[7])
             {
                 c = 25;
                 if(d->field_selection)
-                    cs->seven_pressed = 0;
+                    cs->pressedDigits[7] = false;
             }
-            if(cs->nine_pressed)
+            if(cs->pressedDigits[9])
             {
                 c = QRS_PIECE_BRACKETS;
                 if(d->field_selection)
-                    cs->nine_pressed = 0;
+                    cs->pressedDigits[9] = false;
             }
 
             if(c && d->field_selection)
@@ -801,7 +801,7 @@ int qrs_input(game_t *g)
     {
         if(menu_is_practice(cs->menu))
         {
-            cs->menu_input_override = 1;
+            cs->menu_input_override = true;
             if(d)
             {
                 d->paused = QRS_FIELD_EDIT;

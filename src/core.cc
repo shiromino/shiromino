@@ -177,19 +177,13 @@ CoreState::CoreState(Shiro::Settings& settings) :
     right_arrow_das = 0;
     backspace_das = 0;
     delete_das = 0;
-    select_all = 0;
-    undo = 0;
-    redo = 0;
+    select_all = false;
+    undo = false;
+    redo = false;
 
-    zero_pressed = 0;
-    one_pressed = 0;
-    two_pressed = 0;
-    three_pressed = 0;
-    four_pressed = 0;
-    five_pressed = 0;
-    six_pressed = 0;
-    seven_pressed = 0;
-    nine_pressed = 0;
+    for (auto& pressed : pressedDigits) {
+        pressed = false;
+    }
 
     assets = new Shiro::AssetStore();
 
@@ -216,8 +210,8 @@ CoreState::CoreState(Shiro::Settings& settings) :
     bg_b = 0u;
 
     this->settings = settings;
-    menu_input_override = 0;
-    button_emergency_override = 0;
+    menu_input_override = false;
+    button_emergency_override = false;
     p1game = NULL;
     menu = NULL;
 
@@ -911,15 +905,15 @@ void update_mouse(CoreState* cs, const int windowW, const int windowH) {
 
     if(cs->select_all)
     {
-        cs->select_all = 0;
+        cs->select_all = false;
     }
     if(cs->undo)
     {
-        cs->undo = 0;
+        cs->undo = false;
     }
     if(cs->redo)
     {
-        cs->redo = 0;
+        cs->redo = false;
     }
 
     if(windowW == (windowH * 4) / 3)
@@ -1198,19 +1192,19 @@ int process_events(CoreState *cs) {
                         if (cs->text_editing && cs->text_select_all) {
                             cs->text_select_all(cs);
                         }
-                        cs->select_all = 1;
+                        cs->select_all = true;
                     }
                     break;
 
                 case SDLK_z:
                     if (keyMod & KMOD_CTRL) {
-                        cs->undo = 1;
+                        cs->undo = true;
                     }
                     break;
 
                 case SDLK_y:
                     if (keyMod & KMOD_CTRL) {
-                        cs->redo = 1;
+                        cs->redo = true;
                     }
                     break;
 
@@ -1291,7 +1285,7 @@ int process_events(CoreState *cs) {
                     break;
 
                 case SDLK_0:
-                    cs->zero_pressed = 1;
+                    cs->pressedDigits[0] = true;
                     break;
 
                 case SDLK_1:
@@ -1299,7 +1293,7 @@ int process_events(CoreState *cs) {
                         cs->settings.videoScale = 1;
                         SDL_SetWindowSize(cs->screen.window, 640, 480);
                     }
-                    cs->one_pressed = 1;
+                    cs->pressedDigits[1] = true;
                     break;
 
                 case SDLK_2:
@@ -1307,7 +1301,7 @@ int process_events(CoreState *cs) {
                         cs->settings.videoScale = 2;
                         SDL_SetWindowSize(cs->screen.window, 2 * 640, 2 * 480);
                     }
-                    cs->two_pressed = 1;
+                    cs->pressedDigits[2] = true;
                     break;
 
                 case SDLK_3:
@@ -1315,7 +1309,7 @@ int process_events(CoreState *cs) {
                         cs->settings.videoScale = 3;
                         SDL_SetWindowSize(cs->screen.window, 3 * 640, 3 * 480);
                     }
-                    cs->three_pressed = 1;
+                    cs->pressedDigits[3] = true;
                     break;
 
                 case SDLK_4:
@@ -1323,7 +1317,7 @@ int process_events(CoreState *cs) {
                         cs->settings.videoScale = 4;
                         SDL_SetWindowSize(cs->screen.window, 4 * 640, 4 * 480);
                     }
-                    cs->four_pressed = 1;
+                    cs->pressedDigits[4] = true;
                     break;
 
                 case SDLK_5:
@@ -1331,19 +1325,23 @@ int process_events(CoreState *cs) {
                         cs->settings.videoScale = 5;
                         SDL_SetWindowSize(cs->screen.window, 5 * 640, 5 * 480);
                     }
-                    cs->five_pressed = 1;
+                    cs->pressedDigits[5] = true;
                     break;
 
                 case SDLK_6:
-                    cs->six_pressed = 1;
+                    cs->pressedDigits[6] = true;
                     break;
 
                 case SDLK_7:
-                    cs->seven_pressed = 1;
+                    cs->pressedDigits[7] = true;
+                    break;
+
+                case SDLK_8:
+                    cs->pressedDigits[8] = true;
                     break;
 
                 case SDLK_9:
-                    cs->nine_pressed = 1;
+                    cs->pressedDigits[9] = true;
                     break;
 
                 default:
@@ -1381,39 +1379,16 @@ int process_events(CoreState *cs) {
                     break;
 
                 case SDLK_0:
-                    cs->zero_pressed = 0;
-                    break;
-
                 case SDLK_1:
-                    cs->one_pressed = 0;
-                    break;
-
                 case SDLK_2:
-                    cs->two_pressed = 0;
-                    break;
-
                 case SDLK_3:
-                    cs->three_pressed = 0;
-                    break;
-
                 case SDLK_4:
-                    cs->four_pressed = 0;
-                    break;
-
                 case SDLK_5:
-                    cs->five_pressed = 0;
-                    break;
-
                 case SDLK_6:
-                    cs->six_pressed = 0;
-                    break;
-
                 case SDLK_7:
-                    cs->seven_pressed = 0;
-                    break;
-
+                case SDLK_8:
                 case SDLK_9:
-                    cs->nine_pressed = 0;
+                    cs->pressedDigits[keyCode - SDLK_0] = false;
                     break;
 
                 default:
