@@ -11,10 +11,8 @@
 #include "Player.h"
 #include "Settings.h"
 #include "RecordList.h"
-#include <filesystem>
 #include "SDL.h"
 #include <vector>
-#include <deque>
 #define RECENT_FRAMES 60
 
 struct CoreState {
@@ -26,6 +24,24 @@ struct CoreState {
     bool init();
 
     void run();
+
+    bool is_left_input_repeat(unsigned delay);
+    bool is_right_input_repeat(unsigned delay);
+    bool is_up_input_repeat(unsigned delay);
+    bool is_down_input_repeat(unsigned delay);
+
+    void load_files(); // TODO: Make this return bool to indicate whether loading succeeded.
+
+    bool process_events();
+
+    void handle_replay_input();
+    void update_input_repeat();
+    void update_pressed();
+
+    bool button_emergency_inactive();
+    void gfx_buttons_input();
+
+    int request_fps(double fps);
 
     Shiro::Screen screen;
 
@@ -70,7 +86,7 @@ struct CoreState {
     Shiro::KeyFlags keys;
     Shiro::KeyFlags pressed;
     Shiro::DASDirection hold_dir;
-    int hold_time;
+    unsigned hold_time;
 
     SDL_Joystick *joystick;
     int mouse_x;
@@ -103,23 +119,6 @@ struct CoreState {
     Shiro::Player player;
 };
 
-int is_left_input_repeat(CoreState *cs, int delay);
-int is_right_input_repeat(CoreState *cs, int delay);
-int is_up_input_repeat(CoreState *cs, int delay);
-int is_down_input_repeat(CoreState *cs, int delay);
-
 struct bindings *bindings_copy(struct bindings *src);
 
-int load_files(CoreState *cs);
-
-int process_events(CoreState* cs);
 bool procgame(game_t *g, int input_enabled);
-
-void handle_replay_input(CoreState* cs);
-void update_input_repeat(CoreState *cs);
-void update_pressed(CoreState *cs);
-
-int button_emergency_inactive(CoreState *cs);
-int gfx_buttons_input(CoreState *cs);
-
-int request_fps(CoreState *cs, double fps);

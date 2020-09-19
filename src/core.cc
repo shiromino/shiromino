@@ -135,24 +135,20 @@ static long framedelay(Uint64 ticks_elap, double fps)
 }
 #endif
 
-int is_left_input_repeat(CoreState *cs, int delay)
-{
-    return cs->keys.left && cs->hold_dir == Shiro::DASDirection::LEFT && cs->hold_time >= delay;
+bool CoreState::is_left_input_repeat(unsigned delay) {
+    return keys.left && hold_dir == Shiro::DASDirection::LEFT && hold_time >= delay;
 }
 
-int is_right_input_repeat(CoreState *cs, int delay)
-{
-    return cs->keys.right && cs->hold_dir == Shiro::DASDirection::RIGHT && cs->hold_time >= delay;
+bool CoreState::is_right_input_repeat(unsigned delay) {
+    return keys.right && hold_dir == Shiro::DASDirection::RIGHT && hold_time >= delay;
 }
 
-int is_up_input_repeat(CoreState *cs, int delay)
-{
-    return cs->keys.up && cs->hold_dir == Shiro::DASDirection::UP && cs->hold_time >= delay;
+bool CoreState::is_up_input_repeat(unsigned delay) {
+    return keys.up && hold_dir == Shiro::DASDirection::UP && hold_time >= delay;
 }
 
-int is_down_input_repeat(CoreState *cs, int delay)
-{
-    return cs->keys.down && cs->hold_dir == Shiro::DASDirection::DOWN && cs->hold_time >= delay;
+bool CoreState::is_down_input_repeat(unsigned delay) {
+    return keys.down && hold_dir == Shiro::DASDirection::DOWN && hold_time >= delay;
 }
 
 CoreState::CoreState(Shiro::Settings& settings) :
@@ -368,7 +364,7 @@ bool CoreState::init() {
             std::cerr << "No joysticks are attached" << std::endl;
         }
 
-        check(load_files(this) == 0, "load_files() returned failure\n");
+        load_files();
 
         check(Gui_Init(screen.renderer, NULL), "Gui_Init() returned failure\n");
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
@@ -498,16 +494,14 @@ void CoreState::run() {
             prev_keys_raw = keys_raw;
             prev_keys = keys;
 
-            if (process_events(this)) {
-                running = false;
-            }
+            running = process_events();
 
-            handle_replay_input(this);
+            handle_replay_input();
 
-            update_input_repeat(this);
-            update_pressed(this);
+            update_input_repeat();
+            update_pressed();
 
-            gfx_buttons_input(this);
+            gfx_buttons_input();
 
             /*
             SPMgame.input();
@@ -788,42 +782,35 @@ static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const c
     }
 }
 
-int load_files(CoreState *cs)
-{
-    if(!cs)
-        return -1;
-
-        // image assets
-
-#define IMG(name) load_image(cs, &cs->assets->name, #name);
-#define IMG_ARRAY(name, i) load_image(cs, &cs->assets->name[i], #name #i);
+void CoreState::load_files() {
+    // image assets
+#define IMG(name) load_image(this, &assets->name, #name);
+#define IMG_ARRAY(name, i) load_image(this, &assets->name[i], #name #i);
 #include "images.h"
 #undef IMG_ARRAY
 #undef IMG
 
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
-    load_bitfont(&cs->assets->name, &cs->assets->sheetName, &cs->assets->outlineSheetName, charW, charH)
+    load_bitfont(&assets->name, &assets->sheetName, &assets->outlineSheetName, charW, charH)
 #include "fonts.h"
 #undef FONT
 
-        // audio assets
-
+    // audio assets
     {
         PDINI::INI ini(false);
-        std::filesystem::path basePath { cs->settings.basePath };
+        std::filesystem::path basePath { settings.basePath };
         ini.read(basePath / "assets" / "audio" / "volume.ini");
 
-#define MUSIC(name, i) load_music(cs, ini, cs->assets->name[i], #name #i);
+#define MUSIC(name, i) load_music(this, ini, assets->name[i], #name #i);
 #include "music.h"
 #undef MUSIC
 
-#define SFX(name) load_sfx(cs, ini, &cs->assets->name, #name);
-#define SFX_ARRAY(name, i) load_sfx(cs, ini, &cs->assets->name[i], #name #i);
+#define SFX(name) load_sfx(this, ini, &assets->name, #name);
+#define SFX_ARRAY(name, i) load_sfx(this, ini, &assets->name[i], #name #i);
 #include "sfx.h"
 #undef SFX_ARRAY
 #undef SFX
     }
-    return 0;
 }
 
 void quit(CoreState *cs)
@@ -954,89 +941,85 @@ void update_mouse(CoreState* cs, const int windowW, const int windowH) {
     }
 }
 
-// TODO: Make this only read in events and update state; move out all logic interpreting the new state into the game/menu code, such as DAS processing. And rename this to poll_events once that's all done.
-int process_events(CoreState *cs) {
-    if (!cs) {
-        return -1;
-    }
-
+// TODO: Make this only read in events and update state; move out all logic interpreting the new state into the game/menu code, such as DAS processing. And rename this to pollEvents once that's all done.
+bool CoreState::process_events() {
     Shiro::KeyFlags *k = NULL;
 
     SDL_Keycode keyCode;
     SDL_Keymod keyMod;
-    Shiro::KeyBindings& keyBindings = cs->settings.keyBindings;
+    Shiro::KeyBindings& keyBindings = settings.keyBindings;
 
-    Shiro::ControllerBindings& controllerBindings = cs->settings.controllerBindings;
+    Shiro::ControllerBindings& controllerBindings = settings.controllerBindings;
 
 #if 0
-    if(cs->mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
+    if(mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
     {
-        cs->mouse_left_down = 1;
+        mouse_left_down = 1;
     }
-    if(cs->mouse_right_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
+    if(mouse_right_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
     {
-        cs->mouse_right_down = 1;
-    }
-
-    if(cs->select_all)
-    {
-        cs->select_all = 0;
-    }
-    if(cs->undo)
-    {
-        cs->undo = 0;
-    }
-    if(cs->redo)
-    {
-        cs->redo = 0;
+        mouse_right_down = 1;
     }
 
-    SDL_GetMouseState(&cs->mouse_x, &cs->mouse_y);
+    if(select_all)
+    {
+        select_all = 0;
+    }
+    if(undo)
+    {
+        undo = 0;
+    }
+    if(redo)
+    {
+        redo = 0;
+    }
+
+    SDL_GetMouseState(&mouse_x, &mouse_y);
 
     int windowW;
     int windowH;
-    SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
+    SDL_GetWindowSize(screen.window, &windowW, &windowH);
 
     if(windowW == (windowH * 4) / 3)
     {
         float scale_ = (float)windowW / 640.0;
-        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
-        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
+        logical_mouse_x = (int)((float)mouse_x / scale_);
+        logical_mouse_y = (int)((float)mouse_y / scale_);
     }
     else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
     {
         float scale_ = (float)windowW / 640.0;
         int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
-        if(cs->mouse_y < yOffset || cs->mouse_y >= windowH - yOffset)
+        if(mouse_y < yOffset || mouse_y >= windowH - yOffset)
         {
-            cs->logical_mouse_y = -1;
+            logical_mouse_y = -1;
         }
         else
         {
-            cs->logical_mouse_y = (int)((float)(cs->mouse_y - yOffset) / scale_);
+            logical_mouse_y = (int)((float)(mouse_y - yOffset) / scale_);
         }
 
-        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
+        logical_mouse_x = (int)((float)mouse_x / scale_);
     }
     else
     {
         float scale_ = (float)windowH / 480.0;
         int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
-        if(cs->mouse_x < xOffset || cs->mouse_x >= windowW - xOffset)
+        if(mouse_x < xOffset || mouse_x >= windowW - xOffset)
         {
-            cs->logical_mouse_x = -1;
+            logical_mouse_x = -1;
         }
         else
         {
-            cs->logical_mouse_x = (int)((float)(cs->mouse_x - xOffset) / scale_);
+            logical_mouse_x = (int)((float)(mouse_x - xOffset) / scale_);
         }
 
-        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
+        logical_mouse_y = (int)((float)mouse_y / scale_);
     }
 #endif
 
     int windowW, windowH;
-    SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
+    SDL_GetWindowSize(screen.window, &windowW, &windowH);
     SDL_Event event;
 #define CHECK_BINDINGS(check) \
     check(left); \
@@ -1053,10 +1036,10 @@ int process_events(CoreState *cs) {
         const auto currentDeadZone = Shiro::ControllerBindings::MAXIMUM_DEAD_ZONE * controllerBindings.deadZone;
         switch (event.type) {
             case SDL_QUIT:
-                return 1;
+                return false;
 
             case SDL_JOYAXISMOTION:
-                k = &cs->keys_raw;
+                k = &keys_raw;
                 if (event.jaxis.which == controllerBindings.controllerID) {
                     if (event.jaxis.axis == controllerBindings.axes.x) {
                         if (event.jaxis.value * controllerBindings.axes.right > currentDeadZone) {
@@ -1091,7 +1074,7 @@ int process_events(CoreState *cs) {
                 break;
 
             case SDL_JOYHATMOTION:
-                k = &cs->keys_raw;
+                k = &keys_raw;
 
                 if (event.jhat.which == controllerBindings.controllerID && event.jhat.hat == controllerBindings.hatIndex) {
                     if (event.jhat.value == SDL_HAT_CENTERED) {
@@ -1124,7 +1107,7 @@ int process_events(CoreState *cs) {
                 break;
 
             case SDL_JOYBUTTONDOWN:
-                k = &cs->keys_raw;
+                k = &keys_raw;
                 if (event.jbutton.which == controllerBindings.controllerID) {
 #define CHECK_JOYBUTTONDOWN(name) \
                     if (event.jbutton.button == controllerBindings.buttons.name) { \
@@ -1137,7 +1120,7 @@ int process_events(CoreState *cs) {
                 break;
 
             case SDL_JOYBUTTONUP:
-                k = &cs->keys_raw;
+                k = &keys_raw;
                 if (event.jbutton.which == controllerBindings.controllerID) {
 #define CHECK_JOYBUTTONUP(name) \
                     if (event.jbutton.button == controllerBindings.buttons.name) { \
@@ -1159,7 +1142,7 @@ int process_events(CoreState *cs) {
                 keyCode = event.key.keysym.sym;
                 keyMod = SDL_GetModState();
 
-                k = &cs->keys_raw;
+                k = &keys_raw;
 
 #define CHECK_KEYDOWN(name) \
                 if (keyCode == keyBindings.name) { \
@@ -1170,178 +1153,178 @@ int process_events(CoreState *cs) {
 
                 switch (keyCode) {
                 case SDLK_v:
-                    if ((keyMod & KMOD_CTRL) && cs->text_editing && cs->text_insert) {
-                        cs->text_insert(cs, SDL_GetClipboardText());
+                    if ((keyMod & KMOD_CTRL) && text_editing && text_insert) {
+                        text_insert(this, SDL_GetClipboardText());
                     }
                     break;
 
                 case SDLK_c:
-                    if ((keyMod & KMOD_CTRL) && cs->text_editing && cs->text_insert) {
-                        cs->text_copy(cs);
+                    if ((keyMod & KMOD_CTRL) && text_editing && text_insert) {
+                        text_copy(this);
                     }
                     break;
 
                 case SDLK_x:
-                    if ((keyMod & KMOD_CTRL) && cs->text_editing && cs->text_cut) {
-                        cs->text_cut(cs);
+                    if ((keyMod & KMOD_CTRL) && text_editing && text_cut) {
+                        text_cut(this);
                     }
                     break;
 
                 case SDLK_a:
                     if (keyMod & KMOD_CTRL) {
-                        if (cs->text_editing && cs->text_select_all) {
-                            cs->text_select_all(cs);
+                        if (text_editing && text_select_all) {
+                            text_select_all(this);
                         }
-                        cs->select_all = true;
+                        select_all = true;
                     }
                     break;
 
                 case SDLK_z:
                     if (keyMod & KMOD_CTRL) {
-                        cs->undo = true;
+                        undo = true;
                     }
                     break;
 
                 case SDLK_y:
                     if (keyMod & KMOD_CTRL) {
-                        cs->redo = true;
+                        redo = true;
                     }
                     break;
 
                 case SDLK_BACKSPACE:
-                    cs->backspace_das = 1;
+                    backspace_das = 1;
                     break;
 
                 case SDLK_DELETE:
-                    cs->delete_das = 1;
+                    delete_das = 1;
                     break;
 
                 case SDLK_HOME:
-                    if (cs->text_editing && cs->text_seek_home) {
-                        cs->text_seek_home(cs);
+                    if (text_editing && text_seek_home) {
+                        text_seek_home(this);
                     }
                     break;
 
                 case SDLK_END:
-                    if (cs->text_editing && cs->text_seek_end) {
-                        cs->text_seek_end(cs);
+                    if (text_editing && text_seek_end) {
+                        text_seek_end(this);
                     }
                     break;
 
                 case SDLK_RETURN:
-                    if (cs->text_toggle) {
-                        cs->text_toggle(cs);
+                    if (text_toggle) {
+                        text_toggle(this);
                     }
                     break;
 
                 case SDLK_LEFT:
-                    cs->left_arrow_das = 1;
+                    left_arrow_das = 1;
                     break;
 
                 case SDLK_RIGHT:
-                    cs->right_arrow_das = 1;
+                    right_arrow_das = 1;
                     break;
 
                 case SDLK_F4:
                     if (keyMod & KMOD_ALT) {
-                        return 1;
+                        return false;
                     }
                     break;
 
                 case SDLK_F8:
-                    switch (cs->displayMode) {
+                    switch (displayMode) {
                     case Shiro::DisplayMode::DEFAULT:
-                        cs->displayMode = Shiro::DisplayMode::DETAILED;
+                        displayMode = Shiro::DisplayMode::DETAILED;
                         break;
 
                     case Shiro::DisplayMode::DETAILED:
-                        cs->displayMode = Shiro::DisplayMode::CENTERED;
+                        displayMode = Shiro::DisplayMode::CENTERED;
                         break;
 
                     default:
-                        cs->displayMode = Shiro::DisplayMode::DEFAULT;
+                        displayMode = Shiro::DisplayMode::DEFAULT;
                         break;
                     }
                     break;
 
                 case SDLK_F9:
-                    cs->motionBlur = !cs->motionBlur;
+                    motionBlur = !motionBlur;
                     break;
 
                 case SDLK_F11:
-                    if (cs->settings.fullscreen) {
-                        cs->settings.fullscreen = false;
-                        SDL_SetWindowFullscreen(cs->screen.window, 0);
-                        SDL_SetWindowSize(cs->screen.window, 640.0 * cs->settings.videoScale, 480.0 * cs->settings.videoScale);
+                    if (settings.fullscreen) {
+                        settings.fullscreen = false;
+                        SDL_SetWindowFullscreen(screen.window, 0);
+                        SDL_SetWindowSize(screen.window, 640.0 * settings.videoScale, 480.0 * settings.videoScale);
                     }
                     else {
-                        cs->settings.fullscreen = true;
-                        SDL_SetWindowSize(cs->screen.window, 640, 480);
+                        settings.fullscreen = true;
+                        SDL_SetWindowSize(screen.window, 640, 480);
                         SDL_WindowFlags flags = (keyMod & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
-                        if (SDL_SetWindowFullscreen(cs->screen.window, flags) < 0) {
+                        if (SDL_SetWindowFullscreen(screen.window, flags) < 0) {
                             std::cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << std::endl;
                         }
                     }
                     break;
 
                 case SDLK_0:
-                    cs->pressedDigits[0] = true;
+                    pressedDigits[0] = true;
                     break;
 
                 case SDLK_1:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings.videoScale = 1;
-                        SDL_SetWindowSize(cs->screen.window, 640, 480);
+                        settings.videoScale = 1;
+                        SDL_SetWindowSize(screen.window, 640, 480);
                     }
-                    cs->pressedDigits[1] = true;
+                    pressedDigits[1] = true;
                     break;
 
                 case SDLK_2:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings.videoScale = 2;
-                        SDL_SetWindowSize(cs->screen.window, 2 * 640, 2 * 480);
+                        settings.videoScale = 2;
+                        SDL_SetWindowSize(screen.window, 2 * 640, 2 * 480);
                     }
-                    cs->pressedDigits[2] = true;
+                    pressedDigits[2] = true;
                     break;
 
                 case SDLK_3:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings.videoScale = 3;
-                        SDL_SetWindowSize(cs->screen.window, 3 * 640, 3 * 480);
+                        settings.videoScale = 3;
+                        SDL_SetWindowSize(screen.window, 3 * 640, 3 * 480);
                     }
-                    cs->pressedDigits[3] = true;
+                    pressedDigits[3] = true;
                     break;
 
                 case SDLK_4:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings.videoScale = 4;
-                        SDL_SetWindowSize(cs->screen.window, 4 * 640, 4 * 480);
+                        settings.videoScale = 4;
+                        SDL_SetWindowSize(screen.window, 4 * 640, 4 * 480);
                     }
-                    cs->pressedDigits[4] = true;
+                    pressedDigits[4] = true;
                     break;
 
                 case SDLK_5:
                     if (keyMod & KMOD_ALT) {
-                        cs->settings.videoScale = 5;
-                        SDL_SetWindowSize(cs->screen.window, 5 * 640, 5 * 480);
+                        settings.videoScale = 5;
+                        SDL_SetWindowSize(screen.window, 5 * 640, 5 * 480);
                     }
-                    cs->pressedDigits[5] = true;
+                    pressedDigits[5] = true;
                     break;
 
                 case SDLK_6:
-                    cs->pressedDigits[6] = true;
+                    pressedDigits[6] = true;
                     break;
 
                 case SDLK_7:
-                    cs->pressedDigits[7] = true;
+                    pressedDigits[7] = true;
                     break;
 
                 case SDLK_8:
-                    cs->pressedDigits[8] = true;
+                    pressedDigits[8] = true;
                     break;
 
                 case SDLK_9:
-                    cs->pressedDigits[9] = true;
+                    pressedDigits[9] = true;
                     break;
 
                 default:
@@ -1352,7 +1335,7 @@ int process_events(CoreState *cs) {
             case SDL_KEYUP:
                 keyCode = event.key.keysym.sym;
 
-                k = &cs->keys_raw;
+                k = &keys_raw;
 
 #define CHECK_KEYUP(name) \
                 if (keyCode == keyBindings.name) { \
@@ -1363,19 +1346,19 @@ int process_events(CoreState *cs) {
 
                 switch (keyCode) {
                 case SDLK_LEFT:
-                    cs->left_arrow_das = 0;
+                    left_arrow_das = 0;
                     break;
 
                 case SDLK_RIGHT:
-                    cs->right_arrow_das = 0;
+                    right_arrow_das = 0;
                     break;
 
                 case SDLK_BACKSPACE:
-                    cs->backspace_das = 0;
+                    backspace_das = 0;
                     break;
 
                 case SDLK_DELETE:
-                    cs->delete_das = 0;
+                    delete_das = 0;
                     break;
 
                 case SDLK_0:
@@ -1388,7 +1371,7 @@ int process_events(CoreState *cs) {
                 case SDLK_7:
                 case SDLK_8:
                 case SDLK_9:
-                    cs->pressedDigits[keyCode - SDLK_0] = false;
+                    pressedDigits[keyCode - SDLK_0] = false;
                     break;
 
                 default:
@@ -1398,15 +1381,15 @@ int process_events(CoreState *cs) {
                 break;
 
             case SDL_TEXTINPUT:
-                if (cs->text_editing)
+                if (text_editing)
                 {
                     if (!((event.text.text[0] == 'c' || event.text.text[0] == 'C') &&
                         (event.text.text[0] == 'v' || event.text.text[0] == 'V') &&
                         (event.text.text[0] == 'x' || event.text.text[0] == 'X') &&
                         (event.text.text[0] == 'a' || event.text.text[0] == 'A') && SDL_GetModState() & KMOD_CTRL))
                     {
-                        if (cs->text_insert)
-                            cs->text_insert(cs, event.text.text);
+                        if (text_insert)
+                            text_insert(this, event.text.text);
                     }
                 }
 
@@ -1415,32 +1398,32 @@ int process_events(CoreState *cs) {
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT)
                 {
-                    cs->mouse_left_down = Shiro::Magic::BUTTON_PRESSED_THIS_FRAME;
+                    mouse_left_down = Shiro::Magic::BUTTON_PRESSED_THIS_FRAME;
                 }
                 if (event.button.button == SDL_BUTTON_RIGHT)
-                    cs->mouse_right_down = Shiro::Magic::BUTTON_PRESSED_THIS_FRAME;
-                update_mouse(cs, windowW, windowH);
+                    mouse_right_down = Shiro::Magic::BUTTON_PRESSED_THIS_FRAME;
+                update_mouse(this, windowW, windowH);
                 break;
 
             case SDL_MOUSEBUTTONUP:
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    cs->mouse_left_down = 0;
+                    mouse_left_down = 0;
                 if (event.button.button == SDL_BUTTON_RIGHT)
-                    cs->mouse_right_down = 0;
-                update_mouse(cs, windowW, windowH);
+                    mouse_right_down = 0;
+                update_mouse(this, windowW, windowH);
                 break;
 
             case SDL_MOUSEMOTION:
-                cs->mouse_x = event.motion.x;
-                cs->mouse_y = event.motion.y;
-                update_mouse(cs, windowW, windowH);
+                mouse_x = event.motion.x;
+                mouse_y = event.motion.y;
+                update_mouse(this, windowW, windowH);
                 break;
 
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    SDL_GetWindowSize(cs->screen.window, &windowW, &windowH);
-                    update_mouse(cs, windowW, windowH);
+                    SDL_GetWindowSize(screen.window, &windowW, &windowH);
+                    update_mouse(this, windowW, windowH);
                     break;
 
                 default:
@@ -1454,73 +1437,73 @@ int process_events(CoreState *cs) {
     }
 #undef CHECK_BINDINGS
 
-    if(cs->left_arrow_das)
+    if(left_arrow_das)
     {
-        if(cs->left_arrow_das == 1 || cs->left_arrow_das == 30)
+        if(left_arrow_das == 1 || left_arrow_das == 30)
         {
-            if(cs->text_editing && cs->text_seek_left)
-                cs->text_seek_left(cs);
-            if(cs->left_arrow_das == 1)
-                cs->left_arrow_das = 2;
+            if(text_editing && text_seek_left)
+                text_seek_left(this);
+            if(left_arrow_das == 1)
+                left_arrow_das = 2;
         }
         else
         {
-            cs->left_arrow_das++;
+            left_arrow_das++;
         }
     }
 
-    if(cs->right_arrow_das)
+    if(right_arrow_das)
     {
-        if(cs->right_arrow_das == 1 || cs->right_arrow_das == 30)
+        if(right_arrow_das == 1 || right_arrow_das == 30)
         {
-            if(cs->text_editing && cs->text_seek_right)
-                cs->text_seek_right(cs);
-            if(cs->right_arrow_das == 1)
-                cs->right_arrow_das = 2;
+            if(text_editing && text_seek_right)
+                text_seek_right(this);
+            if(right_arrow_das == 1)
+                right_arrow_das = 2;
         }
         else
         {
-            cs->right_arrow_das++;
+            right_arrow_das++;
         }
     }
 
-    if(cs->backspace_das)
+    if(backspace_das)
     {
-        if(cs->backspace_das == 1 || cs->backspace_das == 30)
+        if(backspace_das == 1 || backspace_das == 30)
         {
-            if(cs->text_editing && cs->text_backspace)
-                cs->text_backspace(cs);
-            if(cs->backspace_das == 1)
-                cs->backspace_das = 2;
+            if(text_editing && text_backspace)
+                text_backspace(this);
+            if(backspace_das == 1)
+                backspace_das = 2;
         }
         else
         {
-            cs->backspace_das++;
+            backspace_das++;
         }
     }
 
-    if(cs->delete_das)
+    if(delete_das)
     {
-        if(cs->delete_das == 1 || cs->delete_das == 30)
+        if(delete_das == 1 || delete_das == 30)
         {
-            if(cs->text_editing && cs->text_delete)
-                cs->text_delete(cs);
-            if(cs->delete_das == 1)
-                cs->delete_das = 2;
+            if(text_editing && text_delete)
+                text_delete(this);
+            if(delete_das == 1)
+                delete_das = 2;
         }
         else
         {
-            cs->delete_das++;
+            delete_das++;
         }
     }
 
     /*
-        SDL_Joystick *joy = cs->joystick;
+        SDL_Joystick *joy = joystick;
         const uint8_t *keystates = SDL_GetKeyboardState(NULL);
 
-        if (cs->settings.keyBindings) {
-            k = &cs->keys_raw;
-            kb = cs->settings.keyBindings;
+        if (settings.keyBindings) {
+            k = &keys_raw;
+            kb = settings.keyBindings;
 
             *k = (Shiro::KeyFlags) { 0 };
 
@@ -1593,13 +1576,13 @@ int process_events(CoreState *cs) {
             if (keystates[SDL_GetScancodeFromKey(kb->escape)])
                 k->escape = 1;
 
-            cs->keys = cs->keys_raw;
+            keys = keys_raw;
         }
     */
 
-    cs->keys = cs->keys_raw;
+    keys = keys_raw;
 
-    return 0;
+    return true;
 }
 
 bool procgame(game_t *g, int input_enabled) {
@@ -1632,119 +1615,103 @@ bool procgame(game_t *g, int input_enabled) {
     return true;
 }
 
-void handle_replay_input(CoreState *cs)
-{
-    game_t *g = cs->p1game;
-    if(g != NULL)
-    {
+void CoreState::handle_replay_input() {
+    game_t *g = p1game;
+    if (g != NULL) {
         qrsdata *q = (qrsdata *)g->data;
 
-        if(q == NULL)
-        {
+        if (q == NULL) {
             return;
         }
 
-        if(q->playback)
-        {
-            if((unsigned int)(q->playback_index) == q->replay->len)
+        if (q->playback) {
+            if ((unsigned int)(q->playback_index) == q->replay->len) {
                 qrs_end_playback(g);
-            else
-            {
-                unpack_input(q->replay->pinputs[q->playback_index], &cs->keys);
+            }
+            else {
+                unpack_input(q->replay->pinputs[q->playback_index], &keys);
 
                 q->playback_index++;
             }
         }
-        else if(q->recording)
-        {
-            q->replay->pinputs[q->replay->len] = pack_input(&cs->keys_raw);
+        else if(q->recording) {
+            q->replay->pinputs[q->replay->len] = pack_input(&keys_raw);
 
             q->replay->len++;
         }
     }
 }
 
-void update_input_repeat(CoreState *cs)
-{
-    Shiro::KeyFlags *k = &cs->keys;
+void CoreState::update_input_repeat() {
+    Shiro::KeyFlags *k = &keys;
 
-    if(cs->hold_dir == Shiro::DASDirection::LEFT && k->right)
+    if(hold_dir == Shiro::DASDirection::LEFT && k->right)
     {
-        cs->hold_time = 0;
-        cs->hold_dir = Shiro::DASDirection::RIGHT;
+        hold_time = 0;
+        hold_dir = Shiro::DASDirection::RIGHT;
     }
-    else if(cs->hold_dir == Shiro::DASDirection::RIGHT && k->left)
+    else if(hold_dir == Shiro::DASDirection::RIGHT && k->left)
     {
-        cs->hold_time = 0;
-        cs->hold_dir = Shiro::DASDirection::LEFT;
+        hold_time = 0;
+        hold_dir = Shiro::DASDirection::LEFT;
     }
-    else if(cs->hold_dir == Shiro::DASDirection::UP && k->down)
+    else if(hold_dir == Shiro::DASDirection::UP && k->down)
     {
-        cs->hold_time = 0;
-        cs->hold_dir = Shiro::DASDirection::DOWN;
+        hold_time = 0;
+        hold_dir = Shiro::DASDirection::DOWN;
     }
-    else if(cs->hold_dir == Shiro::DASDirection::DOWN && k->up)
+    else if(hold_dir == Shiro::DASDirection::DOWN && k->up)
     {
-        cs->hold_time = 0;
-        cs->hold_dir = Shiro::DASDirection::UP;
+        hold_time = 0;
+        hold_dir = Shiro::DASDirection::UP;
     }
 
-    if(cs->hold_dir == Shiro::DASDirection::LEFT && k->left)
-        cs->hold_time++;
-    else if(cs->hold_dir == Shiro::DASDirection::RIGHT && k->right)
-        cs->hold_time++;
-    else if(cs->hold_dir == Shiro::DASDirection::UP && k->up)
-        cs->hold_time++;
-    else if(cs->hold_dir == Shiro::DASDirection::DOWN && k->down)
-        cs->hold_time++;
+    if(hold_dir == Shiro::DASDirection::LEFT && k->left)
+        hold_time++;
+    else if(hold_dir == Shiro::DASDirection::RIGHT && k->right)
+        hold_time++;
+    else if(hold_dir == Shiro::DASDirection::UP && k->up)
+        hold_time++;
+    else if(hold_dir == Shiro::DASDirection::DOWN && k->down)
+        hold_time++;
     else
     {
         if(k->left)
-            cs->hold_dir = Shiro::DASDirection::LEFT;
+            hold_dir = Shiro::DASDirection::LEFT;
         else if(k->right)
-            cs->hold_dir = Shiro::DASDirection::RIGHT;
+            hold_dir = Shiro::DASDirection::RIGHT;
         else if(k->up)
-            cs->hold_dir = Shiro::DASDirection::UP;
+            hold_dir = Shiro::DASDirection::UP;
         else if(k->down)
-            cs->hold_dir = Shiro::DASDirection::DOWN;
+            hold_dir = Shiro::DASDirection::DOWN;
         else
-            cs->hold_dir = Shiro::DASDirection::NONE;
+            hold_dir = Shiro::DASDirection::NONE;
 
-        cs->hold_time = 0;
+        hold_time = 0;
     }
 }
 
-void update_pressed(CoreState *cs)
-{
-    cs->pressed.left = (cs->keys.left == 1 && cs->prev_keys.left == 0) ? 1 : 0;
-    cs->pressed.right = (cs->keys.right == 1 && cs->prev_keys.right == 0) ? 1 : 0;
-    cs->pressed.up = (cs->keys.up == 1 && cs->prev_keys.up == 0) ? 1 : 0;
-    cs->pressed.down = (cs->keys.down == 1 && cs->prev_keys.down == 0) ? 1 : 0;
-    cs->pressed.start = (cs->keys.start == 1 && cs->prev_keys.start == 0) ? 1 : 0;
-    cs->pressed.a = (cs->keys.a == 1 && cs->prev_keys.a == 0) ? 1 : 0;
-    cs->pressed.b = (cs->keys.b == 1 && cs->prev_keys.b == 0) ? 1 : 0;
-    cs->pressed.c = (cs->keys.c == 1 && cs->prev_keys.c == 0) ? 1 : 0;
-    cs->pressed.d = (cs->keys.d == 1 && cs->prev_keys.d == 0) ? 1 : 0;
-    cs->pressed.escape = (cs->keys.escape == 1 && cs->prev_keys.escape == 0) ? 1 : 0;
+void CoreState::update_pressed() {
+    pressed.left = (keys.left == 1 && prev_keys.left == 0) ? 1 : 0;
+    pressed.right = (keys.right == 1 && prev_keys.right == 0) ? 1 : 0;
+    pressed.up = (keys.up == 1 && prev_keys.up == 0) ? 1 : 0;
+    pressed.down = (keys.down == 1 && prev_keys.down == 0) ? 1 : 0;
+    pressed.start = (keys.start == 1 && prev_keys.start == 0) ? 1 : 0;
+    pressed.a = (keys.a == 1 && prev_keys.a == 0) ? 1 : 0;
+    pressed.b = (keys.b == 1 && prev_keys.b == 0) ? 1 : 0;
+    pressed.c = (keys.c == 1 && prev_keys.c == 0) ? 1 : 0;
+    pressed.d = (keys.d == 1 && prev_keys.d == 0) ? 1 : 0;
+    pressed.escape = (keys.escape == 1 && prev_keys.escape == 0) ? 1 : 0;
 }
 
-int button_emergency_inactive(CoreState *cs)
-{
-    if(cs->button_emergency_override)
-        return 0;
-    else
-        return 1;
-
-    return 1;
+bool CoreState::button_emergency_inactive() {
+    return !button_emergency_override;
 }
 
-int gfx_buttons_input(CoreState *cs)
-{
-    if(!cs)
-        return -1;
-
-    if(!cs->gfx_buttons.size())
-        return 1;
+void CoreState::gfx_buttons_input() {
+    if (!gfx_buttons.size()) {
+        return;
+    }
 
     int i = 0;
 
@@ -1753,40 +1720,40 @@ int gfx_buttons_input(CoreState *cs)
     int scaled_w = 0;
     int scaled_h = 0;
 
-    int scale = cs->settings.videoScale;
+    int scale = settings.videoScale;
 
-    for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
+    for (auto it = gfx_buttons.begin(); it != gfx_buttons.end(); it++) {
         gfx_button& b = *it;
         scaled_x = scale * b.x;
         scaled_y = scale * b.y;
         scaled_w = scale * b.w;
         scaled_h = scale * b.h;
 
-        if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
+        if(button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {
             b.highlighted = 0;
             if(b.delete_check)
             {
-                if(b.delete_check(cs))
+                if(b.delete_check(this))
                 {
-                    cs->gfx_buttons.erase(it);
+                    gfx_buttons.erase(it);
                 }
             }
 
             continue;
         }
 
-        if(cs->mouse_x < scaled_x + scaled_w && cs->mouse_x >= scaled_x && cs->mouse_y < scaled_y + scaled_h &&
-           cs->mouse_y >= scaled_y)
+        if(mouse_x < scaled_x + scaled_w && mouse_x >= scaled_x && mouse_y < scaled_y + scaled_h &&
+           mouse_y >= scaled_y)
             b.highlighted = 1;
         else
             b.highlighted = 0;
 
-        if(b.highlighted && cs->mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
+        if(b.highlighted && mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
         {
             if(b.action)
             {
-                b.action(cs, b.data);
+                b.action(this, b.data);
             }
 
             b.clicked = 4;
@@ -1797,23 +1764,23 @@ int gfx_buttons_input(CoreState *cs)
 
         if(b.delete_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
         {
-            if(b.delete_check(cs))
+            if(b.delete_check(this))
             {
-                cs->gfx_buttons.erase(it);
+                gfx_buttons.erase(it);
             }
         }
     }
 
-    for (auto it = cs->gfx_buttons.begin(); it != cs->gfx_buttons.end(); it++) {
-        gfx_button& b = cs->gfx_buttons[i];
+    for (auto it = gfx_buttons.begin(); it != gfx_buttons.end(); it++) {
+        gfx_button& b = gfx_buttons[i];
 
-        if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
+        if(button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {
             if(b.delete_check)
             {
-                if(b.delete_check(cs))
+                if(b.delete_check(this))
                 {
-                    cs->gfx_buttons.erase(it);
+                    gfx_buttons.erase(it);
                 }
             }
 
@@ -1822,23 +1789,19 @@ int gfx_buttons_input(CoreState *cs)
 
         if(b.delete_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
         {
-            if(b.delete_check(cs))
+            if(b.delete_check(this))
             {
-                cs->gfx_buttons.erase(it);
+                gfx_buttons.erase(it);
             }
         }
     }
-
-    return 0;
 }
 
-int request_fps(CoreState *cs, double fps)
+int CoreState::request_fps(double fps)
 {
-    if(!cs)
-        return -1;
     if(fps != 60.00 && fps != Shiro::RefreshRates::g1 && fps != Shiro::RefreshRates::g2 && fps != Shiro::RefreshRates::g3)
         return 1;
 
-    cs->fps = fps;
+    this->fps = fps;
     return 0;
 }

@@ -606,7 +606,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->max_floorkicks = 2;
     q->lock_on_rotate = 0;
 
-    request_fps(cs, Shiro::RefreshRates::pentomino);
+    cs->request_fps(Shiro::RefreshRates::pentomino);
     q->game_type = Shiro::GameType::SIMULATE_QRS;
     q->mode_type = MODE_PENTOMINO;
 
@@ -712,7 +712,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->special_irs = 0;
         q->lock_protect = 0;
         q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
-        request_fps(cs, Shiro::RefreshRates::g1);
+        cs->request_fps(Shiro::RefreshRates::g1);
     }
 
     if(flags & static_cast<int>(Shiro::GameType::SIMULATE_G2))
@@ -724,7 +724,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->max_floorkicks = 0;
         q->special_irs = 0;
         q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
-        request_fps(cs, Shiro::RefreshRates::g2);
+        cs->request_fps(Shiro::RefreshRates::g2);
     }
 
     if(flags & static_cast<int>(Shiro::GameType::SIMULATE_G3))
@@ -2846,7 +2846,7 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
             q->tetromino_only = 0;
             q->pentomino_only = 0;
-            request_fps(cs, Shiro::RefreshRates::pentomino);
+            cs->request_fps(Shiro::RefreshRates::pentomino);
             break;
         case Shiro::GameType::SIMULATE_G1:
             q->num_previews = 1;
@@ -2861,7 +2861,7 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, Shiro::RefreshRates::g1);
+            cs->request_fps(Shiro::RefreshRates::g1);
             break;
         case Shiro::GameType::SIMULATE_G2:
             q->num_previews = 1;
@@ -2876,7 +2876,7 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags | Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, Shiro::RefreshRates::g2);
+            cs->request_fps(Shiro::RefreshRates::g2);
             break;
         case Shiro::GameType::SIMULATE_G3:
             q->num_previews = 3;
@@ -2891,7 +2891,7 @@ int qs_update_pracdata(CoreState *cs)
             q->piecepool[QRS_I4].flags = static_cast<Shiro::PieceDefinitionFlag>(q->piecepool[QRS_I4].flags & ~Shiro::PDNOWKICK);
             q->tetromino_only = 1;
             q->pentomino_only = 0;
-            request_fps(cs, Shiro::RefreshRates::g3);
+            cs->request_fps(Shiro::RefreshRates::g3);
             break;
         default:
             break;

@@ -313,8 +313,6 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
     cs->button_emergency_override = true;
 
     struct text_formatting fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-    //gfx_pushmessage(
-        //cs, "CONFIRM DELETE\nUNDO HISTORY?", 640 / 2 - 7 * 16, 480 / 2 - 16, MESSAGE_EMERGENCY, monofont_square, fmt, -1, button_emergency_inactive);
     cs->gfx.push(std::make_unique<Shiro::MessageEntity>(
         "CONFIRM DELETE\nUNDO HISTORY?",
         static_cast<size_t>(Shiro::GfxLayer::emergencyMessages),
@@ -323,13 +321,13 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
         *monofont_square,
         fmt,
         SIZE_MAX,
-        [cs] { return (bool)button_emergency_inactive(cs); }
+        [cs] { return cs->button_emergency_inactive(); }
     ));
 
     gfx_createbutton(
-        cs, "YES", 640 / 2 - 6 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_yes, button_emergency_inactive, NULL, 0xB0FFB0FF);
+        cs, "YES", 640 / 2 - 6 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_yes, [](CoreState* cs) { return (int)cs->button_emergency_inactive(); }, NULL, 0xB0FFB0FF);
     gfx_createbutton(
-        cs, "NO", 640 / 2 + 4 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_no, button_emergency_inactive, NULL, 0xFFA0A0FF);
+        cs, "NO", 640 / 2 + 4 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_no, [](CoreState* cs) { return (int)cs->button_emergency_inactive(); }, NULL, 0xFFA0A0FF);
 
     return 0;
 }
@@ -875,12 +873,12 @@ int qrs_input(game_t *g)
     if(p->state & (PSFALL | PSLOCK) && !(p->state & PSPRELOCKED))
     {
         q->active_piece_time++;
-        if(cs->pressed.left || (is_left_input_repeat(cs, 1 + p->speeds->das)))
+        if(cs->pressed.left || (cs->is_left_input_repeat(1 + p->speeds->das)))
         {
             qrs_move(g, p, MOVE_LEFT);
         }
 
-        if(cs->pressed.right || is_right_input_repeat(cs, 1 + p->speeds->das))
+        if(cs->pressed.right || cs->is_right_input_repeat(1 + p->speeds->das))
         {
             qrs_move(g, p, MOVE_RIGHT);
         }

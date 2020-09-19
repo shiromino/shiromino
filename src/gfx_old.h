@@ -84,12 +84,6 @@ int gfx_draw_emergency_bg_darken(CoreState *cs);
 //int gfx_brighten_texture(SDL_Texture *tex, Uint8 amt);
 // int gfx_darken_texture(SDL_Texture *tex, Uint8 amt);
 
-int gfx_pushmessage(CoreState *cs, const char *text, int x, int y, unsigned int flags, png_monofont *font, struct text_formatting *fmt, unsigned int counter, int (*delete_check)(CoreState *));
-int gfx_drawmessages(CoreState *cs, int type);
-
-int gfx_pushanimation(CoreState *cs, gfx_image *first_frame, int x, int y, int num_frames, int frame_multiplier, Uint32 rgba);
-int gfx_drawanimations(CoreState *cs, int type);
-
 int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*delete_check)(CoreState *), void *data, Uint32 rgba);
 int gfx_drawbuttons(CoreState *cs, int type);
 

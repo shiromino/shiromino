@@ -458,7 +458,7 @@ int menu_input(game_t *g)
         cs->text_cut = NULL;
     }
 
-    if((cs->pressed.up || is_up_input_repeat(cs, DAS)) && d->selection > 0)
+    if((cs->pressed.up || cs->is_up_input_repeat(DAS)) && d->selection > 0)
     {
         update = 1;
         for(i = d->selection - 1;; i--)
@@ -513,7 +513,7 @@ int menu_input(game_t *g)
         }
     }
 
-    if((cs->pressed.down || is_down_input_repeat(cs, DAS)) && (d->selection < d->numopts - 1))
+    if((cs->pressed.down || cs->is_down_input_repeat(DAS)) && (d->selection < d->numopts - 1))
     {
         update = 1;
         for(i = d->selection + 1;; i++)
@@ -578,14 +578,14 @@ int menu_input(game_t *g)
 
     if(d->is_paged)
     {
-        if((cs->pressed.left || is_left_input_repeat(cs, DAS)) && d->page > 0)
+        if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d->page > 0)
         {
             update = 1;
             d->selection = d->selection - d->page_length;
             d->page--;
         }
 
-        if((cs->pressed.right || is_right_input_repeat(cs, DAS)) && d->page < ((d->numopts - 1) / d->page_length))
+        if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d->page < ((d->numopts - 1) / d->page_length))
         {
             update = 1;
             d->selection = d->selection + d->page_length;
@@ -657,7 +657,7 @@ int menu_input(game_t *g)
             if(!d->is_paged)
             {
 
-                if((cs->pressed.left || is_left_input_repeat(cs, DAS)) && d2->selection > 0)
+                if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d2->selection > 0)
                 {
                     d2->selection--;
                     *(d2->param) = d2->vals[d2->selection];
@@ -665,7 +665,7 @@ int menu_input(game_t *g)
                         d->menu[d->selection].value_update_callback(cs);
                 }
 
-                if((cs->pressed.right || is_right_input_repeat(cs, DAS)) && d2->selection < (d2->num - 1))
+                if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d2->selection < (d2->num - 1))
                 {
                     d2->selection++;
                     *(d2->param) = d2->vals[d2->selection];
@@ -743,12 +743,12 @@ int menu_input(game_t *g)
 
             if(!d->is_paged)
             {
-                if((cs->pressed.left == 1 || is_left_input_repeat(cs, DAS)) && d6->selection > 0)
+                if((cs->pressed.left == 1 || cs->is_left_input_repeat(DAS)) && d6->selection > 0)
                 {
                     d6->selection--;
                 }
 
-                if((cs->pressed.right == 1 || is_right_input_repeat(cs, DAS)) && d6->selection < (d6->num - 1))
+                if((cs->pressed.right == 1 || cs->is_right_input_repeat(DAS)) && d6->selection < (d6->num - 1))
                 {
                     d6->selection++;
                 }
@@ -881,7 +881,7 @@ int mload_main(game_t *g, int val)
     Shiro::GameMultiOptionData *d6 = NULL;
     int i = 0;
 
-    request_fps(cs, Shiro::RefreshRates::menu);
+    cs->request_fps(Shiro::RefreshRates::menu);
 
     if(d->menu_id == MENU_ID_MAIN)
     {

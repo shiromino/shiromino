@@ -59,13 +59,13 @@ int TestSPM::input()
             spec->checkedRotate(field, *player.mino, spm_clockwise);
         }
 
-        if(cs.pressed.left || is_left_input_repeat(&cs, 1 + player.timings.das))
+        if(cs.pressed.left || cs.is_left_input_repeat(1 + player.timings.das))
         {
             spec->checkedShift(field, *player.mino, {-1, 0});
             /* moved_left = 1; */
         }
 
-        if(cs.pressed.right || is_right_input_repeat(&cs, 1 + player.timings.das))
+        if(cs.pressed.right || cs.is_right_input_repeat(1 + player.timings.das))
         {
             spec->checkedShift(field, *player.mino, {1, 0});
             /* moved_right = 1; */
