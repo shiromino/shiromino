@@ -214,8 +214,6 @@ CoreState::CoreState(Shiro::Settings& settings) :
     bg_r = 0u;
     bg_g = 0u;
     bg_b = 0u;
-    gfx_messages_max = 0;
-    gfx_buttons_max = 0;
 
     this->settings = settings;
     menu_input_override = 0;

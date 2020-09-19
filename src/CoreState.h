@@ -69,8 +69,6 @@ struct CoreState {
     Sint16 bg_r, bg_g, bg_b;
 
     std::vector<gfx_button> gfx_buttons;
-    std::size_t gfx_messages_max;
-    std::size_t gfx_buttons_max;
     // TODO: Replace all gfx_* code with the new Gfx system.
     Shiro::Gfx gfx;
 

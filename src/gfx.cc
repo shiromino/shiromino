@@ -142,8 +142,6 @@ int gfx_init(CoreState *cs)
 void gfx_quit(CoreState *cs)
 {
     cs->gfx_buttons.clear();
-    cs->gfx_messages_max = 0;
-    cs->gfx_buttons_max = 0;
 
     free(monofont_tiny);
     free(monofont_small);
@@ -239,8 +237,7 @@ int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int
     b.data = data;
     b.text_rgba_mod = rgba;
 
-    cs->gfx_buttons_max++;
-    cs->gfx_buttons.resize(cs->gfx_buttons_max);
+    cs->gfx_buttons.resize(cs->gfx_buttons.size() + 1);
     cs->gfx_buttons.push_back(b);
 
     return 0;
