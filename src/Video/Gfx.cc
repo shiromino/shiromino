@@ -4,7 +4,7 @@
  * Licensed under the MIT license; see the LICENSE-src file at the top level
  * directory for the full text of the license.
  */
-#include "Gfx/Gfx.h"
+#include "Video/Gfx.h"
 
 using namespace Shiro;
 using namespace std;
@@ -34,7 +34,9 @@ void Layers::clear() {
 
 Entity::~Entity() {}
 
-Gfx::Gfx(const Screen& screen) : screen(screen), layers(screen) {}
+Gfx::Gfx(const Screen& screen) :
+    screen(screen),
+    layers(screen) {}
 
 void Gfx::push(unique_ptr<Entity> entity) {
     entities.push_front(move(entity));

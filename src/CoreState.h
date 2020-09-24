@@ -4,8 +4,9 @@
 #include "DisplayMode.h"
 #include "Game.h"
 #include "GuiScreenManager.h"
-#include "Gfx/Gfx.h"
-#include "Gfx/Screen.h"
+#include "Video/Screen.h"
+#include "Video/Background.h"
+#include "Video/Gfx.h"
 #include "gfx_structures.h"
 #include "Input/KeyFlags.h"
 #include "Player.h"
@@ -72,10 +73,8 @@ struct CoreState {
 
     Shiro::Settings& settings;
     Shiro::AssetStore* assets;
-    SDL_Texture *bg;
-    SDL_Texture *bg_old;
-    Sint16 bg_r, bg_g, bg_b;
 
+    Shiro::Background bg;
     std::vector<gfx_button> gfx_buttons;
     // TODO: Replace all gfx_* code with the new Gfx system.
     Shiro::Gfx gfx;

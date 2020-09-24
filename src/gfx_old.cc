@@ -150,59 +150,6 @@ void gfx_quit(CoreState *cs)
     free(monofont_fixedsys);
 }
 
-int gfx_start_bg_fade_in(CoreState *cs, SDL_Texture* bg_new) {
-    if(!cs)
-        return -1;
-
-    if (bg_new) {
-        cs->bg_old = cs->bg;
-        cs->bg = bg_new;
-        cs->bg_r = -255;
-        cs->bg_g = -255;
-        cs->bg_b = -255;
-    }
-    else
-        return 1;
-
-    return 0;
-}
-
-void gfx_updatebg(CoreState* cs) {
-    if (cs->bg_r < 255) {
-        cs->bg_r += BG_FADE_RATE;
-        cs->bg_g += BG_FADE_RATE;
-        cs->bg_b += BG_FADE_RATE;
-    }
-    if (cs->bg_r > 255) {
-        cs->bg_r = 255;
-        cs->bg_g = 255;
-        cs->bg_b = 255;
-    }
-}
-
-void gfx_drawbg(CoreState *cs) {
-    if (cs->bg && cs->bg_r >= 0) {
-        SDL_SetTextureColorMod(cs->bg, cs->bg_r, cs->bg_g, cs->bg_b);
-        SDL_RenderCopy(cs->screen.renderer, cs->bg, NULL, NULL);
-    }
-    else if (cs->bg_old && cs->bg_r < 0) {
-        SDL_SetTextureColorMod(cs->bg_old, -cs->bg_r, -cs->bg_g, -cs->bg_b);
-        SDL_RenderCopy(cs->screen.renderer, cs->bg_old, NULL, NULL);
-    }
-}
-
-int gfx_draw_emergency_bg_darken(CoreState *cs)
-{
-    SDL_Texture *bg_darken = cs->assets->bg_darken.tex;
-    SDL_SetTextureColorMod(bg_darken, 0, 0, 0);
-    SDL_SetTextureAlphaMod(bg_darken, 210);
-    SDL_RenderCopy(cs->screen.renderer, bg_darken, NULL, NULL);
-    SDL_SetTextureColorMod(bg_darken, 255, 255, 255);
-    SDL_SetTextureAlphaMod(bg_darken, 255);
-
-    return 0;
-}
-
 /*
 int gfx_brighten_texture(SDL_Texture *tex, Uint8 amt)
 {
@@ -214,8 +161,6 @@ int gfx_darken_texture(SDL_Texture *tex, Uint8 amt)
 
 }
 */
-
-int gfx_draw_anim_bg() { return 0; }
 
 int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*delete_check)(CoreState *),
                      void *data, Uint32 rgba)

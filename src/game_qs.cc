@@ -3,7 +3,7 @@
 #include "game_menu.h"
 #include "game_qs.h"
 #include "GameType.h"
-#include "Gfx/MessageEntity.h"
+#include "Video/MessageEntity.h"
 #include "gfx_old.h"
 #include "gfx_qs.h"
 #include "QRS0.h"
@@ -1039,7 +1039,7 @@ int qs_game_init(game_t *g)
 
     if(!q->pracdata)
     {
-        gfx_start_bg_fade_in(g->origin, g->origin->assets->bg[bgnumber].tex);
+        g->origin->bg.transition(g->origin->assets->bg[bgnumber]);
 
         if(q->mode_type == MODE_G2_DEATH)
         {
@@ -2674,7 +2674,7 @@ int qs_process_lockflash(game_t *g)
                     cs->assets->newsection->play(cs->settings);
                     if(q->section < 13)
                     {
-                        gfx_start_bg_fade_in(cs, cs->assets->bg[q->section].tex);
+                        cs->bg.transition(cs->assets->bg[q->section]);
                     }
                 }
             }

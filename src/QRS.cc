@@ -2,7 +2,7 @@
 #include "game_menu.h" // questionable dependency - TODO look into these
 #include "game_qs.h"   // questionable dependency
 #include "GameType.h"
-#include "Gfx/MessageEntity.h"
+#include "Video/MessageEntity.h"
 #include "gfx_old.h"   // questionable dependency
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"

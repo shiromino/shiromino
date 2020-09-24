@@ -1,4 +1,4 @@
-#include "Gfx/Screen.h"
+#include "Video/Screen.h"
 #include "Debug.h"
 #include <iostream>
 

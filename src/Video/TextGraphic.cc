@@ -4,7 +4,7 @@
  * Licensed under the MIT license; see the LICENSE-src file at the top level
  * directory for the full text of the license.
  */
-#include "Gfx/TextGraphic.h"
+#include "Video/TextGraphic.h"
 #include "gfx_old.h"
 #include "stringtools.h"
 

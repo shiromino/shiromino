@@ -5,7 +5,7 @@
  * directory for the full text of the license.
  */
 #pragma once
-#include "Gfx/Gfx.h"
+#include "Video/Gfx.h"
 #include "gfx_structures.h"
 #include "SDL.h"
 #include <memory>

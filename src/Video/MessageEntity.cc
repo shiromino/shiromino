@@ -4,8 +4,8 @@
  * Licensed under the MIT license; see the LICENSE-src file at the top level
  * directory for the full text of the license.
  */
-#include "Gfx/MessageEntity.h"
-#include "Gfx/TextGraphic.h"
+#include "Video/MessageEntity.h"
+#include "Video/TextGraphic.h"
 
 using namespace Shiro;
 using namespace std;

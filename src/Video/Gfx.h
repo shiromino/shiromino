@@ -5,16 +5,17 @@
  * directory for the full text of the license.
  */
 #pragma once
-#include "Gfx/Screen.h"
+#include "Video/Screen.h"
+#include "gfx_structures.h"
 #include <vector>
 #include <forward_list>
 #include <memory>
 
 // TODO: Create a struct type for portable colors and convert to backend format in each backend's Graphic subclass.
-#define R(N) ((N & 0xFF000000) / 0x1000000)
-#define G(N) ((N & 0x00FF0000) / 0x0010000)
-#define B(N) ((N & 0x0000FF00) / 0x0000100)
-#define A(N) (N & 0x000000FF)
+#define R(C) (((C) & 0xFF000000) >> 24)
+#define G(C) (((C) & 0x00FF0000) >> 16)
+#define B(C) (((C) & 0x0000FF00) >>  8)
+#define A(C) (((C) & 0x000000FF) >>  0)
 
 /**
  * When put into an Entity subclass, this allows creating entities via

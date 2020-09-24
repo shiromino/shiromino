@@ -9,6 +9,7 @@
 #include "SDL_mixer.h"
 #include <filesystem>
 #include <iostream>
+
 namespace Shiro {
     Music::Music() : volume(0.0f), data(nullptr) {
     }

@@ -154,6 +154,7 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 CoreState::CoreState(Shiro::Settings& settings) :
     screen(Shiro::Version::DESCRIPTOR, settings.videoScale * 640u, settings.videoScale * 480u),
     settings(settings),
+    bg(screen),
     gfx(screen)
 {
     fps = Shiro::RefreshRates::menu;
@@ -199,11 +200,7 @@ CoreState::CoreState(Shiro::Settings& settings) :
     mouse_left_down = 0;
     mouse_right_down = 0;
 
-    bg = NULL;
-    bg_old = NULL;
-    bg_r = 0u;
-    bg_g = 0u;
-    bg_b = 0u;
+    bg.transition();
 
     this->settings = settings;
     menu_input_override = false;
@@ -369,11 +366,7 @@ bool CoreState::init() {
         check(Gui_Init(screen.renderer, NULL), "Gui_Init() returned failure\n");
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
 
-        bg = assets->bg_temp.tex;
-        bg_old = bg;
-        bg_r = 255;
-        bg_g = 255;
-        bg_b = 255;
+        bg.transition(assets->bg_temp);
         // blank = assets->blank.tex;
 
         // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
@@ -517,7 +510,7 @@ void CoreState::run() {
                     free(p1game);
                     p1game = NULL;
 
-                    gfx_start_bg_fade_in(this, assets->bg_temp.tex);
+                    bg.transition(assets->bg_temp);
                     break;
                 }
             }
@@ -544,7 +537,7 @@ void CoreState::run() {
                 menu->frame_counter++;
             }
 
-            gfx_updatebg(this);
+            bg.update();
 
             // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
             struct OldGfxGraphic : public Shiro::Graphic {
@@ -599,14 +592,6 @@ void CoreState::run() {
                 [this] { gfx_drawbuttons(this, 0); }
             ));
 
-            // TODO: Create an entity for the background darkening, then remove this.
-            if (button_emergency_override) {
-                gfx.push(std::make_unique<OldGfxEntity>(
-                    static_cast<size_t>(Shiro::GfxLayer::emergencyBgDarken),
-                    [this] { gfx_draw_emergency_bg_darken(this); }
-                ));
-            }
-
             // TODO: Create entities in the code for emergency buttons, then remove this.
             gfx.push(std::make_unique<OldGfxEntity>(
                 static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
@@ -646,8 +631,7 @@ void CoreState::run() {
         SDL_SetRenderTarget(screen.renderer, screen.target_tex);
         SDL_RenderClear(screen.renderer);
 
-        gfx_drawbg(this);
-
+        bg.draw();
         gfx.draw();
 
 #ifdef ENABLE_OPENGL_INTERPOLATION

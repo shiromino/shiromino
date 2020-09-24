@@ -5,7 +5,7 @@
  * directory for the full text of the license.
  */
 // TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the backend of Graphic subclasses.
-#include "Gfx/Animation.h"
+#include "Video/Animation.h"
 
 using namespace Shiro;
 using namespace std;

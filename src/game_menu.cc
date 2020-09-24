@@ -375,11 +375,7 @@ int menu_init(game_t *g)
     SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 255);
     SDL_SetRenderTarget(g->origin->screen.renderer, NULL);
 
-    g->origin->bg = g->origin->assets->bg_temp.tex;
-    g->origin->bg_old = g->origin->bg;
-    g->origin->bg_r = 255;
-    g->origin->bg_g = 255;
-    g->origin->bg_b = 255;
+    g->origin->bg.transition(g->origin->assets->bg_temp);
 
     return 0;
 }
@@ -896,11 +892,7 @@ int mload_main(game_t *g, int val)
         cs->p1game = NULL;
     }
 
-    cs->bg = cs->assets->bg_temp.tex;
-    cs->bg_old = cs->bg;
-    cs->bg_r = 255;
-    cs->bg_g = 255;
-    cs->bg_b = 255;
+    cs->bg.transition(cs->assets->bg_temp);
 
     //d->menu.resize(16, menu_opt());
     d->menu_id = MENU_ID_MAIN;
@@ -1154,11 +1146,7 @@ int mload_practice(game_t *g, int val)
     else
         pracdata_mirror_existed = 1;
 
-    cs->bg = NULL;
-    cs->bg_old = NULL;
-    cs->bg_r = 0;
-    cs->bg_g = 0;
-    cs->bg_b = 0;
+    cs->bg.transition();
 
     d->menu.resize(MENU_PRACTICE_NUMOPTS);
     d->menu_id = MENU_ID_PRACTICE;

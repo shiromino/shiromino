@@ -81,20 +81,22 @@ target_sources(${GAME_EXECUTABLE}
 		src/game_menu.h
 		src/game_qs.cc
 		src/game_qs.h
-		src/Gfx/Animation.cc
-		src/Gfx/Animation.h
-		src/Gfx/Gfx.cc
-		src/Gfx/Gfx.h
-		src/Gfx/MessageEntity.cc
-		src/Gfx/MessageEntity.h
-		src/Gfx/Screen.cc
-		src/Gfx/Screen.h
-		src/Gfx/TextGraphic.cc
-		src/Gfx/TextGraphic.h
+		src/Video/Animation.cc
+		src/Video/Animation.h
+		src/Video/Background.cc
+		src/Video/Background.h
+		src/Video/Gfx.cc
+		src/Video/Gfx.h
+		src/Video/MessageEntity.cc
+		src/Video/MessageEntity.h
+		src/Video/Screen.cc
+		src/Video/Screen.h
+		src/Video/TextGraphic.cc
+		src/Video/TextGraphic.h
 		src/Main/Global.cc
 		src/Main/Global.h
 		src/Main/Main.cc
-		src/gfx.cc
+		src/gfx_old.cc
 		src/gfx_old.h
 		src/gfx_helpers.cc
 		src/gfx_helpers.h

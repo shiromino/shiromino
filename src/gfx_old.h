@@ -51,16 +51,10 @@
 
 #define RGBA_DEFAULT 0xFFFFFFFF
 #define RGBA_OUTLINE_DEFAULT 0x000000FF
-#define R(N) ((N & 0xFF000000) / 0x1000000)
-#define G(N) ((N & 0x00FF0000) / 0x0010000)
-#define B(N) ((N & 0x0000FF00) / 0x0000100)
-#define A(N) (N & 0x000000FF)
 
 #define RGBA_NEGATIVE(N) (~((N) & 0xFFFFFF00))
 
 #define RAINBOW(Z, A, B) (127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((Z - B) % A) / (double)(A)) )))
-
-#define BG_FADE_RATE 25
 
 extern png_monofont *monofont_tiny;
 extern png_monofont *monofont_small;
@@ -72,11 +66,6 @@ struct text_formatting text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 o
 
 int gfx_init(CoreState *cs);
 void gfx_quit(CoreState *cs);
-
-int gfx_start_bg_fade_in(CoreState *cs, SDL_Texture* bg_new);
-void gfx_updatebg(CoreState* cs);
-void gfx_drawbg(CoreState *cs);
-int gfx_draw_emergency_bg_darken(CoreState *cs);
 
 // these are a little bit hacky... just add to each RGB value of the pixels
 // mostly would use these for animations

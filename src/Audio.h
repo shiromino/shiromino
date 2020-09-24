@@ -10,8 +10,6 @@
 #include <filesystem>
 #include <string>
 
-struct CoreState;
-
 namespace Shiro {
     // TODO: Allow selecting playback channel?
 
