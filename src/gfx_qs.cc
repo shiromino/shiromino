@@ -867,7 +867,7 @@ int gfx_qs_lineclear(game_t *g, int row)
         {
             Shiro::AnimationEntity::push(g->origin->gfx,
                 frames,
-                static_cast<size_t>(Shiro::GfxLayer::animations),
+                Shiro::GfxLayer::animations,
                 q->field_x + (i * 16),
                 q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
                 5,
@@ -879,7 +879,7 @@ int gfx_qs_lineclear(game_t *g, int row)
         {
             Shiro::AnimationEntity::push(g->origin->gfx,
                 frames,
-                static_cast<size_t>(Shiro::GfxLayer::animations),
+                Shiro::GfxLayer::animations,
                 q->field_x + (i * 16) + 16,
                 q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
                 5,

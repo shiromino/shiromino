@@ -575,7 +575,7 @@ void CoreState::run() {
             // Or perhaps have the game and menu code push entities, and no longer
             // have explicit game and menu drawing functions.
             gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::base),
+                Shiro::GfxLayer::base,
                 [this] {
                     if (p1game) {
                         p1game->draw(p1game);
@@ -588,13 +588,13 @@ void CoreState::run() {
 
             // TODO: Create entities in the code for buttons, then remove this.
             gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::buttons),
+                Shiro::GfxLayer::buttons,
                 [this] { gfx_drawbuttons(this, 0); }
             ));
 
             // TODO: Create entities in the code for emergency buttons, then remove this.
             gfx.push(std::make_unique<OldGfxEntity>(
-                static_cast<size_t>(Shiro::GfxLayer::emergencyButtons),
+                Shiro::GfxLayer::emergencyButtons,
                 [this] { gfx_drawbuttons(this, EMERGENCY_OVERRIDE); }
             ));
 

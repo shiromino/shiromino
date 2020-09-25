@@ -33,16 +33,28 @@ static inline void push(Shiro::Gfx& gfx, Args&&... args) { \
 
 namespace Shiro {
     // TODO: Consider moving this somewhere when there's more than just one basic screen type, where each screen type needs its own layout of layers.
-    enum class GfxLayer {
-        base, // For the game or menu.
-        buttons,
-        messages,
-        animations,
-        emergencyBgDarken,
-        emergencyButtons,
-        emergencyMessages,
-        emergencyAnimations
-    };
+    /**
+     * This allows scoped enum constants just like `enum class GfxLayer`, but
+     * also allows the constants to be implicitly cast to integral values. For
+     * this application, it's acceptable to not use the type safety guarantee of
+     * `enum class`, because these really can be interpreted as ordered numeric
+     * indices, since the Layers class expects layer numbers. This also allows
+     * defining a base layer number and offsets from that layer, with those
+     * offsets being added to the base layer's constant.
+     * -Brandon McGriff
+     */
+    namespace GfxLayer {
+        enum type {
+            base, // For the game or menu.
+            buttons,
+            messages,
+            animations,
+            emergencyBgDarken,
+            emergencyButtons,
+            emergencyMessages,
+            emergencyAnimations
+        };
+    }
 
     struct Graphic {
         virtual ~Graphic();

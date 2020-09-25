@@ -315,7 +315,7 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
     struct text_formatting fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
     cs->gfx.push(std::make_unique<Shiro::MessageEntity>(
         "CONFIRM DELETE\nUNDO HISTORY?",
-        static_cast<size_t>(Shiro::GfxLayer::emergencyMessages),
+        Shiro::GfxLayer::emergencyMessages,
         640 / 2 - 7 * 16,
         480 / 2 - 16,
         *monofont_square,

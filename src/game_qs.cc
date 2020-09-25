@@ -1283,7 +1283,7 @@ int qs_game_frame(game_t *g)
 
                 MessageEntity::push(cs->gfx,
                     "READY",
-                    static_cast<size_t>(GfxLayer::messages),
+                    GfxLayer::messages,
                     (4 * 16 + 8 + q->field_x),
                     (11 * 16 + q->field_y),
                     *monofont_fixedsys,
@@ -1294,7 +1294,7 @@ int qs_game_frame(game_t *g)
 #if 0
                 cs->gfx.push(make_unique<MessageEntity>(
                     "READY",
-                    static_cast<size_t>(GfxLayer::messages),
+                    GfxLayer::messages,
                     (4 * 16 + 8 + q->field_x),
                     (11 * 16 + q->field_y),
                     *monofont_fixedsys,
@@ -1312,7 +1312,7 @@ int qs_game_frame(game_t *g)
                 fmt.rgba = 0xFF0000FF;
                 MessageEntity::push(cs->gfx,
                     "GO",
-                    static_cast<size_t>(GfxLayer::messages),
+                    GfxLayer::messages,
                     (6 * 16 + q->field_x),
                     (11 * 16 + q->field_y),
                     *monofont_fixedsys,
@@ -1323,7 +1323,7 @@ int qs_game_frame(game_t *g)
 #if 0
                 cs->gfx.push(make_unique<MessageEntity>(
                     "GO",
-                    static_cast<size_t>(GfxLayer::messages),
+                    GfxLayer::messages,
                     (6 * 16 + q->field_x),
                     (11 * 16 + q->field_y),
                     *monofont_fixedsys,
