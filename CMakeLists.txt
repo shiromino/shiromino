@@ -69,6 +69,8 @@ endif()
 #
 target_sources(${GAME_EXECUTABLE}
 	PRIVATE
+		src/Asset/Asset.cc
+		src/Asset/Asset.h
 		src/AssetStore.h
 		src/Audio.cc
 		src/Audio.h
