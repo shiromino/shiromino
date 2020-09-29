@@ -5,9 +5,7 @@
  * directory for the full text of the license.
  */
 #pragma once
-#include "Video/Screen.h"
 #include <utility>
-#include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -22,55 +20,82 @@ namespace Shiro {
     };
 
     class Asset;
+
     class AssetLoader {
     public:
         AssetLoader() = delete;
 
-        AssetLoader(const std::filesystem::path& basePath, const AssetType type);
         virtual ~AssetLoader();
 
-        virtual bool load(Asset& asset);
-        virtual void unload(Asset& asset);
-        virtual AssetType getType() const;
-
-    private:
-        const std::filesystem::path basePath;
-        const AssetType type;
+        virtual bool load(Asset& asset) const = 0;
+        virtual void unload(Asset& asset) const = 0;
+        virtual AssetType getType() const = 0;
     };
 
     class Asset {
-        friend AssetLoader;
-
     public:
         Asset() = delete;
 
-        Asset(const std::shared_ptr<AssetLoader> loader, const std::string& name);
+        /**
+         * Don't add any other constructors to subclasses, just use this one. If
+         * an Asset subclass needs to do some more elaborate loading, like
+         * loading multiple files for its associated Asset subclass, then the
+         * loader can manage its own Asset instances for the files it loads for
+         * the asset.
+         */
+        Asset(std::shared_ptr<AssetLoader> loader, const std::string& name);
         virtual ~Asset();
 
-        virtual AssetType getType() const;
+        virtual AssetType getType() const = 0;
+
+        const std::string name;
 
     private:
         const std::shared_ptr<AssetLoader> loader;
-        const std::string name;
-        bool loaded;
+    };
+
+    /**
+     * AssetFactory subclasses are considered "platform specific", so they can
+     * define whatever constructors they want, with platform-specific code
+     * handling how they're created. But each platform should keep the same name
+     * for the same type of factory, just having platform-specific details
+     * internally, so the platform-independent code can keep using assets with
+     * the same code for all platforms.
+     */
+    class AssetFactory {
+    public:
+        AssetFactory() = delete;
+
+        virtual ~AssetFactory();
+
+        /**
+         * Creates assets. This method handles providing an AssetLoader shared
+         * pointer to the Asset; it's impossible for an AssetLoader instance to
+         * provide its shared pointer to an Asset, so a factory class has to do
+         * it. An AssetFactory has freedom with how an AssetLoader is provided
+         * to Assets; it can construct a new AssetLoader for each asset
+         * instance, or hold a shared pointer to an AssetLoader that's shared
+         * with all assets it creates.
+         */
+        virtual std::shared_ptr<Asset> create(const std::pair<const AssetType, const std::string>& assetPair) const = 0;
     };
 
     class AssetManager {
     public:
         AssetManager() = delete;
 
-        AssetManager(const std::initializer_list<std::pair<AssetType, std::shared_ptr<AssetLoader>>>& loaders);
+        AssetManager(const std::initializer_list<std::pair<const Shiro::AssetType, std::shared_ptr<Shiro::AssetFactory>>>& factories);
 
         /**
          * Call with a list of asset types and names to preload them, so the
          * assets are immediately available when requesting them later. Using
-         * this isn't required, because the get() function will load assets
-         * on-demand if they're not yet loaded. Returns the number of assets
-         * successfully loaded; if the number returned is less than the length
-         * of the list argument, then some assets weren't successfully loaded.
+         * this isn't required, because operator[] will load assets on-demand if
+         * they're not yet loaded. Returns the number of assets successfully
+         * loaded; if the number returned is less than the length of the list
+         * argument, then some assets weren't successfully loaded.
          * TODO: Come up with a way to provide the preload status to the user of an AssetManager. Might require completely changing how preloading is done, such as no longer having this method.
          */
-        std::size_t preload(const std::initializer_list<std::pair<AssetType, std::string>>& assetPairs);
+        std::size_t preload(const std::initializer_list<std::pair<const AssetType, const std::string>>& assetPairs);
 
         /**
          * Unloads all currently loaded assets.
@@ -85,11 +110,13 @@ namespace Shiro {
          * Will return an empty shared_ptr if there's multiple files with the
          * same name but different supported extensions on disk.
          */
-        std::shared_ptr<Asset> operator[](const std::pair<AssetType, std::string>& assetPair);
+        std::shared_ptr<Asset> operator[](const std::pair<const AssetType, const std::string>& assetPair);
 
     private:
-        const std::unordered_map<AssetType, std::shared_ptr<AssetLoader>> loaders;
-        // TODO: Define hash code function for this map's key type.
-        std::unordered_map<std::pair<AssetType, std::string>, std::shared_ptr<Asset>> assets;
+        std::unordered_map<const AssetType, std::shared_ptr<AssetFactory>> factories;
+        struct AssetsKeyHash {
+            std::size_t operator()(const std::pair<const AssetType, const std::string>& key) const noexcept;
+        };
+        std::unordered_map<std::pair<const AssetType, const std::string>, std::shared_ptr<Asset>, AssetsKeyHash> assets;
     };
 }
