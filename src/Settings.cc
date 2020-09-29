@@ -46,7 +46,7 @@ bool Shiro::Settings::init(const int argc, const char* const argv[]) {
         if (firstArgument == "--configuration-file" || firstArgument == "-c") {
             configurationPath = std::filesystem::path(secondArgument);
             if (!std::filesystem::exists(configurationPath)) {
-                log_err("Couldn't find configuration file `%s`, aborting", configurationPath.c_str());
+                std::cerr << "Couldn't find configuration file `" << configurationPath.string() << "`, aborting" << std::endl;
                 return false;
             }
             basePath = std::filesystem::canonical(configurationPath).remove_filename();
