@@ -1,5 +1,6 @@
 #include "Settings.h"
 #include "Debug.h"
+#include "SDL.h"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -27,17 +28,18 @@ Shiro::Settings::Settings() :
     playerName("ARK") {}
 
 bool Shiro::Settings::init(const int argc, const char* const argv[]) {
-    /* TODO: Use an argument handler library here */
-    auto executablePath = std::filesystem::path(argv[0]);
-    basePath = std::filesystem::canonical(executablePath.remove_filename());
+    char* basePathSDL2 = SDL_GetBasePath();
+    basePath = basePathSDL2;
+    SDL_free(basePathSDL2);
     if (argc == 1) {
         configurationPath = basePath / "shiromino.ini";
         if (!std::filesystem::exists(configurationPath)) {
-            log_err("Couldn't find configuration file `%s`, aborting", configurationPath.c_str());
+            std::cerr << "Couldn't find configuration file `" << configurationPath.string() << "`, aborting" << std::endl;
             return false;
         }
         read(configurationPath.string());
     }
+    /* TODO: Use an argument handler library here */
     else if (argc == 3) {
         const auto firstArgument = std::string(argv[1]);
         const auto secondArgument = std::string(argv[2]);
