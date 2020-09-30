@@ -28,9 +28,7 @@ Shiro::Settings::Settings() :
     playerName("ARK") {}
 
 bool Shiro::Settings::init(const int argc, const char* const argv[]) {
-    char* basePathSDL2 = SDL_GetBasePath();
-    basePath = basePathSDL2;
-    SDL_free(basePathSDL2);
+    basePath = std::filesystem::current_path();
     if (argc == 1) {
         configurationPath = basePath / "shiromino.ini";
         if (!std::filesystem::exists(configurationPath)) {
@@ -62,8 +60,8 @@ bool Shiro::Settings::init(const int argc, const char* const argv[]) {
         return false;
     }
 
-    std::cerr << "Configuration file: " << configurationPath << std::endl;
-    std::cerr << "Base path: " << basePath << std::endl;
+    std::cerr << "Configuration file: " << configurationPath.string() << std::endl;
+    std::cerr << "Base path: " << basePath.string() << std::endl;
 
     return true;
 }

@@ -1,4 +1,5 @@
 #include "CoreState.h"
+#include "Asset/Sfx.h"
 #include "Debug.h"
 #include "definitions.h"
 #include "DisplayMode.h"
@@ -154,6 +155,10 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 CoreState::CoreState(Shiro::Settings& settings) :
     screen(Shiro::Version::DESCRIPTOR, settings.videoScale * 640u, settings.videoScale * 480u),
     settings(settings),
+    assetMgr({
+        { Shiro::AssetType::sfx, new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio") }
+    }),
+    prerotate(static_cast<Shiro::SfxAsset&>(assetMgr[{Shiro::AssetType::sfx, "prerotate"}])),
     bg(screen),
     gfx(screen)
 {

@@ -1,4 +1,5 @@
 #include "CoreState.h"
+#include "Asset/Sfx.h"
 #include "game_menu.h" // questionable dependency - TODO look into these
 #include "game_qs.h"   // questionable dependency
 #include "GameType.h"
@@ -1110,7 +1111,7 @@ int qrs_irs(game_t *g)
         p->orient = 0;
     else if(direction)
     {
-        g->origin->assets->prerotate->play(g->origin->settings);
+        g->origin->prerotate.play(g->origin->settings);
     }
 
     return 0;
