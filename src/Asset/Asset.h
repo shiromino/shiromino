@@ -84,7 +84,11 @@ namespace Shiro {
         Asset& operator[](const std::pair<const AssetType, const std::filesystem::path>& assetPair);
 
     private:
-        std::unordered_map<const AssetType, AssetLoader*> loaders;
+        // I found out that if the key type is const for unordered_map, Visual
+        // Studio generates some weird errors, despite it working fine with GCC
+        // and Clang. So just keep key types for unordered_map not const.
+        // -Brandon McGriff
+        std::unordered_map<AssetType, AssetLoader*> loaders;
         struct AssetsKeyHash {
             std::size_t operator()(const std::pair<const AssetType, const std::filesystem::path>& key) const noexcept;
         };
