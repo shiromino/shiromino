@@ -137,20 +137,20 @@ void g123_seeds_init()
 //     unsigned int i = 0;
 //     uint32_t s1_tmp_forward = s1;
 //     uint32_t s1_tmp_backward = s1;
-// 
+//
 //     for(i = 0; i < max_gap; i++) {
 //         s1_tmp_forward = g2_rand(s1_tmp_forward);
 //         if(s1_tmp_forward == s2)
 //             return 1;
-// 
+//
 //         s1_tmp_backward = g2_unrand(s1_tmp_backward);
 //         if(s1_tmp_backward == s2)
 //             return 1;
 //     }
-// 
+//
 //     return 0;
 // }
-// 
+//
 // int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
 // {
 //     unsigned int i = 0;
@@ -159,7 +159,7 @@ void g123_seeds_init()
 //         if(a == b)
 //             return 1;
 //     }
-// 
+//
 //     return 0;
 // }
 
@@ -706,6 +706,8 @@ piece_id histrand_get_next(struct randomizer *r)
             // find which segment p is in
             if(p >= (long double)(sum) && p < (long double)(sum + temp_weights[i]))
             {
+                free(temp_weights);
+                free(histogram);
                 return i;
             }
             else

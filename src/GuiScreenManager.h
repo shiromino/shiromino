@@ -12,6 +12,12 @@ public:
         currentScreen = NULL;
     }
 
+    ~GuiScreenManager() {
+        for (const auto& screen : screens) {
+            delete screen.second;
+        }
+    }
+
     void addScreen(std::string name, GuiScreen *screen)
     {
         screens[name] = screen;

@@ -33,10 +33,12 @@ GuiWindow::GuiWindow(CoreState *origin, std::string title, BitFont *titleFont, s
         SDL_TEXTUREACCESS_TARGET,
         destRect.w, destRect.h);
 
-    uint32_t *pixels = (uint32_t *)malloc(640 * 480 * sizeof(uint32_t));
-    memset(pixels, 0, 640 * 480 * 4);
-
-    SDL_UpdateTexture(canvas, NULL, (void *)pixels, 640 * 4);
+    {
+        void* pixels = malloc(640 * 480 * sizeof(uint32_t));
+        memset(pixels, 0, 640 * 480 * sizeof(uint32_t));
+        SDL_UpdateTexture(canvas, NULL, pixels, 640 * sizeof(uint32_t));
+        free(pixels);
+    }
 
     SDL_SetTextureBlendMode(canvas, SDL_BLENDMODE_BLEND);
 

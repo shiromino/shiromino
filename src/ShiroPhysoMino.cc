@@ -6,11 +6,6 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-ShiroPhysoMino::~ShiroPhysoMino()
-{
-    delete field;
-    delete timer;
-}
 
 int TestSPM::init()
 {
@@ -35,9 +30,10 @@ int TestSPM::init()
     return 0;
 }
 
-int TestSPM::quit()
-{
-    return 0;
+TestSPM::~TestSPM() {
+    delete field;
+    delete timer;
+    delete rep;
 }
 
 int TestSPM::input()

@@ -9,7 +9,7 @@
 class ShiroPhysoMino : public Game {
 public:
     ShiroPhysoMino(CoreState& cs) : Game(cs) {}
-    virtual ~ShiroPhysoMino();
+    ~ShiroPhysoMino() {}
 
 protected:
     SPM_Spec *spec;
@@ -42,6 +42,15 @@ struct SPM_Player {
         minoSeqIndex = 0;
     }
 
+    ~SPM_Player() {
+        delete randomizer;
+        delete mino;
+        for (const auto* mino : previews) {
+            delete mino;
+        }
+        delete hold;
+    }
+
     SPM_Randomizer *randomizer;
 
     ActivatedPolyomino *mino;
@@ -63,8 +72,6 @@ public:
         : ShiroPhysoMino(cs) {
         this->spec = spec;
 
-        player.randomizer = new G3_Randomizer;
-
         field = new Shiro::Grid(spec->fieldW, spec->fieldH);
         fieldPos = {48, 60};
         timer = new Shiro::Timer(60.0);
@@ -74,8 +81,9 @@ public:
         gamePhase = spm_gameplay;
     }
 
+    ~TestSPM();
+
     int init();
-    int quit();
     int input();
     int frame();
     int draw();

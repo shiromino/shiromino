@@ -180,6 +180,7 @@ void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
 
         const int ret = sqlite3_step(sql);
         check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(records->db));
+        dispose_raw_replay(replayData);
 
         std::cerr << "Wrote replay " << replayLen << ": " << replayDescriptor << std::endl;
     }

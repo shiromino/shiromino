@@ -190,4 +190,4 @@ uint8_t *generate_raw_replay(struct replay *r, size_t *out_replayLength)
     return buffer;
 }
 
-void dispose_raw_replay(void *data) { free(data); }
+void dispose_raw_replay(uint8_t *buffer) { free(buffer); }

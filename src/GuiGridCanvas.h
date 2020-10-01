@@ -29,20 +29,21 @@ public:
 
     ~GuiGridCanvas()
     {
-        for(auto g : undoBuffer)
-        {
+        delete cells;
+        cells = nullptr;
+
+        for (const auto* g : undoBuffer) {
             delete g;
         }
+        undoBuffer.clear();
 
-        for(auto g : redoBuffer)
-        {
+        for (const auto* g : redoBuffer) {
             delete g;
         }
+        redoBuffer.clear();
 
-        if(clipboard)
-        {
-            delete clipboard;
-        }
+        delete clipboard;
+        clipboard = nullptr;
     }
 
     void draw();

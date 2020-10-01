@@ -59,7 +59,8 @@ void qrsdata_destroy(qrsdata *q)
     if(!q)
         return;
 
-    // if(q->p1->def) piecedef_destroy(q->p1->def);
+    randomizer_destroy(q->randomizer);
+    delete q->p1->def;
     free(q->p1);
     delete q->p1counters;
 
@@ -69,6 +70,7 @@ void qrsdata_destroy(qrsdata *q)
     }
 
     delete q->hold;
+
     delete q;
 }
 

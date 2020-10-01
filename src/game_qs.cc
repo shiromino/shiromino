@@ -1185,6 +1185,9 @@ int qs_game_quit(game_t *g)
 
     qrsdata *q = (qrsdata *)g->data;
 
+    free(q->p1->old_ys);
+    free(q->p1->old_xs);
+
     if (g->field) {
         delete g->field;
     }

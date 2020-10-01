@@ -247,6 +247,7 @@ struct SPM_frameCounters
 class Polyomino {
 public:
     Polyomino() {}
+    virtual ~Polyomino() {}
 
     template<const std::size_t rotationWidth, const std::size_t rotationHeight>
     Polyomino(const std::array<std::array<std::array<bool, rotationWidth>, rotationHeight>, 4>& rotationTables) {
@@ -266,6 +267,8 @@ public:
         : ID(ID), position(position), physicState(spm_physic_absent), orientation(spm_flat) {
         rotationTables = p.rotationTables;
     }
+
+    ~ActivatedPolyomino() {}
 
     const Shiro::Grid& currentRotationTable()
     {
@@ -296,6 +299,8 @@ public:
 
 class SPM_Spec {
 public:
+    virtual ~SPM_Spec() {}
+
     virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino);
     virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino, std::pair<int, int>& pos);
     virtual bool isGrounded(Shiro::Grid *field, ActivatedPolyomino& mino);

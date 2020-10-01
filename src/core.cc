@@ -296,6 +296,8 @@ CoreState::~CoreState() {
         menu = NULL;
     }
 
+    delete screenManager;
+
     /*for(int i = 0; i < 10; i++) {
        if(g2_bgs[i])
           gfx_animation_destroy(g2_bgs[i]);
