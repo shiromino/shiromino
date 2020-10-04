@@ -35,6 +35,7 @@
 #include <deque>
 #include <algorithm>
 #include <functional>
+#include <utility>
 #ifdef ENABLE_OPENGL_INTERPOLATION
 #define GL_GLEXT_PROTOTYPES
 #include "glad/glad.h"
@@ -155,10 +156,6 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 CoreState::CoreState(Shiro::Settings& settings) :
     screen(Shiro::Version::DESCRIPTOR, settings.videoScale * 640u, settings.videoScale * 480u),
     settings(settings),
-    assetMgr({
-        { Shiro::AssetType::sfx, new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio") }
-    }),
-    prerotate(static_cast<Shiro::SfxAsset&>(assetMgr[{Shiro::AssetType::sfx, "prerotate"}])),
     bg(screen),
     gfx(screen)
 {
@@ -267,12 +264,6 @@ CoreState::~CoreState() {
 #include "music.h"
 #undef MUSIC
 
-#define SFX(name) delete assets->name;
-#define SFX_ARRAY(name, i) delete assets->name[i];
-#include "sfx.h"
-#undef SFX_ARRAY
-#undef SFX
-
         delete assets;
     }
 
@@ -313,6 +304,38 @@ bool CoreState::init() {
     }
 
     try {
+        assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio")));
+
+        assetMgr.preload({
+            {Shiro::AssetType::sfx, "menu_choose"},
+
+            {Shiro::AssetType::sfx, "ready"},
+            {Shiro::AssetType::sfx, "go"},
+
+            {Shiro::AssetType::sfx, "prerotate"},
+            {Shiro::AssetType::sfx, "land"},
+            {Shiro::AssetType::sfx, "lock"},
+            {Shiro::AssetType::sfx, "lineclear"},
+            {Shiro::AssetType::sfx, "dropfield"},
+
+            {Shiro::AssetType::sfx, "pieces0"},
+            {Shiro::AssetType::sfx, "pieces1"},
+            {Shiro::AssetType::sfx, "pieces2"},
+            {Shiro::AssetType::sfx, "pieces3"},
+            {Shiro::AssetType::sfx, "pieces4"},
+            {Shiro::AssetType::sfx, "pieces5"},
+            {Shiro::AssetType::sfx, "pieces6"},
+
+            {Shiro::AssetType::sfx, "newsection"},
+            {Shiro::AssetType::sfx, "medal"},
+            {Shiro::AssetType::sfx, "gradeup"} //,
+
+            //{Shiro::AssetType::sfx, "clear_single"},
+            //{Shiro::AssetType::sfx, "clear_double"},
+            //{Shiro::AssetType::sfx, "clear_triple"},
+            //{Shiro::AssetType::sfx, "clear_tetris"}
+        });
+
         // SDL_Texture *blank = NULL;
 
         // copy settings into main game structure
@@ -795,12 +818,6 @@ void CoreState::load_files() {
 #define MUSIC(name, i) load_music(this, ini, assets->name[i], #name #i);
 #include "music.h"
 #undef MUSIC
-
-#define SFX(name) load_sfx(this, ini, &assets->name, #name);
-#define SFX_ARRAY(name, i) load_sfx(this, ini, &assets->name[i], #name #i);
-#include "sfx.h"
-#undef SFX_ARRAY
-#undef SFX
     }
 }
 
@@ -833,12 +850,6 @@ void quit(CoreState *cs)
 #define MUSIC(name, i) delete cs->assets->name[i];
 #include "music.h"
 #undef MUSIC
-
-#define SFX(name) delete cs->assets->name;
-#define SFX_ARRAY(name, i) delete cs->assets->name[i];
-#include "sfx.h"
-#undef SFX_ARRAY
-#undef SFX
 
         delete cs->assets;
     }

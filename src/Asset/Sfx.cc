@@ -6,12 +6,13 @@
  */
 #include "Asset/Sfx.h"
 #include <cassert>
+#include <iostream>
 
 Shiro::SfxAssetLoader::SfxAssetLoader(const std::filesystem::path& basePath) :
     basePath(basePath) {}
 
-Shiro::Asset* Shiro::SfxAssetLoader::create(const std::filesystem::path& location) const {
-    return new Shiro::SfxAsset(location);
+std::unique_ptr<Shiro::Asset> Shiro::SfxAssetLoader::create(const std::filesystem::path& location) const {
+    return std::unique_ptr<Shiro::Asset>(new Shiro::SfxAsset(location));
 }
 
 bool Shiro::SfxAssetLoader::load(Shiro::Asset& asset) const {
@@ -30,6 +31,8 @@ bool Shiro::SfxAssetLoader::load(Shiro::Asset& asset) const {
         return true;
     }
 
+    std::cerr << "Failed loading sound effect \"" << sfxAsset.location.string() << "\"" << std::endl;
+    sfxAsset.volume = 0.0f;
     return false;
 }
 
@@ -54,17 +57,20 @@ Shiro::SfxAsset::SfxAsset(const std::filesystem::path& location) :
 
 Shiro::SfxAsset::~SfxAsset() {}
 
+bool Shiro::SfxAsset::loaded() const {
+    return data != nullptr;
+}
+
 Shiro::AssetType Shiro::SfxAsset::getType() const {
     return Shiro::AssetType::sfx;
 }
 
-bool Shiro::SfxAsset::play(Shiro::Settings& settings) const {
-    if (!data) {
+bool Shiro::SfxAsset::play(const Shiro::Settings& settings) const {
+    if (!loaded()) {
         return false;
     }
 
     Mix_VolumeChunk(data, static_cast<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.sfxVolume / 100.0f) * (settings.masterVolume / 100.0f)));
     Mix_PlayChannel(-1, data, 0);
-
     return true;
 }

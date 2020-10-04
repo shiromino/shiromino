@@ -18,7 +18,7 @@ namespace Shiro {
 
         SfxAssetLoader(const std::filesystem::path& basePath);
 
-        virtual Asset* create(const std::filesystem::path& location) const;
+        virtual std::unique_ptr<Asset> create(const std::filesystem::path& location) const;
         bool load(Asset& asset) const;
         void unload(Asset& asset) const;
 
@@ -28,7 +28,7 @@ namespace Shiro {
         std::filesystem::path basePath;
     };
 
-    class SfxAsset : public Asset {
+    class SfxAsset : public Asset, public AssetCommon<SfxAsset, AssetType::sfx> {
         friend SfxAssetLoader;
 
     public:
@@ -38,11 +38,12 @@ namespace Shiro {
          * Plays the sound effect. Returns true if the sound effect was played;
          * playback only fails if no sound effect is loaded. The master and
          * sound effect volume settings will scale the volume the sound effect
-         * plays at; if they're both 100%, Sfx::volume will be the played
+         * plays at; if they're both 100%, SfxAsset::volume will be the played
          * volume.
          */
-        bool play(Settings& settings) const;
+        bool play(const Settings& settings) const;
 
+        bool loaded() const;
         AssetType getType() const;
 
         /**

@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <memory>
 #include <initializer_list>
+#include <functional>
+#include <string>
 
 namespace Shiro {
     enum class AssetType {
@@ -25,7 +27,7 @@ namespace Shiro {
     public:
         virtual ~AssetLoader();
 
-        virtual Asset* create(const std::filesystem::path& location) const = 0;
+        virtual std::unique_ptr<Asset> create(const std::filesystem::path& location) const = 0;
         virtual bool load(Asset& asset) const = 0;
         virtual void unload(Asset& asset) const = 0;
         virtual AssetType getType() const = 0;
@@ -37,6 +39,7 @@ namespace Shiro {
     public:
         virtual ~Asset();
 
+        virtual bool loaded() const = 0;
         virtual AssetType getType() const = 0;
 
         const std::filesystem::path location;
@@ -51,47 +54,60 @@ namespace Shiro {
 
     class AssetManager {
     public:
-        AssetManager() = delete;
-
-        AssetManager(const std::initializer_list<std::pair<const Shiro::AssetType, Shiro::AssetLoader*>>& loaders);
         ~AssetManager();
 
+        void addLoader(const AssetType type, std::unique_ptr<AssetLoader> loader);
+
         /**
-         * Call with a list of asset types and names to preload them, so the
+         * Call with a list of asset types and paths to preload them, so the
          * assets are immediately available when requesting them later. Using
          * this isn't required, because operator[] will load assets on-demand if
          * they're not yet loaded. Returns the number of assets successfully
          * loaded; if the number returned is less than the length of the list
          * argument, then some assets weren't successfully loaded.
-         * TODO: Come up with a way to provide the preload status to the user of an AssetManager. Might require completely changing how preloading is done, such as no longer having this method.
          */
-        std::size_t preload(const std::initializer_list<std::pair<const AssetType, const std::filesystem::path>>& assetPairs);
+        std::size_t preload(
+            const std::initializer_list<std::pair<const AssetType, const std::filesystem::path>>& names,
+            std::function<void(const std::pair<const AssetType, const std::filesystem::path>& name, const bool loaded)> onLoad =
+                 [](const std::pair<const AssetType, const std::filesystem::path>& name, const bool loaded) {}
+        );
 
         /**
-         * Clears all assets from the assets map. If shared pointers of loaded
-         * assets are still held outside the manager, they won't be unloaded
-         * until all references to those assets are destructed, otherwise all
-         * the assets will be unloaded.
+         * Clears all assets from the assets map.
          */
         void unload();
 
         /**
          * Use to get an asset by type and name. The asset will be loaded when
-         * requested, if it's not already loaded. If the asset couldn't be made
-         * available for some reason, doesn't load anything, and returns an
-         * empty shared_ptr. Asset names are the filename without the extension.
+         * requested, if it's not already loaded. If the asset couldn't be
+         * loaded, an asset in an unloaded state will be returned. Asset names
+         * are the filename without the extension.
          */
-        Asset& operator[](const std::pair<const AssetType, const std::filesystem::path>& assetPair);
+        Asset& operator[](const std::pair<const AssetType, const std::filesystem::path>& name);
 
     private:
         // I found out that if the key type is const for unordered_map, Visual
         // Studio generates some weird errors, despite it working fine with GCC
         // and Clang. So just keep key types for unordered_map not const.
         // -Brandon McGriff
-        std::unordered_map<AssetType, AssetLoader*> loaders;
+        std::unordered_map<AssetType, std::unique_ptr<AssetLoader>> loaders;
         struct AssetsKeyHash {
             std::size_t operator()(const std::pair<const AssetType, const std::filesystem::path>& key) const noexcept;
         };
-        std::unordered_map<std::pair<const AssetType, const std::filesystem::path>, Asset*, AssetsKeyHash> assets;
+        std::unordered_map<std::pair<const AssetType, const std::filesystem::path>, std::unique_ptr<Asset>, AssetsKeyHash> assets;
+    };
+
+    template<class AssetSubclass, AssetType type>
+    class AssetCommon {
+    public:
+        static inline AssetSubclass& get(Shiro::AssetManager& mgr, const std::filesystem::path& location) {
+            return static_cast<AssetSubclass&>(mgr[{type, location}]);
+        }
+
+        static inline AssetSubclass& get(Shiro::AssetManager& mgr, const std::filesystem::path& location, std::size_t i) {
+            auto locationIndexed = location;
+            locationIndexed.replace_filename(location.filename().string().append(std::to_string(i)));
+            return static_cast<AssetSubclass&>(mgr[{type, locationIndexed}]);
+        }
     };
 }

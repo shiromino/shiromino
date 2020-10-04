@@ -5,24 +5,20 @@
  * directory for the full text of the license.
  */
 #include "CoreState.h"
-#include "Main/Global.h"
+#include "Main/Startup.h"
+#include <cstdlib>
 
 int main(int argc, char* argv[]) {
     int returnCode;
 
     Shiro::Settings settings;
     if (settings.init(argc, argv)) {
-        Shiro::GlobalInit(settings);
-
-        {
-            CoreState cs(settings);
-            returnCode = cs.init() ? EXIT_SUCCESS : EXIT_FAILURE;
-            if (returnCode == EXIT_SUCCESS) {
-                cs.run();
-            }
+        Shiro::Startup(settings);
+        CoreState cs(settings);
+        returnCode = cs.init() ? EXIT_SUCCESS : EXIT_FAILURE;
+        if (returnCode == EXIT_SUCCESS) {
+            cs.run();
         }
-
-        Shiro::GlobalQuit();
     }
     else {
         returnCode = EXIT_FAILURE;

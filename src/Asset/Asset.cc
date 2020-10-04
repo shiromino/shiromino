@@ -7,6 +7,9 @@
 #include "Asset/Asset.h"
 #include <cassert>
 #include <cstdint>
+#include <vector>
+#include <cstdlib>
+#include <iostream>
 
 Shiro::AssetLoader::~AssetLoader() {}
 
@@ -14,34 +17,47 @@ Shiro::Asset::Asset(const std::filesystem::path& location) : location(location) 
 
 Shiro::Asset::~Asset() {}
 
-Shiro::AssetManager::AssetManager(const std::initializer_list<std::pair<const Shiro::AssetType, Shiro::AssetLoader*>>& loaders) : loaders(loaders) {}
-
 Shiro::AssetManager::~AssetManager() {
     unload();
-    for (const auto loader : loaders) {
-        delete loader.second;
-    }
 }
 
-std::size_t Shiro::AssetManager::preload(const std::initializer_list<std::pair<const Shiro::AssetType, const std::filesystem::path>>& assetPairs) {
+void Shiro::AssetManager::addLoader(const Shiro::AssetType type, std::unique_ptr<Shiro::AssetLoader> loader) {
+    loaders[type] = std::move(loader);
+}
+
+std::size_t Shiro::AssetManager::preload(
+    const std::initializer_list<std::pair<const Shiro::AssetType, const std::filesystem::path>>& names,
+    std::function<void(const std::pair<const AssetType, const std::filesystem::path>& name, const bool loaded)> onLoad)
+{
     std::size_t numPreloaded = 0u;
 
-    for (const auto& assetPair : assetPairs) {
-        Asset* asset(loaders[assetPair.first]->create(assetPair.second));
-        if (asset) {
-            loaders[assetPair.first]->load(*asset);
-            assets[assetPair] = asset;
-            numPreloaded++;
+    for (const auto& name : names) {
+        assert(loaders.count(name.first) != 0u);
+        if (assets.count(name)) {
+            if (assets[name]->loaded()) {
+                numPreloaded++;
+            }
         }
+        else {
+            std::unique_ptr<Shiro::Asset> asset(loaders[name.first]->create(name.second));
+            if (asset) {
+                if (loaders[name.first]->load(*asset)) {
+                    numPreloaded++;
+                }
+                assets[name] = std::move(asset);
+            }
+        }
+
+        onLoad(name, assets.count(name) && assets[name]->loaded());
     }
 
     return numPreloaded;
 }
 
 void Shiro::AssetManager::unload() {
-    for (const auto& assetPair : assets) {
-        loaders[assetPair.first.first]->unload(*assets[assetPair.first]);
-        delete assets[assetPair.first];
+    for (const auto& asset : assets) {
+        assert(loaders.count(asset.first.first) != 0u);
+        loaders[asset.first.first]->unload(*asset.second);
     }
     assets.clear();
 }
@@ -55,13 +71,17 @@ namespace std {
     }
 }
 
-Shiro::Asset& Shiro::AssetManager::operator[](const std::pair<const Shiro::AssetType, const std::filesystem::path>& assetPair) {
-    if (!assets.count(assetPair)) {
-        assets[assetPair] = loaders[assetPair.first]->create(assetPair.second);
-        loaders[assetPair.first]->load(*assets[assetPair]);
+Shiro::Asset& Shiro::AssetManager::operator[](const std::pair<const Shiro::AssetType, const std::filesystem::path>& name) {
+    if (!assets.count(name)) {
+        assert(loaders.count(name.first) != 0u);
+        auto asset = loaders[name.first]->create(name.second);
+        if (asset) {
+            loaders[name.first]->load(*asset);
+            assets[name] = std::move(asset);
+        }
     }
-    assert(assets[assetPair] != nullptr);
-    return *assets[assetPair];
+    assert(assets.count(name) != 0u);
+    return *assets[name];
 }
 
 #ifdef UINT64_C

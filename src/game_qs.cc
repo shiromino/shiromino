@@ -1307,7 +1307,7 @@ int qs_game_frame(game_t *g)
                 ));
 #endif
 
-                cs->assets->ready->play(cs->settings);
+                SfxAsset::get(cs->assetMgr, "ready").play(cs->settings);
             }
 
             else if(c->init == 60)
@@ -1336,7 +1336,7 @@ int qs_game_frame(game_t *g)
                 ));
 #endif
 
-                cs->assets->go->play(cs->settings);
+                SfxAsset::get(cs->assetMgr, "go").play(cs->settings);
             }
         }
 
@@ -1700,19 +1700,19 @@ int qs_game_frame(game_t *g)
             {
                 case 1:
                     q->medal_re = BRONZE;
-                    cs->assets->medal->play(cs->settings);
+                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                     break;
                 case 2:
                     q->medal_re = SILVER;
-                    cs->assets->medal->play(cs->settings);
+                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                     break;
                 case 3:
                     q->medal_re = GOLD;
-                    cs->assets->medal->play(cs->settings);
+                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                     break;
                 case 5:
                     q->medal_re = PLATINUM;
-                    cs->assets->medal->play(cs->settings);
+                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                     break;
                 default:
                     break;
@@ -1962,7 +1962,7 @@ int qs_process_lineclear(game_t *g)
             {
                 qrs_dropfield(g);
             }
-            cs->assets->dropfield->play(cs->settings);
+            SfxAsset::get(cs->assetMgr, "dropfield").play(cs->settings);
 
             switch(q->mode_type)
             {
@@ -2232,7 +2232,7 @@ int qs_process_lockflash(game_t *g)
                                 if(!gradeup)
                                 {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play(cs->settings);
+                                    SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                     gradeup = true;
                                 }
                             }
@@ -2288,7 +2288,7 @@ int qs_process_lockflash(game_t *g)
                                 if(!gradeup)
                                 {
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play(cs->settings);
+                                    SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                     gradeup = true;
                                 }
                             }
@@ -2313,7 +2313,7 @@ int qs_process_lockflash(game_t *g)
                             if(old_grade != q->grade)
                             {
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                cs->assets->gradeup->play(cs->settings);
+                                SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                             }
                         }
 
@@ -2353,7 +2353,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = BRONZE;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play(cs->settings);
+                            SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                         }
 
                         break;
@@ -2362,7 +2362,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = SILVER;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play(cs->settings);
+                            SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                         }
 
                         break;
@@ -2371,7 +2371,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = GOLD;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play(cs->settings);
+                            SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                         }
 
                         break;
@@ -2380,7 +2380,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->medal_co = PLATINUM;
                             q->last_medal_co_timestamp = g->frame_counter;
-                            cs->assets->medal->play(cs->settings);
+                            SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                         }
 
                         break;
@@ -2397,7 +2397,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = BRONZE;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play(cs->settings);
+                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                             }
 
                             break;
@@ -2406,7 +2406,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = SILVER;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play(cs->settings);
+                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                             }
 
                             break;
@@ -2415,7 +2415,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = GOLD;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play(cs->settings);
+                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                             }
 
                             break;
@@ -2424,7 +2424,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->medal_sk = PLATINUM;
                                 q->last_medal_sk_timestamp = g->frame_counter;
-                                cs->assets->medal->play(cs->settings);
+                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                             }
 
                             break;
@@ -2434,7 +2434,7 @@ int qs_process_lockflash(game_t *g)
                 }
             }
 
-            cs->assets->lineclear->play(cs->settings);
+            SfxAsset::get(cs->assetMgr, "lineclear").play(cs->settings);
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
@@ -2479,7 +2479,7 @@ int qs_process_lockflash(game_t *g)
                                     {
                                         q->grade = GRADE_M;
                                         q->last_gradeup_timestamp = g->frame_counter;
-                                        cs->assets->gradeup->play(cs->settings);
+                                        SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                     }
                                 }
                             }
@@ -2494,7 +2494,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play(cs->settings);
+                                    SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                 }
 
                                 if(q->playback)
@@ -2577,7 +2577,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_M;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play(cs->settings);
+                                    SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                 }
                             }
                             else if(q->level >= 999)
@@ -2585,7 +2585,7 @@ int qs_process_lockflash(game_t *g)
                                 q->level = 999;
                                 q->grade = GRADE_GM;
                                 q->last_gradeup_timestamp = g->frame_counter;
-                                cs->assets->gradeup->play(cs->settings);
+                                SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                 if(q->playback)
                                     qrs_end_playback(g);
                                 else if(q->recording)
@@ -2606,7 +2606,7 @@ int qs_process_lockflash(game_t *g)
                             }
 
                             q->last_gradeup_timestamp = g->frame_counter;
-                            cs->assets->gradeup->play(cs->settings);
+                            SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
 
                             if(q->section == 5)
                             {
@@ -2658,7 +2658,7 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->grade = GRADE_GM;
                                     q->last_gradeup_timestamp = g->frame_counter;
-                                    cs->assets->gradeup->play(cs->settings);
+                                    SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                                 }
 
                                 if(q->playback)
@@ -2674,7 +2674,7 @@ int qs_process_lockflash(game_t *g)
                             break;
                     }
 
-                    cs->assets->newsection->play(cs->settings);
+                    SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
                     if(q->section < 13)
                     {
                         cs->bg.transition(cs->assets->bg[q->section]);
@@ -2697,7 +2697,7 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G2_DEATH:
                         q->grade = GRADE_GM;
                         q->last_gradeup_timestamp = g->frame_counter;
-                        cs->assets->gradeup->play(cs->settings);
+                        SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                         if(q->playback)
                             qrs_end_playback(g);
                         else if(q->recording)
@@ -2718,7 +2718,7 @@ int qs_process_lockflash(game_t *g)
                         {
                             q->grade = GRADE_GM;
                             q->last_gradeup_timestamp = g->frame_counter;
-                            cs->assets->gradeup->play(cs->settings);
+                            SfxAsset::get(cs->assetMgr, "gradeup").play(cs->settings);
                         }
 
                         if(q->playback)
@@ -3677,8 +3677,10 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
             int ts = t;
             if(ts >= 18)
                 ts -= 18;
-            Shiro::Sfx* sfx = cs->assets->pieces[ts % 7];
+            /*Shiro::Sfx* sfx = cs->assets->pieces[ts % 7];
             sfx->play(cs->settings);
+            */
+            Shiro::SfxAsset::get(cs->assetMgr, "pieces", ts % 7).play(cs->settings);
         }
     }
 

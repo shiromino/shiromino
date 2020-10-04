@@ -1,4 +1,4 @@
-#include "Main/Global.h"
+#include "Main/Startup.h"
 #include "Version.h"
 #include "random.h"
 #include "SDL.h"
@@ -8,10 +8,14 @@
 #include <cstdlib>
 #include <ctime>
 
+namespace Shiro {
+    static void Quit();
+}
+
 #ifdef VCPKG_TOOLCHAIN
 #include <vorbis/vorbisfile.h>
 #endif
-void Shiro::GlobalInit(const Shiro::Settings& settings) {
+void Shiro::Startup(const Shiro::Settings& settings) {
 #ifdef VCPKG_TOOLCHAIN
     {
         // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
@@ -52,10 +56,12 @@ void Shiro::GlobalInit(const Shiro::Settings& settings) {
     Mix_AllocateChannels(32);
 
     g123_seeds_init();
-    srand((unsigned int)time(0));
+    std::srand((unsigned int)std::time(0));
+
+    std::atexit(Shiro::Quit);
 }
 
-void Shiro::GlobalQuit() {
+static void Shiro::Quit() {
     IMG_Quit();
     Mix_Quit();
     SDL_Quit();

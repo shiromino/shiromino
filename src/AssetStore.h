@@ -24,13 +24,5 @@ namespace Shiro {
         #include "music.h"
         #undef DEF_ARRAY
         #undef MUSIC
-
-        #define SFX(name) Shiro::Sfx* name;
-        #define DEF_ARRAY
-        #define SFX_ARRAY(name, i) Shiro::Sfx* name[i];
-        #include "sfx.h"
-        #undef SFX
-        #undef DEF_ARRAY
-        #undef SFX_ARRAY
     };
 }

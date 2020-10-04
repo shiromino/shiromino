@@ -97,9 +97,9 @@ target_sources(${GAME_EXECUTABLE}
 		src/Video/Screen.h
 		src/Video/TextGraphic.cc
 		src/Video/TextGraphic.h
-		src/Main/Global.cc
-		src/Main/Global.h
 		src/Main/Main.cc
+		src/Main/Startup.cc
+		src/Main/Startup.h
 		src/gfx_old.cc
 		src/gfx_old.h
 		src/gfx_helpers.cc
@@ -151,7 +151,6 @@ target_sources(${GAME_EXECUTABLE}
 		src/replay.h
 		src/RotationTables.cc
 		src/RotationTables.h
-		src/sfx.h
 		src/SGUIL/SGUIL.cc
 		src/SGUIL/SGUIL.h
 		src/SGUIL/SGUIL_GuiButton.cc

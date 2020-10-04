@@ -77,7 +77,6 @@ struct CoreState {
     // TODO: Refactor so all assets are loaded by the asset manager.
     Shiro::AssetStore* assets;
     Shiro::AssetManager assetMgr;
-    const Shiro::SfxAsset& prerotate;
 
     Shiro::Background bg;
     std::vector<gfx_button> gfx_buttons;

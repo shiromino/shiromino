@@ -8,6 +8,9 @@
 #include "Settings.h"
 
 namespace Shiro {
-    void GlobalInit(const Shiro::Settings& settings);
-    void GlobalQuit();
+    /**
+     * Only call this when you're sure you're going to start the game, as it
+     * initializes global state and installs a quit function executed on exit.
+     */
+    void Startup(const Shiro::Settings& settings);
 }

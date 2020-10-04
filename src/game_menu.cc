@@ -473,7 +473,7 @@ int menu_input(game_t *g)
             {
                 d->selection = i;
                 if(cs->pressed.up == 1) {
-                    cs->assets->menu_choose->play(cs->settings);
+                    Shiro::SfxAsset::get(cs->assetMgr, "menu_choose").play(cs->settings);
                 }
                 if(d->menu[d->selection].type == Shiro::ElementType::MENU_TEXTINPUT)
                 {
@@ -536,7 +536,7 @@ int menu_input(game_t *g)
             {
                 d->selection = i;
                 if(cs->pressed.down == 1) {
-                    cs->assets->menu_choose->play(cs->settings);
+                    Shiro::SfxAsset::get(cs->assetMgr, "menu_choose").play(cs->settings);
                 }
                 if(d->menu[d->selection].type == Shiro::ElementType::MENU_TEXTINPUT)
                 {
