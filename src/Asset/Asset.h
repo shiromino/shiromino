@@ -99,14 +99,27 @@ namespace Shiro {
     template<class AssetSubclass, AssetType type>
     class AssetCommon {
     public:
+        // For whatever reason, some compilers weren't correctly instantiating
+        // the pair template used here, and gave errors about that pair type
+        // used not having a defined destructor. Explicitly creating a variable
+        // for the name pair, instead of directly using `{type, location}` with
+        // `mgr[]`, fixes that error, and results in the template being properly
+        // instantiated. I have to assume it could be because
+        // AssetManager::operator[] is taking a const pair reference, and for
+        // some reason some compilers/platforms/versions don't work correctly
+        // with that.
+        // -Brandon McGriff
+
         static inline AssetSubclass& get(AssetManager& mgr, const std::filesystem::path& location) {
-            return static_cast<AssetSubclass&>(mgr[{type, location}]);
+            const std::pair<AssetType, std::filesystem::path> name(type, location);
+            return static_cast<AssetSubclass&>(mgr[name]);
         }
 
         static inline AssetSubclass& get(AssetManager& mgr, const std::filesystem::path& location, std::size_t i) {
             auto locationIndexed = location;
             locationIndexed.replace_filename(location.filename().string().append(std::to_string(i)));
-            return static_cast<AssetSubclass&>(mgr[{type, locationIndexed}]);
+            const std::pair<AssetType, std::filesystem::path> name(type, locationIndexed);
+            return static_cast<AssetSubclass&>(mgr[name]);
         }
     };
 }
