@@ -67,9 +67,9 @@ namespace Shiro {
          * argument, then some assets weren't successfully loaded.
          */
         std::size_t preload(
-            const std::initializer_list<std::pair<const AssetType, const std::filesystem::path>>& names,
-            std::function<void(const std::pair<const AssetType, const std::filesystem::path>& name, const bool loaded)> onLoad =
-                 [](const std::pair<const AssetType, const std::filesystem::path>& name, const bool loaded) {}
+            const std::initializer_list<std::pair<AssetType, std::filesystem::path>>& names,
+            std::function<void(const std::pair<AssetType, std::filesystem::path>& name, const bool loaded)> onLoad =
+                 [](const std::pair<AssetType, std::filesystem::path>& name, const bool loaded) {}
         );
 
         /**
@@ -83,18 +83,17 @@ namespace Shiro {
          * loaded, an asset in an unloaded state will be returned. Asset names
          * are the filename without the extension.
          */
-        Asset& operator[](const std::pair<const AssetType, const std::filesystem::path>& name);
+        Asset& operator[](const std::pair<AssetType, std::filesystem::path>& name);
 
     private:
-        // I found out that if the key type is const for unordered_map, Visual
-        // Studio generates some weird errors, despite it working fine with GCC
-        // and Clang. So just keep key types for unordered_map not const.
+        // Default to non-const for template arguments unless told otherwise. I
+        // found different compilers allow it and others don't if you use const.
         // -Brandon McGriff
         std::unordered_map<AssetType, std::unique_ptr<AssetLoader>> loaders;
         struct AssetsKeyHash {
-            std::size_t operator()(const std::pair<const AssetType, const std::filesystem::path>& key) const noexcept;
+            std::size_t operator()(const std::pair<AssetType, std::filesystem::path>& key) const noexcept;
         };
-        std::unordered_map<std::pair<const AssetType, const std::filesystem::path>, std::unique_ptr<Asset>, AssetsKeyHash> assets;
+        std::unordered_map<std::pair<AssetType, std::filesystem::path>, std::unique_ptr<Asset>, AssetsKeyHash> assets;
     };
 
     template<class AssetSubclass, AssetType type>

@@ -26,8 +26,8 @@ void Shiro::AssetManager::addLoader(const Shiro::AssetType type, std::unique_ptr
 }
 
 std::size_t Shiro::AssetManager::preload(
-    const std::initializer_list<std::pair<const Shiro::AssetType, const std::filesystem::path>>& names,
-    std::function<void(const std::pair<const AssetType, const std::filesystem::path>& name, const bool loaded)> onLoad)
+    const std::initializer_list<std::pair<Shiro::AssetType, std::filesystem::path>>& names,
+    std::function<void(const std::pair<AssetType, std::filesystem::path>& name, const bool loaded)> onLoad)
 {
     std::size_t numPreloaded = 0u;
 
@@ -64,14 +64,14 @@ void Shiro::AssetManager::unload() {
 
 namespace std {
     constexpr bool operator==(
-        const std::pair<const Shiro::AssetType, const std::filesystem::path>& lhs,
-        const std::pair<const Shiro::AssetType, const std::filesystem::path>& rhs
+        const std::pair<Shiro::AssetType, std::filesystem::path>& lhs,
+        const std::pair<Shiro::AssetType, std::filesystem::path>& rhs
     ) {
         return lhs.first == rhs.first && lhs.second == rhs.second;
     }
 }
 
-Shiro::Asset& Shiro::AssetManager::operator[](const std::pair<const Shiro::AssetType, const std::filesystem::path>& name) {
+Shiro::Asset& Shiro::AssetManager::operator[](const std::pair<Shiro::AssetType, std::filesystem::path>& name) {
     if (!assets.count(name)) {
         assert(loaders.count(name.first) != 0u);
         auto asset = loaders[name.first]->create(name.second);
@@ -95,9 +95,9 @@ Shiro::Asset& Shiro::AssetManager::operator[](const std::pair<const Shiro::Asset
     (static_cast<std::size_t>(lower ## u))
 #endif
 
-std::size_t Shiro::AssetManager::AssetsKeyHash::operator()(const std::pair<const Shiro::AssetType, const std::filesystem::path>& key) const noexcept {
+std::size_t Shiro::AssetManager::AssetsKeyHash::operator()(const std::pair<Shiro::AssetType, std::filesystem::path>& key) const noexcept {
     return (
-        (static_cast<const std::size_t>(key.first) + 1) *
+        (static_cast<std::size_t>(key.first) + 1) *
         MAKE_SIZE_T_CONSTANT(0x13C3F896, 0xC70D0493) +
         MAKE_SIZE_T_CONSTANT(0x2D1BCEA4, 0xCB50BC27)
     ) ^ std::hash<std::string>{}(key.second.string());
