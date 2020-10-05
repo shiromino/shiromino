@@ -1,6 +1,7 @@
 #include "Settings.h"
 #include "Debug.h"
 #include "SDL.h"
+#include "SDL_mixer.h"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -23,6 +24,7 @@ Shiro::Settings::Settings() :
     masterVolume(80),
     sfxVolume(100),
     musicVolume(90),
+    samplingRate(48000),
     configurationPath(""),
     basePath(""),
     playerName("ARK") {}
@@ -103,6 +105,10 @@ void Shiro::Settings::read(std::string filename) {
     unsigned int musicVolume;
     if (ini.get("AUDIO", "MUSIC_VOLUME", musicVolume)) {
         this->musicVolume = std::clamp(musicVolume, 0u, 100u);
+    }
+    unsigned int samplingRate;
+    if (ini.get("AUDIO", "SAMPLING_RATE", samplingRate)) {
+        this->samplingRate = std::clamp(samplingRate, 0u, 48000u);
     }
     float videoScale;
     if (ini.get("SCREEN", "VIDEO_SCALE", videoScale)) {

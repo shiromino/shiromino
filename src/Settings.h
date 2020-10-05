@@ -27,6 +27,7 @@ namespace Shiro {
         int masterVolume;
         int sfxVolume;
         int musicVolume;
+        int samplingRate;
         std::filesystem::path configurationPath;
         std::filesystem::path basePath;
         std::string playerName;
