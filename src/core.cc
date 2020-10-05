@@ -509,7 +509,7 @@ void CoreState::run() {
 #else
             double gameFrameTime = 1.0 / fps;
 #endif
-            timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync && newFrames == 0u);
+            running && (timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync && newFrames == 0u));
             timeAccumulator -= gameFrameTime,
             newFrames++,
             frames++

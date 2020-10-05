@@ -129,7 +129,7 @@ void Shiro::Settings::read(std::string filename) {
     }
     int frameDelay;
     if (ini.get("SCREEN", "FRAME_DELAY", frameDelay)) {
-        this->frameDelay = std::min(0, frameDelay);
+        this->frameDelay = std::max(0, frameDelay);
     }
     int vsyncTimestep;
     if (ini.get("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep)) {
