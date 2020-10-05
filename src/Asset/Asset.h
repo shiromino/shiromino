@@ -99,11 +99,11 @@ namespace Shiro {
     template<class AssetSubclass, AssetType type>
     class AssetCommon {
     public:
-        static inline AssetSubclass& get(Shiro::AssetManager& mgr, const std::filesystem::path& location) {
+        static inline AssetSubclass& get(AssetManager& mgr, const std::filesystem::path& location) {
             return static_cast<AssetSubclass&>(mgr[{type, location}]);
         }
 
-        static inline AssetSubclass& get(Shiro::AssetManager& mgr, const std::filesystem::path& location, std::size_t i) {
+        static inline AssetSubclass& get(AssetManager& mgr, const std::filesystem::path& location, std::size_t i) {
             auto locationIndexed = location;
             locationIndexed.replace_filename(location.filename().string().append(std::to_string(i)));
             return static_cast<AssetSubclass&>(mgr[{type, locationIndexed}]);
