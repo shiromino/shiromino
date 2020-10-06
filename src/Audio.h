@@ -48,39 +48,4 @@ namespace Shiro {
     private:
         Mix_Music *data;
     };
-
-    /**
-     * Manages loading and playback of a sound effect.
-     */
-    class Sfx {
-    public:
-        Sfx();
-        Sfx(const Sfx&) = delete;
-        Sfx& operator=(const Sfx&) = delete;
-        ~Sfx();
-
-        /**
-         * Loads the sound effect from a file. Provide the name of the file,
-         * without the ".wav" extension. Returns true if the file was loaded.
-         */
-        bool load(const std::filesystem::path& filenameWithoutExtension);
-
-        /**
-         * Plays the sound effect. Returns true if the sound effect was played;
-         * playback only fails if no sound effect is loaded. The master and
-         * sound effect volume settings will scale the volume the sound effect
-         * plays at; if they're both 100%, Sfx::volume will be the played
-         * volume.
-         */
-        bool play(Settings& settings);
-
-        /**
-         * The volume of the sound effect when played. This is a percentage,
-         * with 100.0f being max volume.
-         */
-        float volume;
-
-    private:
-        Mix_Chunk *data;
-    };
 }

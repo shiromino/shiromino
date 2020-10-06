@@ -11,6 +11,7 @@
 #include "Video/Gfx.h"
 #include "gfx_structures.h"
 #include "Input/KeyFlags.h"
+#include "Input/Mouse.h"
 #include "Player.h"
 #include "Settings.h"
 #include "RecordList.h"
@@ -96,8 +97,8 @@ struct CoreState {
     int mouse_y;
     int logical_mouse_x;
     int logical_mouse_y;
-    int mouse_left_down;
-    int mouse_right_down;
+    Shiro::Mouse::Button mouseLeftButton;
+    Shiro::Mouse::Button mouseRightButton;
 
     bool menu_input_override;
     bool button_emergency_override;

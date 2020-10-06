@@ -10,7 +10,7 @@
 #include "GuiGridCanvas.h"
 #include "GuiScreenManager.h"
 #include "Input/KeyFlags.h"
-#include "Magic.h"
+#include "Input/Mouse.h"
 #include "QRS1.h"
 #include "RefreshRates.h"
 #include "replay.h"
@@ -199,8 +199,8 @@ CoreState::CoreState(Shiro::Settings& settings) :
     mouse_y = 0;
     logical_mouse_x = 0;
     logical_mouse_y = 0;
-    mouse_left_down = 0;
-    mouse_right_down = 0;
+    mouseLeftButton = Shiro::Mouse::Button::notPressed;
+    mouseRightButton = Shiro::Mouse::Button::notPressed;
 
     bg.transition();
 
@@ -763,22 +763,6 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
     font->isValid = true;
 }
 
-static void load_sfx(CoreState* cs, PDINI::INI& ini, Shiro::Sfx** s, const char* filename)
-{
-    std::filesystem::path basePath { cs->settings.basePath };
-    *s = new Shiro::Sfx();
-    if (!(*s)->load(basePath / "assets" / "audio" / filename)) {
-        log_warn("Failed to load audio '%s'", filename);
-    }
-    float volume;
-    if (!ini.get("", filename, volume) || volume < 0.0f || volume > 100.0f) {
-        (*s)->volume = 100.0f;
-    }
-    else {
-        (*s)->volume = volume;
-    }
-}
-
 static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const char* name)
 {
     std::filesystem::path basePath { cs->settings.basePath };
@@ -883,13 +867,13 @@ void quit(CoreState *cs)
 }
 
 void update_mouse(CoreState* cs, const int windowW, const int windowH) {
-    if(cs->mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
+    if(cs->mouseLeftButton == Shiro::Mouse::Button::pressedThisFrame)
     {
-        cs->mouse_left_down = 1;
+        cs->mouseLeftButton = Shiro::Mouse::Button::pressed;
     }
-    if(cs->mouse_right_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
+    if(cs->mouseRightButton == Shiro::Mouse::Button::pressedThisFrame)
     {
-        cs->mouse_right_down = 1;
+        cs->mouseRightButton = Shiro::Mouse::Button::pressed;
     }
 
     if(cs->select_all)
@@ -1400,18 +1384,18 @@ bool CoreState::process_events() {
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT)
                 {
-                    mouse_left_down = Shiro::Magic::BUTTON_PRESSED_THIS_FRAME;
+                    mouseLeftButton = Shiro::Mouse::Button::pressedThisFrame;
                 }
                 if (event.button.button == SDL_BUTTON_RIGHT)
-                    mouse_right_down = Shiro::Magic::BUTTON_PRESSED_THIS_FRAME;
+                    mouseRightButton = Shiro::Mouse::Button::pressedThisFrame;
                 update_mouse(this, windowW, windowH);
                 break;
 
             case SDL_MOUSEBUTTONUP:
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    mouse_left_down = 0;
+                    mouseLeftButton = Shiro::Mouse::Button::notPressed;
                 if (event.button.button == SDL_BUTTON_RIGHT)
-                    mouse_right_down = 0;
+                    mouseRightButton = Shiro::Mouse::Button::notPressed;
                 update_mouse(this, windowW, windowH);
                 break;
 
@@ -1751,7 +1735,7 @@ void CoreState::gfx_buttons_input() {
         else
             b.highlighted = 0;
 
-        if(b.highlighted && mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
+        if(b.highlighted && mouseLeftButton == Shiro::Mouse::Button::pressedThisFrame)
         {
             if(b.action)
             {

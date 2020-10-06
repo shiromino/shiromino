@@ -41,34 +41,4 @@ namespace Shiro {
 
         return true;
     }
-
-    Sfx::Sfx() : volume(0.0f), data(nullptr) {}
-
-    Sfx::~Sfx() {
-        if (data) {
-            Mix_FreeChunk(data);
-        }
-    }
-
-    bool Sfx::load(const std::filesystem::path& filenameWithoutExtension) {
-        data = nullptr;
-        volume = 100.0f;
-        data = Mix_LoadWAV(filenameWithoutExtension.string().append(".ogg").c_str());
-        if (data) {
-            return true;
-        }
-        data = Mix_LoadWAV(filenameWithoutExtension.string().append(".wav").c_str());
-        return data != nullptr;
-    }
-
-    bool Sfx::play(Settings& settings) {
-        if(!data) {
-            return false;
-        }
-
-        Mix_VolumeChunk(data, static_cast<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.sfxVolume / 100.0f) * (settings.masterVolume / 100.0f)));
-        Mix_PlayChannel(-1, data, 0);
-
-        return true;
-    }
 }
