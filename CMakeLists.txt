@@ -120,7 +120,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/Input/ControllerBindings.h
 		src/Input/KeyBindings.cc
 		src/Input/KeyBindings.h
-		src/Magic.h
+		src/Input/Mouse.cc
+		src/Input/Mouse.h
 		src/Menu/ActionOption.h
 		src/Menu/ElementType.h
 		src/Menu/GameArguments.h

@@ -195,13 +195,6 @@ CoreState::CoreState(Shiro::Settings& settings) :
     hold_dir = Shiro::DASDirection::NONE;
     hold_time = 0;
 
-    mouse_x = 0;
-    mouse_y = 0;
-    logical_mouse_x = 0;
-    logical_mouse_y = 0;
-    mouseLeftButton = Shiro::Mouse::Button::notPressed;
-    mouseRightButton = Shiro::Mouse::Button::notPressed;
-
     bg.transition();
 
     this->settings = settings;
@@ -866,67 +859,6 @@ void quit(CoreState *cs)
     gfx_quit(cs);
 }
 
-void update_mouse(CoreState* cs, const int windowW, const int windowH) {
-    if(cs->mouseLeftButton == Shiro::Mouse::Button::pressedThisFrame)
-    {
-        cs->mouseLeftButton = Shiro::Mouse::Button::pressed;
-    }
-    if(cs->mouseRightButton == Shiro::Mouse::Button::pressedThisFrame)
-    {
-        cs->mouseRightButton = Shiro::Mouse::Button::pressed;
-    }
-
-    if(cs->select_all)
-    {
-        cs->select_all = false;
-    }
-    if(cs->undo)
-    {
-        cs->undo = false;
-    }
-    if(cs->redo)
-    {
-        cs->redo = false;
-    }
-
-    if(windowW == (windowH * 4) / 3)
-    {
-        float scale_ = (float)windowW / 640.0;
-        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
-        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
-    }
-    else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
-    {
-        float scale_ = (float)windowW / 640.0;
-        int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
-        if(cs->mouse_y < yOffset || cs->mouse_y >= windowH - yOffset)
-        {
-            cs->logical_mouse_y = -1;
-        }
-        else
-        {
-            cs->logical_mouse_y = (int)((float)(cs->mouse_y - yOffset) / scale_);
-        }
-
-        cs->logical_mouse_x = (int)((float)cs->mouse_x / scale_);
-    }
-    else
-    {
-        float scale_ = (float)windowH / 480.0;
-        int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
-        if(cs->mouse_x < xOffset || cs->mouse_x >= windowW - xOffset)
-        {
-            cs->logical_mouse_x = -1;
-        }
-        else
-        {
-            cs->logical_mouse_x = (int)((float)(cs->mouse_x - xOffset) / scale_);
-        }
-
-        cs->logical_mouse_y = (int)((float)cs->mouse_y / scale_);
-    }
-}
-
 // TODO: Make this only read in events and update state; move out all logic interpreting the new state into the game/menu code, such as DAS processing. And rename this to pollEvents once that's all done.
 bool CoreState::process_events() {
     Shiro::KeyFlags *k = NULL;
@@ -969,8 +901,8 @@ bool CoreState::process_events() {
     if(windowW == (windowH * 4) / 3)
     {
         float scale_ = (float)windowW / 640.0;
-        logical_mouse_x = (int)((float)mouse_x / scale_);
-        logical_mouse_y = (int)((float)mouse_y / scale_);
+        mouse.logicalX = (int)((float)mouse_x / scale_);
+        mouse.logicalY = (int)((float)mouse_y / scale_);
     }
     else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
     {
@@ -978,14 +910,14 @@ bool CoreState::process_events() {
         int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
         if(mouse_y < yOffset || mouse_y >= windowH - yOffset)
         {
-            logical_mouse_y = -1;
+            mouse.logicalY = -1;
         }
         else
         {
-            logical_mouse_y = (int)((float)(mouse_y - yOffset) / scale_);
+            mouse.logicalY = (int)((float)(mouse_y - yOffset) / scale_);
         }
 
-        logical_mouse_x = (int)((float)mouse_x / scale_);
+        mouse.logicalX = (int)((float)mouse_x / scale_);
     }
     else
     {
@@ -993,14 +925,14 @@ bool CoreState::process_events() {
         int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
         if(mouse_x < xOffset || mouse_x >= windowW - xOffset)
         {
-            logical_mouse_x = -1;
+            mouse.logicalX = -1;
         }
         else
         {
-            logical_mouse_x = (int)((float)(mouse_x - xOffset) / scale_);
+            mouse.logicalX = (int)((float)(mouse_x - xOffset) / scale_);
         }
 
-        logical_mouse_y = (int)((float)mouse_y / scale_);
+        mouse.logicalY = (int)((float)mouse_y / scale_);
     }
 #endif
 
@@ -1384,32 +1316,44 @@ bool CoreState::process_events() {
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT)
                 {
-                    mouseLeftButton = Shiro::Mouse::Button::pressedThisFrame;
+                    mouse.leftButton = Shiro::Mouse::Button::pressedThisFrame;
                 }
                 if (event.button.button == SDL_BUTTON_RIGHT)
-                    mouseRightButton = Shiro::Mouse::Button::pressedThisFrame;
-                update_mouse(this, windowW, windowH);
+                    mouse.rightButton = Shiro::Mouse::Button::pressedThisFrame;
+                select_all = false;
+                undo = false;
+                redo = false;
+                mouse.update(windowW, windowH);
                 break;
 
             case SDL_MOUSEBUTTONUP:
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    mouseLeftButton = Shiro::Mouse::Button::notPressed;
+                    mouse.leftButton = Shiro::Mouse::Button::notPressed;
                 if (event.button.button == SDL_BUTTON_RIGHT)
-                    mouseRightButton = Shiro::Mouse::Button::notPressed;
-                update_mouse(this, windowW, windowH);
+                    mouse.rightButton = Shiro::Mouse::Button::notPressed;
+                select_all = false;
+                undo = false;
+                redo = false;
+                mouse.update(windowW, windowH);
                 break;
 
             case SDL_MOUSEMOTION:
-                mouse_x = event.motion.x;
-                mouse_y = event.motion.y;
-                update_mouse(this, windowW, windowH);
+                mouse.x = event.motion.x;
+                mouse.y = event.motion.y;
+                select_all = false;
+                undo = false;
+                redo = false;
+                mouse.update(windowW, windowH);
                 break;
 
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
                     SDL_GetWindowSize(screen.window, &windowW, &windowH);
-                    update_mouse(this, windowW, windowH);
+                    select_all = false;
+                    undo = false;
+                    redo = false;
+                    mouse.update(windowW, windowH);
                     break;
 
                 default:
@@ -1729,13 +1673,13 @@ void CoreState::gfx_buttons_input() {
             continue;
         }
 
-        if(mouse_x < scaled_x + scaled_w && mouse_x >= scaled_x && mouse_y < scaled_y + scaled_h &&
-           mouse_y >= scaled_y)
+        if(mouse.x < scaled_x + scaled_w && mouse.x >= scaled_x && mouse.y < scaled_y + scaled_h &&
+           mouse.y >= scaled_y)
             b.highlighted = 1;
         else
             b.highlighted = 0;
 
-        if(b.highlighted && mouseLeftButton == Shiro::Mouse::Button::pressedThisFrame)
+        if(b.highlighted && mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
         {
             if(b.action)
             {

@@ -7,11 +7,24 @@
 #pragma once
 
 namespace Shiro {
-    namespace Mouse {
+    struct Mouse {
+        Mouse();
+
         enum class Button {
             notPressed,
             pressed,
             pressedThisFrame
         };
-    }
+
+        // TODO: Consider changing how windowW/windowH are passed in.
+        void update(const int windowW, const int windowH);
+
+        int x;
+        int y;
+        int logicalX;
+        int logicalY;
+
+        Button leftButton;
+        Button rightButton;
+    };
 }

@@ -342,14 +342,14 @@ int undo_clear_confirm_yes(CoreState *cs, void *data)
         q->pracdata->field_edit_in_progress = 0;
 
     cs->button_emergency_override = false;
-    cs->mouseLeftButton = Shiro::Mouse::Button::notPressed;
+    cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
     return 0;
 }
 
 int undo_clear_confirm_no(CoreState *cs, void *data)
 {
     cs->button_emergency_override = false;
-    cs->mouseLeftButton = Shiro::Mouse::Button::notPressed;
+    cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
     return 0;
 }
 
@@ -400,10 +400,10 @@ int qrs_input(game_t *g)
     {
         if(d->paused == QRS_FIELD_EDIT)
         {
-            cell_x = (cs->mouse_x - q->field_x * scale) / (16 * scale) - 1;
-            cell_y = (cs->mouse_y - q->field_y * scale) / (16 * scale) - 2;
-            palette_cell_x = (cs->mouse_x - FIELD_EDITOR_PALETTE_X * scale) / (16 * scale);
-            palette_cell_y = (cs->mouse_y - FIELD_EDITOR_PALETTE_Y * scale) / (16 * scale);
+            cell_x = (cs->mouse.x - q->field_x * scale) / (16 * scale) - 1;
+            cell_y = (cs->mouse.y - q->field_y * scale) / (16 * scale) - 2;
+            palette_cell_x = (cs->mouse.x - FIELD_EDITOR_PALETTE_X * scale) / (16 * scale);
+            palette_cell_y = (cs->mouse.y - FIELD_EDITOR_PALETTE_Y * scale) / (16 * scale);
 
             if(cs->select_all && !cs->text_editing)
             {
@@ -420,9 +420,9 @@ int qrs_input(game_t *g)
             if(cs->redo && !d->field_edit_in_progress)
                 usr_field_redo(cs, d);
 
-            if(SDL_GetModState() & KMOD_SHIFT && cs->mouseLeftButton != Shiro::Mouse::Button::notPressed)
+            if(SDL_GetModState() & KMOD_SHIFT && cs->mouse.leftButton != Shiro::Mouse::Button::notPressed)
             {
-                if(cs->mouseLeftButton == Shiro::Mouse::Button::pressedThisFrame)
+                if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
                 {
                     d->field_selection = 1;
                     d->field_selection_vertex1_x = cell_x;
@@ -434,7 +434,7 @@ int qrs_input(game_t *g)
             }
             else
             {
-                if(cs->mouseLeftButton != Shiro::Mouse::Button::notPressed)
+                if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed)
                 {
                     if(palette_cell_x == 0)
                     {
@@ -496,13 +496,13 @@ int qrs_input(game_t *g)
                     }
                     else if(d->field_selection)
                     {
-                        if(cs->mouseLeftButton == Shiro::Mouse::Button::pressedThisFrame)
+                        if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
                         {
                             d->field_selection = 0;
-                            cs->mouseLeftButton = Shiro::Mouse::Button::notPressed;
+                            cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
                         }
                     }
-                    else if(cs->mouseLeftButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+                    else if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
                         if(d->usr_field.getCell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
                         {
@@ -525,17 +525,17 @@ int qrs_input(game_t *g)
                         }
                     }
                 }
-                else if(cs->mouseRightButton != Shiro::Mouse::Button::notPressed)
+                else if(cs->mouse.rightButton != Shiro::Mouse::Button::notPressed)
                 {
                     if(d->field_selection)
                     {
-                        if(cs->mouseRightButton == Shiro::Mouse::Button::pressedThisFrame)
+                        if(cs->mouse.rightButton == Shiro::Mouse::Button::pressedThisFrame)
                         {
                             d->field_selection = 0;
-                            cs->mouseRightButton = Shiro::Mouse::Button::notPressed;
+                            cs->mouse.rightButton = Shiro::Mouse::Button::notPressed;
                         }
                     }
-                    else if(cs->mouseRightButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+                    else if(cs->mouse.rightButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
                         if(d->usr_field.cell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
                         {

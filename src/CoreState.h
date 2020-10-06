@@ -51,6 +51,7 @@ struct CoreState {
 
     double fps;        // because tap fps = 61.68
 
+    // TODO: Create a text editing class, moving members from `text_editing` up to and including `redo`.
     int text_editing;
     int (*text_toggle)(CoreState *);    // used to abstract text editing functions, can be set/called by other parts of the code
     int (*text_insert)(CoreState *, char *);
@@ -93,12 +94,7 @@ struct CoreState {
     unsigned hold_time;
 
     SDL_Joystick *joystick;
-    int mouse_x;
-    int mouse_y;
-    int logical_mouse_x;
-    int logical_mouse_y;
-    Shiro::Mouse::Button mouseLeftButton;
-    Shiro::Mouse::Button mouseRightButton;
+    Shiro::Mouse mouse;
 
     bool menu_input_override;
     bool button_emergency_override;
