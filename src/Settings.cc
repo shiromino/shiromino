@@ -160,6 +160,7 @@ void Shiro::Settings::write() const {
     ini.set("AUDIO", "MASTER_VOLUME", masterVolume);
     ini.set("AUDIO", "SFX_VOLUME", sfxVolume);
     ini.set("AUDIO", "MUSIC_VOLUME", musicVolume);
+    ini.set("AUDIO", "SAMPLING_RATE", samplingRate);
 
     ini.set("SCREEN", "VIDEO_SCALE", videoScale);
     ini.set("SCREEN", "VIDEO_STRETCH", videoStretch);
