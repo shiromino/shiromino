@@ -118,7 +118,3 @@ struct CoreState {
     // struct scoredb archive;
     Shiro::Player player;
 };
-
-struct bindings *bindings_copy(struct bindings *src);
-
-bool procgame(game_t *g, int input_enabled);

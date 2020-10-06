@@ -1,4 +1,5 @@
 #include "CoreState.h"
+#include "Game.h"
 #include "Asset/Sfx.h"
 #include "Debug.h"
 #include "definitions.h"
@@ -89,11 +90,6 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
     }
 }
 #endif
-
-#define S_ISDIR(flags) ((flags) & S_IFDIR)
-#else
-#include <errno.h>
-#include <sys/stat.h>
 #endif
 
 #if 0
@@ -528,7 +524,7 @@ void CoreState::run() {
             gfx.clearLayers();
 
             if (p1game) {
-                if (!procgame(p1game, !button_emergency_override)) {
+                if (!p1game->update(!button_emergency_override)) {
                     p1game->quit(p1game);
                     free(p1game);
                     p1game = NULL;
@@ -538,7 +534,7 @@ void CoreState::run() {
                 }
             }
             if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
-                if (!procgame(menu, !button_emergency_override)) {
+                if (!menu->update(!button_emergency_override)) {
                     menu->quit(menu);
                     free(menu);
 
@@ -1511,36 +1507,6 @@ bool CoreState::process_events() {
     */
 
     keys = keys_raw;
-
-    return true;
-}
-
-bool procgame(game_t *g, int input_enabled) {
-    if(!g)
-        return false;
-
-    if(g->preframe)
-    {
-        if(g->preframe(g))
-            return false;
-    }
-
-    if(g->input && input_enabled)
-    {
-        bool inputStatus = !g->input(g);
-        if (!inputStatus) return false;
-    }
-
-    Uint64 benchmark = SDL_GetPerformanceCounter();
-
-    if(g->frame)
-    {
-        if(g->frame(g))
-            return false;
-    }
-
-    benchmark = SDL_GetPerformanceCounter() - benchmark;
-//     std::cerr << (double) (benchmark) * 1000 / (double) SDL_GetPerformanceFrequency() << " ms" << std::endl;
 
     return true;
 }

@@ -10,6 +10,8 @@ struct game {
     int (*frame)(game_t *);
     int (*draw)(game_t *);
 
+    bool update(bool inputEnabled);
+
     unsigned long frame_counter;
 
     CoreState *origin;
