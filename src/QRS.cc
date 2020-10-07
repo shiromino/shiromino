@@ -318,8 +318,9 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
     cs->gfx.push(std::make_unique<Shiro::MessageEntity>(
         "CONFIRM DELETE\nUNDO HISTORY?",
         Shiro::GfxLayer::emergencyMessages,
-        640 / 2 - 7 * 16,
-        480 / 2 - 16,
+        std::make_shared<std::pair<int, int>>(640 / 2 - 7 * 16, 480 / 2 - 16),
+        0,
+        0,
         *monofont_square,
         fmt,
         SIZE_MAX,
@@ -400,8 +401,8 @@ int qrs_input(game_t *g)
     {
         if(d->paused == QRS_FIELD_EDIT)
         {
-            cell_x = (cs->mouse.x - q->field_x * scale) / (16 * scale) - 1;
-            cell_y = (cs->mouse.y - q->field_y * scale) / (16 * scale) - 2;
+            cell_x = (cs->mouse.x - q->fieldPos->first * scale) / (16 * scale) - 1;
+            cell_y = (cs->mouse.y - q->fieldPos->second * scale) / (16 * scale) - 2;
             palette_cell_x = (cs->mouse.x - FIELD_EDITOR_PALETTE_X * scale) / (16 * scale);
             palette_cell_y = (cs->mouse.y - FIELD_EDITOR_PALETTE_Y * scale) / (16 * scale);
 

@@ -11,6 +11,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <utility>
 
 namespace Shiro {
     class MessageEntity : public Entity {
@@ -22,11 +23,12 @@ namespace Shiro {
         MessageEntity(
             const std::string text,
             const size_t layerNum,
-            const int x,
-            const int y,
+            const std::shared_ptr<std::pair<int, int>> pos,
+            const int offsetX,
+            const int offsetY,
             const png_monofont& font,
             const text_formatting& fmt,
-            const size_t numFrames = 0u,
+            const std::size_t numFrames,
             const std::function<bool()> deleteCheck = []() { return false; }
         );
 

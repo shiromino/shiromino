@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <fstream>
 #include <vector>
+#include <utility>
+#include <memory>
 
 #define MAX_SECTIONS 30
 
@@ -278,8 +280,7 @@ struct qrsdata
     bool tetromino_only;
     bool pentomino_only;
 
-    int field_x; // in pixels (position of top-left of field)
-    int field_y; // ^^
+    std::shared_ptr<std::pair<int, int>> fieldPos; // in pixels (position of top-left of field)
     int field_w; // in cells (only player-accessible ones counted here)
 
     unsigned int max_floorkicks;

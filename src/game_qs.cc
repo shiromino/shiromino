@@ -581,10 +581,9 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->previews.clear();
     q->hold = NULL;
 
-    q->field_x = QRS_FIELD_X;
-    q->field_y = QRS_FIELD_Y;
-
+    q->fieldPos = make_shared<pair<int, int>>(QRS_FIELD_X, QRS_FIELD_Y);
     q->field_w = 12;
+
     q->randomizer_type = RANDOMIZER_NORMAL;
     q->tetromino_only = 0;
     q->pentomino_only = 0;
@@ -629,8 +628,8 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     {
         q->mode_type = MODE_G2_DEATH;
         q->grade = NO_GRADE;
-        // q->field_x = QRS_FIELD_X - 28;
-        // q->field_y = QRS_FIELD_Y - 16 + 2;
+        // q->fieldPos->first = QRS_FIELD_X - 28;
+        // q->fieldPos->second = QRS_FIELD_Y - 16 + 2;
         q->lock_protect = 1;
         flags |= static_cast<int>(Shiro::GameType::SIMULATE_G2);
         flags |= TETROMINO_ONLY;
@@ -740,7 +739,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     }
 
     if(q->game_type == Shiro::GameType::SIMULATE_QRS)
-        q->field_x = QRS_FIELD_X + 4;
+        q->fieldPos->first = QRS_FIELD_X + 4;
 
     uint32_t randomizer_flags = 0;
 
@@ -1230,11 +1229,11 @@ int qs_game_frame(game_t *g)
             default:
             case Shiro::DisplayMode::DEFAULT:
             case Shiro::DisplayMode::DETAILED:
-                q->field_x = QRS_FIELD_X;
+                q->fieldPos->first = QRS_FIELD_X;
                 break;
 
             case Shiro::DisplayMode::CENTERED:
-                q->field_x = 192;
+                q->fieldPos->first = 192;
                 break;
         }
     }
@@ -1287,25 +1286,14 @@ int qs_game_frame(game_t *g)
                 MessageEntity::push(cs->gfx,
                     "READY",
                     GfxLayer::messages,
-                    (4 * 16 + 8 + q->field_x),
-                    (11 * 16 + q->field_y),
+                    q->fieldPos,
+                    4 * 16 + 8,
+                    11 * 16,
                     *monofont_fixedsys,
                     fmt,
                     60u,
                     gameIsInactive
                 );
-#if 0
-                cs->gfx.push(make_unique<MessageEntity>(
-                    "READY",
-                    GfxLayer::messages,
-                    (4 * 16 + 8 + q->field_x),
-                    (11 * 16 + q->field_y),
-                    *monofont_fixedsys,
-                    fmt,
-                    60u,
-                    gameIsInactive
-                ));
-#endif
 
                 SfxAsset::get(cs->assetMgr, "ready").play(cs->settings);
             }
@@ -1316,25 +1304,14 @@ int qs_game_frame(game_t *g)
                 MessageEntity::push(cs->gfx,
                     "GO",
                     GfxLayer::messages,
-                    (6 * 16 + q->field_x),
-                    (11 * 16 + q->field_y),
+                    q->fieldPos,
+                    6 * 16,
+                    11 * 16,
                     *monofont_fixedsys,
                     fmt,
                     60u,
                     gameIsInactive
                 );
-#if 0
-                cs->gfx.push(make_unique<MessageEntity>(
-                    "GO",
-                    GfxLayer::messages,
-                    (6 * 16 + q->field_x),
-                    (11 * 16 + q->field_y),
-                    *monofont_fixedsys,
-                    fmt,
-                    60u,
-                    gameIsInactive
-                ));
-#endif
 
                 SfxAsset::get(cs->assetMgr, "go").play(cs->settings);
             }
