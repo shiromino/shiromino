@@ -299,11 +299,11 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     if(!cs || !field)
         return -1;
 
-    SDL_Texture *tetrion_qs = cs->assets->tetrion_qs_white.tex;
-    SDL_Texture *playfield_grid = cs->assets->playfield_grid_alt.tex;
-    SDL_Texture *tets = cs->assets->tets_dark_qs.tex;
-    SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
-    SDL_Texture *misc = cs->assets->misc.tex;
+    SDL_Texture *tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "tetrion_qs_white").getTexture();
+    SDL_Texture *playfield_grid = Shiro::ImageAsset::get(cs->assetMgr, "playfield_grid_alt").getTexture();
+    SDL_Texture *tets = Shiro::ImageAsset::get(cs->assetMgr, "tets_dark_qs").getTexture();
+    SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
+    SDL_Texture *misc = Shiro::ImageAsset::get(cs->assetMgr, "misc").getTexture();
 
     SDL_Rect tdest = { x, y - 48, 274, 416 };
     SDL_Rect src = { 0, 0, 16, 16 };
@@ -348,19 +348,19 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     {
         case MODE_G1_MASTER:
         case MODE_G1_20G:
-            tetrion_qs = cs->assets->g1_tetrion.tex;
+            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "g1_tetrion").getTexture();
             break;
 
         case MODE_G2_MASTER:
-            tetrion_qs = cs->assets->g2_tetrion_master.tex;
+            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "g2_tetrion_master").getTexture();
             break;
 
         case MODE_G2_DEATH:
-            tetrion_qs = cs->assets->g2_tetrion_death.tex;
+            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "g2_tetrion_death").getTexture();
             break;
 
         case MODE_G3_TERROR:
-            tetrion_qs = cs->assets->g3_tetrion_terror.tex;
+            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "g3_tetrion_terror").getTexture();
             break;
 
         default:
@@ -976,22 +976,22 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
     }
 
     SDL_Texture *tets;
-    SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
-    SDL_Texture *misc = cs->assets->misc.tex;
+    SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
+    SDL_Texture *misc = Shiro::ImageAsset::get(cs->assetMgr, "misc").getTexture();
 
     //   if(flags & GFX_G2) {
     //      if(flags & DRAWPIECE_SMALL)
-    //         tets = cs->assets->g2_tets_bright_g2_small.tex;
+    //         tets = Shiro::ImageAsset::get(cs->assetMgr, "g2_tets_bright_g2_small").getTexture();
     //      else
-    //         tets = cs->assets->g2_tets_bright_g2.tex;
+    //         tets = Shiro::ImageAsset::get(cs->assetMgr, "g2_tets_bright_g2").getTexture();
     //   } else {
     if(flags & DRAWPIECE_SMALL)
     {
-        tets = cs->assets->tets_bright_qs_small.tex;
+        tets = Shiro::ImageAsset::get(cs->assetMgr, "tets_bright_qs_small").getTexture();
     }
     else
     {
-        tets = cs->assets->tets_bright_qs.tex;
+        tets = Shiro::ImageAsset::get(cs->assetMgr, "tets_bright_qs").getTexture();
     }
     //   }
 

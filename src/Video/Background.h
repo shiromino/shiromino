@@ -6,12 +6,11 @@
  */
 #pragma once
 #include "Video/Screen.h"
-#include "gfx_structures.h"
+#include "Asset/Image.h"
 #include <memory>
 #include <cstdint>
 
 namespace Shiro {
-    // TODO: Once the new dynamic asset system is in place, change usage of gfx_image here in accordance with that system.
     // TODO: Consider adding functionality to query current background state; if none of the code needs such a feature, don't add it.
     class Background {
     public:
@@ -23,7 +22,7 @@ namespace Shiro {
         /**
          * Transition to a new image.
          */
-        void transition(const gfx_image& nextImage);
+        void transition(const ImageAsset& nextImage);
 
         /**
          * Darken the current image to black, then remain black. If the

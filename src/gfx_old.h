@@ -67,6 +67,9 @@ struct text_formatting text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 o
 int gfx_init(CoreState *cs);
 void gfx_quit(CoreState *cs);
 
+bool img_load(gfx_image *img, std::filesystem::path&& pathWithoutExtension, CoreState *cs);
+void img_destroy(gfx_image *img);
+
 // these are a little bit hacky... just add to each RGB value of the pixels
 // mostly would use these for animations
 

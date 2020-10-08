@@ -376,7 +376,7 @@ int menu_init(game_t *g)
     SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 255);
     SDL_SetRenderTarget(g->origin->screen.renderer, NULL);
 
-    g->origin->bg.transition(g->origin->assets->bg_temp);
+    g->origin->bg.transition(Shiro::ImageAsset::get(g->origin->assetMgr, "bg_temp"));
 
     return 0;
 }
@@ -893,7 +893,7 @@ int mload_main(game_t *g, int val)
         cs->p1game = NULL;
     }
 
-    cs->bg.transition(cs->assets->bg_temp);
+    cs->bg.transition(Shiro::ImageAsset::get(cs->assetMgr, "bg_temp"));
 
     //d->menu.resize(16, menu_opt());
     d->menu_id = MENU_ID_MAIN;

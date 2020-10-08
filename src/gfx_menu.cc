@@ -21,8 +21,8 @@ int gfx_drawmenu(game_t *g)
 
     CoreState *cs = g->origin;
 
-    SDL_Texture *font = cs->assets->font.tex;
-    SDL_Texture *font_thin = cs->assets->font_thin.tex;
+    SDL_Texture *font = Shiro::ImageAsset::get(cs->assetMgr, "font").getTexture();
+    SDL_Texture *font_thin = Shiro::ImageAsset::get(cs->assetMgr, "font_thin").getTexture();
     SDL_Rect src = { 0, 80, 16, 16 };
     SDL_Rect dest = { 0, 0, 16, 16 };
     SDL_Rect barsrc = { 12 * 16, 17, 2, 14 };
@@ -74,11 +74,11 @@ int gfx_drawmenu(game_t *g)
         if(menu_is_main(g))
         {
             SDL_Rect titlePNGdest = { 62, 30, 300, 50 };
-            SDL_SetTextureColorMod(cs->assets->title_emboss.tex, 180, 180, 255);
-            //SDL_SetTextureAlphaMod(cs->assets->title_emboss.tex, 150);
-            SDL_SetTextureBlendMode(cs->assets->title_emboss.tex, SDL_BLENDMODE_BLEND);
-            SDL_SetTextureBlendMode(cs->assets->bg_temp.tex, SDL_BLENDMODE_BLEND);
-            SDL_RenderCopy(cs->screen.renderer, cs->assets->title_emboss.tex, NULL, &titlePNGdest);
+            SDL_SetTextureColorMod(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), 180, 180, 255);
+            //SDL_SetTextureAlphaMod(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), 150);
+            SDL_SetTextureBlendMode(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), SDL_BLENDMODE_BLEND);
+            SDL_SetTextureBlendMode(Shiro::ImageAsset::get(cs->assetMgr, "bg_temp").getTexture(), SDL_BLENDMODE_BLEND);
+            SDL_RenderCopy(cs->screen.renderer, Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), NULL, &titlePNGdest);
         }
         else
         {

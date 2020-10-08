@@ -1,5 +1,6 @@
 #include "CoreState.h"
 #include "Game.h"
+#include "Asset/Image.h"
 #include "Asset/Music.h"
 #include "Asset/Sfx.h"
 #include "Debug.h"
@@ -290,10 +291,51 @@ bool CoreState::init() {
     }
 
     try {
+        assetMgr.addLoader(Shiro::AssetType::image, std::unique_ptr<Shiro::AssetLoader>(new Shiro::ImageAssetLoader(settings.basePath / "assets" / "image", screen)));
         assetMgr.addLoader(Shiro::AssetType::music, std::unique_ptr<Shiro::AssetLoader>(new Shiro::MusicAssetLoader(settings.basePath / "assets" / "audio")));
         assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio")));
 
         assetMgr.preload({
+            {Shiro::AssetType::image, "title"},
+            {Shiro::AssetType::image, "title_emboss"},
+            {Shiro::AssetType::image, "tetrion_qs_white"},
+            {Shiro::AssetType::image, "tets_bright_qs"},
+            {Shiro::AssetType::image, "tets_bright_qs_small"},
+            {Shiro::AssetType::image, "tets_dark_qs"},
+            {Shiro::AssetType::image, "tets_jeweled"},
+            //{Shiro::AssetType::image, "g2_tets_bright"},
+            //{Shiro::AssetType::image, "g2_tets_bright_small"},
+            //{Shiro::AssetType::image, "g2_tets_dark"},
+            {Shiro::AssetType::image, "playfield_grid"},
+            {Shiro::AssetType::image, "playfield_grid_alt"},
+            {Shiro::AssetType::image, "misc"},
+            {Shiro::AssetType::image, "medals"},
+
+            {Shiro::AssetType::image, "bg0"},
+            {Shiro::AssetType::image, "bg1"},
+            {Shiro::AssetType::image, "bg2"},
+            {Shiro::AssetType::image, "bg3"},
+            {Shiro::AssetType::image, "bg4"},
+            {Shiro::AssetType::image, "bg5"},
+            {Shiro::AssetType::image, "bg6"},
+            {Shiro::AssetType::image, "bg7"},
+            {Shiro::AssetType::image, "bg8"},
+            {Shiro::AssetType::image, "bg9"},
+            {Shiro::AssetType::image, "bg_temp"},
+            {Shiro::AssetType::image, "bg_darken"},
+
+            {Shiro::AssetType::image, "animation_lineclear0"},
+            {Shiro::AssetType::image, "animation_lineclear1"},
+            {Shiro::AssetType::image, "animation_lineclear2"},
+            {Shiro::AssetType::image, "animation_lineclear3"},
+            {Shiro::AssetType::image, "animation_lineclear4"},
+
+            {Shiro::AssetType::image, "g1_tetrion"},
+            {Shiro::AssetType::image, "g2_tetrion_death"},
+            {Shiro::AssetType::image, "g2_tetrion_master"},
+            {Shiro::AssetType::image, "g3_tetrion_terror"},
+
+
             {Shiro::AssetType::music, "tracks0"},
             {Shiro::AssetType::music, "tracks1"},
             {Shiro::AssetType::music, "tracks2"},
@@ -314,16 +356,19 @@ bool CoreState::init() {
             {Shiro::AssetType::music, "g3_tracks4"},
             {Shiro::AssetType::music, "g3_tracks5"},
 
+
             {Shiro::AssetType::sfx, "menu_choose"},
 
             {Shiro::AssetType::sfx, "ready"},
             {Shiro::AssetType::sfx, "go"},
-
             {Shiro::AssetType::sfx, "prerotate"},
             {Shiro::AssetType::sfx, "land"},
             {Shiro::AssetType::sfx, "lock"},
             {Shiro::AssetType::sfx, "lineclear"},
             {Shiro::AssetType::sfx, "dropfield"},
+            {Shiro::AssetType::sfx, "newsection"},
+            {Shiro::AssetType::sfx, "medal"},
+            {Shiro::AssetType::sfx, "gradeup"},
 
             {Shiro::AssetType::sfx, "pieces0"},
             {Shiro::AssetType::sfx, "pieces1"},
@@ -331,11 +376,7 @@ bool CoreState::init() {
             {Shiro::AssetType::sfx, "pieces3"},
             {Shiro::AssetType::sfx, "pieces4"},
             {Shiro::AssetType::sfx, "pieces5"},
-            {Shiro::AssetType::sfx, "pieces6"},
-
-            {Shiro::AssetType::sfx, "newsection"},
-            {Shiro::AssetType::sfx, "medal"},
-            {Shiro::AssetType::sfx, "gradeup"} //,
+            {Shiro::AssetType::sfx, "pieces6"} //,
 
             //{Shiro::AssetType::sfx, "clear_single"},
             //{Shiro::AssetType::sfx, "clear_double"},
@@ -403,8 +444,8 @@ bool CoreState::init() {
         check(Gui_Init(screen.renderer, NULL), "Gui_Init() returned failure\n");
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
 
-        bg.transition(assets->bg_temp);
-        // blank = assets->blank.tex;
+        bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
+        // blank = Shiro::ImageAsset::get(assetMgr, "blank").getTexture();
 
         // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
 
@@ -449,7 +490,7 @@ void CoreState::run() {
     SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
 
     Shiro::Grid* g = new Shiro::Grid(gridRect.w / 16, gridRect.h / 16);
-    SDL_Texture *paletteTex = assets->tets_bright_qs.tex;
+    SDL_Texture *paletteTex = Shiro::ImageAsset::get(assetMgr, "tets_bright_qs").getTexture();
 
     BindableInt paletteVar {"paletteVar", 0, 25};
 
@@ -547,7 +588,7 @@ void CoreState::run() {
                     free(p1game);
                     p1game = NULL;
 
-                    bg.transition(assets->bg_temp);
+                    bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
                     break;
                 }
             }

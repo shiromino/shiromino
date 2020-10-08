@@ -20,13 +20,13 @@ namespace Shiro {
         assert(asset.getType() == AssetType::music);
         MusicAsset& musicAsset = static_cast<MusicAsset&>(asset);
 
-        musicAsset.data = Mix_LoadMUS((basePath / asset.location).string().append(".ogg").c_str());
+        musicAsset.data = Mix_LoadMUS((basePath / asset.location).concat(".ogg").string().c_str());
         if (musicAsset.data) {
             musicAsset.volume = 100.0f;
             return true;
         }
 
-        musicAsset.data = Mix_LoadMUS((basePath / asset.location).string().append(".wav").c_str());
+        musicAsset.data = Mix_LoadMUS((basePath / asset.location).concat(".wav").string().c_str());
         if (musicAsset.data) {
             musicAsset.volume = 100.0f;
             return true;

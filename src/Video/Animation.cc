@@ -6,6 +6,7 @@
  */
 // TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the backend of Graphic subclasses.
 #include "Video/Animation.h"
+#include "Asset/Image.h"
 
 using namespace Shiro;
 using namespace std;
@@ -33,14 +34,16 @@ namespace Shiro {
         Impl() = delete;
 
         Impl(
-            gfx_image* const frames,
+            AssetManager& mgr,
+            const filesystem::path& frames,
             const size_t layerNum,
             const size_t numFrames,
             const size_t frameMultiplier,
             const shared_ptr<AnimationGraphic> graphic
         );
 
-        gfx_image* const frames;
+        AssetManager& mgr;
+        const filesystem::path frames;
         const size_t layerNum;
         size_t counter;
         const size_t numFrames;
@@ -74,12 +77,14 @@ void AnimationGraphic::draw(const Screen& screen) const {
 }
 
 AnimationEntity::Impl::Impl(
-    gfx_image* const frames,
+    AssetManager& mgr,
+    const filesystem::path& frames,
     const size_t layerNum,
     const size_t numFrames,
     const size_t frameMultiplier,
     const shared_ptr<AnimationGraphic> graphic
 ) :
+    mgr(mgr),
     frames(frames),
     layerNum(layerNum),
     counter(0u),
@@ -88,7 +93,8 @@ AnimationEntity::Impl::Impl(
     graphic(graphic) {}
 
 AnimationEntity::AnimationEntity(
-    gfx_image* const frames,
+    AssetManager& mgr,
+    const filesystem::path& frames,
     const size_t layerNum,
     const int x,
     const int y,
@@ -97,6 +103,7 @@ AnimationEntity::AnimationEntity(
     const Uint32 rgbaMod
 ) :
     implPtr(make_shared<AnimationEntity::Impl>(
+        mgr,
         frames,
         layerNum,
         numFrames,
@@ -110,7 +117,7 @@ AnimationEntity::AnimationEntity(
     )) {}
 
 bool AnimationEntity::update(Layers& layers) {
-    implPtr->graphic->frame = implPtr->frames[implPtr->counter / implPtr->frameMultiplier].tex;
+    implPtr->graphic->frame = ImageAsset::get(implPtr->mgr, implPtr->frames, implPtr->counter / implPtr->frameMultiplier).getTexture();
     layers.push(implPtr->layerNum, implPtr->graphic);
     if (++implPtr->counter < implPtr->frameMultiplier * implPtr->numFrames) {
         return true;

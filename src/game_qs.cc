@@ -1031,7 +1031,7 @@ int qs_game_init(game_t *g)
 
     q->p1->state = PSFALL;
 
-    if(!g->origin->assets->bg[0].tex) // used to check if we are in a testing environment
+    if(!ImageAsset::get(g->origin->assetMgr, "bg", 0).loaded()) // used to check if we are in a testing environment
         return 0;
 
     int bgnumber = q->section;
@@ -1040,7 +1040,7 @@ int qs_game_init(game_t *g)
 
     if(!q->pracdata)
     {
-        g->origin->bg.transition(g->origin->assets->bg[bgnumber]);
+        g->origin->bg.transition(ImageAsset::get(g->origin->assetMgr, "bg", bgnumber));
 
         if(q->mode_type == MODE_G2_DEATH)
         {
@@ -2656,7 +2656,7 @@ int qs_process_lockflash(game_t *g)
                     SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
                     if(q->section < 13)
                     {
-                        cs->bg.transition(cs->assets->bg[q->section]);
+                        cs->bg.transition(ImageAsset::get(cs->assetMgr, "bg", q->section));
                     }
                 }
             }

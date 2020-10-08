@@ -71,6 +71,8 @@ target_sources(${GAME_EXECUTABLE}
 	PRIVATE
 		src/Asset/Asset.cc
 		src/Asset/Asset.h
+		src/Asset/Image.cc
+		src/Asset/Image.h
 		src/Asset/Music.cc
 		src/Asset/Music.h
 		src/Asset/Sfx.cc

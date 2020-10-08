@@ -72,9 +72,9 @@ int gfx_drawqs(game_t *g)
         drawpiece_flags |= DRAWPIECE_JEWELED;
     }*/
 
-    SDL_Texture *font = cs->assets->font.tex;
-    SDL_Texture *tets_dark_qs = cs->assets->tets_dark_qs.tex;
-    //SDL_Texture *tets_jeweled = cs->assets->tets_jeweled.tex;
+    SDL_Texture *font = Shiro::ImageAsset::get(cs->assetMgr, "font").getTexture();
+    SDL_Texture *tets_dark_qs = Shiro::ImageAsset::get(cs->assetMgr, "tets_dark_qs").getTexture();
+    //SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
 
     SDL_Rect palettesrc = { 0, 0, 16, 16 };
     SDL_Rect palettedest = { FIELD_EDITOR_PALETTE_X, FIELD_EDITOR_PALETTE_Y, 16, 16 };
@@ -844,7 +844,6 @@ int gfx_qs_lineclear(game_t *g, int row)
     int i = 0;
     int mod = 0;
     int c = 0;
-    gfx_image* frames = g->origin->assets->animation_lineclear;
 
     for(i = (QRS_FIELD_W - q->field_w) / 2; i < (QRS_FIELD_W + q->field_w) / 2; i += 2)
     {
@@ -866,7 +865,8 @@ int gfx_qs_lineclear(game_t *g, int row)
         if(row % 2)
         {
             Shiro::AnimationEntity::push(g->origin->gfx,
-                frames,
+                g->origin->assetMgr,
+                "animation_lineclear",
                 Shiro::GfxLayer::animations,
                 q->fieldPos->first + (i * 16),
                 q->fieldPos->second + 16 + (16 * (row - QRS_FIELD_H + 20)),
@@ -878,7 +878,8 @@ int gfx_qs_lineclear(game_t *g, int row)
         else
         {
             Shiro::AnimationEntity::push(g->origin->gfx,
-                frames,
+                g->origin->assetMgr,
+                "animation_lineclear",
                 Shiro::GfxLayer::animations,
                 q->fieldPos->first + (i * 16) + 16,
                 q->fieldPos->second + 16 + (16 * (row - QRS_FIELD_H + 20)),
@@ -900,7 +901,7 @@ int gfx_drawqsmedals(game_t *g)
     qrsdata *q = (qrsdata *)g->data;
     SDL_Rect dest = { 228 + q->fieldPos->first, 150, 40, 20 };
     SDL_Rect src = { 20, 0, 20, 10 };
-    SDL_Texture *medals = g->origin->assets->medals.tex;
+    SDL_Texture *medals = Shiro::ImageAsset::get(g->origin->assetMgr, "medals").getTexture();
     bool medal = true;
 
     float size_multiplier = 1.0;
@@ -1076,7 +1077,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
 {
     qrsdata *q = (qrsdata *)g->data;
 
-    SDL_Texture *tets = g->origin->assets->tets_bright_qs.tex;
+    SDL_Texture *tets = Shiro::ImageAsset::get(g->origin->assetMgr, "tets_bright_qs").getTexture();
     SDL_Rect src = { 31 * 16, 0, 16, 16 };
     SDL_Rect dest = { 0, 0, 16, 16 };
 

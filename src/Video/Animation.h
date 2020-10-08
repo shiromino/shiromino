@@ -5,9 +5,10 @@
  * directory for the full text of the license.
  */
 #pragma once
+#include "Asset/Asset.h"
 #include "Video/Gfx.h"
-#include "gfx_structures.h"
 #include "SDL.h"
+#include <filesystem>
 #include <memory>
 
 namespace Shiro {
@@ -18,7 +19,8 @@ namespace Shiro {
         AnimationEntity() = delete;
 
         AnimationEntity(
-            gfx_image* const frames,
+            AssetManager& mgr,
+            const std::filesystem::path& frames,
             const size_t layerNum,
             const int x,
             const int y,

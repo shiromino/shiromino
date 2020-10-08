@@ -60,7 +60,7 @@ namespace Shiro {
         const Screen& screen;
         BackgroundState state;
         bool drawImage;
-        queue<const gfx_image*> images;
+        queue<const ImageAsset*> images;
         uint8_t shade;
         const uint8_t shadeV;
     };
@@ -69,7 +69,7 @@ namespace Shiro {
 Background::Background(const Screen& screen, const uint8_t shadeV) :
     implPtr(make_shared<Impl>(screen, shadeV)) {}
 
-void Background::transition(const gfx_image& nextImage) {
+void Background::transition(const ImageAsset& nextImage) {
     implPtr->drawImage = true;
     implPtr->images.push(&nextImage);
 
@@ -150,8 +150,7 @@ void Background::update() {
 
 void Background::draw() const {
     switch (implPtr->state) {
-    case BackgroundState::dark:
-    {
+    case BackgroundState::dark: {
         Uint8 oldDrawColor[4];
         SDL_GetRenderDrawColor(implPtr->screen.renderer, &oldDrawColor[0], &oldDrawColor[1], &oldDrawColor[2], &oldDrawColor[3]);
         SDL_SetRenderDrawColor(implPtr->screen.renderer, 0x00u, 0x00u, 0x00u, SDL_ALPHA_OPAQUE);
@@ -160,13 +159,12 @@ void Background::draw() const {
         break;
     }
 
-    default:
-    {
+    default: {
         Uint8 oldColorMod[3];
-        SDL_GetTextureColorMod(implPtr->images.front()->tex, &oldColorMod[0], &oldColorMod[1], &oldColorMod[2]);
-        SDL_SetTextureColorMod(implPtr->images.front()->tex, implPtr->shade, implPtr->shade, implPtr->shade);
-        SDL_RenderCopy(implPtr->screen.renderer, implPtr->images.front()->tex, nullptr, nullptr);
-        SDL_SetTextureColorMod(implPtr->images.front()->tex, oldColorMod[0], oldColorMod[1], oldColorMod[2]);
+        SDL_GetTextureColorMod(implPtr->images.front()->getTexture(), &oldColorMod[0], &oldColorMod[1], &oldColorMod[2]);
+        SDL_SetTextureColorMod(implPtr->images.front()->getTexture(), implPtr->shade, implPtr->shade, implPtr->shade);
+        SDL_RenderCopy(implPtr->screen.renderer, implPtr->images.front()->getTexture(), nullptr, nullptr);
+        SDL_SetTextureColorMod(implPtr->images.front()->getTexture(), oldColorMod[0], oldColorMod[1], oldColorMod[2]);
         break;
     }
     }

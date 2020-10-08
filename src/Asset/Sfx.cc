@@ -19,13 +19,13 @@ bool Shiro::SfxAssetLoader::load(Shiro::Asset& asset) const {
     assert(asset.getType() == Shiro::AssetType::sfx);
     Shiro::SfxAsset& sfxAsset = static_cast<Shiro::SfxAsset&>(asset);
 
-    sfxAsset.data = Mix_LoadWAV((basePath / sfxAsset.location).string().append(".ogg").c_str());
+    sfxAsset.data = Mix_LoadWAV((basePath / sfxAsset.location).concat(".ogg").string().c_str());
     if (sfxAsset.data) {
         sfxAsset.volume = 100.0f;
         return true;
     }
 
-    sfxAsset.data = Mix_LoadWAV((basePath / sfxAsset.location).string().append(".wav").c_str());
+    sfxAsset.data = Mix_LoadWAV((basePath / sfxAsset.location).concat(".wav").string().c_str());
     if (sfxAsset.data) {
         sfxAsset.volume = 100.0f;
         return true;

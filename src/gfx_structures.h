@@ -45,17 +45,6 @@ struct text_formatting {
     std::size_t wrap_length;
 };
 
-struct gfx_message {
-    std::string text;
-    int x;
-    int y;
-    unsigned int flags;
-    png_monofont *font;
-    struct text_formatting *fmt;
-    unsigned int counter;
-    int (*delete_check)(CoreState *);
-};
-
 struct gfx_button {
     std::string text;
     int x;
