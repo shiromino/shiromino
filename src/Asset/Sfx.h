@@ -53,7 +53,7 @@ namespace Shiro {
         float volume;
 
     private:
-        Mix_Chunk *data;
+        Mix_Chunk* data;
 
     protected:
         SfxAsset(const std::filesystem::path& location);

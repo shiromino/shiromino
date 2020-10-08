@@ -71,11 +71,11 @@ target_sources(${GAME_EXECUTABLE}
 	PRIVATE
 		src/Asset/Asset.cc
 		src/Asset/Asset.h
+		src/Asset/Music.cc
+		src/Asset/Music.h
 		src/Asset/Sfx.cc
 		src/Asset/Sfx.h
 		src/AssetStore.h
-		src/Audio.cc
-		src/Audio.h
 		src/core.cc
 		src/CoreState.h
 		src/Debug.h
@@ -137,7 +137,6 @@ target_sources(${GAME_EXECUTABLE}
 		src/Menu/ToggleOption.h
 		src/Mode/BaseMode.cc
 		src/Mode/BaseMode.h
-		src/music.h
 		src/PieceDefinition.cc
 		src/PieceDefinition.h
 		src/Player.h

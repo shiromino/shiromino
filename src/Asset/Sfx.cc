@@ -40,7 +40,7 @@ void Shiro::SfxAssetLoader::unload(Shiro::Asset& asset) const {
     assert(asset.getType() == Shiro::AssetType::sfx);
     Shiro::SfxAsset& sfxAsset = static_cast<Shiro::SfxAsset&>(asset);
 
-    if (sfxAsset.data) {
+    if (sfxAsset.loaded()) {
         Mix_FreeChunk(sfxAsset.data);
         sfxAsset.data = nullptr;
     }

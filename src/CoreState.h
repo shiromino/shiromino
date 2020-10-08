@@ -1,6 +1,5 @@
 #pragma once
 #include "Asset/Asset.h"
-#include "Asset/Sfx.h"
 #include "AssetStore.h"
 #include "DASDirection.h"
 #include "DisplayMode.h"

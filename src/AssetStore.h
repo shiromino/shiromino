@@ -1,5 +1,4 @@
 #pragma once
-#include "Audio.h"
 #include "gfx_structures.h"
 #include "SGUIL/SGUIL.h"
 // TODO: Refactor lists of assets with a number appended into arrays.
@@ -18,11 +17,5 @@ namespace Shiro {
         #define FONT(name, sheetName, outlineSheetName, charW, charH) BitFont name;
         #include "fonts.h"
         #undef FONT
-
-        #define MUSIC(name, i) Shiro::Music* name[i];
-        #define DEF_ARRAY
-        #include "music.h"
-        #undef DEF_ARRAY
-        #undef MUSIC
     };
 }

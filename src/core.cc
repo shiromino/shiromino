@@ -1,5 +1,6 @@
 #include "CoreState.h"
 #include "Game.h"
+#include "Asset/Music.h"
 #include "Asset/Sfx.h"
 #include "Debug.h"
 #include "definitions.h"
@@ -249,10 +250,6 @@ CoreState::~CoreState() {
 #include "fonts.h"
 #undef FONT
 
-#define MUSIC(name, i) delete assets->name[i];
-#include "music.h"
-#undef MUSIC
-
         delete assets;
     }
 
@@ -293,9 +290,30 @@ bool CoreState::init() {
     }
 
     try {
+        assetMgr.addLoader(Shiro::AssetType::music, std::unique_ptr<Shiro::AssetLoader>(new Shiro::MusicAssetLoader(settings.basePath / "assets" / "audio")));
         assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio")));
 
         assetMgr.preload({
+            {Shiro::AssetType::music, "tracks0"},
+            {Shiro::AssetType::music, "tracks1"},
+            {Shiro::AssetType::music, "tracks2"},
+            {Shiro::AssetType::music, "tracks3"},
+
+            {Shiro::AssetType::music, "g1_tracks0"},
+            {Shiro::AssetType::music, "g1_tracks1"},
+
+            {Shiro::AssetType::music, "g2_tracks0"},
+            {Shiro::AssetType::music, "g2_tracks1"},
+            {Shiro::AssetType::music, "g2_tracks2"},
+            {Shiro::AssetType::music, "g2_tracks3"},
+
+            {Shiro::AssetType::music, "g3_tracks0"},
+            {Shiro::AssetType::music, "g3_tracks1"},
+            {Shiro::AssetType::music, "g3_tracks2"},
+            {Shiro::AssetType::music, "g3_tracks3"},
+            {Shiro::AssetType::music, "g3_tracks4"},
+            {Shiro::AssetType::music, "g3_tracks5"},
+
             {Shiro::AssetType::sfx, "menu_choose"},
 
             {Shiro::AssetType::sfx, "ready"},
@@ -752,23 +770,6 @@ static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineS
     font->isValid = true;
 }
 
-static void load_music(CoreState* cs, PDINI::INI& ini, Shiro::Music*& m, const char* name)
-{
-    std::filesystem::path basePath { cs->settings.basePath };
-    m = new Shiro::Music();
-    if (!m->load(basePath / "assets" / "audio" / name)) {
-        log_warn("Failed to load music '%s'", name);
-    }
-
-    float volume;
-    if (!ini.get("", name, volume) || volume < 0.0f || volume > 100.0f) {
-        m->volume = 100.0f;
-    }
-    else {
-        m->volume = volume;
-    }
-}
-
 void CoreState::load_files() {
     // image assets
 #define IMG(name) load_image(this, &assets->name, #name);
@@ -781,17 +782,6 @@ void CoreState::load_files() {
     load_bitfont(&assets->name, &assets->sheetName, &assets->outlineSheetName, charW, charH)
 #include "fonts.h"
 #undef FONT
-
-    // audio assets
-    {
-        PDINI::INI ini(false);
-        std::filesystem::path basePath { settings.basePath };
-        ini.read(basePath / "assets" / "audio" / "volume.ini");
-
-#define MUSIC(name, i) load_music(this, ini, assets->name[i], #name #i);
-#include "music.h"
-#undef MUSIC
-    }
 }
 
 void quit(CoreState *cs)
@@ -819,10 +809,6 @@ void quit(CoreState *cs)
         cs->assets->name.outlineSheet = nullptr
 #include "fonts.h"
 #undef FONT
-
-#define MUSIC(name, i) delete cs->assets->name[i];
-#include "music.h"
-#undef MUSIC
 
         delete cs->assets;
     }

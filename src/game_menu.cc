@@ -7,6 +7,7 @@
 // TODO: Change malloc/free of structs containing std::string to new/delete.
 
 #include "CoreState.h"
+#include "Asset/Sfx.h"
 #include "game_menu.h"
 #include "GameType.h"
 #include "game_qs.h"

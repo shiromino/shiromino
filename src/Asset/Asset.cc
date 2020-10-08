@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <vector>
 #include <cstdlib>
-#include <iostream>
 
 Shiro::AssetLoader::~AssetLoader() {}
 

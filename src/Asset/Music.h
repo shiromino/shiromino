@@ -5,31 +5,36 @@
  * directory for the full text of the license.
  */
 #pragma once
+#include "Asset/Asset.h"
 #include "Settings.h"
 #include "SDL_mixer.h"
 #include <filesystem>
-#include <string>
+#include <memory>
 
 namespace Shiro {
     // TODO: Allow selecting playback channel?
 
-    /**
-     * Manages loading and playback of a music track.
-     */
-    class Music {
+    class MusicAssetLoader : public AssetLoader {
     public:
-        Music();
-        Music(const Music&) = delete;
-        Music& operator=(const Music&) = delete;
-        ~Music();
+        MusicAssetLoader() = delete;
 
-        /**
-         * Loads the music from a file. directory is the directory where the
-         * audio file is. name is the name of the file, without the ".ogg" or
-         * ".wav" extension. Will try to load OGG first, otherwise WAV. Returns
-         * true if the file was loaded.
-         */
-        bool load(const std::filesystem::path& path);
+        MusicAssetLoader(const std::filesystem::path& path);
+
+        virtual std::unique_ptr<Asset> create(const std::filesystem::path& location) const;
+        bool load(Asset& asset) const;
+        void unload(Asset& asset) const;
+
+        AssetType getType() const;
+
+    private:
+        std::filesystem::path basePath;
+    };
+
+    class MusicAsset : public Asset, public AssetCommon<MusicAsset, AssetType::music> {
+        friend MusicAssetLoader;
+
+    public:
+        ~MusicAsset();
 
         /**
          * Plays the music track. Returns true if the music track was played;
@@ -37,7 +42,10 @@ namespace Shiro {
          * music volume settings will scale the volume the music track plays
          * at; if they're both 100%, Music::volume will be the played volume.
          */
-        bool play(Settings& settings);
+        bool play(const Settings& settings) const;
+
+        bool loaded() const;
+        AssetType getType() const;
 
         /**
          * The volume of the music track when played. This is a percentage,
@@ -46,6 +54,9 @@ namespace Shiro {
         float volume;
 
     private:
-        Mix_Music *data;
+        Mix_Music* data;
+
+    protected:
+        MusicAsset(const std::filesystem::path& location);
     };
 }

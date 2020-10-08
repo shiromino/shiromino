@@ -1,5 +1,7 @@
 #include "Debug.h"
 #include "CoreState.h"
+#include "Asset/Music.h"
+#include "Asset/Sfx.h"
 #include "game_menu.h"
 #include "game_qs.h"
 #include "GameType.h"
@@ -452,7 +454,7 @@ static int find_music(int level, const struct levelmusic *table)
     return music;
 }
 
-static void play_or_halt_music(qrsdata *q, CoreState *cs, Shiro::Music** tracks, int desired_music)
+static void play_or_halt_music(qrsdata *q, CoreState *cs, const std::filesystem::path& tracks, int desired_music)
 {
     if(q->music == desired_music)
         return;
@@ -462,7 +464,7 @@ static void play_or_halt_music(qrsdata *q, CoreState *cs, Shiro::Music** tracks,
     if(desired_music == -1)
         Mix_HaltMusic();
     else
-        tracks[desired_music]->play(cs->settings);
+        MusicAsset::get(cs->assetMgr, tracks, desired_music).play(cs->settings);
 }
 
 static void update_music(qrsdata *q, CoreState *cs)
@@ -470,24 +472,24 @@ static void update_music(qrsdata *q, CoreState *cs)
     switch(q->mode_type)
     {
         case MODE_PENTOMINO:
-            play_or_halt_music(q, cs, cs->assets->tracks   , find_music(q->level, pentomino_music));
+            play_or_halt_music(q, cs, "tracks", find_music(q->level, pentomino_music));
             break;
 
         case MODE_G2_MASTER:
-            play_or_halt_music(q, cs, cs->assets->g2_tracks, find_music(q->level, g2_master_music));
+            play_or_halt_music(q, cs, "g2_tracks", find_music(q->level, g2_master_music));
             break;
 
         case MODE_G2_DEATH:
-            play_or_halt_music(q, cs, cs->assets->g2_tracks, find_music(q->level, g2_death_music));
+            play_or_halt_music(q, cs, "g2_tracks", find_music(q->level, g2_death_music));
             break;
 
         case MODE_G3_TERROR:
-            play_or_halt_music(q, cs, cs->assets->g3_tracks, find_music(q->level, g3_terror_music));
+            play_or_halt_music(q, cs, "g3_tracks", find_music(q->level, g3_terror_music));
             break;
 
         case MODE_G1_MASTER:
         case MODE_G1_20G:
-            play_or_halt_music(q, cs, cs->assets->g1_tracks, find_music(q->level, g1_music));
+            play_or_halt_music(q, cs, "g1_tracks", find_music(q->level, g1_music));
             break;
 
         default:
