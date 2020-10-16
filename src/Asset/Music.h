@@ -27,7 +27,7 @@ namespace Shiro {
         AssetType getType() const;
 
     private:
-        std::filesystem::path basePath;
+        const std::filesystem::path basePath;
     };
 
     class MusicAsset : public Asset, public AssetCommon<MusicAsset, AssetType::music> {

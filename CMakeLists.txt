@@ -71,6 +71,8 @@ target_sources(${GAME_EXECUTABLE}
 	PRIVATE
 		src/Asset/Asset.cc
 		src/Asset/Asset.h
+		src/Asset/Font.cc
+		src/Asset/Font.h
 		src/Asset/Image.cc
 		src/Asset/Image.h
 		src/Asset/Music.cc
@@ -172,6 +174,10 @@ target_sources(${GAME_EXECUTABLE}
 		src/TGM.h
 		src/Timer.cc
 		src/Timer.h
+		third-party/PDBMFont.h
+		third-party/PDINI.h
+		third-party/tinyxml2.cc
+		third-party/tinyxml2.h
 )
 #
 # The "Headers" source group for IDEs

@@ -6,40 +6,39 @@
  */
 #pragma once
 #include "Video/Gfx.h"
-#include "gfx_structures.h"
+#include "Asset/Font.h"
 #include "SDL.h"
+#include <vector>
+#include <utility>
 #include <string>
+#include <cstddef>
+#include <cstdint>
 
 namespace Shiro {
+    // TODO: Investigate whether more features should be added, after considering whether previous output features should be changed to more premade fonts, but certainly alignment should be added.
     struct TextGraphic : public Graphic {
+    public:
         TextGraphic() = delete;
 
         TextGraphic(
-            const std::string& text,
-            const size_t pos,
-            const size_t len,
-            const int x,
-            const int y,
-            const png_monofont& font,
-            const text_formatting& fmt
-        );
-
-        TextGraphic(
+            const FontAsset& font,
             const std::string& text,
             const int x,
             const int y,
-            const png_monofont& font,
-            const text_formatting& fmt
+            const int offsetX = 0,
+            const int offsetY = 0,
+            const float scale = 1.0f,
+            const std::uint32_t color = 0xFFFFFFFFu
         );
 
         void draw(const Screen& screen) const;
 
-        const std::string text;
-        const size_t pos;
-        const size_t len;
-        const int x;
-        const int y;
-        const png_monofont& font;
-        const text_formatting fmt;
+        int x, y;
+        int offsetX, offsetY;
+        float scale;
+        std::uint32_t color;
+
+    private:
+        std::vector<std::tuple<SDL_Texture*, SDL_Rect, SDL_Rect>> textData;
     };
 }

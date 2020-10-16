@@ -314,18 +314,19 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
 {
     cs->button_emergency_override = true;
 
-    struct text_formatting fmt = text_fmt_create(DRAWTEXT_CENTERED, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
-    cs->gfx.push(std::make_unique<Shiro::MessageEntity>(
+    Shiro::MessageEntity::push(cs->gfx,
+        Shiro::FontAsset::get(cs->assetMgr, "square"),
         "CONFIRM DELETE\nUNDO HISTORY?",
-        Shiro::GfxLayer::emergencyMessages,
-        std::make_shared<std::pair<int, int>>(640 / 2 - 7 * 16, 480 / 2 - 16),
+        640 / 2 - 7 * 16,
+        480 / 2 - 16,
         0,
         0,
-        *monofont_square,
-        fmt,
+        1.0f,
+        RGBA_DEFAULT,
         SIZE_MAX,
+        Shiro::GfxLayer::emergencyMessages,
         [cs] { return cs->button_emergency_inactive(); }
-    ));
+    );
 
     gfx_createbutton(
         cs, "YES", 640 / 2 - 6 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_yes, [](CoreState* cs) { return (int)cs->button_emergency_inactive(); }, NULL, 0xB0FFB0FF);

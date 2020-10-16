@@ -1,6 +1,7 @@
 #include "CoreState.h"
 #include "Game.h"
 #include "Asset/Image.h"
+#include "Asset/Font.h"
 #include "Asset/Music.h"
 #include "Asset/Sfx.h"
 #include "Debug.h"
@@ -292,6 +293,7 @@ bool CoreState::init() {
 
     try {
         assetMgr.addLoader(Shiro::AssetType::image, std::unique_ptr<Shiro::AssetLoader>(new Shiro::ImageAssetLoader(settings.basePath / "assets" / "image", screen)));
+        assetMgr.addLoader(Shiro::AssetType::font, std::unique_ptr<Shiro::AssetLoader>(new Shiro::FontAssetLoader(settings.basePath / "assets" / "font", screen)));
         assetMgr.addLoader(Shiro::AssetType::music, std::unique_ptr<Shiro::AssetLoader>(new Shiro::MusicAssetLoader(settings.basePath / "assets" / "audio")));
         assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio")));
 
@@ -334,6 +336,10 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "g2_tetrion_death"},
             {Shiro::AssetType::image, "g2_tetrion_master"},
             {Shiro::AssetType::image, "g3_tetrion_terror"},
+
+
+            {Shiro::AssetType::font, "fixedsys"},
+            // TODO: Convert remaining fonts to AngelCode bitmap font format.
 
 
             {Shiro::AssetType::music, "tracks0"},

@@ -25,7 +25,7 @@ namespace Shiro {
         AssetType getType() const;
 
     private:
-        std::filesystem::path basePath;
+        const std::filesystem::path basePath;
     };
 
     class SfxAsset : public Asset, public AssetCommon<SfxAsset, AssetType::sfx> {

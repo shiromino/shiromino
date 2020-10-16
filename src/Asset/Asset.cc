@@ -21,6 +21,7 @@ Shiro::AssetManager::~AssetManager() {
 }
 
 void Shiro::AssetManager::addLoader(const Shiro::AssetType type, std::unique_ptr<Shiro::AssetLoader> loader) {
+    assert(type == loader->getType());
     loaders[type] = std::move(loader);
 }
 

@@ -5,211 +5,72 @@
  * directory for the full text of the license.
  */
 #include "Video/TextGraphic.h"
-#include "gfx_old.h"
-#include "stringtools.h"
+#include <sstream>
+#include <cassert>
 
-using namespace Shiro;
-using namespace std;
+namespace Shiro {
+    TextGraphic::TextGraphic(
+        const FontAsset& font,
+        const std::string& text,
+        const int x,
+        const int y,
+        const int offsetX,
+        const int offsetY,
+        const float scale,
+        const std::uint32_t color
+    ) : x(x), y(y), offsetX(offsetX), offsetY(offsetY), scale(scale), color(color) {
+        if (text == "") {
+            return;
+        }
 
-TextGraphic::TextGraphic(
-    const std::string& text,
-    const size_t pos,
-    const size_t len,
-    const int x,
-    const int y,
-    const png_monofont& font,
-    const text_formatting& fmt
-) :
-    text(text),
-    pos(pos),
-    len(len),
-    x(x),
-    y(y),
-    font(font),
-    fmt(fmt) {}
+        std::istringstream lines(text);
+        int printY = 0;
+        for (std::string line; std::getline(lines, line);) {
+            assert(font.bmFont.chars.count(line[0]));
+            int printX = -font.bmFont.chars.at(line[0]).xoffset;
+            for (std::size_t i = 0u; i < line.size(); i++) {
+                assert(font.bmFont.chars.count(line[i]));
+                const PDBMFont::BMFont::Char& ch = font.bmFont.chars.at(line[i]);
 
-TextGraphic::TextGraphic(
-    const std::string& text,
-    const int x,
-    const int y,
-    const png_monofont& font,
-    const text_formatting& fmt
-) :
-    TextGraphic(
-        text,
-        0,
-        text.size(),
-        x,
-        y,
-        font,
-        fmt
-    ) {}
+                textData.push_back({
+                    font.pages[ch.page],
+                    {
+                        int(ch.x), int(ch.y),
+                        int(ch.width), int(ch.height)
+                    },
+                    {
+                        int(scale * (printX + ch.xoffset)), int(scale * (printY + ch.yoffset)),
+                        int(scale * ch.width), int(scale * ch.height)
+                    }
+                });
 
-void TextGraphic::draw(const Screen& screen) const {
-    if (text == "") {
-        return;
+                printX += int(ch.xadvance);
+                if (line[i + 1] != '\0' && font.bmFont.kernings.count({line[i], line[i + 1]})) {
+                    printX += font.bmFont.kernings.at({line[i], line[i + 1]});
+                }
+            }
+            printY += font.bmFont.common.lineHeight;
+        }
     }
 
-    SDL_SetTextureColorMod(font.sheet, R(fmt.rgba), G(fmt.rgba), B(fmt.rgba));
-    SDL_SetTextureAlphaMod(font.sheet, A(fmt.rgba));
+    void TextGraphic::draw(const Screen& screen) const {
+        const int dstOffsetX = x + offsetX;
+        const int dstOffsetY = y + offsetY;
+        for (const auto& charData : textData) {
+            auto dstRect = std::get<2>(charData);
+            dstRect.x += dstOffsetX;
+            dstRect.y += dstOffsetY;
 
-    if (font.outline_sheet) {
-        SDL_SetTextureColorMod(font.outline_sheet, R(fmt.outline_rgba), G(fmt.outline_rgba), B(fmt.outline_rgba));
-        SDL_SetTextureAlphaMod(font.outline_sheet, A(fmt.outline_rgba));
-    }
+            Uint8 r, g, b, a;
+            SDL_GetTextureColorMod(std::get<0>(charData), &r, &g, &b);
+            SDL_GetTextureAlphaMod(std::get<0>(charData), &a);
 
-    SDL_Rect src = { 0, 0, (int)font.char_w, (int)font.char_h };
-    SDL_Rect dest = {
-        x,
-        y,
-        (int)(fmt.size_multiplier * (float)font.char_w),
-        (int)(fmt.size_multiplier * (float)font.char_h)
-    };
+            SDL_SetTextureColorMod(std::get<0>(charData), R(color), G(color), B(color));
+            SDL_SetTextureAlphaMod(std::get<0>(charData), A(color));
+            SDL_RenderCopy(screen.renderer, std::get<0>(charData), &std::get<1>(charData), &dstRect);
 
-    vector<string> lines = strtools::split(text, '\n');
-
-    bool usingTargetTex = false;
-
-    if (SDL_GetRenderTarget(screen.renderer) != NULL) {
-        usingTargetTex = true;
-    }
-
-    switch (fmt.align) {
-    case ALIGN_LEFT:
-        dest.x = x;
-        break;
-
-    case ALIGN_RIGHT:
-        dest.x = x - (fmt.size_multiplier * (float)font.char_w) * lines[0].size();
-        break;
-
-    case ALIGN_CENTER:
-        if (fmt.wrap_length < lines[0].size()) {
-            dest.x = x;
+            SDL_SetTextureColorMod(std::get<0>(charData), r, g, b);
+            SDL_SetTextureAlphaMod(std::get<0>(charData), a);
         }
-        else {
-            dest.x = x + (fmt.size_multiplier * (float)font.char_w / 2.0f) * (fmt.wrap_length - lines[0].size());
-        }
-        break;
-
-    default:
-        break;
-    }
-
-    const size_t end = pos + len;
-    for (size_t i = pos, linefeeds = 0, lastWrapLinePos = 0, lastWrapPos = 0; i < text.size() && i < end; i++) {
-        if ((fmt.wrap_length && i > 0 && (i - lastWrapPos) % fmt.wrap_length == 0) || text[i] == '\n') {
-            if (text[i] == '\n') {
-                linefeeds++;
-                lastWrapLinePos = i - lastWrapPos + lastWrapLinePos;
-                lastWrapPos = i;
-            }
-            else if (i != 0 && i % fmt.wrap_length == 0) {
-                lastWrapLinePos = i - lastWrapPos + lastWrapLinePos;
-                lastWrapPos = i;
-            }
-
-            dest.y += fmt.line_spacing * fmt.size_multiplier * (float)font.char_h;
-
-            switch (fmt.align) {
-            default:
-            case ALIGN_LEFT:
-                dest.x = x;
-                break;
-
-            case ALIGN_RIGHT:
-                dest.x = x - (font.char_w) * lines[linefeeds].size();
-                break;
-
-            case ALIGN_CENTER:
-                if(fmt.wrap_length < lines[linefeeds].size() - lastWrapLinePos)
-                    dest.x = x;
-                else
-                    dest.x = (int)(x + (font.char_w / 2) * (fmt.wrap_length - (lines[linefeeds].size() - lastWrapLinePos)));
-
-                break;
-            }
-
-            if(text[i] == '\n')
-                continue;
-        }
-
-        // we draw a square behind each character if we have no outlines to use
-        if (fmt.outlined && !font.outline_sheet) {
-            src.x = 31 * font.char_w;
-            src.y = 3 * font.char_h;
-            SDL_SetTextureColorMod(font.sheet, R(fmt.outline_rgba), G(fmt.outline_rgba), B(fmt.outline_rgba));
-            SDL_SetTextureAlphaMod(font.sheet, A(fmt.outline_rgba));
-
-            if (usingTargetTex) {
-                SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 0);
-                SDL_RenderFillRect(screen.renderer, &dest);
-                SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
-            }
-            else {
-                SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
-            }
-
-            SDL_SetTextureColorMod(font.sheet, R(fmt.rgba), G(fmt.rgba), B(fmt.rgba));
-            SDL_SetTextureAlphaMod(font.sheet, A(fmt.rgba));
-        }
-
-        src.x = font.char_w * (text[i] % 32);
-        src.y = font.char_h * ((int)(text[i] / 32) - 1);
-        if (src.y < 0) {
-            src.x = 31 * font.char_w;
-            src.y = 2 * font.char_h;
-        }
-
-        if (fmt.shadow && !usingTargetTex) {
-            dest.x -= 2.0 * fmt.size_multiplier;
-            dest.y += 2.0 * fmt.size_multiplier;
-
-            SDL_SetTextureAlphaMod(font.sheet, A(fmt.rgba) / 4);
-            if (font.outline_sheet) {
-                SDL_SetTextureAlphaMod(font.outline_sheet, A(fmt.rgba) / 4);
-            }
-
-            SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
-
-            if (fmt.outlined && font.outline_sheet) {
-                SDL_RenderCopy(screen.renderer, font.outline_sheet, &src, &dest);
-            }
-
-            dest.x += 2.0 * fmt.size_multiplier;
-            dest.y -= 2.0 * fmt.size_multiplier;
-
-            SDL_SetTextureAlphaMod(font.sheet, A(fmt.rgba));
-            if (font.outline_sheet) {
-                SDL_SetTextureAlphaMod(font.outline_sheet, A(fmt.rgba));
-            }
-        }
-
-        if (usingTargetTex) {
-            SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 0);
-            SDL_RenderFillRect(screen.renderer, &dest);
-            SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
-
-            if (fmt.outlined && font.outline_sheet) {
-                SDL_RenderCopy(screen.renderer, font.outline_sheet, &src, &dest);
-            }
-        }
-        else {
-            SDL_RenderCopy(screen.renderer, font.sheet, &src, &dest);
-
-            if (fmt.outlined && font.outline_sheet) {
-                SDL_RenderCopy(screen.renderer, font.outline_sheet, &src, &dest);
-            }
-        }
-
-        dest.x += fmt.size_multiplier * (float)font.char_w;
-    }
-
-    SDL_SetTextureColorMod(font.sheet, 255, 255, 255);
-    SDL_SetTextureAlphaMod(font.sheet, 255);
-
-    if (font.outline_sheet) {
-        SDL_SetTextureColorMod(font.outline_sheet, 255, 255, 255);
-        SDL_SetTextureAlphaMod(font.outline_sheet, 255);
     }
 }

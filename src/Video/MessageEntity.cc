@@ -13,70 +13,87 @@ using namespace std;
 namespace Shiro {
     struct MessageEntity::Impl {
         Impl(
+            const FontAsset& font,
             const string text,
-            const size_t layerNum,
-            const shared_ptr<pair<int, int>> pos,
+            //const shared_ptr<pair<int, int>> pos,
+            const int& x,
+            const int& y,
             const int offsetX,
             const int offsetY,
-            const png_monofont& font,
-            const text_formatting& fmt,
+            const float scale,
+            const uint32_t color,
             const size_t numFrames,
+            const size_t layerNum,
             const function<bool()> deleteCheck
         ) :
-            counter(numFrames),
+            font(font),
             text(text),
-            layerNum(layerNum),
+            /*
+            oldPos(*pos),
             pos(pos),
+            */
+            x(x),
+            y(y),
             offsetX(offsetX),
             offsetY(offsetY),
-            font(font),
-            fmt(fmt),
-            deleteCheck(deleteCheck) {}
+            scale(scale),
+            color(color),
+            counter(numFrames),
+            layerNum(layerNum),
+            deleteCheck(deleteCheck),
+            textGraphic(shared_ptr<Graphic>(new TextGraphic(font, text, x, y, offsetX, offsetY, scale, color))) {}
 
-        size_t counter;
+        const FontAsset& font;
         const string text;
-        const size_t layerNum;
-        const shared_ptr<pair<int, int>> pos;
+        //pair<int, int> oldPos;
+        //const shared_ptr<pair<int, int>> pos;
+        const int& x;
+        const int& y;
         const int offsetX;
         const int offsetY;
-        const png_monofont& font;
-        const text_formatting fmt;
+        const float scale;
+        const uint32_t color;
+        size_t counter;
+        const size_t layerNum;
         const function<bool()> deleteCheck;
+
+        shared_ptr<Graphic> textGraphic;
     };
 }
 
 MessageEntity::MessageEntity(
-    const string text,
-    const size_t layerNum,
-    const shared_ptr<pair<int, int>> pos,
+    const FontAsset& font,
+    const string& text,
+    //const shared_ptr<pair<int, int>> pos,
+    const int& x,
+    const int& y,
     const int offsetX,
     const int offsetY,
-    const png_monofont& font,
-    const text_formatting& fmt,
+    const float scale,
+    const uint32_t color,
     const size_t numFrames,
+    const size_t layerNum,
     const function<bool()> deleteCheck
 ) :
     implPtr(make_shared<Impl>(
+        font,
         text,
-        layerNum,
-        pos,
+        //pos,
+        x,
+        y,
         offsetX,
         offsetY,
-        font,
-        fmt,
+        scale,
+        color,
         numFrames == SIZE_MAX ? SIZE_MAX : numFrames + 1,
+        layerNum,
         deleteCheck
     )) {}
 
 bool MessageEntity::update(Shiro::Layers& layers) {
-    layers.push(implPtr->layerNum,
-        make_shared<TextGraphic>(
-            implPtr->text,
-            implPtr->pos->first + implPtr->offsetX,
-            implPtr->pos->second + implPtr->offsetY,
-            implPtr->font,
-            implPtr->fmt
-        )
-   );
+    auto& graphic = static_cast<TextGraphic&>(*implPtr->textGraphic);
+    graphic.x = implPtr->x;
+    graphic.y = implPtr->y;
+    layers.push(implPtr->layerNum, implPtr->textGraphic);
     return (implPtr->counter == SIZE_MAX || --implPtr->counter != 0u) && !implPtr->deleteCheck();
 }

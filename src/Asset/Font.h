@@ -7,15 +7,19 @@
 #pragma once
 #include "Asset/Asset.h"
 #include "Video/Screen.h"
-#include <filesystem>
-#include <memory>
+#define PDBMFONT_TEXT
+#define PDBMFONT_BINARY
+#define PDBMFONT_XML
+#include "PDBMFont.h"
+#include "SDL.h"
+#include <vector>
 
 namespace Shiro {
-    class ImageAssetLoader : public AssetLoader {
+    class FontAssetLoader : public AssetLoader {
     public:
-        ImageAssetLoader() = delete;
+        FontAssetLoader() = delete;
 
-        ImageAssetLoader(const std::filesystem::path& basePath, const Screen& screen);
+        FontAssetLoader(const std::filesystem::path& basePath, const Screen& screen);
 
         virtual std::unique_ptr<Asset> create(const std::filesystem::path& location) const;
         bool load(Asset& asset) const;
@@ -28,21 +32,19 @@ namespace Shiro {
         const Screen& screen;
     };
 
-    class ImageAsset : public Asset, public AssetCommon<ImageAsset, AssetType::image> {
-        friend ImageAssetLoader;
+    class FontAsset : public Asset, public AssetCommon<FontAsset, AssetType::font> {
+        friend FontAssetLoader;
 
     public:
-        ~ImageAsset();
+        ~FontAsset();
 
         bool loaded() const;
         AssetType getType() const;
 
-        SDL_Texture* getTexture() const;
-
-    private:
-        SDL_Texture* texture;
+        PDBMFont::BMFont bmFont;
+        std::vector<SDL_Texture*> pages;
 
     protected:
-        ImageAsset(const std::filesystem::path& location);
+        FontAsset(const std::filesystem::path& location);
     };
 }

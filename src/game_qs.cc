@@ -1286,14 +1286,16 @@ int qs_game_frame(game_t *g)
                 }
 
                 MessageEntity::push(cs->gfx,
+                    FontAsset::get(cs->assetMgr, "fixedsys"),
                     "READY",
-                    GfxLayer::messages,
-                    q->fieldPos,
+                    q->fieldPos->first,
+                    q->fieldPos->second,
                     4 * 16 + 8,
                     11 * 16,
-                    *monofont_fixedsys,
-                    fmt,
+                    2.0f,
+                    fmt.rgba,
                     60u,
+                    GfxLayer::messages,
                     gameIsInactive
                 );
 
@@ -1304,14 +1306,16 @@ int qs_game_frame(game_t *g)
             {
                 fmt.rgba = 0xFF0000FF;
                 MessageEntity::push(cs->gfx,
+                    FontAsset::get(cs->assetMgr, "fixedsys"),
                     "GO",
-                    GfxLayer::messages,
-                    q->fieldPos,
+                    q->fieldPos->first,
+                    q->fieldPos->second,
                     6 * 16,
                     11 * 16,
-                    *monofont_fixedsys,
-                    fmt,
+                    2.0f,
+                    fmt.rgba,
                     60u,
+                    GfxLayer::messages,
                     gameIsInactive
                 );
 

@@ -6,12 +6,14 @@
  */
 #pragma once
 #include "Video/Gfx.h"
-#include "gfx_structures.h"
+#include "Asset/Font.h"
 #include "SDL.h"
 #include <string>
 #include <memory>
 #include <functional>
 #include <utility>
+#include <cstddef>
+#include <cstdint>
 
 namespace Shiro {
     class MessageEntity : public Entity {
@@ -21,14 +23,17 @@ namespace Shiro {
         MessageEntity() = delete;
 
         MessageEntity(
-            const std::string text,
-            const size_t layerNum,
-            const std::shared_ptr<std::pair<int, int>> pos,
-            const int offsetX,
-            const int offsetY,
-            const png_monofont& font,
-            const text_formatting& fmt,
-            const std::size_t numFrames,
+            const FontAsset& font,
+            const std::string& text,
+            //const std::shared_ptr<std::pair<int, int>> pos,
+            const int& x,
+            const int& y,
+            const int offsetX = 0u,
+            const int offsetY = 0u,
+            const float scale = 1.0f,
+            const std::uint32_t color = 0xFFFFFFFFu,
+            const std::size_t numFrames = 1u,
+            const std::size_t layerNum = GfxLayer::messages,
             const std::function<bool()> deleteCheck = []() { return false; }
         );
 
