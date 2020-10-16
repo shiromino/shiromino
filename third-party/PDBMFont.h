@@ -223,7 +223,7 @@ namespace PDBMFont {
 	class BMFont {
 	public:
 		struct KerningHasher {
-			std::size_t operator()(const std::pair<std::uint32_t, std::uint32_t>& p) const noexcept;
+			std::size_t operator()(const std::pair<unsigned, unsigned>& p) const noexcept;
 		};
 
 		struct Char {
@@ -292,8 +292,8 @@ namespace PDBMFont {
 		Info info;
 		Common common;
 		std::vector<std::string> pages;
-		std::unordered_map<std::uint32_t, Char> chars;
-		std::unordered_map<std::pair<std::uint32_t, std::uint32_t>, int, KerningHasher> kernings;
+		std::unordered_map<unsigned, Char> chars;
+		std::unordered_map<std::pair<unsigned, unsigned>, int, KerningHasher> kernings;
 
 #if defined(PDBMFONT_TEXT) || defined(PDBMFONT_BINARY) || defined(PDBMFONT_XML)
 		enum class Format {
@@ -428,11 +428,11 @@ namespace PDBMFont {
 #endif
 
 #ifdef PDBMFONT_DEFINE
-	std::size_t BMFont::KerningHasher::operator()(const std::pair<std::uint32_t, std::uint32_t>& p) const noexcept {
-		if (sizeof(std::size_t) >= sizeof(std::uint32_t) * 2u) {
+	std::size_t BMFont::KerningHasher::operator()(const std::pair<unsigned, unsigned>& p) const noexcept {
+		if (sizeof(std::size_t) >= 8u) {
 			// Guarantees no hash collisions on 64-bit or higher systems.
 			// As of the time this library was last updated, Unicode's
-			// range isn't even close to the full range of uint32_t.
+			// range isn't even close to the full range of 32 bits.
 			return (static_cast<std::size_t>(p.first) << 32u) | p.second;
 		}
 		else {
@@ -925,7 +925,7 @@ namespace PDBMFont {
 						xadvanceFound = false,
 						pageFound = false,
 						chnlFound = false;
-					std::uint32_t id;
+					unsigned id;
 					Char currentChar;
 					for (auto field = std::sregex_iterator(line.begin(), line.end(), fieldRegex); field != end; field++) {
 						const std::string fieldName = (*field)[1u];
@@ -1062,7 +1062,7 @@ namespace PDBMFont {
 					}
 				}
 				else if (tagName == "kerning") {
-					std::uint32_t first, second;
+					unsigned first, second;
 					long amount;
 					bool
 						firstFound = false,
@@ -1721,7 +1721,7 @@ namespace PDBMFont {
 		QUERYATTRIBUTE(commonElement, common, base, false);
 		QUERYATTRIBUTE(commonElement, common, scaleW, false);
 		QUERYATTRIBUTE(commonElement, common, scaleH, false);
-		std::size_t pagesCount;
+		unsigned pagesCount;
 		if (commonElement->QueryAttribute("pages", &pagesCount) != tinyxml2::XML_SUCCESS || pagesCount == 0u) {
 			return false;
 		}
@@ -1736,9 +1736,9 @@ namespace PDBMFont {
 		if (!pagesElement) {
 			return false;
 		}
-		std::size_t pagesFound = 0u;
-		for (auto pageElement = pagesElement->FirstChildElement("page"); pageElement; pagesFound++, pageElement = pageElement->NextSiblingElement("page")) {
-			std::size_t id;
+		std::size_t pagesFoundCount = 0u;
+		for (auto pageElement = pagesElement->FirstChildElement("page"); pageElement; pagesFoundCount++, pageElement = pageElement->NextSiblingElement("page")) {
+			unsigned id;
 			if (pageElement->QueryAttribute("id", &id) != tinyxml2::XML_SUCCESS) {
 				return false;
 			}
@@ -1752,7 +1752,7 @@ namespace PDBMFont {
 			}
 			pages[id] = file;
 		}
-		if (pagesFound != pagesCount) {
+		if (pagesFoundCount != pagesCount) {
 			return false;
 		}
 
@@ -1760,7 +1760,7 @@ namespace PDBMFont {
 		if (!charsElement) {
 			return false;
 		}
-		std::size_t charsCount;
+		unsigned charsCount;
 		if (charsElement->QueryAttribute("count", &charsCount) != tinyxml2::XML_SUCCESS) {
 			return false;
 		}
@@ -1793,7 +1793,7 @@ namespace PDBMFont {
 		if (!kerningsElement) {
 			return true;
 		}
-		std::size_t kerningsCount;
+		unsigned kerningsCount;
 		if (kerningsElement->QueryAttribute("count", &kerningsCount) != tinyxml2::XML_SUCCESS) {
 			return false;
 		}
@@ -1902,7 +1902,7 @@ namespace PDBMFont {
 		commonElement->SetAttribute("base", common.base);
 		commonElement->SetAttribute("scaleW", common.scaleW);
 		commonElement->SetAttribute("scaleH", common.scaleH);
-		commonElement->SetAttribute("pages", pages.size());
+		commonElement->SetAttribute("pages", static_cast<unsigned>(pages.size()));
 		commonElement->SetAttribute("packed", static_cast<unsigned>(common.packed));
 		commonElement->SetAttribute("alphaChnl", static_cast<unsigned>(common.alphaChnl));
 		commonElement->SetAttribute("redChnl", static_cast<unsigned>(common.redChnl));
@@ -1917,7 +1917,7 @@ namespace PDBMFont {
 		}
 
 		const auto charsElement = fontElement->InsertNewChildElement("chars");
-		charsElement->SetAttribute("count", chars.size());
+		charsElement->SetAttribute("count", static_cast<unsigned>(chars.size()));
 		for (auto& c : chars) {
 			const auto charElement = charsElement->InsertNewChildElement("char");
 			charElement->SetAttribute("id", c.first);
@@ -1934,7 +1934,7 @@ namespace PDBMFont {
 
 		if (kernings.size()) {
 			const auto kerningsElement = fontElement->InsertNewChildElement("kernings");
-			kerningsElement->SetAttribute("count", kernings.size());
+			kerningsElement->SetAttribute("count", static_cast<unsigned>(kernings.size()));
 			for (auto& k : kernings) {
 				const auto kerningElement = kerningsElement->InsertNewChildElement("kerning");
 				kerningElement->SetAttribute("first", k.first.first);
