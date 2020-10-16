@@ -27,7 +27,7 @@ namespace Shiro {
         FontAsset& fontAsset = static_cast<FontAsset&>(asset);
 
         auto fontLocation = (basePath / fontAsset.location).replace_extension(".fnt");
-        if (!fontAsset.bmFont.read(fontLocation)) {
+        if (!fontAsset.bmFont.read(fontLocation.string())) {
             fontAsset.bmFont = PDBMFont::BMFont();
             std::cerr << "Failed loading font \"" << fontAsset.location.string() << "\"" << std::endl;
             return false;

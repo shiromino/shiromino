@@ -2,12 +2,12 @@
 #define PDBMFONT_INCLUDE
 /**
  * This is free and unencumbered software released into the public domain.
- * 
+ *
  * Anyone is free to copy, modify, publish, use, compile, sell, or
  * distribute this software, either in source code form or as a compiled
  * binary, for any purpose, commercial or non-commercial, and by any
  * means.
- * 
+ *
  * In jurisdictions that recognize copyright laws, the author or authors
  * of this software dedicate any and all copyright interest in the
  * software to the public domain. We make this dedication for the benefit
@@ -15,7 +15,7 @@
  * successors. We intend this dedication to be an overt act of
  * relinquishment in perpetuity of all present and future rights to this
  * software under copyright law.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -23,7 +23,7 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  * For more information, please refer to <http://unlicense.org/>
  */
 
@@ -227,14 +227,14 @@ namespace PDBMFont {
 		};
 
 		struct Char {
-			std::size_t x;
-			std::size_t y;
-			std::size_t width;
-			std::size_t height;
+			unsigned x;
+			unsigned y;
+			unsigned width;
+			unsigned height;
 			int xoffset;
 			int yoffset;
-			std::size_t xadvance;
-			std::size_t page;
+			unsigned xadvance;
+			unsigned page;
 			enum Chnl {
 				blue = 1u,
 				green = 2u,
@@ -258,19 +258,19 @@ namespace PDBMFont {
 			std::string charsetText; // Used with the text and XML formats.
 			std::uint8_t charsetBinary; // Used with the binary format.
 			bool unicode;
-			std::size_t stretchH;
+			unsigned stretchH;
 			bool smooth;
 			bool aa;
-			std::size_t padding[4u];
-			std::size_t spacing[2u];
-			std::size_t outline;
+			unsigned padding[4u];
+			unsigned spacing[2u];
+			unsigned outline;
 		};
 
 		struct Common {
-			std::size_t lineHeight;
-			std::size_t base;
-			std::size_t scaleW;
-			std::size_t scaleH;
+			unsigned lineHeight;
+			unsigned base;
+			unsigned scaleW;
+			unsigned scaleH;
 			bool packed;
 			enum class Chnl {
 				glyph,
@@ -331,27 +331,27 @@ namespace PDBMFont {
 		// format that was compiled in, and in that case false is returned.
 		bool write(std::ostream& stream);
 		bool write(FILE* const file);
-		bool write(const std::string filename);
+		bool write(const std::string& filename);
 #endif
 
 #ifdef PDBMFONT_TEXT
 		bool readText(std::istream& stream);
 		bool readText(FILE* const file);
-		bool readText(const std::string filename);
+		bool readText(const std::string& filename);
 		bool writeText(std::ostream& stream);
 		bool writeText(FILE* const file);
-		bool writeText(const std::string filename);
+		bool writeText(const std::string& filename);
 #endif
 
 #ifdef PDBMFONT_XML
 		bool convertFromXMLDocument(tinyxml2::XMLDocument& document, tinyxml2::XMLError error);
 		bool readXML(std::istream& stream);
 		bool readXML(FILE* const file);
-		bool readXML(const std::string filename);
+		bool readXML(const std::string& filename);
 		void convertToXMLDocument(tinyxml2::XMLDocument& document);
 		bool writeXML(FILE* const file);
 		bool writeXML(std::ostream& stream);
-		bool writeXML(const std::string filename);
+		bool writeXML(const std::string& filename);
 #endif
 
 #ifdef PDBMFONT_BINARY
@@ -361,13 +361,13 @@ namespace PDBMFont {
 		// binary flag isn't set.
 		bool readBinary(std::istream& stream);
 		bool readBinary(FILE* const file);
-		bool readBinary(const std::string filename);
+		bool readBinary(const std::string& filename);
 		// When using an ofstream or FILE* with writeBinary, be sure it was
 		// created with the binary open mode flag set, or writing may write out
 		// incorrect data on Windows, or possibly other platforms.
 		bool writeBinary(std::ostream& stream);
 		bool writeBinary(FILE* const file);
-		bool writeBinary(const std::string filename);
+		bool writeBinary(const std::string& filename);
 #endif
 
 	private:
@@ -493,7 +493,7 @@ namespace PDBMFont {
 		return write(stream);
 	}
 
-	bool BMFont::write(const std::string filename){
+	bool BMFont::write(const std::string& filename){
 		std::ios_base::openmode mode = std::ios_base::out;
 #ifdef PDBMFONT_BINARY
 		if (format == Format::binary) {
@@ -526,15 +526,15 @@ namespace PDBMFont {
 
 		bool commonFound = false;
 
-		std::size_t charsCount = 0u;
+		unsigned charsCount = 0u;
 
 		bool pagesFound = false;
-		std::size_t pagesCount = 0u;
+		unsigned pagesCount = 0u;
 
 		bool charsCountFound = false;
 
 		bool kerningsCountFound = false;
-		std::size_t kerningsCount = 0u;
+		unsigned kerningsCount = 0u;
 
 		std::size_t i = 0u;
 		const auto end = std::sregex_iterator();
@@ -560,7 +560,7 @@ namespace PDBMFont {
 						paddingFound = false,
 						spacingFound = false,
 						outlineFound = false;
-						
+
 					for (auto field = std::sregex_iterator(line.begin(), line.end(), fieldRegex); field != end; field++) {
 						const std::string fieldName = (*field)[1u];
 						if (fieldName == "") {
@@ -660,7 +660,7 @@ namespace PDBMFont {
 							if ((*field)[3u] == "" || paddingFound) {
 								return false;
 							}
-							for (std::size_t i = 0u; i < 4u; i++) {
+							for (unsigned i = 0u; i < 4u; i++) {
 								std::istringstream iss((*field)[4u + i]);
 								iss >> info.padding[i];
 							}
@@ -670,7 +670,7 @@ namespace PDBMFont {
 							if ((*field)[8u] == "" || spacingFound) {
 								return false;
 							}
-							for (std::size_t i = 0u; i < 2u; i++) {
+							for (unsigned i = 0u; i < 2u; i++) {
 								std::istringstream iss((*field)[9u + i]);
 								iss >> info.spacing[i];
 							}
@@ -1100,8 +1100,8 @@ namespace PDBMFont {
 						}
 					}
 					if (
-						!firstFound || 
-						!secondFound || 
+						!firstFound ||
+						!secondFound ||
 						!amountFound ||
 						(kerningsCountFound && kerningsCount < kernings.size() + 1)) {
 						return false;
@@ -1145,7 +1145,7 @@ namespace PDBMFont {
 		return readText(stream);
 	}
 
-	bool BMFont::readText(const std::string filename) {
+	bool BMFont::readText(const std::string& filename) {
 		std::ifstream stream(filename);
 		return readText(stream);
 	}
@@ -1233,7 +1233,7 @@ namespace PDBMFont {
 		return writeText(stream);
 	}
 
-	bool BMFont::writeText(const std::string filename) {
+	bool BMFont::writeText(const std::string& filename) {
 		std::ofstream stream(filename);
 		return writeText(stream);
 	}
@@ -1457,7 +1457,7 @@ namespace PDBMFont {
 		return readBinary(stream);
 	}
 
-	bool BMFont::readBinary(const std::string filename) {
+	bool BMFont::readBinary(const std::string& filename) {
 		std::ifstream stream(filename, std::ios::binary);
 		return readBinary(stream);
 	}
@@ -1624,7 +1624,7 @@ namespace PDBMFont {
 		return writeBinary(stream);
 	}
 
-	bool BMFont::writeBinary(const std::string filename) {
+	bool BMFont::writeBinary(const std::string& filename) {
 		std::ofstream stream(filename, std::ios::binary);
 		return writeBinary(stream);
 	}
@@ -1852,7 +1852,7 @@ namespace PDBMFont {
 		}
 	}
 
-	bool BMFont::readXML(const std::string filename) {
+	bool BMFont::readXML(const std::string& filename) {
 		tinyxml2::XMLDocument document;
 		auto error = document.LoadFile(filename.c_str());
 
@@ -1958,7 +1958,7 @@ namespace PDBMFont {
 		return !stream.write(printer.CStr(), printer.CStrSize()).bad();
 	}
 
-	bool BMFont::writeXML(const std::string filename) {
+	bool BMFont::writeXML(const std::string& filename) {
 		tinyxml2::XMLDocument document;
 		convertToXMLDocument(document);
 		return document.SaveFile(filename.c_str()) == tinyxml2::XML_SUCCESS;
