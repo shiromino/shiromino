@@ -1,0 +1,6 @@
+libvorbis
+opengl
+sdl2
+sdl2-image
+sdl2-mixer[dynamic-load,libvorbis]
+sqlite3

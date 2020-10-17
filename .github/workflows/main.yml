@@ -38,6 +38,8 @@ jobs:
           - Debug
           - Release
   windows-visual-studio:
+    env:
+      VCPKG_RESPONSE_FILE_PATH: '${{ github.workspace }}/.vcpkg-response-file'
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -47,7 +49,8 @@ jobs:
     - name: Run vcpkg
       uses: lukka/run-vcpkg@v4
       with:
-        vcpkgArguments: libvorbis opengl sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+        appendedCacheKey: ${{ hashFiles(env.VCPKG_RESPONSE_FILE_PATH) }}
+        vcpkgArguments:  '@${{ env.VCPKG_RESPONSE_FILE_PATH }}'
         vcpkgDirectory: vcpkg
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
         vcpkgTriplet: ${{ matrix.triplet }}
