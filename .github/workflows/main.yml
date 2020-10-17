@@ -45,14 +45,14 @@ jobs:
       run: .github/workflows/fetch-tags
       shell: bash
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v2
+      uses: lukka/run-vcpkg@v4
       with:
         vcpkgArguments: libvorbis opengl sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
         vcpkgDirectory: vcpkg
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
         vcpkgTriplet: ${{ matrix.triplet }}
     - name: Build targets
-      uses: lukka/run-cmake@v2
+      uses: lukka/run-cmake@v3
       with:
         buildDirectory: build
         cmakeAppendedArgs: -A ${{ matrix.cmake-architecture }}
@@ -90,7 +90,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
-    - uses: msys2/setup-msys2@v1
+    - uses: msys2/setup-msys2@v2
     - name: Install dependencies
       run: pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer}} sqlite3
       shell: msys2 {0}
