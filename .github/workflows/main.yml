@@ -49,7 +49,7 @@ jobs:
     - name: Run vcpkg
       uses: lukka/run-vcpkg@v4
       with:
-        appendedCacheKey: ${{ hashFiles(env.VCPKG_RESPONSE_FILE_PATH) }}
+        appendedCacheKey: ${{ matrix.build-type }}-${{ hashFiles(env.VCPKG_RESPONSE_FILE_PATH) }}
         vcpkgArguments:  '@${{ env.VCPKG_RESPONSE_FILE_PATH }}'
         vcpkgDirectory: vcpkg
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
