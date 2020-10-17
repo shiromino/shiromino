@@ -174,10 +174,29 @@ target_sources(${GAME_EXECUTABLE}
 		src/TGM.h
 		src/Timer.cc
 		src/Timer.h
-		third-party/PDBMFont.h
 		third-party/PDINI.h
-		third-party/tinyxml2.cc
-		third-party/tinyxml2.h
+)
+#
+# External git project management
+#
+include(FetchContent)
+FetchContent_Declare(pdbm_font
+	GIT_REPOSITORY https://github.com/nightmareci/PDBMFont.git
+)
+# We don't use FetchContent_MakeAvailable here.
+# The reason for that is that the project's build pipeline doesn't cleanly export any targets that we can use.
+FetchContent_GetProperties(pdbm_font)
+if(NOT pdbm_font_POPULATED)
+	FetchContent_Populate(pdbm_font)
+endif()
+FetchContent_GetProperties(pdbm_font
+	SOURCE_DIR PDBM_SOURCE_DIRECTORY
+)
+target_sources(${GAME_EXECUTABLE}
+	PRIVATE
+		${PDBM_SOURCE_DIRECTORY}/PDBMFont.hpp
+		${PDBM_SOURCE_DIRECTORY}/tinyxml2.cpp
+		${PDBM_SOURCE_DIRECTORY}/tinyxml2.h
 )
 #
 # The "Headers" source group for IDEs
