@@ -9,7 +9,7 @@
 #define PDBMFONT_TEXT
 #define PDBMFONT_BINARY
 #define PDBMFONT_XML
-#include "PDBMFont.h"
+#include "PDBMFont.hpp"
 #include "SDL_image.h"
 #include <cassert>
 

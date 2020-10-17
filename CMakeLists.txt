@@ -194,9 +194,13 @@ FetchContent_GetProperties(pdbm_font
 )
 target_sources(${GAME_EXECUTABLE}
 	PRIVATE
-		${PDBM_SOURCE_DIRECTORY}/PDBMFont.hpp
-		${PDBM_SOURCE_DIRECTORY}/tinyxml2.cpp
-		${PDBM_SOURCE_DIRECTORY}/tinyxml2.h
+		"${PDBM_SOURCE_DIRECTORY}/PDBMFont.hpp"
+		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.cpp"
+		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.h"
+)
+target_include_directories(${GAME_EXECUTABLE}
+	PRIVATE
+		"${PDBM_SOURCE_DIRECTORY}"
 )
 #
 # The "Headers" source group for IDEs
