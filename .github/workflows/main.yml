@@ -39,7 +39,7 @@ jobs:
           - Release
   windows-visual-studio:
     env:
-      VCPKG_RESPONSE_FILE_PATH: '${{ github.workspace }}/.vcpkg-response-file'
+      VCPKG_RESPONSE_FILE_PATH: '${{ github.workspace }}/vcpkg-response-file'
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2

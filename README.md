@@ -32,10 +32,10 @@ $ brew update
 $ brew upgrade pkg-config
 ```
 #### Windows (Visual Studio, x64, via cmd.exe or PowerShell)
-Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/). You may have to add the `vcpkg` installation directory to your `Path` environment variable to be able to use the command in this fashion. Instead, you can also change into the `vcpkg` installation directory and run the `vcpkg` command there.
+Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/). You must add the `vcpkg` installation directory to your `Path` environment variable to be able to use the command in the way we're using it below. Instead of doing that, you could also change into the `vcpkg` installation directory and run the `vcpkg` command there. But if you do, make sure to specify a valid path to `vcpkg-response-file`.
 
 ```shell
-$ vcpkg install --triplet x64-windows libvorbis opengl sdl2 sdl2-image sdl2-mixer[dynamic-load,libvorbis] sqlite3
+$ vcpkg install --triplet x64-windows @vcpkg-response-file
 $ cmake -B build -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake -S .
 $ cmake --build build -j --config Release
 ```
