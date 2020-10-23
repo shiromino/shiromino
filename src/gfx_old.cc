@@ -899,7 +899,7 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
             src.y = 2 * font->char_h;
         }
 
-        if(fmt->shadow && !using_target_tex)
+        if(fmt->shadow)
         {
             dest.x -= 2.0 * fmt->size_multiplier;
             dest.y += 2.0 * fmt->size_multiplier;
