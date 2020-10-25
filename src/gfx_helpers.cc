@@ -4,9 +4,9 @@
 void gfx_drawCodedGrid(SDL_Renderer *renderer, Shiro::Grid *cells, SDL_Texture *paletteTex, SDL_Point position,
     int cellW, int cellH, std::vector<paletteMapEntry>& paletteValMap)
 {
-    for(int i = 0; i < cells->getWidth(); i++)
+    for(int i = 0; i < int(cells->getWidth()); i++)
     {
-        for(int j = 0; j < cells->getHeight(); j++)
+        for(int j = 0; j < int(cells->getHeight()); j++)
         {
             std::vector<unsigned int> paletteList;
             int val = cells->getCell(i, j);

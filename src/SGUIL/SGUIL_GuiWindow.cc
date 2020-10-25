@@ -179,14 +179,14 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
         case SDL_KEYDOWN:
             if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
             {
-                if(keyboardFocus > -1 && keyboardFocus < controlList.size())
+                if(keyboardFocus > -1 && decltype(controlList)::size_type(keyboardFocus) < controlList.size())
                 {
                     controlList[keyboardFocus]->hasKeyboardFocus = false;
                     keyboardFocus = -1;
                 }
             }
 
-            if(keyboardFocus > -1 && keyboardFocus < controlList.size())
+            if(keyboardFocus > -1 && decltype(controlList)::size_type(keyboardFocus) < controlList.size())
             {
                 GuiEvent keyDownEvent {key_pressed, sdlEvent.key.keysym.sym};
                 controlList[keyboardFocus]->handleEvent(keyDownEvent);
@@ -211,7 +211,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
             break;
 
         case SDL_KEYUP:
-            if(keyboardFocus > -1 && keyboardFocus < controlList.size())
+            if(keyboardFocus > -1 && decltype(controlList)::size_type(keyboardFocus) < controlList.size())
             {
                 GuiEvent keyUpEvent {key_released, sdlEvent.key.keysym.sym};
                 controlList[keyboardFocus]->handleEvent(keyUpEvent);
@@ -236,7 +236,7 @@ void GuiWindow::handleSDLEvent(SDL_Event& sdlEvent, GuiPoint logicalMousePos)
             break;
 
         case SDL_TEXTINPUT:
-            if(keyboardFocus > -1 && keyboardFocus < controlList.size())
+            if(keyboardFocus > -1 && decltype(controlList)::size_type(keyboardFocus) < controlList.size())
             {
                 GuiEvent textInputEvent {textinput_guievent, {sdlEvent.text.text} };
                 controlList[keyboardFocus]->handleEvent(textInputEvent);

@@ -664,7 +664,7 @@ piece_id histrand_get_next(struct randomizer *r)
                 }
                 else if((d->difficulty >= 30.0) && (QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0))
                 {
-                    if(d->drought_times[i] >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
+                    if(int(d->drought_times[i]) >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
                     {
                         temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1.0);
                     }

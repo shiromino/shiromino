@@ -248,7 +248,7 @@ CoreState::~CoreState() {
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
         assets->name.isValid = false; \
         assets->name.sheet = nullptr; \
-        assets->name.outlineSheet = nullptr
+        assets->name.outlineSheet = nullptr;
 #include "fonts.h"
 #undef FONT
 
@@ -826,7 +826,7 @@ void CoreState::load_files() {
 #undef IMG
 
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
-    load_bitfont(&assets->name, &assets->sheetName, &assets->outlineSheetName, charW, charH)
+    load_bitfont(&assets->name, &assets->sheetName, &assets->outlineSheetName, charW, charH);
 #include "fonts.h"
 #undef FONT
 }
@@ -853,7 +853,7 @@ void quit(CoreState *cs)
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
         cs->assets->name.isValid = false; \
         cs->assets->name.sheet = nullptr; \
-        cs->assets->name.outlineSheet = nullptr
+        cs->assets->name.outlineSheet = nullptr;
 #include "fonts.h"
 #undef FONT
 

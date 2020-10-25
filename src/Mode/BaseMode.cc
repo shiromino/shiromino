@@ -7,7 +7,7 @@
 #include "BaseMode.h"
 #include <cstring>
 namespace Shiro::Mode {
-    BaseMode::BaseMode(const int fieldWidth, const int fieldHeight) :
+    BaseMode::BaseMode(const unsigned fieldWidth, const unsigned fieldHeight) :
         activePiece(PolyominoType::Empty),
         activePos{ -1, -1 },
         fieldWidth(fieldWidth),
@@ -39,8 +39,8 @@ namespace Shiro::Mode {
     int BaseMode::naiveCollapse() {
         // This is about as optimized as naive gravity can be; each row that isn't
         // a line clear is copied into its final position, once. -Brandon McGriff
-        int numNaiveCollapseLines = 0;
-        for (int writeRowNum = 0, copyRowNum = 0; writeRowNum < fieldHeight; writeRowNum++, copyRowNum++) {
+        unsigned numNaiveCollapseLines = 0;
+        for (unsigned writeRowNum = 0, copyRowNum = 0; writeRowNum < fieldHeight; writeRowNum++, copyRowNum++) {
             while (clearLine(copyRowNum)) {
                 copyRowNum++;
                 numNaiveCollapseLines++;
@@ -49,7 +49,7 @@ namespace Shiro::Mode {
                 }
             }
             if (copyRowNum >= fieldHeight) {
-                for (int finalEraseRowNum = writeRowNum; finalEraseRowNum < fieldHeight; finalEraseRowNum++) {
+                for (unsigned finalEraseRowNum = writeRowNum; finalEraseRowNum < fieldHeight; finalEraseRowNum++) {
                     eraseRow(finalEraseRowNum);
                 }
                 break;

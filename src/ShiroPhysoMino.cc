@@ -236,11 +236,11 @@ int TestSPM::draw()
     SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * static_cast<int>(field->getWidth()), blockH * spec->visualFieldH};
     Gui_DrawBorder(fieldRect, 1, GUI_RGBA_DEFAULT);
 
-    for(int i = 0; i < field->getWidth(); i++)
+    for(std::size_t i = 0; i < field->getWidth(); i++)
     {
-        for(int j = 0; j < spec->visualFieldH; j++)
+        for(std::size_t j = 0; j < std::size_t(spec->visualFieldH); j++)
         {
-            size_t gridY = j + field->getHeight() - spec->visualFieldH;
+            std::size_t gridY = j + field->getHeight() - spec->visualFieldH;
             dest.x = fieldPos.x + (i * blockW);
             dest.y = fieldPos.y + (j * blockH);
 
@@ -255,14 +255,14 @@ int TestSPM::draw()
     if(player.mino && player.playPhase == spm_player_control)
     {
         Shiro::Grid m = player.mino->currentRotationTable();
-        for(int i = 0; i < m.getWidth(); i++)
+        for(int i = 0; i < int(m.getWidth()); i++)
         {
-            for(int j = 0; j < m.getHeight(); j++)
+            for(int j = 0; j < int(m.getHeight()); j++)
             {
                 int gridX = i + player.mino->position.x;
                 int gridY = j + player.mino->position.y;
 
-                if (gridY >= (field->getHeight() - spec->visualFieldH) && m.getCell(i, j)) {
+                if (gridY >= (int(field->getHeight()) - spec->visualFieldH) && m.getCell(i, j)) {
                     dest.x = fieldPos.x + (gridX * blockW);
                     dest.y = fieldPos.y - ((static_cast<int>(field->getHeight()) - spec->visualFieldH) * blockH) + (gridY * blockH);
                     dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
@@ -283,9 +283,9 @@ int TestSPM::draw()
         if(p)
         {
             Shiro::Grid m = p->currentRotationTable();
-            for(int i = 0; i < m.getWidth(); i++)
+            for(std::size_t i = 0; i < m.getWidth(); i++)
             {
-                for(int j = 0; j < m.getHeight(); j++)
+                for(std::size_t j = 0; j < m.getHeight(); j++)
                 {
                     if (m.getCell(i, j)) {
                         dest.x = fieldPos.x + (3 * 16) + (n * 5 * 16) + (i * 16);

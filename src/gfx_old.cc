@@ -262,7 +262,7 @@ int gfx_drawbuttons(CoreState *cs, int type)
         src.w = 16;
         dest.w = 16;
 
-        for (int j = 0; j < b.text.size(); j++)
+        for (decltype(b.text)::size_type j = 0; j < b.text.size(); j++)
         {
             if(j)
                 dest.x += 16;
@@ -1013,8 +1013,8 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
 
     int i = 0;
     int j = 0;
-    size_t w = pd.rotationTable[0].getWidth();
-    size_t h = pd.rotationTable[0].getWidth();
+    int w = int(pd.rotationTable[0].getWidth());
+    int h = int(pd.rotationTable[0].getWidth());
     int c = 0;
 
     int cell_x = 0;

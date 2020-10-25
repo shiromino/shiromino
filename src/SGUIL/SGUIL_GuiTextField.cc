@@ -277,13 +277,13 @@ void GuiTextField::mouseClicked(int x, int y, Uint8 button)
         updatePositionalValues = false;
     }
 
-    int pos = getPositionUnderMouse(x, y);
+    unsigned pos = getPositionUnderMouse(x, y);
     if(pos == TEXT_POSITION_NONE)
     {
         return;
     }
 
-    if(SDL_GetModState() & KMOD_SHIFT && unsigned(pos) != cursor)
+    if(SDL_GetModState() & KMOD_SHIFT && pos != cursor)
     {
         selectionStart = cursor;
         selectionEnd = pos;
@@ -308,7 +308,7 @@ void GuiTextField::mouseDragged(int x, int y, Uint8 button)
         updatePositionalValues = false;
     }
 
-    int pos = getPositionUnderMouse(x, y);
+    unsigned pos = getPositionUnderMouse(x, y);
     if(pos == TEXT_POSITION_NONE)
     {
         return;

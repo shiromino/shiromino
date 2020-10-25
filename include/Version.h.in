@@ -1,5 +1,7 @@
 #pragma once
 #cmakedefine ENABLE_OPENGL_INTERPOLATION
-namespace Shiro::Version {
-    inline constexpr auto DESCRIPTOR = "@CMAKE_PROJECT_NAME@ @CMAKE_PROJECT_VERSION@ (build @GIT_COMMIT_HASH@)";
+namespace Shiro {
+    namespace Version {
+        constexpr auto DESCRIPTOR = "@CMAKE_PROJECT_NAME@ @CMAKE_PROJECT_VERSION@ (build @GIT_COMMIT_HASH@)";
+    }
 }

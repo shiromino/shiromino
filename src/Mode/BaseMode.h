@@ -64,7 +64,7 @@ namespace Shiro {
         class BaseMode {
         public:
             BaseMode() = delete;
-            BaseMode(const int fieldWidth, const int fieldHeight);
+            BaseMode(const unsigned fieldWidth, const unsigned fieldHeight);
 
         private:
             int eraseRow(const int row);
@@ -74,8 +74,8 @@ namespace Shiro {
             std::vector<PolyominoType> nextPieces;
             PolyominoType activePiece;
             int activePos[2];
-            const int fieldWidth;
-            const int fieldHeight;
+            const unsigned fieldWidth;
+            const unsigned fieldHeight;
             std::vector<std::vector<Block>> field;
             unsigned numLines;
             unsigned numPieces;

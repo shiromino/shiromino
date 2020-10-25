@@ -124,14 +124,13 @@ pracdata *pracdata_cpy(pracdata *d)
 
     pracdata *cpy = (pracdata *)malloc(sizeof(pracdata));
     assert(cpy != nullptr);
-    int i = 0;
 
-    for(i = 0; i < d->usr_seq_len; i++)
+    for(std::size_t i = 0; i < d->usr_seq_len; i++)
     {
         cpy->usr_sequence[i] = d->usr_sequence[i];
     }
 
-    for(i = 0; i < d->usr_seq_expand_len; i++)
+    for(std::size_t i = 0; i < d->usr_seq_expand_len; i++)
     {
         cpy->usr_seq_expand[i] = d->usr_seq_expand[i];
     }
@@ -246,12 +245,9 @@ int qrsfield_set_w(Shiro::Grid *field, int w)
     if(w % 2 || w < 4 || w > 12 || !field)
         return 1;
 
-    int i = 0;
-    int j = 0;
-
-    for(i = 0; i < field->getWidth(); i++)
+    for(std::size_t i = 0; i < field->getWidth(); i++)
     {
-        for(j = 0; j < field->getHeight(); j++)
+        for(std::size_t j = 0; j < field->getHeight(); j++)
         {
             if (field->getCell(i, j) == QRS_FIELD_W_LIMITER) {
                 field->setCell(i, j, 0);
@@ -259,9 +255,9 @@ int qrsfield_set_w(Shiro::Grid *field, int w)
         }
     }
 
-    for(i = 0; i < (QRS_FIELD_W - w) / 2; i++)
+    for(int i = 0; i < (QRS_FIELD_W - w) / 2; i++)
     {
-        for(j = 0; j < QRS_FIELD_H; j++)
+        for(int j = 0; j < QRS_FIELD_H; j++)
         {
             field->setCell(i, j, QRS_FIELD_W_LIMITER);
             field->setCell(QRS_FIELD_W - i - 1, j, QRS_FIELD_W_LIMITER);
@@ -1444,8 +1440,8 @@ bool qrs_chkcollision(game_t& g, qrs_player& p, std::pair<int, int>& pos) {
     int f_y = 0;
     //int f_val = 0;
 
-    for (d_y = 0, f_y = YTOROW(p.y) - p.def->anchorY; d_y < d->getHeight(); d_y++, f_y++) {
-        for (d_x = 0, f_x = p.x - p.def->anchorY; d_x < d->getWidth(); d_x++, f_x++) {
+    for (d_y = 0, f_y = YTOROW(p.y) - p.def->anchorY; d_y < int(d->getHeight()); d_y++, f_y++) {
+        for (d_x = 0, f_x = p.x - p.def->anchorY; d_x < int(d->getWidth()); d_x++, f_x++) {
             if (d->getCell(d_x, d_y) && f->getCell(f_x, f_y)) {
                 pos = std::pair(d_x, d_y);
                 return true;
@@ -1680,7 +1676,7 @@ switchStatement:
                 break;
 
             case 1:
-                if(xs[index] == (p.rotationTable[r].getWidth() - 1) || p.rotationTable[r].getCell(static_cast<std::size_t>(xs[index]) + 1, ys[index]))
+                if(xs[index] == (int(p.rotationTable[r].getWidth()) - 1) || p.rotationTable[r].getCell(static_cast<std::size_t>(xs[index]) + 1, ys[index]))
                 {
                     direction++;
                     tries++;
@@ -1694,7 +1690,7 @@ switchStatement:
                 break;
 
             case 2:
-                if(ys[index] == p.rotationTable[r].getHeight() - 1 || p.rotationTable[r].getCell(xs[index], static_cast<std::size_t>(ys[index]) + 1))
+                if(ys[index] == int(p.rotationTable[r].getHeight()) - 1 || p.rotationTable[r].getCell(xs[index], static_cast<std::size_t>(ys[index]) + 1))
                 {
                     direction++;
                     tries++;

@@ -42,9 +42,9 @@ void GuiGridCanvas::draw()
 
     Gui_DrawBorder(relativeDestRect, 1, GUI_RGBA_DEFAULT);
 
-    for(int i = 0; i < cells->getWidth(); i++)
+    for(int i = 0; i < int(cells->getWidth()); i++)
     {
-        for(int j = 0; j < cells->getHeight(); j++)
+        for(int j = 0; j < int(cells->getHeight()); j++)
         {
             std::vector<unsigned int> paletteList;
             GuiVirtualPoint point = {i, j};
@@ -53,7 +53,7 @@ void GuiGridCanvas::draw()
 
             if(clipboardMoveMode && clipboard)
             {
-                if(i >= cellUnderMouse.x && j >= cellUnderMouse.y && i < cellUnderMouse.x + clipboard->getWidth() && j < cellUnderMouse.y + clipboard->getHeight())
+                if(i >= cellUnderMouse.x && j >= cellUnderMouse.y && i < cellUnderMouse.x + int(clipboard->getWidth()) && j < cellUnderMouse.y + int(clipboard->getHeight()))
                 {
                     int x = i - cellUnderMouse.x;
                     int y = j - cellUnderMouse.y;

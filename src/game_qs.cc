@@ -1067,8 +1067,6 @@ int qs_game_pracinit(game_t *g, int val)
     struct randomizer *qrand = q->randomizer;
     piece_id next1_id, next2_id, next3_id, next4_id;
 
-    int i = 0;
-    int j = 0;
     int cell = 0;
 
     cs->menu_input_override = 0;
@@ -1078,9 +1076,9 @@ int qs_game_pracinit(game_t *g, int val)
 
     q->pracdata->usr_field = *g->field;
 
-    for(i = 0; i < g->field->getWidth(); i++)
+    for(size_t i = 0; i < g->field->getWidth(); i++)
     {
-        for(j = 0; j < g->field->getHeight(); j++)
+        for(size_t j = 0; j < g->field->getHeight(); j++)
         {
             cell = g->field->getCell(i, j);
             if(cell < 0 || cell == GRID_OOB)
@@ -1636,9 +1634,9 @@ int qs_game_frame(game_t *g)
         int fade_counter = 0;
         int val = 0;
 
-        for(int i = 0; i < g->field->getWidth(); i++)
+        for(int i = 0; i < int(g->field->getWidth()); i++)
         {
-            for(int j = 0; j < g->field->getHeight(); j++)
+            for(int j = 0; j < int(g->field->getHeight()); j++)
             {
                 val = g->field->getCell(i, j);
                 if(val == QRS_WALL || val < 0)
@@ -3582,9 +3580,9 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     if(q->using_gems)
     {
         bool gems_in_field = false;
-        for(i = 0; i < g->field->getWidth(); i++)
+        for(size_t i = 0; i < g->field->getWidth(); i++)
         {
-            for(j = 0; j < g->field->getHeight(); j++)
+            for(size_t j = 0; j < g->field->getHeight(); j++)
             {
                 cell = g->field->getCell(i, j);
                 if(cell < 0 || cell == GRID_OOB)

@@ -16,16 +16,16 @@ Shiro::Grid::Grid(const Grid& srcGrid, const GridRect& srcRect) {
     if(startX < 0) {
         startX = 0;
     }
-    if(endX > srcGrid.width) {
+    if(endX > int(srcGrid.width)) {
         endX = static_cast<int>(srcGrid.width);
     }
     if(startY < 0) {
         startY = 0;
     }
-    if(endY > srcGrid.height) {
+    if(endY > int(srcGrid.height)) {
         endY = static_cast<int>(srcGrid.height);
     }
-    if (startX >= srcGrid.width || startY < 0) {
+    if (startX >= int(srcGrid.width) || startY < 0) {
         this->width = 0;
         this->height = 0;
         return;
@@ -67,7 +67,7 @@ int& Shiro::Grid::cell(int x, int y) {
 }
 
 int Shiro::Grid::setCell(int x, int y, int value) {
-    if (x < 0 || y < 0 || x >= this->width || y >= this->height) {
+    if (x < 0 || y < 0 || x >= int(this->width) || y >= int(this->height)) {
         return GRID_OOB;
     }
     if (value == GRID_OOB) {
@@ -79,7 +79,7 @@ int Shiro::Grid::setCell(int x, int y, int value) {
 }
 
 int Shiro::Grid::xorCell(int x, int y, int value) {
-    if (x < 0 || y < 0 || x >= this->width || y >= this->height) {
+    if (x < 0 || y < 0 || x >= int(this->width) || y >= int(this->height)) {
         return GRID_OOB;
     }
     if (value == GRID_OOB) {
@@ -105,7 +105,7 @@ void Shiro::Grid::fill(const GridRect& rect, int value) {
     {
         startX = 0;
     }
-    if(endX > this->width)
+    if(endX > int(this->width))
     {
         endX = static_cast<int>(this->width);
     }
@@ -113,7 +113,7 @@ void Shiro::Grid::fill(const GridRect& rect, int value) {
     {
         startY = 0;
     }
-    if(endY > this->height)
+    if(endY > int(this->height))
     {
         endY = static_cast<int>(this->height);
     }
@@ -134,16 +134,16 @@ void Shiro::Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const G
     if (srcStartX < 0) {
         srcStartX = 0;
     }
-    if (srcEndX > srcGrid.width) {
+    if (srcEndX > int(srcGrid.width)) {
         srcEndX = static_cast<int>(srcGrid.width);
     }
     if (srcStartY < 0) {
         srcStartY = 0;
     }
-    if (srcEndY > srcGrid.height) {
+    if (srcEndY > int(srcGrid.height)) {
         srcEndY = static_cast<int>(srcGrid.height);
     }
-    if (srcStartX >= srcGrid.width || srcStartY < 0) {
+    if (srcStartX >= int(srcGrid.width) || srcStartY < 0) {
         return;
     }
 
@@ -155,16 +155,16 @@ void Shiro::Grid::copyRect(const Grid& srcGrid, const GridRect& srcRect, const G
     if (dstStartX < 0) {
         dstStartX = 0;
     }
-    if (dstEndX > this->width) {
+    if (dstEndX > int(this->width)) {
         dstEndX = static_cast<int>(this->width);
     }
     if (dstStartY < 0) {
         dstStartY = 0;
     }
-    if (dstEndY > this->height) {
+    if (dstEndY > int(this->height)) {
         dstEndY = static_cast<int>(this->height);
     }
-    if (dstStartX >= this->width || dstStartY < 0) {
+    if (dstStartX >= int(this->width) || dstStartY < 0) {
         return;
     }
 

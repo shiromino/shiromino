@@ -109,7 +109,7 @@ int menu_text_insert(CoreState *cs, char *str)
             d7->selection = 0;
             d7->position = static_cast<int>(strlen(str));
             d7->leftmost_position = 0;
-            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
+            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != int(d7->text.size()) - d7->visible_chars)
                 d7->leftmost_position = d7->position - d7->visible_chars + 1;
         }
         else
@@ -123,12 +123,12 @@ int menu_text_insert(CoreState *cs, char *str)
             else
                 d7->position += static_cast<int>(strlen(str));
 
-            if(d7->position == t.size() && d7->leftmost_position < t.size() - d7->visible_chars)
+            if(d7->position == int(t.size()) && d7->leftmost_position < int(t.size()) - d7->visible_chars)
             {
                 d7->leftmost_position = static_cast<int>(t.size() - d7->visible_chars);
             }
 
-            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
+            if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != int(d7->text.size()) - d7->visible_chars)
                 d7->leftmost_position = d7->position - d7->visible_chars + 1;
         }
     }
@@ -185,7 +185,7 @@ int menu_text_delete(CoreState *cs)
         d7->position = 0;
         d7->leftmost_position = 0;
     }
-    else if(d7->position < d7->text.size())
+    else if(d7->position < int(d7->text.size()))
     {
         t.replace(d7->position, 1, "");
     }
@@ -224,10 +224,10 @@ int menu_text_seek_right(CoreState *cs)
     if(cs->button_emergency_override)
         return 0;
 
-    if(d7->position < t.size())
+    if(d7->position < int(t.size()))
     {
         d7->position++;
-        if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
+        if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != int(d7->text.size()) - d7->visible_chars)
             d7->leftmost_position++;
     }
 
@@ -260,7 +260,7 @@ int menu_text_seek_end(CoreState *cs)
     if(cs->button_emergency_override)
         return 0;
 
-    if(d7->position < t.size())
+    if(d7->position < int(t.size()))
     {
         d7->position = static_cast<int>(t.size());
         d7->leftmost_position = d7->position - d7->visible_chars;

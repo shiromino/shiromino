@@ -38,4 +38,4 @@ namespace Shiro {
         int hatIndex;
         float deadZone;
     };
-};
+}

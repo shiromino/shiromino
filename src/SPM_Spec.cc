@@ -14,8 +14,8 @@ bool SPM_Spec::checkCollision(Shiro::Grid *field, ActivatedPolyomino& mino, std:
     int f_x = 0;
     int f_y = 0;
 
-    for (d_y = 0, f_y = mino.position.y; d_y < d.getHeight(); d_y++, f_y++) {
-        for (d_x = 0, f_x = mino.position.x; d_x < d.getWidth(); d_x++, f_x++) {
+    for (d_y = 0, f_y = mino.position.y; d_y < int(d.getHeight()); d_y++, f_y++) {
+        for (d_x = 0, f_x = mino.position.x; d_x < int(d.getWidth()); d_x++, f_x++) {
             if (d.getCell(d_x, d_y) && field->getCell(f_x, f_y)) {
                 pos = std::pair<int, int>(d_x, d_y);
                 return true;
@@ -97,8 +97,8 @@ void SPM_Spec::imprintMino(Shiro::Grid *field, ActivatedPolyomino& mino)
 {
     Shiro::Grid d = mino.currentRotationTable();
 
-    for (int from_y = 0, to_y = mino.position.y; from_y < d.getHeight(); from_y++, to_y++) {
-        for (int from_x = 0, to_x = mino.position.x; from_x < d.getWidth(); from_x++, to_x++) {
+    for (int from_y = 0, to_y = mino.position.y; from_y < int(d.getHeight()); from_y++, to_y++) {
+        for (int from_x = 0, to_x = mino.position.x; from_x < int(d.getWidth()); from_x++, to_x++) {
             if (d.getCell(from_x, from_y)) {
                 field->cell(to_x, to_y) = mino.codedCellValue();
             }
@@ -112,22 +112,22 @@ int SPM_Spec::checkAndClearLines(Shiro::Grid *field, int bound)
 {
     int n = 0;
 
-    for(int i = 0; i < field->getHeight() && i < bound; i++)
+    for(int i = 0; i < int(field->getHeight()) && i < bound; i++)
     {
         int cells = 0;
 
-        for(int j = 0; j < field->getWidth(); j++)
+        for(int j = 0; j < int(field->getWidth()); j++)
         {
             if (field->getCell(j, i)) {
                 cells++;
             }
         }
 
-        if(cells == field->getWidth())
+        if(cells == int(field->getWidth()))
         {
             n++;
 
-            for(int j = 0; j < field->getWidth(); j++)
+            for(int j = 0; j < int(field->getWidth()); j++)
             {
                 field->cell(j, i) = SPM_CELL_CLEARED;
             }
@@ -155,7 +155,7 @@ void SPM_Spec::dropField(Shiro::Grid *field)
         else
         // make an empty row
         {
-            for(int j = 0; j < field->getWidth(); j++)
+            for(int j = 0; j < int(field->getWidth()); j++)
             {
                 field->cell(j, i) = 0;
             }
