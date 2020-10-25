@@ -8,6 +8,7 @@ namespace Shiro {
         delete (opt_data*)data;
     }
     struct MenuOption {
+        MenuOption();
         ElementType type;
         int (*value_update_callback)(CoreState *cs);
         int render_update;

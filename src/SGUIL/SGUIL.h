@@ -168,9 +168,9 @@ struct GuiTextInputEvent
 
 struct GuiEvent
 {
-    GuiEvent() : type(event_invalid) {}
+    GuiEvent() : type(event_invalid), eventUnion(nullptr) {}
     GuiEvent(enumGuiEventType type, int x, int y, Uint8 button)
-        : type(type), mouseEvent(x, y, button)
+        : type(type), eventUnion(nullptr), mouseEvent(x, y, button)
     {
         switch(type)
         {
@@ -209,6 +209,7 @@ struct GuiEvent
                 keyReleasedEvent = &keyEvent;
                 break;
             default:
+                eventUnion = nullptr;
                 break;
         }
     }
@@ -234,6 +235,8 @@ struct GuiEvent
         GuiKeyEvent *keyReleasedEvent;
 
         GuiTextInputEvent *textInputEvent;
+
+        void *eventUnion;
     };
 
 private:
@@ -248,7 +251,7 @@ class GuiElement
 // base class for all gui objects
 {
 public:
-    GuiElement() {}
+    GuiElement() : containingWindow(nullptr), relativeDestRect({ 0, 0, 0, 0 }) {}
     virtual ~GuiElement() {};
 
     virtual void draw() = 0;
@@ -290,6 +293,16 @@ class GuiInteractable : public GuiElement
 // base class for all gui elements than can be interacted with
 {
 public:
+    GuiInteractable() :
+        enabled(false),
+        canHoldKeyboardFocus(false),
+        hasDefaultKeyboardFocus(false),
+        ID(0),
+        selected(false),
+        hasKeyboardFocus(false),
+        displayTexture(nullptr),
+        updateDisplayStringPVs(false) {}
+
     // canInteractAt: checks if the given mouse X and Y are inside the element's rectangle,
     // and if the element is enabled. if so, either perform some action or let the user do so
     virtual bool canInteractAt(int, int);
@@ -563,6 +576,9 @@ inline enumOptionAccess operator |= (enumOptionAccess a, enumOptionAccess b)
 
 class GuiOptionInteractable : public GuiInteractable
 {
+public:
+    GuiOptionInteractable() : var(nullptr) {}
+
 protected:
     BindableVariable *var;
     //std::function<int(optionID_t, T)> valueUpdateCallback;

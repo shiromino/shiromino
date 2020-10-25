@@ -207,6 +207,8 @@ struct qrs_player
 
 struct pracdata
 {
+    pracdata();
+
     Shiro::GameType game_type;    // mirrors of values in qrsdata; these are just here so that..
     int field_w;    // ..backed up pracdata structs can be used to restore their values
 

@@ -10,8 +10,24 @@
 #define MENU_ID_PRACTICE 1
 #define MENU_ID_REPLAY 2
 
-typedef struct
+struct menudata
 {
+    menudata() :
+        menu_id(0),
+        main_menu_data({ 0, 0 }),
+        practice_menu_data({ nullptr, 0 }),
+        target_tex(nullptr),
+        use_target_tex(0),
+        numopts(0),
+        selection(0),
+        is_paged(0),
+        page(0),
+        page_length(0),
+        page_text_x(0),
+        page_text_y(0),
+        x(0),
+        y(0) {}
+
     std::vector<Shiro::MenuOption> menu;
     int menu_id;
 
@@ -42,7 +58,7 @@ typedef struct
     std::string title;
     int x;
     int y;
-} menudata;
+};
 
 Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label);
 

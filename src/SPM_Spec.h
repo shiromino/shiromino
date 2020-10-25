@@ -170,7 +170,7 @@ inline SPM_orientation operator - (SPM_orientation& a, SPM_orientation& b)
 
 struct SPM_frameTimings
 {
-    SPM_frameTimings() : gravity(0), lockDelay(0), das(0), are(0), lineAre(0), lineClear(0) {}
+    SPM_frameTimings() : gravity(0), lockDelay(0), das(0), dasInterval(0), are(0), lineAre(0), lineClear(0) {}
 
     int gravity;
     int lockDelay;
@@ -299,6 +299,15 @@ public:
 
 class SPM_Spec {
 public:
+    SPM_Spec() :
+        fieldW(0),
+        fieldH(0),
+        visualFieldH(0),
+        numPreviews(0u),
+        allowHold(false),
+        allowHardDrop(false),
+        softDropLock(false),
+        hardDropLock(false) {}
     virtual ~SPM_Spec() {}
 
     virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino);

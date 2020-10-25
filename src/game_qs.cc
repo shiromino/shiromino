@@ -938,7 +938,7 @@ int qs_game_init(game_t *g)
     qrs_player *p = q->p1;
     struct randomizer *qrand = q->randomizer;
 
-    piece_id next1_id, next2_id, next3_id, next4_id;
+    piece_id next1_id = 0u, next2_id = 0u, next3_id = 0u, next4_id = 0u;
     //int rc = 0;
 
     /*SDL_SetRenderTarget(g->origin->screen.renderer, q->field_tex);
@@ -2150,9 +2150,9 @@ int qs_process_lockflash(game_t *g)
             q->combo += 2 * n - 2;
             bool bravo = false;
 
-            int cells = (int)g->field->cellsFilled();
+            size_t cells = (int)g->field->cellsFilled();
             // slightly convoluted calculation, need to do this to account for the QRS_WALL blocks on the sides
-            if(cells == (g->field->getWidth() * g->field->getHeight()) - (q->field_w * QRS_FIELD_H))
+            if(cells == (g->field->getWidth() * g->field->getHeight()) - (static_cast<size_t>(q->field_w) * QRS_FIELD_H))
                 bravo = true;
 
             switch(n)
@@ -2205,7 +2205,7 @@ int qs_process_lockflash(game_t *g)
                 {
                     case MODE_G1_MASTER:
                     case MODE_G1_20G:
-                        pts = (ceil(q->level / 4) + q->soft_drop_counter) * n * q->combo * (bravo ? 4 : 1);
+                        pts = (static_cast<int>(ceil(q->level / 4.0)) + q->soft_drop_counter) * n * q->combo * (bravo ? 4 : 1);
                         q->score += pts;
                         for(int i = 0; i < 17; i++)
                         {
@@ -2236,9 +2236,11 @@ int qs_process_lockflash(game_t *g)
                         if(n_val < 1.0)
                             n_val = 1.0;
 
-                        pts = (double)(ceil((double)q->level / 3.0) + q->soft_drop_counter + q->sonic_drop_height + 2 * q->placement_speed -
-                                       (q->levelstop_time / 4)) *
-                              n_val * (double)q->combo * (bravo ? 4.0 : 1.0);
+                        pts = static_cast<int>(
+                            static_cast<double>(static_cast<int>(ceil(q->level / 3.0)) + q->soft_drop_counter + q->sonic_drop_height + 2 * q->placement_speed - (q->levelstop_time / 4)) *
+                            n_val *
+                            (static_cast<double>(q->combo) * (bravo ? 4.0 : 1.0))
+                        );
                         if(pts < 0)
                             pts = 0;
 
@@ -2421,8 +2423,8 @@ int qs_process_lockflash(game_t *g)
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
-                q->section_times[q->section] = q->timer.time - q->cur_section_timestamp;
-                q->cur_section_timestamp = q->timer.time;
+                q->section_times[q->section] = static_cast<int>(q->timer.time - q->cur_section_timestamp);
+                q->cur_section_timestamp = static_cast<long>(q->timer.time);
                 q->section++;
 
                 q->levelstop_time = 0;
@@ -2887,9 +2889,9 @@ int qs_update_pracdata(CoreState *cs)
 
     // and now for the hackiest check ever to see if we need to update the usr_seq
 
-    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[md->numopts - 1].type == Shiro::ElementType::MENU_TEXTINPUT)
+    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[static_cast<size_t>(md->numopts) - 1].type == Shiro::ElementType::MENU_TEXTINPUT)
     {
-        std::string seqStr = ((Shiro::TextOptionData*)(md->menu[md->numopts - 1].data))->text;
+        std::string seqStr = ((Shiro::TextOptionData*)(md->menu[static_cast<size_t>(md->numopts) - 1].data))->text;
         for(i = 0; i < seqStr.size(); i++)
         {
             c = seqStr[i];
@@ -3297,7 +3299,7 @@ end_sequence_proc:
     else
     {
         for (size_t i = 0; i < 4; i++) {
-            q->previews.push_back(q->piecepool[q->randomizer->lookahead(q->randomizer, i + 1)]);
+            q->previews.push_back(q->piecepool[q->randomizer->lookahead(q->randomizer, static_cast<unsigned>(i + 1))]);
         }
     }
 
@@ -3570,7 +3572,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
         if(q->pracdata && q->pracdata->usr_seq_len)
         {
-            if(qs_get_usrseq_elem(q->pracdata, q->pracdata->hist_index + 1) == USRSEQ_ELEM_OOB)
+            if(qs_get_usrseq_elem(q->pracdata, static_cast<size_t>(q->pracdata->hist_index) + 1) == USRSEQ_ELEM_OOB)
             {
                 return 1;
             }

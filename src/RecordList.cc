@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <cassert>
 #include <sqlite3.h>
 #define check_bind(db, bind_call) check((bind_call) == SQLITE_OK, "Could not bind parameter value: %s", sqlite3_errmsg((db)))
 
@@ -175,7 +176,7 @@ void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
         check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":grade"),      r->grade));
         check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":startLevel"), r->starting_level));
         check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":level"),      r->ending_level));
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":time"),       r->time));
+        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":time"),       int(r->time)));
         check_bind(records->db, sqlite3_bind_blob(sql, sqlite3_bind_parameter_index(sql, ":replay"),     replayData, (int)replayLen, SQLITE_STATIC));
 
         const int ret = sqlite3_step(sql);
@@ -220,8 +221,9 @@ int scoredb_get_replay_count(Shiro::RecordList *records, Shiro::Player *p)
 struct replay *scoredb_get_replay_list(Shiro::RecordList *records, Shiro::Player *p, int *out_replayCount)
 {
     sqlite3_stmt *sql;
-    const int replayCount = scoredb_get_replay_count(records, p);
-    struct replay *replayList = (struct replay *) malloc(sizeof(struct replay) * replayCount);
+    const std::size_t replayCount = scoredb_get_replay_count(records, p);
+    struct replay *replayList = new struct replay[replayCount];
+    assert(replayList != nullptr);
     try {
         // TODO: Pagination? Current interface expects a full list of replays
         const char getReplayListSql[] =
@@ -234,7 +236,7 @@ struct replay *scoredb_get_replay_list(Shiro::RecordList *records, Shiro::Player
 
         check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
 
-        for (int i = 0; i < replayCount; i++)
+        for (std::size_t i = 0; i < replayCount; i++)
         {
             int ret = sqlite3_step(sql);
             check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
@@ -252,7 +254,7 @@ struct replay *scoredb_get_replay_list(Shiro::RecordList *records, Shiro::Player
     }
     sqlite3_finalize(sql);
 
-    *out_replayCount = replayCount;
+    *out_replayCount = int(replayCount);
     return replayList;
 }
 

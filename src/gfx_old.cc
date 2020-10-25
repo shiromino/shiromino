@@ -110,6 +110,13 @@ int gfx_init(CoreState *cs)
     monofont_thin = (png_monofont *)malloc(sizeof(png_monofont));
     monofont_square = (png_monofont *)malloc(sizeof(png_monofont));
     monofont_fixedsys = (png_monofont *)malloc(sizeof(png_monofont));
+    assert(
+        monofont_tiny != nullptr &&
+        monofont_small != nullptr &&
+        monofont_thin != nullptr &&
+        monofont_square != nullptr &&
+        monofont_fixedsys != nullptr
+    );
 
     monofont_tiny->sheet = cs->assets->font_tiny.tex;
     monofont_tiny->outline_sheet = NULL;
@@ -445,11 +452,11 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                 }
                 else if(c == QRS_FIELD_W_LIMITER)
                 {
-                    if(!(IS_INBOUNDS(field->getCell(i - 1, j))) && !(IS_INBOUNDS(field->getCell(i + 1, j))))
+                    if(!(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) - 1, j))) && !(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) + 1, j))))
                         src.x = 27 * 16;
-                    else if((IS_INBOUNDS(field->getCell(i - 1, j))) && !(IS_INBOUNDS(field->getCell(i + 1, j))))
+                    else if((IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) - 1, j))) && !(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) + 1, j))))
                         src.x = 28 * 16;
-                    else if(!(IS_INBOUNDS(field->getCell(i - 1, j))) && (IS_INBOUNDS(field->getCell(i + 1, j))))
+                    else if(!(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) - 1, j))) && (IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) + 1, j))))
                         src.x = 29 * 16;
                 }
                 else if(c & QRS_PIECE_BRACKETS)
@@ -557,7 +564,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
                         SDL_Rect outlineRect = { dest.x, dest.y, cellSize, 2 };
 
-                        c = field->getCell(i, j - 1); // above
+                        c = field->getCell(i, static_cast<std::size_t>(j) - 1); // above
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
@@ -571,7 +578,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                             }
                         }
 
-                        c = field->getCell(i - 1, j); // left
+                        c = field->getCell(static_cast<std::size_t>(i) - 1, j); // left
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
@@ -585,7 +592,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                             }
                         }
 
-                        c = field->getCell(i + 1, j); // right
+                        c = field->getCell(static_cast<std::size_t>(i) + 1, j); // right
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x + cellSize - 2;
@@ -599,7 +606,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                             }
                         }
 
-                        c = field->getCell(i, j + 1); // below
+                        c = field->getCell(i, static_cast<std::size_t>(j) + 1); // below
                         if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                         {
                             outlineRect.x = dest.x;
@@ -755,7 +762,7 @@ int gfx_drawtext(CoreState *cs, std::string text, int x, int y, png_monofont *fo
     return gfx_drawtext_partial(cs, text, 0, text.size(), x, y, font, fmt);
 }
 
-int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int x, int y, png_monofont *font, struct text_formatting *fmt)
+int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t len, int x, int y, png_monofont *font, struct text_formatting *fmt)
 {
     if(!cs || text == "")
         return -1;
@@ -815,14 +822,14 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
                     break;
 
                 case ALIGN_RIGHT:
-                    dest.x = x - (fmt->size_multiplier * (float)font->char_w) * lines[0].size();
+                    dest.x = static_cast<int>(x - (fmt->size_multiplier * (float)font->char_w) * lines[0].size());
                     break;
 
                 case ALIGN_CENTER:
-                    if(fmt->wrap_length < lines[0].size() - last_wrap_line_pos)
+                    if (fmt->wrap_length < lines[0].size() - last_wrap_line_pos)
                         dest.x = x;
                     else
-                        dest.x = x + (fmt->size_multiplier * (float)font->char_w / 2.0) * (fmt->wrap_length - (lines[0].size() - last_wrap_line_pos));
+                        dest.x = x + static_cast<int>((fmt->size_multiplier * (float)font->char_w / 2.0f) * (fmt->wrap_length - (lines[0].size() - last_wrap_line_pos)));
 
                     break;
             }
@@ -842,7 +849,7 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
                 last_wrap_pos = i;
             }
 
-            dest.y += fmt->line_spacing * fmt->size_multiplier * (float)font->char_h;
+            dest.y += static_cast<int>(fmt->line_spacing * fmt->size_multiplier * (float)font->char_h);
 
             switch(fmt->align)
             {
@@ -852,7 +859,7 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
                     break;
 
                 case ALIGN_RIGHT:
-                    dest.x = x - (font->char_w) * lines[linefeeds].size();
+                    dest.x = static_cast<int>(x - (font->char_w) * lines[linefeeds].size());
                     break;
 
                 case ALIGN_CENTER:
@@ -901,8 +908,8 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
 
         if(fmt->shadow)
         {
-            dest.x -= 2.0 * fmt->size_multiplier;
-            dest.y += 2.0 * fmt->size_multiplier;
+            dest.x -= static_cast<int>(2.0f * fmt->size_multiplier);
+            dest.y += static_cast<int>(2.0f * fmt->size_multiplier);
 
             SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba) / 4);
             if(font->outline_sheet)
@@ -915,8 +922,8 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
                 SDL_RenderCopy(cs->screen.renderer, font->outline_sheet, &src, &dest);
             }
 
-            dest.x += 2.0 * fmt->size_multiplier;
-            dest.y -= 2.0 * fmt->size_multiplier;
+            dest.x += static_cast<int>(2.0f * fmt->size_multiplier);
+            dest.y -= static_cast<int>(2.0f * fmt->size_multiplier);
 
             SDL_SetTextureAlphaMod(font->sheet, A(fmt->rgba));
             if(font->outline_sheet)
@@ -940,7 +947,7 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, int len, int 
                 SDL_RenderCopy(cs->screen.renderer, font->outline_sheet, &src, &dest);
         }
 
-        dest.x += fmt->size_multiplier * (float)font->char_w;
+        dest.x += static_cast<int>(fmt->size_multiplier * (float)font->char_w);
     }
 
     SDL_SetTextureColorMod(font->sheet, 255, 255, 255);
@@ -1066,7 +1073,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
 
                         if(!(flags & DRAWPIECE_PREVIEW))
                         {
-                            c = field->getCell(cell_x, cell_y - 1); // above, left, right, below
+                            c = field->getCell(cell_x, static_cast<std::size_t>(cell_y) - 1); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 0;
@@ -1075,7 +1082,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
-                            c = field->getCell(cell_x - 1, cell_y); // above, left, right, below
+                            c = field->getCell(static_cast<std::size_t>(cell_x) - 1, cell_y); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 16;
@@ -1084,7 +1091,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
-                            c = field->getCell(cell_x + 1, cell_y); // above, left, right, below
+                            c = field->getCell(static_cast<std::size_t>(cell_x) + 1, cell_y); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 32;
@@ -1093,7 +1100,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 SDL_RenderCopy(cs->screen.renderer, misc, &src, &dest);
                             }
 
-                            c = field->getCell(cell_x, cell_y + 1); // above, left, right, below
+                            c = field->getCell(cell_x, static_cast<std::size_t>(cell_y) + 1); // above, left, right, below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
                                 src.x = 48;
@@ -1137,21 +1144,21 @@ int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Uint32 rgba)
     SDL_Rect src = { 0, 96, 20, 32 };
     SDL_Rect dest = { x, 26 * 16 + 8 - QRS_FIELD_Y + y, 20, 32 };
 
-    int min = t->min();
-    int sec = t->sec() % 60;
-    int csec = t->csec() % 100; // centiseconds
+    uint64_t min = t->min();
+    uint64_t sec = t->sec() % 60;
+    uint64_t csec = t->csec() % 100;
 
     int i = 0;
     // int n = 0;
 
     int digits[6];
 
-    digits[0] = min / 10;
-    digits[1] = min % 10;
-    digits[2] = sec / 10;
-    digits[3] = sec % 10;
-    digits[4] = csec / 10;
-    digits[5] = csec % 10;
+    digits[0] = int(min / 10);
+    digits[1] = int(min % 10);
+    digits[2] = int(sec / 10);
+    digits[3] = int(sec % 10);
+    digits[4] = int(csec / 10);
+    digits[5] = int(csec % 10);
 
     SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
     SDL_SetTextureAlphaMod(font, A(rgba));

@@ -1,10 +1,10 @@
 #include "random.h"
 #include "QRS0.h"
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
+#include <cassert>
 
 // clang-format off
 static long double pento_piece_weights[25] =
@@ -171,6 +171,7 @@ void g123_seeds_init()
 struct randomizer *g1_randomizer_create(uint32_t flags)
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
+    assert(r != nullptr);
     struct histrand_data *d = NULL;
 
     r->num_pieces = 7;
@@ -182,11 +183,13 @@ struct randomizer *g1_randomizer_create(uint32_t flags)
     r->lookahead = histrand_lookahead;
 
     r->data = malloc(sizeof(struct histrand_data));
+    assert(r->data != nullptr);
     d = (struct histrand_data *)r->data;
 
     d->hist_len = 4;
     d->rerolls = 3;
     d->history = (piece_id *)malloc(d->hist_len * sizeof(piece_id));
+    assert(d->history != nullptr);
     d->history[0] = PIECE_ID_INVALID;
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
@@ -204,6 +207,7 @@ struct randomizer *g1_randomizer_create(uint32_t flags)
 struct randomizer *g2_randomizer_create(uint32_t flags)
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
+    assert(r != nullptr);
     struct histrand_data *d = NULL;
 
     r->num_pieces = 7;
@@ -215,11 +219,13 @@ struct randomizer *g2_randomizer_create(uint32_t flags)
     r->lookahead = histrand_lookahead;
 
     r->data = malloc(sizeof(struct histrand_data));
+    assert(r->data != nullptr);
     d = (struct histrand_data *)r->data;
 
     d->hist_len = 4;
     d->rerolls = 5;
     d->history = (piece_id *)malloc(d->hist_len * sizeof(piece_id));
+    assert(d->history != nullptr);
     d->history[0] = PIECE_ID_INVALID;
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
@@ -237,6 +243,7 @@ struct randomizer *g2_randomizer_create(uint32_t flags)
 struct randomizer *g3_randomizer_create(uint32_t flags)
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
+    assert(r != nullptr);
     struct g3rand_data *d = NULL;
     int i = 0;
 
@@ -249,6 +256,7 @@ struct randomizer *g3_randomizer_create(uint32_t flags)
     r->lookahead = g3rand_lookahead;
 
     r->data = malloc(sizeof(struct g3rand_data));
+    assert(r->data != nullptr);
     d = (struct g3rand_data *)r->data;
 
     for(i = 0; i < 4; i++)
@@ -266,6 +274,7 @@ struct randomizer *g3_randomizer_create(uint32_t flags)
 struct randomizer *pento_randomizer_create(uint32_t flags)
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
+    assert(r != nullptr);
     struct histrand_data *d = NULL;
     unsigned int i = 0;
 
@@ -278,11 +287,13 @@ struct randomizer *pento_randomizer_create(uint32_t flags)
     r->lookahead = histrand_lookahead;
 
     r->data = malloc(sizeof(struct histrand_data));
+    assert(r->data != nullptr);
     d = (struct histrand_data *)r->data;
 
     d->hist_len = 6;
     d->rerolls = 0;
     d->history = (piece_id *)malloc(d->hist_len * sizeof(piece_id));
+    assert(d->history != nullptr);
     d->history[0] = PIECE_ID_INVALID;
     d->history[1] = PIECE_ID_INVALID;
     d->history[2] = PIECE_ID_INVALID;
@@ -293,14 +304,17 @@ struct randomizer *pento_randomizer_create(uint32_t flags)
     d->difficulty = 0.0;
 
     d->piece_weights = (double *)malloc(r->num_pieces * sizeof(double));
+    assert(d->piece_weights != nullptr);
     d->drought_protection_coefficients = (double *)malloc(r->num_pieces * sizeof(double));
+    assert(d->drought_protection_coefficients != nullptr);
     d->drought_times = (unsigned int *)malloc(r->num_pieces * sizeof(unsigned int));
+    assert(d->drought_times != nullptr);
 
     for(i = 0; i < r->num_pieces; i++)
     {
-        d->piece_weights[i] = pento_piece_weights[i];
-        d->drought_protection_coefficients[i] = pento_drought_coeffs[i];
-        d->drought_times[i] = 0;
+        d->piece_weights[i] = double(pento_piece_weights[i]);
+        d->drought_protection_coefficients[i] = double(pento_drought_coeffs[i]);
+        d->drought_times[i] = 0u;
     }
 
     return r;
@@ -627,7 +641,7 @@ piece_id histrand_get_next(struct randomizer *r)
                 }
             }
 
-            temp_weights[i] /= (double)(histogram[i] * histogram[i]); // OLD: * (i < 18 ? pieces[i] : 1)
+            temp_weights[i] /= (double)histogram[i] * histogram[i]; // OLD: * (i < 18 ? pieces[i] : 1)
             if(d->drought_protection_coefficients && d->drought_times)
             {
                 // multiply by coefficient^(t/BASELINE)
@@ -638,21 +652,21 @@ piece_id histrand_get_next(struct randomizer *r)
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_HIGHTIER_SOFTLIMIT)
                     {
-                        temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1));
+                        temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1.0);
                     }
                 }
                 else if((d->difficulty >= 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD) && (QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0))
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_MIDTIER_SOFTLIMIT)
                     {
-                        temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1));
+                        temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1.0);
                     }
                 }
                 else if((d->difficulty >= 30.0) && (QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0))
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
                     {
-                        temp_weights[i] *= pow(1.3, (double)(d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1));
+                        temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1.0);
                     }
                 }
             }

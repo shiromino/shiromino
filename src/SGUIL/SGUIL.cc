@@ -328,7 +328,7 @@ void Gui_GenerateTextPositionalValuesPartial(std::string& text, unsigned int pos
 
             if(i != 0 || text[i] == '\n')
             {
-                currentY += fmt->lineSpacing * fmt->sizeMult * (float)font.charH;
+                currentY += static_cast<int>(fmt->lineSpacing * fmt->sizeMult * (float)font.charH);
             }
 
             unsigned int width = (unsigned int)((float)(destBox.w) / (float)(font.charW) / fmt->sizeMult);
@@ -358,7 +358,7 @@ void Gui_GenerateTextPositionalValuesPartial(std::string& text, unsigned int pos
                 case enumAlignment::center:
                     if(lines[linefeeds].size() - lastWrapLinePos < width)
                     {
-                        currentX = destBox.x + (fmt->sizeMult * (float)font.charW / 2.0) * (width - (lines[linefeeds].size() - lastWrapLinePos));
+                        currentX = static_cast<int>(destBox.x + (fmt->sizeMult * (float)font.charW / 2.0f) * (width - (lines[linefeeds].size() - lastWrapLinePos)));
                     } else
                     {
                         currentX = destBox.x;
@@ -382,7 +382,7 @@ void Gui_GenerateTextPositionalValuesPartial(std::string& text, unsigned int pos
 
         values.push_back( {currentX, currentY} );
 
-        currentX += fmt->sizeMult * (float)font.charW;
+        currentX += static_cast<int>(fmt->sizeMult * (float)font.charW);
     }
 }
 
@@ -454,8 +454,8 @@ void Gui_DrawTextPartial_PV(std::string text, unsigned int pos, unsigned int len
         }
 
         if(fmt->shadow) {
-            dest.x -= 2.0 * fmt->sizeMult;
-            dest.y += 2.0 * fmt->sizeMult;
+            dest.x -= static_cast<int>(2.0f * fmt->sizeMult);
+            dest.y += static_cast<int>(2.0f * fmt->sizeMult);
 
             SDL_SetTextureAlphaMod(font.sheet, (Uint8)((float)rgba_A(fmt->rgba) / 3.5));
             if(font.outlineSheet)
@@ -467,8 +467,8 @@ void Gui_DrawTextPartial_PV(std::string text, unsigned int pos, unsigned int len
                 SDL_RenderCopy(Gui_SDL_Renderer, font.outlineSheet, &src, &dest);
             }
 
-            dest.x += 2.0 * fmt->sizeMult;
-            dest.y -= 2.0 * fmt->sizeMult;
+            dest.x += static_cast<int>(2.0f * fmt->sizeMult);
+            dest.y -= static_cast<int>(2.0f * fmt->sizeMult);
 
             SDL_SetTextureAlphaMod(font.sheet, rgba_A(fmt->rgba));
             if(font.outlineSheet)

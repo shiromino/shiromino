@@ -1,6 +1,7 @@
 #pragma once
 namespace Shiro {
     struct MetaGameOptionData {
+        MetaGameOptionData();
         int mode;
         int submode;
         int num_args;

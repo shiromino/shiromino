@@ -73,6 +73,40 @@ void qrsdata_destroy(qrsdata *q)
     delete q;
 }
 
+pracdata::pracdata() :
+    game_type(Shiro::GameType::SIMULATE_QRS),
+    field_w(0),
+    //long_history(nullptr),
+    usr_sequence(),
+    usr_seq_expand(),
+    usr_seq_len(0u),
+    usr_seq_expand_len(0u),
+    field_edit_in_progress(false),
+    palette_selection(0),
+    field_selection(0),
+    field_selection_vertex1_x(0),
+    field_selection_vertex1_y(0),
+    field_selection_vertex2_x(0),
+    field_selection_vertex2_y(0),
+    usr_timings(nullptr),
+    paused(0),
+    grid_lines_shown(false),
+    brackets(false),
+    invisible(false),
+    hist_index(0),
+    lock_protect(0),
+    infinite_floorkicks(false),
+    piece_subset(0),
+    randomizer_seed(0l)
+{
+    for (int& item : usr_sequence) {
+        item = 0;
+    }
+    for (int& item : usr_seq_expand) {
+        item = 0;
+    }
+}
+
 void pracdata_destroy(pracdata *d)
 {
     if(!d)
@@ -89,6 +123,7 @@ pracdata *pracdata_cpy(pracdata *d)
         return NULL;
 
     pracdata *cpy = (pracdata *)malloc(sizeof(pracdata));
+    assert(cpy != nullptr);
     int i = 0;
 
     for(i = 0; i < d->usr_seq_len; i++)
@@ -145,23 +180,21 @@ pracdata *pracdata_cpy(pracdata *d)
 std::vector<Shiro::PieceDefinition> qrspool_create()
 {
     std::vector<Shiro::PieceDefinition> pool(25);
-    int i = 0;
-    int j = 0;
     int n = 5;
 
-    for(i = 0; i < 25; i++)
+    for(std::size_t i = 0u; i < 25u; i++)
     {
-        if(i >= 18)
+        if(i >= 18u)
         {
             n = 4;
         }
 
-        pool[i].qrsID = i;
+        pool[i].qrsID = static_cast<std::uint8_t>(i);
         pool[i].flags = Shiro::PDNONE;
         pool[i].anchorX = ANCHORX_QRS;
         pool[i].anchorY = ANCHORY_QRS;
 
-        for(j = 0; j < 4; j++)
+        for(std::size_t j = 0u; j < 4u; j++)
         {
             if (n == 5) {
                 pool[i].rotationTable[j] = Shiro::PentoRotationTables[i][j];
@@ -394,7 +427,7 @@ int qrs_input(game_t *g)
 
     int scale = 1;
 
-    scale = cs->settings.videoScale;
+    scale = static_cast<int>(cs->settings.videoScale);
 
     init = q->p1counters->init;
 
@@ -506,7 +539,7 @@ int qrs_input(game_t *g)
                     }
                     else if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                     {
-                        if(d->usr_field.getCell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
+                        if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) != QRS_FIELD_W_LIMITER)
                         {
                             if(d->palette_selection != QRS_PIECE_GEM)
                             {
@@ -516,7 +549,7 @@ int qrs_input(game_t *g)
                                 edit_action_occurred = 1;
                                 d->usr_field.cell(cell_x, cell_y + 4) = d->palette_selection;
                             }
-                            else if(d->usr_field.getCell(cell_x, cell_y + 4) > 0)
+                            else if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) > 0)
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
@@ -582,7 +615,7 @@ int qrs_input(game_t *g)
                             {
                                 if(i >= 0 && i < 12 && j >= 0 && j < 20)
                                 {
-                                    if(d->usr_field.getCell(i, j + 4) != QRS_FIELD_W_LIMITER)
+                                    if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) != QRS_FIELD_W_LIMITER)
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
@@ -685,11 +718,11 @@ int qrs_input(game_t *g)
                     {
                         if(i >= 0 && i < 12 && j >= 0 && j < 20)
                         {
-                            if(d->usr_field.getCell(i, j + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                            if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                             {
                                 if(SDL_GetModState() & KMOD_SHIFT)
                                 {
-                                    if(IS_STACK(d->usr_field.getCell(i, j + 4)))
+                                    if(IS_STACK(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4)))
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
@@ -707,11 +740,11 @@ int qrs_input(game_t *g)
                                     d->usr_field.cell(i, j + 4) = c;
                                 }
                             }
-                            else if(d->usr_field.getCell(i, j + 4) > 0 && c == QRS_PIECE_GEM)
+                            else if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) > 0 && c == QRS_PIECE_GEM)
                             {
                                 if(SDL_GetModState() & KMOD_SHIFT)
                                 {
-                                    if(IS_STACK(d->usr_field.getCell(i, j + 4)))
+                                    if(IS_STACK(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4)))
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
@@ -739,11 +772,11 @@ int qrs_input(game_t *g)
             {
                 if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
                 {
-                    if(d->usr_field.getCell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                    if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                     {
                         if(SDL_GetModState() & KMOD_SHIFT)
                         {
-                            if(IS_STACK(d->usr_field.getCell(cell_x, cell_y + 4)))
+                            if(IS_STACK(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4)))
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
@@ -761,11 +794,11 @@ int qrs_input(game_t *g)
                             d->usr_field.cell(cell_x, cell_y + 4) = c;
                         }
                     }
-                    else if(d->usr_field.getCell(cell_x, cell_y + 4) > 0 && c == QRS_PIECE_GEM)
+                    else if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) > 0 && c == QRS_PIECE_GEM)
                     {
                         if(SDL_GetModState() & KMOD_SHIFT)
                         {
-                            if(IS_STACK(d->usr_field.getCell(cell_x, cell_y + 4)))
+                            if(IS_STACK(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4)))
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
@@ -799,7 +832,7 @@ int qrs_input(game_t *g)
     }
 
     // hacky way to go back to the practice menu if a game is running from that menu
-    if(cs->pressed.escape || ((cs->pressed.a == 1 | cs->pressed.b == 1 | cs->pressed.c == 1) && (q->state_flags & GAMESTATE_GAMEOVER)))
+    if(cs->pressed.escape || ((cs->pressed.a == 1 || cs->pressed.b == 1 || cs->pressed.c == 1) && (q->state_flags & GAMESTATE_GAMEOVER)))
     {
         if(menu_is_practice(cs->menu))
         {
@@ -925,6 +958,7 @@ int qrs_start_record(game_t *g)
     g2_seed_bkp();
 
     q->replay = (struct replay *)malloc(sizeof(struct replay));
+    assert(q->replay != nullptr);
 
     memset(q->replay->pinputs, 0, sizeof(struct packed_input) * MAX_KEYFLAGS);
 
@@ -1368,12 +1402,12 @@ int qrs_lock(game_t *g, qrs_player *p)
     Shiro::Grid *d = &p->def->rotationTable[p->orient];
     Shiro::Grid *f = g->field;
 
-    int ax = ANCHORX_QRS;
-    int ay = ANCHORY_QRS;
+    constexpr std::size_t ax = ANCHORX_QRS;
+    constexpr std::size_t ay = ANCHORY_QRS;
     piece_id c = p->def->qrsID;
 
-    for (size_t from_y = 0, to_y = YTOROW(p->y) - ay; from_y < d->getHeight(); from_y++, to_y++) {
-        for (size_t from_x = 0, to_x = p->x - ax; from_x < d->getWidth(); from_x++, to_x++) {
+    for (std::size_t from_y = 0, to_y = static_cast<std::size_t>(YTOROW(p->y)) - ay; from_y < d->getHeight(); from_y++, to_y++) {
+        for (std::size_t from_x = 0, to_x = static_cast<std::size_t>(p->x) - ax; from_x < d->getWidth(); from_x++, to_x++) {
             if (d->getCell(from_x, from_y)) {
                 int value = c + 1;
                 if (p->def->flags & Shiro::PDBRACKETS) {
@@ -1527,12 +1561,12 @@ int qrs_dropfield(game_t *g)
 
     for(i = QRS_FIELD_H - 1; i > 0; i--)
     {
-        while(field->getCell(4, i - n) == -2)
+        while(field->getCell(4, static_cast<std::size_t>(i) - n) == -2)
             n++;
 
         if(i - n >= 0)
         {
-            field->copyRow(i - n, i);
+            field->copyRow(static_cast<std::size_t>(i) - n, i);
         }
         else
         {
@@ -1561,7 +1595,7 @@ int qrs_dropfield(game_t *g)
 int qrs_spawn_garbage(game_t *g, unsigned int flags)
 {
     qrsdata *q = (qrsdata *)g->data;
-    int i = 0;
+    std::size_t i = 0u;
 
     if(!q->garbage.getWidth() || !q->garbage.getHeight())
     {
@@ -1569,7 +1603,7 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     }
     else if(flags & GARBAGE_COPY_BOTTOM_ROW)
     {
-        for(i = 0; i < QRS_FIELD_H - 1; i++)
+        for(i = 0u; i < QRS_FIELD_H - 1; i++)
         {
             g->field->copyRow(i + 1, i);
         }
@@ -1584,7 +1618,7 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
 
             if(g->field->getCell(i, QRS_FIELD_H - 2))
             {
-                g->field->cell(i, QRS_FIELD_H - 1) = QRS_PIECE_GARBAGE;
+                g->field->cell(static_cast<int>(i), QRS_FIELD_H - 1) = QRS_PIECE_GARBAGE;
             }
         }
     }
@@ -1600,27 +1634,27 @@ void qrs_embiggen(Shiro::PieceDefinition& p)
 {
     int xs[5] = {-1, -1, -1, -1, -1};
     int ys[5] = {-1, -1, -1, -1, -1};
-    int k = 0;
+    std::size_t k = 0;
 
-    for(int r = 0; r < p.rotationTable.size(); r++)
+    for(std::size_t r = 0; r < p.rotationTable.size(); r++)
     {
         p.rotationTable[0].resize(p.rotationTable[r].getWidth() + 1, p.rotationTable[r].getHeight() + 1);
-        for(int i = 0; i < p.rotationTable[r].getWidth(); i++)
+        for(std::size_t i = 0; i < p.rotationTable[r].getWidth(); i++)
         {
-            for(int j = 0; j < p.rotationTable[r].getHeight(); j++)
+            for(std::size_t j = 0; j < p.rotationTable[r].getHeight(); j++)
             {
                 if(p.rotationTable[r].getCell(i, j))
                 {
-                    xs[k] = i;
-                    ys[k] = j;
+                    xs[k] = static_cast<int>(i);
+                    ys[k] = static_cast<int>(j);
                     k++;
                 }
             }
         }
 
-        int index = rand() % k;
-        int direction = rand() % 4;
-        int tries = 0;
+        std::size_t index = static_cast<std::size_t>(rand()) % k;
+        unsigned direction = static_cast<unsigned>(rand()) % 4u;
+        unsigned tries = 0;
 
 switchStatement:
         if(tries == 4)
@@ -1632,7 +1666,7 @@ switchStatement:
         switch(direction)
         {
             case 0:
-                if(ys[index] == 0 || p.rotationTable[r].getCell(xs[index], ys[index] - 1))
+                if(ys[index] == 0 || p.rotationTable[r].getCell(xs[index], static_cast<std::size_t>(ys[index]) - 1))
                 {
                     direction++;
                     tries++;
@@ -1646,7 +1680,7 @@ switchStatement:
                 break;
 
             case 1:
-                if(xs[index] == (p.rotationTable[r].getWidth() - 1) || p.rotationTable[r].getCell(xs[index] + 1, ys[index]))
+                if(xs[index] == (p.rotationTable[r].getWidth() - 1) || p.rotationTable[r].getCell(static_cast<std::size_t>(xs[index]) + 1, ys[index]))
                 {
                     direction++;
                     tries++;
@@ -1660,7 +1694,7 @@ switchStatement:
                 break;
 
             case 2:
-                if(ys[index] == p.rotationTable[r].getHeight() - 1 || p.rotationTable[r].getCell(xs[index], ys[index] + 1))
+                if(ys[index] == p.rotationTable[r].getHeight() - 1 || p.rotationTable[r].getCell(xs[index], static_cast<std::size_t>(ys[index]) + 1))
                 {
                     direction++;
                     tries++;
@@ -1674,7 +1708,7 @@ switchStatement:
                 break;
 
             case 3:
-                if(xs[index] == 0 || p.rotationTable[r].getCell(xs[index] - 1, ys[index]))
+                if(xs[index] == 0 || p.rotationTable[r].getCell(static_cast<std::size_t>(xs[index]) - 1, ys[index]))
                 {
                     direction = 0;
                     tries++;

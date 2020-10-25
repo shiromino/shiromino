@@ -82,9 +82,9 @@ int gfx_drawqs(game_t *g)
     SDL_Rect src = { 0, 0, 32, 32 };
     SDL_Rect dest = { 0, 0, 32, 32 };
 
-    float lt = q->p1->speeds->lock;
-    float l = q->p1counters->lock;
-    char r = 255 - (char)(80 * l / lt);
+    const float lt = static_cast<float>(q->p1->speeds->lock);
+    const float l = static_cast<float>(q->p1counters->lock);
+    const char r = 255 - (char)(80 * l / lt);
     Uint32 rgba = (r * 0x1000000) + (r * 0x10000) + (r * 0x100) + 0xFF;
 
     if(YTOROW(q->p1->y) != q->locking_row)
@@ -488,12 +488,12 @@ int gfx_drawqs(game_t *g)
 
             if(g->frame_counter - q->last_gradeup_timestamp < 20)
             {
-                size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_gradeup_timestamp);
-                grade_dest.x -= ((size_multiplier - 1.0) / 2) * grade_dest.w;
-                grade_dest.y -= ((size_multiplier - 1.0) / 2) * grade_dest.h;
+                size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_gradeup_timestamp));
+                grade_dest.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * grade_dest.w);
+                grade_dest.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * grade_dest.h);
 
-                grade_dest.w *= size_multiplier;
-                grade_dest.h *= size_multiplier;
+                grade_dest.w *= static_cast<int>(size_multiplier);
+                grade_dest.h *= static_cast<int>(size_multiplier);
             }
 
             grade_src.y = 127;
@@ -558,12 +558,12 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 32;
                     grade_src.x = 128 + 32 * (gradeWithoutFlags - GRADE_S1);
 
-                    grade_dest.x += 47 * size_multiplier;
-                    grade_dest.y += 30 * size_multiplier;
+                    grade_dest.x += static_cast<int>(47 * size_multiplier);
+                    grade_dest.y += static_cast<int>(30 * size_multiplier);
                     grade_src.w = 32;
                     grade_src.h = 32;
-                    grade_dest.w = 32 * size_multiplier;
-                    grade_dest.h = 32 * size_multiplier;
+                    grade_dest.w = static_cast<int>(32 * size_multiplier);
+                    grade_dest.h = static_cast<int>(32 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
@@ -572,15 +572,15 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 32;
                     grade_src.x = 128;
 
-                    grade_dest.x += 47 * size_multiplier;
-                    grade_dest.y += 30 * size_multiplier;
+                    grade_dest.x += static_cast<int>(47 * size_multiplier);
+                    grade_dest.y += static_cast<int>(30 * size_multiplier);
                     grade_src.w = 32;
                     grade_src.h = 32;
-                    grade_dest.w = 32 * size_multiplier;
-                    grade_dest.h = 32 * size_multiplier;
+                    grade_dest.w = static_cast<int>(32 * size_multiplier);
+                    grade_dest.h = static_cast<int>(32 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.x = 128 + 9 * 32;
-                    grade_dest.x += 20 * size_multiplier;
+                    grade_dest.x += static_cast<int>(20 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
@@ -591,15 +591,15 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 32;
                     grade_src.x = 128;
 
-                    grade_dest.x += 47 * size_multiplier;
-                    grade_dest.y += 30 * size_multiplier;
+                    grade_dest.x += static_cast<int>(47 * size_multiplier);
+                    grade_dest.y += static_cast<int>(30 * size_multiplier);
                     grade_src.w = 32;
                     grade_src.h = 32;
-                    grade_dest.w = 32 * size_multiplier;
-                    grade_dest.h = 32 * size_multiplier;
+                    grade_dest.w = static_cast<int>(32 * size_multiplier);
+                    grade_dest.h = static_cast<int>(32 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     grade_src.x += 32 * (gradeWithoutFlags - GRADE_S11);
-                    grade_dest.x += 20 * size_multiplier;
+                    grade_dest.x += static_cast<int>(20 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
@@ -617,12 +617,12 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 32;
                     grade_src.x = 128 + 32 * (gradeWithoutFlags - GRADE_M1);
 
-                    grade_dest.x += 42 * size_multiplier;
-                    grade_dest.y += 30 * size_multiplier;
+                    grade_dest.x += static_cast<int>(42 * size_multiplier);
+                    grade_dest.y += static_cast<int>(30 * size_multiplier);
                     grade_src.w = 32;
                     grade_src.h = 32;
-                    grade_dest.w = 32 * size_multiplier;
-                    grade_dest.h = 32 * size_multiplier;
+                    grade_dest.w = static_cast<int>(32 * size_multiplier);
+                    grade_dest.h = static_cast<int>(32 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
                     break;
 
@@ -639,11 +639,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.x = 192;
                     grade_src.y += 64;
 
-                    grade_dest.x -= 14 * size_multiplier;
+                    grade_dest.x -= static_cast<int>(14 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     grade_src.x = 64 * (gradeWithoutFlags - GRADE_MK);
-                    grade_dest.x += 38 * size_multiplier;
+                    grade_dest.x += static_cast<int>(38 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     break;
@@ -652,11 +652,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.x = 256;
                     grade_src.y += 64;
 
-                    grade_dest.x -= 14 * size_multiplier;
+                    grade_dest.x -= static_cast<int>(14 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     grade_src.x = 192;
-                    grade_dest.x += 38 * size_multiplier;
+                    grade_dest.x += static_cast<int>(38 * size_multiplier);
                     SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
 
                     break;
@@ -793,14 +793,17 @@ int gfx_drawqs(game_t *g)
 
             gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, rgba);
         }
-        else if(q->p1->state & (PSLOCKFLASH1 | PSLOCKFLASH2) && !(q->state_flags & GAMESTATE_BRACKETS))
+        else if (q->p1->state & (PSLOCKFLASH1 | PSLOCKFLASH2) && !(q->state_flags & GAMESTATE_BRACKETS) && pd_current) {
             gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags | DRAWPIECE_LOCKFLASH, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
-        else if(q->p1->state & PSPRELOCKED)
+        }
+        else if(q->p1->state & PSPRELOCKED && pd_current)
         {
-            if(q->state_flags & GAMESTATE_BRACKETS)
+            if (q->state_flags & GAMESTATE_BRACKETS) {
                 gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
-            else
+            }
+            else {
                 gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0x404040FF);
+            }
         }
     }
 
@@ -853,9 +856,9 @@ int gfx_qs_lineclear(game_t *g, int row)
             continue;
         }
 
-        if(c > 0)
+        if(c > 0 && c <= 26)
         {
-            mod = piece_colors[(c & 0xFF) - 1] * 0x100 + 0xFF;
+            mod = piece_colors[c - 1] * 0x100 + 0xFF;
         }
         else
         {
@@ -929,14 +932,14 @@ int gfx_drawqsmedals(game_t *g)
     {
         if(g->frame_counter - q->last_medal_re_timestamp < 20)
         {
-            size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_re_timestamp);
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
-            dest_.w *= size_multiplier;
-            dest_.h *= size_multiplier;
-            dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
-            dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
+            dest_.w = static_cast<int>(dest_.w * size_multiplier);
+            dest_.h = static_cast<int>(dest_.h * size_multiplier);
+            dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
+            dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
             SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
@@ -971,14 +974,14 @@ int gfx_drawqsmedals(game_t *g)
     {
         if(g->frame_counter - q->last_medal_sk_timestamp < 20)
         {
-            size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_sk_timestamp);
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_sk_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
-            dest_.w *= size_multiplier;
-            dest_.h *= size_multiplier;
-            dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
-            dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
+            dest_.w = static_cast<int>(dest_.w * size_multiplier);
+            dest_.h = static_cast<int>(dest_.h * size_multiplier);
+            dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
+            dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
             SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
@@ -1013,14 +1016,14 @@ int gfx_drawqsmedals(game_t *g)
     {
         if(g->frame_counter - q->last_medal_co_timestamp < 20)
         {
-            size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_co_timestamp);
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_co_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
-            dest_.w *= size_multiplier;
-            dest_.h *= size_multiplier;
-            dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
-            dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
+            dest_.w = static_cast<int>(dest_.w * size_multiplier);
+            dest_.h = static_cast<int>(dest_.h * size_multiplier);
+            dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
+            dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
             SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
@@ -1055,14 +1058,14 @@ int gfx_drawqsmedals(game_t *g)
     {
         if(g->frame_counter - q->last_medal_st_timestamp < 20)
         {
-            size_multiplier = 1.8 - 0.04 * (g->frame_counter - q->last_medal_st_timestamp);
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_st_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
-            dest_.w *= size_multiplier;
-            dest_.h *= size_multiplier;
-            dest_.x -= ((size_multiplier - 1.0) / 2) * 40;
-            dest_.y -= ((size_multiplier - 1.0) / 2) * 20;
+            dest_.w = static_cast<int>(dest_.w * size_multiplier);
+            dest_.h = static_cast<int>(dest_.h * size_multiplier);
+            dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
+            dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
             SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
         }
@@ -1120,7 +1123,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
         {
             if(i >= 0 && i < 12 && j >= 0 && j < 20)
             {
-                if (d->usr_field.getCell(i, j + 2) != QRS_FIELD_W_LIMITER) {
+                if (d->usr_field.getCell(i, static_cast<std::size_t>(j) + 2) != QRS_FIELD_W_LIMITER) {
                     dest.x = q->fieldPos->first + 16 * (i + 1);
                     dest.y = QRS_FIELD_Y + 16 * (j + 2);
 

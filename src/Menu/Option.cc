@@ -11,6 +11,63 @@
 #include "gfx_old.h"
 #include "QRS0.h"
 namespace Shiro {
+    ActionOptionData::ActionOptionData() :
+        action(nullptr),
+        val(0) {}
+
+    GameMultiOptionData::GameMultiOptionData() :
+        mode(0),
+        num(0),
+        selection(0),
+        args(nullptr) {}
+
+    GameArguments::GameArguments() :
+        num(0),
+        ptrs(nullptr) {}
+
+    GameOptionData::GameOptionData() :
+        mode(0) {}
+
+    MetaGameOptionData::MetaGameOptionData() :
+        mode(0),
+        submode(0),
+        num_args(0),
+        num_subargs(0),
+        args(nullptr),
+        sub_args(nullptr) {}
+
+    MultiOptionData::MultiOptionData() :
+        selection(0),
+        num(0),
+        param(nullptr),
+        vals(nullptr) {}
+
+    TextOptionData::TextOptionData() :
+        active(0),
+        position(0),
+        selection(0),
+        leftmost_position(0),
+        visible_chars(0) {}
+
+    ToggleOptionData::ToggleOptionData() :
+        param(nullptr),
+        labels{"", ""} {}
+
+    MenuOption::MenuOption() :
+        type(ElementType::MENU_LABEL),
+        value_update_callback(nullptr),
+        render_update(0),
+        x(0),
+        y(0),
+        value_x(0),
+        value_y(0),
+        label_text_flags(0u),
+        value_text_flags(0u),
+        label_text_rgba(0u),
+        value_text_rgba(0u),
+        data(nullptr),
+        deleteData(nullptr) {}
+
     MenuOption create_menu_option(ElementType type, int (*value_update_callback)(CoreState *cs), std::string label) {
         MenuOption m;
 
@@ -143,14 +200,17 @@ namespace Shiro {
 
             case ElementType::MENU_TOGGLE:
                 d3 = (ToggleOptionData *)m.data;
+                assert(d3 != nullptr);
                 d3->labels[0] = "";
                 d3->labels[1] = "";
                 break;
 
             case ElementType::MENU_GAME:
                 d4 = (GameOptionData *)m.data;
+                assert(d4 != nullptr);
                 for(i = 0; i < d4->args.num; i++)
                 {
+                    assert(d4->args.ptrs != nullptr);
                     if(d4->args.ptrs[i])
                         free(d4->args.ptrs[i]);
                 }
@@ -160,12 +220,15 @@ namespace Shiro {
 
             case ElementType::MENU_GAME_MULTIOPT:
                 d6 = (GameMultiOptionData *)m.data;
+                assert(d6 != nullptr);
                 for(i = 0; i < d6->num; i++)
                 {
+                    assert(d6->args != nullptr);
                     if(d6->args[i].ptrs)
                     {
-                        for(j = 0; j < d6->args[i].num; j++)
+                        for (j = 0; j < d6->args[i].num; j++) {
                             free(d6->args[i].ptrs[j]);
+                        }
 
                         free(d6->args[i].ptrs);
                     }
@@ -178,6 +241,7 @@ namespace Shiro {
 
             case ElementType::MENU_METAGAME: // TODO
                 // d5 = m.data;
+                // assert(d5 != nullptr);
                 break;
 
             default:

@@ -33,9 +33,9 @@ namespace Shiro {
         return result;
     }
 
-    uint64_t Timer::hr() { return (time / fps) / 3600.0; }
-    uint64_t Timer::min() { return (time / fps) / 60.0; }
-    uint64_t Timer::sec() { return time / fps; }
-    uint64_t Timer::csec() { return (time / fps) * 100.0; }
-    uint64_t Timer::msec() { return (time / fps) * 1000.0; }
+    uint64_t Timer::hr() { return static_cast<uint64_t>((time / fps) / 3600.0); }
+    uint64_t Timer::min() { return static_cast<uint64_t>((time / fps) / 60.0); }
+    uint64_t Timer::sec() { return static_cast<uint64_t>(time / fps); }
+    uint64_t Timer::csec() { return static_cast<uint64_t>((time / fps) * 100.0); }
+    uint64_t Timer::msec() { return static_cast<uint64_t>((time / fps) * 1000.0); }
 }

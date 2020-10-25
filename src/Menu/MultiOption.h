@@ -2,6 +2,7 @@
 #include <vector>
 namespace Shiro {
     struct MultiOptionData {
+        MultiOptionData();
         int selection;
         int num;
         int *param;

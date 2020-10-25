@@ -195,12 +195,12 @@ void GuiTextField::draw()
             {
                 cursorRect.x = relativeDestRect.x;
                 cursorRect.y = std::get<1>(textPositionalValues[textPositionalValues.size() - 1]);
-                cursorRect.y += fmt.lineSpacing * fmt.sizeMult * (float)font.charH;
+                cursorRect.y += static_cast<int>(fmt.lineSpacing * fmt.sizeMult * (float)font.charH);
             } else
             {
                 cursorRect.x = std::get<0>(textPositionalValues[textPositionalValues.size() - 1]);
                 cursorRect.y = std::get<1>(textPositionalValues[textPositionalValues.size() - 1]);
-                cursorRect.x += (float)font.charW * fmt.sizeMult;
+                cursorRect.x += static_cast<int>((float)font.charW * fmt.sizeMult);
             }
         } else
         {
@@ -208,8 +208,8 @@ void GuiTextField::draw()
             cursorRect.y = relativeDestRect.y;
         }
 
-        cursorRect.w = 2.0 * fmt.sizeMult;
-        cursorRect.h = (float)font.charH * fmt.sizeMult;
+        cursorRect.w = static_cast<int>(2.0 * fmt.sizeMult);
+        cursorRect.h = static_cast<int>((float)font.charH * fmt.sizeMult);
 
         Uint8 r;
         Uint8 g;
@@ -283,7 +283,7 @@ void GuiTextField::mouseClicked(int x, int y, Uint8 button)
         return;
     }
 
-    if(SDL_GetModState() & KMOD_SHIFT && pos != cursor)
+    if(SDL_GetModState() & KMOD_SHIFT && unsigned(pos) != cursor)
     {
         selectionStart = cursor;
         selectionEnd = pos;
@@ -427,7 +427,7 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
         return 0;
     }
 
-    int i = 0;
+    std::size_t i = 0;
     int lineY;
     for(auto p : textPositionalValues)
     {
@@ -446,7 +446,7 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
 
         if(i == textPositionalValues.size())
         {
-            return i;
+            return static_cast<unsigned>(i);
         }
     }
 
@@ -455,7 +455,7 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
     for(; i < textPositionalValues.size(); i++)
     {
         int currentX = std::get<0>(textPositionalValues[i]);
-        currentX -= (float)font.charW * fmt.sizeMult * 0.5;
+        currentX -= static_cast<int>((float)font.charW * fmt.sizeMult * 0.5);
         if(x >= currentX && x < currentX + (int)(fmt.sizeMult * font.charW))
         {
             break;
@@ -472,7 +472,7 @@ unsigned int GuiTextField::getPositionUnderMouse(int x, int y)
         }
     }
 
-    return i;
+    return static_cast<unsigned>(i);
 }
 
 unsigned int GuiTextField::shiftCursor(int offset)

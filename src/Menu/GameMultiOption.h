@@ -2,6 +2,7 @@
 #include "GameArguments.h"
 namespace Shiro {
     struct GameMultiOptionData {
+        GameMultiOptionData();
         int mode;
         int num;
         int selection;

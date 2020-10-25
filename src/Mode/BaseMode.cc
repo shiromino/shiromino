@@ -26,7 +26,7 @@ namespace Shiro::Mode {
     }
 
     bool BaseMode::clearLine(const int row) {
-        int numBlocks = field[row].size();
+        std::size_t numBlocks = field[static_cast<std::size_t>(row)].size();
         if (numBlocks == fieldWidth) {
             numLines++;
             return true;

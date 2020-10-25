@@ -87,6 +87,7 @@ target_sources(${GAME_EXECUTABLE}
 		src/fonts.h
 		src/Game.cc
 		src/Game.h
+		src/GameType.h
 		src/game_menu.cc
 		src/game_menu.h
 		src/game_qs.cc

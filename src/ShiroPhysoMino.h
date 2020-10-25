@@ -8,7 +8,15 @@
 #include <vector>
 class ShiroPhysoMino : public Game {
 public:
-    ShiroPhysoMino(CoreState& cs) : Game(cs) {}
+    ShiroPhysoMino(CoreState& cs) : Game(cs),
+        spec(nullptr),
+        field(nullptr),
+        timer(nullptr),
+        rep(nullptr),
+        playback(false),
+        playbackIndex(0),
+        gamePhase(SPM_gamePhase::spm_paused) {}
+
     ~ShiroPhysoMino() {}
 
 protected:

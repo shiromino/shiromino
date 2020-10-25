@@ -296,8 +296,7 @@ int gfx_drawmenu(game_t *g)
                         src.x = 15 * 13;
                         src.y = 2 * 18;
                         if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                            dest.x = m->value_x - 13 * ((d7->text.size() > d7->visible_chars ? d7->visible_chars : d7->text.size())) +
-                                     13 * (d7->position - d7->leftmost_position);
+                            dest.x = static_cast<int>(std::size_t(m->value_x) - 13 * ((d7->text.size() > d7->visible_chars ? std::size_t(d7->visible_chars) : d7->text.size())) + 13 * ((long long)d7->position - d7->leftmost_position));
                         else
                             dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
                         dest.y = m->value_y + 18;
@@ -319,8 +318,7 @@ int gfx_drawmenu(game_t *g)
                         src.x = 15 * 16;
                         src.y = 32;
                         if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                            dest.x = m->value_x - 16 * ((d7->text.size() > d7->visible_chars ? d7->visible_chars : d7->text.size())) +
-                                     16 * (d7->position - d7->leftmost_position);
+                            dest.x = static_cast<int>(m->value_x - 16 * ((d7->text.size() > d7->visible_chars ? d7->visible_chars : d7->text.size())) + 16 * ((long long)d7->position - d7->leftmost_position));
                         else
                             dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
                         dest.y = m->value_y + 16;

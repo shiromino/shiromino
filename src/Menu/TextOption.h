@@ -1,6 +1,7 @@
 #pragma once
 namespace Shiro {
     struct TextOptionData {
+        TextOptionData();
         int active;
         int position;
         int selection;

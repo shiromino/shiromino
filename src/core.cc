@@ -153,7 +153,7 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 }
 
 CoreState::CoreState(Shiro::Settings& settings) :
-    screen(Shiro::Version::DESCRIPTOR, settings.videoScale * 640u, settings.videoScale * 480u),
+    screen(Shiro::Version::DESCRIPTOR, static_cast<unsigned>(settings.videoScale * 640.0f), static_cast<unsigned>(settings.videoScale * 480.0f)),
     settings(settings),
     bg(screen),
     gfx(screen)
@@ -744,20 +744,20 @@ void CoreState::run() {
                 }
                 GLsizei viewportWidth, viewportHeight;
                 if (widthFactor > heightFactor) {
-                    viewportWidth = heightFactor * 640;
-                    viewportHeight = heightFactor * 480;
+                    viewportWidth = static_cast<GLsizei>(heightFactor * 640.0);
+                    viewportHeight = static_cast<GLsizei>(heightFactor * 480.0);
                 }
                 else {
-                    viewportWidth = widthFactor * 640;
-                    viewportHeight = widthFactor * 480;
+                    viewportWidth = static_cast<GLsizei>(widthFactor * 640.0);
+                    viewportHeight = static_cast<GLsizei>(widthFactor * 480.0);
                 }
                 glViewport((w - viewportWidth) / 2, (h - viewportHeight) / 2, viewportWidth, viewportHeight);
-                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), viewportWidth, viewportHeight);
+                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), static_cast<GLfloat>(viewportWidth), static_cast<GLfloat>(viewportHeight));
             }
             else {
                 // TODO: Change this once a fullscreen resolution setting is supported.
                 glViewport(0, 0, w, h);
-                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), w, h);
+                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), static_cast<GLfloat>(w), static_cast<GLfloat>(h));
             }
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -1202,7 +1202,7 @@ bool CoreState::process_events() {
                     if (settings.fullscreen) {
                         settings.fullscreen = false;
                         SDL_SetWindowFullscreen(screen.window, 0);
-                        SDL_SetWindowSize(screen.window, 640.0 * settings.videoScale, 480.0 * settings.videoScale);
+                        SDL_SetWindowSize(screen.window, static_cast<int>(640.0 * settings.videoScale), static_cast<int>(480.0 * settings.videoScale));
                     }
                     else {
                         settings.fullscreen = true;
@@ -1649,14 +1649,12 @@ void CoreState::gfx_buttons_input() {
     int scaled_w = 0;
     int scaled_h = 0;
 
-    int scale = settings.videoScale;
-
     for (auto it = gfx_buttons.begin(); it != gfx_buttons.end(); it++) {
         gfx_button& b = *it;
-        scaled_x = scale * b.x;
-        scaled_y = scale * b.y;
-        scaled_w = scale * b.w;
-        scaled_h = scale * b.h;
+        scaled_x = static_cast<int>(settings.videoScale * static_cast<float>(b.x));
+        scaled_y = static_cast<int>(settings.videoScale * static_cast<float>(b.y));
+        scaled_w = static_cast<int>(settings.videoScale * static_cast<float>(b.w));
+        scaled_h = static_cast<int>(settings.videoScale * static_cast<float>(b.h));
 
         if(button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {

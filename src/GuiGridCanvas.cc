@@ -110,6 +110,7 @@ void GuiGridCanvas::draw()
             lesserX = greaterX;
             greaterX = swp;
         }
+        const int width = greaterX - lesserX + 1;
 
         if(lesserY > greaterY)
         {
@@ -117,8 +118,9 @@ void GuiGridCanvas::draw()
             lesserY = greaterY;
             greaterY = swp;
         }
+        const int height = greaterY - lesserY + 1;
 
-        Shiro::GridRect rect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+        Shiro::GridRect rect = {lesserX, lesserY, static_cast<std::size_t>(width), static_cast<std::size_t>(height)};
 
         SDL_Rect selectionRect = SDL_Rect{relativeDestRect.x + (rect.x * (int)cellW), relativeDestRect.y + (rect.y * (int)cellH), (int)(rect.width * cellW), (int)(rect.height * cellH)};
 
@@ -396,6 +398,7 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
                 lesserX = greaterX;
                 greaterX = swp;
             }
+            const int width = greaterX - lesserX + 1;
 
             if(lesserY > greaterY)
             {
@@ -403,8 +406,9 @@ void GuiGridCanvas::keyPressed(SDL_Keycode kc)
                 lesserY = greaterY;
                 greaterY = swp;
             }
+            const int height = greaterY - lesserY + 1;
 
-            Shiro::GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+            Shiro::GridRect selectionRect = {lesserX, lesserY, static_cast<std::size_t>(width), static_cast<std::size_t>(height)};
 
             if(paletteValMap.size() <= (std::size_t)num + 1)
             {
@@ -498,6 +502,7 @@ void GuiGridCanvas::copySelection()
         lesserX = greaterX;
         greaterX = swp;
     }
+    const int width = greaterX - lesserX + 1;
 
     if(lesserY > greaterY)
     {
@@ -505,8 +510,9 @@ void GuiGridCanvas::copySelection()
         lesserY = greaterY;
         greaterY = swp;
     }
+    const int height = greaterY - lesserY + 1;
 
-    Shiro::GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+    Shiro::GridRect selectionRect = {lesserX, lesserY, static_cast<std::size_t>(width), static_cast<std::size_t>(height)};
     clipboard = new Shiro::Grid(*cells, selectionRect);
 }
 
@@ -528,6 +534,7 @@ void GuiGridCanvas::cutSelection()
         lesserX = greaterX;
         greaterX = swp;
     }
+    const int width = greaterX - lesserX + 1;
 
     if(lesserY > greaterY)
     {
@@ -535,8 +542,9 @@ void GuiGridCanvas::cutSelection()
         lesserY = greaterY;
         greaterY = swp;
     }
+    const int height = greaterY - lesserY + 1;
 
-    Shiro::GridRect selectionRect = {lesserX, lesserY, (size_t)(greaterX - lesserX) + 1, (size_t)(greaterY - lesserY) + 1};
+    Shiro::GridRect selectionRect = {lesserX, lesserY, static_cast<std::size_t>(width), static_cast<std::size_t>(height)};
     clipboard = new Shiro::Grid(*cells, selectionRect);
 
     if(paletteValMap.size() == 0)

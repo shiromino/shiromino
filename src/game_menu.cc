@@ -45,13 +45,21 @@ Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int
     }
 
     d6->args = (Shiro::GameArguments *)malloc(num_sections * sizeof(Shiro::GameArguments));
+    assert(d6->args != nullptr);
     for (int i = 0; i < num_sections; i++) {
         d6->args[i].num = 4;
         d6->args[i].ptrs = (void **)malloc(4 * sizeof(void *));
+        assert(d6->args[i].ptrs != nullptr);
         d6->args[i].ptrs[0] = malloc(sizeof(CoreState *));
         d6->args[i].ptrs[1] = malloc(sizeof(int));
         d6->args[i].ptrs[2] = malloc(sizeof(unsigned int));
         d6->args[i].ptrs[3] = malloc(sizeof(char *));
+        assert(
+            d6->args[i].ptrs[0] != nullptr &&
+            d6->args[i].ptrs[1] != nullptr &&
+            d6->args[i].ptrs[2] != nullptr &&
+            d6->args[i].ptrs[3] != nullptr
+        );
 
         *(CoreState **)(d6->args[i].ptrs[0]) = cs;
         *(int *)(d6->args[i].ptrs[1]) = 100 * i;
@@ -99,7 +107,7 @@ int menu_text_insert(CoreState *cs, char *str)
         {
             d7->text = str;
             d7->selection = 0;
-            d7->position = strlen(str);
+            d7->position = static_cast<int>(strlen(str));
             d7->leftmost_position = 0;
             if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
                 d7->leftmost_position = d7->position - d7->visible_chars + 1;
@@ -113,11 +121,11 @@ int menu_text_insert(CoreState *cs, char *str)
                 d7->position = 2000;
             }
             else
-                d7->position += strlen(str);
+                d7->position += static_cast<int>(strlen(str));
 
             if(d7->position == t.size() && d7->leftmost_position < t.size() - d7->visible_chars)
             {
-                d7->leftmost_position = t.size() - d7->visible_chars;
+                d7->leftmost_position = static_cast<int>(t.size() - d7->visible_chars);
             }
 
             if(d7->position > d7->leftmost_position + d7->visible_chars - 1 && d7->leftmost_position != d7->text.size() - d7->visible_chars)
@@ -149,7 +157,7 @@ int menu_text_backspace(CoreState *cs)
     }
     else if(d7->position > 0)
     {
-        t.replace(d7->position - 1, 1, "");
+        t.replace(static_cast<std::size_t>(d7->position) - 1, 1, "");
         d7->position--;
         if(d7->position < d7->leftmost_position + 1 && d7->leftmost_position)
             d7->leftmost_position--;
@@ -254,7 +262,7 @@ int menu_text_seek_end(CoreState *cs)
 
     if(d7->position < t.size())
     {
-        d7->position = t.size();
+        d7->position = static_cast<int>(t.size());
         d7->leftmost_position = d7->position - d7->visible_chars;
         if(d7->leftmost_position < 0)
             d7->leftmost_position = 0;
@@ -324,6 +332,7 @@ game_t *menu_create(CoreState *cs)
         return NULL;
 
     game_t *g = (game_t *)malloc(sizeof(game_t));
+    assert(g != nullptr);
 
     g->origin = cs;
     g->field = NULL;
@@ -799,20 +808,22 @@ int menu_input(game_t *g)
         case Shiro::ElementType::MENU_METAGAME:
             d5 = (Shiro::MetaGameOptionData *)d->menu[d->selection].data;
 
+#if 0
             if(cs->pressed.a == 1 || cs->pressed.start == 1)
             {
                 switch(d5->mode)
                 {
-                        /*case META_TAS:
-                            break;
+                    case META_TAS:
+                        break;
 
-                        case META_REPLAY:
-                            break;*/
+                    case META_REPLAY:
+                        break;
 
                     default:
                         break;
                 }
             }
+#endif
 
             break;
 
@@ -910,14 +921,22 @@ int mload_main(game_t *g, int val)
 
     d6->num++;
     d6->labels.push_back("ACID RAIN");
-    d6->args = (Shiro::GameArguments *)realloc(d6->args, d6->num * sizeof(Shiro::GameArguments));
+    assert(d6->args != nullptr);
+    void* argsTemp = realloc(d6->args, d6->num * sizeof(Shiro::GameArguments));
+    assert(argsTemp != nullptr);
+    d6->args = (Shiro::GameArguments*)argsTemp;
 
     d6->args[d6->num - 1].num = 4;
     d6->args[d6->num - 1].ptrs = (void **)malloc(4 * sizeof(void *));
+    assert(d6->args[d6->num - 1].ptrs != nullptr);
     d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(CoreState *));
+    assert(d6->args[d6->num - 1].ptrs[0] != nullptr);
     d6->args[d6->num - 1].ptrs[1] = malloc(sizeof(int));
+    assert(d6->args[d6->num - 1].ptrs[1] != nullptr);
     d6->args[d6->num - 1].ptrs[2] = malloc(sizeof(unsigned int));
+    assert(d6->args[d6->num - 1].ptrs[2] != nullptr);
     d6->args[d6->num - 1].ptrs[3] = malloc(sizeof(char *));
+    assert(d6->args[d6->num - 1].ptrs[3] != nullptr);
     *(CoreState **)(d6->args[d6->num - 1].ptrs[0]) = cs;
     *(int *)(d6->args[d6->num - 1].ptrs[1]) = 1500;
     *(unsigned int *)(d6->args[d6->num - 1].ptrs[2]) = MODE_PENTOMINO;
@@ -1034,6 +1053,7 @@ int mload_main(game_t *g, int val)
     d2->num = 101;
     d2->param = &g->origin->settings.masterVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
@@ -1055,6 +1075,7 @@ int mload_main(game_t *g, int val)
     d2->num = 101;
     d2->param = &g->origin->settings.sfxVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
@@ -1082,6 +1103,7 @@ int mload_main(game_t *g, int val)
         std::stringstream ss;
         ss << i;
         d2->labels.push_back(ss.str());
+        assert(d2->vals != nullptr);
         d2->vals[i] = i;
     }
     d2->selection = g->origin->settings.musicVolume;
@@ -1274,6 +1296,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 101;
     d2->param = &q->pracdata->usr_timings->lock;
     d2->vals = (int *)malloc(101 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.resize(101);
     d2->labels[0] = "OFF";
     d2->vals[0] = -1;
@@ -1315,6 +1338,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->are;
     d2->vals = (int *)malloc(100 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
@@ -1354,6 +1378,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineare;
     d2->vals = (int *)malloc(100 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
@@ -1393,6 +1418,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineclear;
     d2->vals = (int *)malloc(100 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
@@ -1432,6 +1458,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 99;
     d2->param = &q->pracdata->usr_timings->das;
     d2->vals = (int *)malloc(99 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.resize(99);
     for(i = 0; i < 99; i++)
     {
@@ -1471,6 +1498,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 5;
     d2->param = &q->pracdata->field_w;
     d2->vals = (int *)malloc(5 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.resize(5);
     for(i = 0; i < 5; i++)
     {
@@ -1508,6 +1536,7 @@ int mload_practice(game_t *g, int val)
     // TODO: This will be rewritten in another way.
     // d2->param = &q->pracdata->game_type;
     d2->vals = (int *)malloc(4 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.clear();
     d2->labels.resize(4);
     d2->labels.resize(4);
@@ -1615,6 +1644,7 @@ int mload_practice(game_t *g, int val)
     d2->num = 3;
     d2->param = &q->pracdata->lock_protect;
     d2->vals = (int *)malloc(3 * sizeof(int));
+    assert(d2->vals != nullptr);
     d2->labels.clear();
     d2->labels.resize(3);
     d2->labels[0] = "DEFAULT";
@@ -1739,10 +1769,17 @@ int mload_replay(game_t *g, int val)
             d4->mode = QUINTESSE;
             d4->args.num = 4;
             d4->args.ptrs = (void **)malloc(4 * sizeof(void *));
+            assert(d4->args.ptrs != nullptr);
             d4->args.ptrs[0] = malloc(sizeof(CoreState *));
             d4->args.ptrs[1] = malloc(sizeof(int));
             d4->args.ptrs[2] = malloc(sizeof(unsigned int));
             d4->args.ptrs[3] = malloc(sizeof(int));
+            assert(
+                d4->args.ptrs[0] != nullptr &&
+                d4->args.ptrs[1] != nullptr &&
+                d4->args.ptrs[2] != nullptr &&
+                d4->args.ptrs[3] != nullptr
+            );
             *(CoreState **)(d4->args.ptrs[0]) = g->origin;
             *(int *)(d4->args.ptrs[1]) = 0;
             *(unsigned int *)(d4->args.ptrs[2]) = r->mode;
@@ -1754,7 +1791,7 @@ int mload_replay(game_t *g, int val)
         }
     }
 
-    free(replaylist);
+    delete[] replaylist;
 
     return 0;
 }
