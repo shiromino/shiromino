@@ -897,6 +897,8 @@ bool CoreState::process_events() {
     Shiro::KeyBindings& keyBindings = settings.keyBindings;
 
     Shiro::ControllerBindings& controllerBindings = settings.controllerBindings;
+    auto previousMouse(mouse);
+    auto previousKeys(keys_raw);
 
 #if 0
     if(mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
@@ -1395,6 +1397,33 @@ bool CoreState::process_events() {
         }
     }
 #undef CHECK_BINDINGS
+
+    if (mouse.hideOnStartup) {
+        SDL_ShowCursor(SDL_DISABLE);
+        mouse.hideOnStartup = false;
+        mouse.shown = false;
+        mouse.hideTicks = SDL_GetTicks();
+    }
+    else if (keys_raw != previousKeys) {
+        if (mouse.shown) {
+            SDL_ShowCursor(SDL_DISABLE);
+            mouse.shown = false;
+            mouse.hideTicks = SDL_GetTicks();
+        }
+    }
+    else if (mouse == previousMouse) {
+        if (mouse.shown && SDL_TICKS_PASSED(SDL_GetTicks(), mouse.hideTicks)) {
+            SDL_ShowCursor(SDL_DISABLE);
+            mouse.shown = false;
+        }
+    }
+    else {
+        if (!mouse.shown) {
+            SDL_ShowCursor(SDL_ENABLE);
+            mouse.shown = true;
+        }
+        mouse.hideTicks = SDL_GetTicks() + 1000u;
+    }
 
     if(left_arrow_das)
     {

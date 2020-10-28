@@ -2,6 +2,9 @@
 #include "types.h"
 namespace Shiro {
     struct KeyFlags {
+        bool operator==(const KeyFlags& cmp) const;
+        bool operator!=(const KeyFlags& cmp) const;
+
         u8 left;
         u8 right;
         u8 up;

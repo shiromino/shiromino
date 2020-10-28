@@ -5,10 +5,14 @@
  * directory for the full text of the license.
  */
 #pragma once
+#include "SDL.h"
 
 namespace Shiro {
     struct Mouse {
         Mouse();
+
+        bool operator==(const Mouse& cmp) const;
+        bool operator!=(const Mouse& cmp) const;
 
         enum class Button {
             notPressed,
@@ -26,5 +30,9 @@ namespace Shiro {
 
         Button leftButton;
         Button rightButton;
+
+        bool hideOnStartup;
+        bool shown;
+        Uint32 hideTicks;
     };
 }

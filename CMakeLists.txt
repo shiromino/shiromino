@@ -127,6 +127,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/Input/ControllerBindings.h
 		src/Input/KeyBindings.cc
 		src/Input/KeyBindings.h
+		src/Input/KeyFlags.cc
+		src/Input/KeyFlags.h
 		src/Input/Mouse.cc
 		src/Input/Mouse.h
 		src/Menu/ActionOption.h

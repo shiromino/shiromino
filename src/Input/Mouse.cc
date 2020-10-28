@@ -13,7 +13,27 @@ namespace Shiro {
         logicalX(0),
         logicalY(0),
         leftButton(Button::notPressed),
-        rightButton(Button::notPressed) {}
+        rightButton(Button::notPressed),
+        hideOnStartup(true),
+        shown(false),
+        hideTicks(SDL_GetTicks()) {}
+
+    bool Mouse::operator==(const Mouse& cmp) const {
+        return
+            x == cmp.x &&
+            y == cmp.y &&
+            logicalX == cmp.logicalX &&
+            logicalY == cmp.logicalY &&
+            leftButton == cmp.leftButton &&
+            rightButton == cmp.rightButton &&
+            hideOnStartup == cmp.hideOnStartup &&
+            shown == cmp.shown &&
+            hideTicks == cmp.hideTicks;
+    }
+
+    bool Mouse::operator!=(const Mouse& cmp) const {
+        return !(*this == cmp);
+    }
 
     void Mouse::update(const int windowW, const int windowH) {
         if (leftButton == Button::pressedThisFrame) {
