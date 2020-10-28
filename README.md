@@ -10,14 +10,19 @@ For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option,
 | `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`  | Enables support for the `INTERPOLATE` option in `shiromino.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system.
 ### Installing dependencies and compiling
 In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
-#### Linux (Arch-Linux-based)
+#### Linux (pacman-based)
 ```shell
 $ sudo pacman --needed -S gcc cmake sdl2 sdl2_image sdl2_mixer libvorbis sqlite
 $ cmake -B build -S . && cmake --build build -j$(nproc)
 ```
-#### Linux (Debian-based)
+#### Linux (apt-based)
 ```shell
 $ sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libvorbis-dev libsqlite3-dev
+$ cmake -B build -S . && cmake --build build -j$(nproc)
+```
+#### Linux (rpm-based)
+```shell
+$ sudo dnf install cmake gcc-c++ SDL2-devel SDL2_image-devel SDL2_mixer-devel libvorbis-devel libsq3-devel
 $ cmake -B build -S . && cmake --build build -j$(nproc)
 ```
 #### macOS
