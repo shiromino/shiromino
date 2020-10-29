@@ -16,6 +16,7 @@
 #include "Input/KeyFlags.h"
 #include "Input/Mouse.h"
 #include "QRS1.h"
+#include "random.h"
 #include "RefreshRates.h"
 #include "replay.h"
 #include "SGUIL/SGUIL.h"
@@ -665,7 +666,9 @@ void CoreState::run() {
                         p1game->draw(p1game);
                     }
                     else if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
+                        g123_seeds_preupdate();
                         menu->draw(menu);
+                        g123_seeds_update();
                     }
                 }
             ));

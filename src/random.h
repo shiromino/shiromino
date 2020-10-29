@@ -135,6 +135,17 @@ int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap);
 
 void g123_seeds_init();
 
+// Only call preupdate before processing a non-gameplay frame, then call update
+// after processing. By spacing the two function calls that way, a somewhat
+// random amount of time will pass between them, which is used for updating the
+// seeds.
+//
+// Don't *EVER* call these during gameplay! The game manages the seeds, and
+// would break if other code changed them while a game is going.
+// -Brandon McGriff
+void g123_seeds_preupdate();
+void g123_seeds_update();
+
 // TODO NULL-proof the functions which take struct randomizer * parameters
 
 // _create functions fill in all fields; piece_id arrays are filled with PIECE_ID_INVALID

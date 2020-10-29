@@ -1,5 +1,6 @@
 #include "random.h"
 #include "QRS0.h"
+#include "SDL.h"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -68,17 +69,19 @@ static long double pento_drought_coeffs[25] =
 };
 // clang-format on
 
-uint32_t g1_seed = 0;
-uint32_t g1_bkp_seed = 0;
+static Uint64 old_seed_counter = 0u;
 
-uint32_t g2_seed = 0;
-uint32_t g2_bkp_seed = 0;
+static uint32_t g1_seed = 0;
+static uint32_t g1_bkp_seed = 0;
 
-uint32_t g3_seed = 0;
-uint32_t g3_bkp_seed = 0;
+static uint32_t g2_seed = 0;
+static uint32_t g2_bkp_seed = 0;
 
-uint32_t pento_seed = 0;
-uint32_t pento_bkp_seed = 0;
+static uint32_t g3_seed = 0;
+static uint32_t g3_bkp_seed = 0;
+
+static uint32_t pento_seed = 0;
+static uint32_t pento_bkp_seed = 0;
 
 // piece_id g3_bag[35];
 // piece_id *sakura_seq; TODO
@@ -130,6 +133,21 @@ void g123_seeds_init()
 
     s = rand();
     pento_seed = g2_rand((s << 4) % 11456);
+}
+
+void g123_seeds_preupdate() {
+    old_seed_counter = SDL_GetPerformanceCounter();
+}
+
+void g123_seeds_update() {
+    const Uint64 new_seed_counter = SDL_GetPerformanceCounter();
+    const uint32_t seed_increment = uint32_t(new_seed_counter - old_seed_counter);
+    old_seed_counter = new_seed_counter;
+
+    g1_seed = (g1_seed * 1497079797u) + seed_increment;
+    g2_seed = (g2_seed * 4185316896u) + seed_increment;
+    g3_seed = (g3_seed * 2525892343u) + seed_increment;
+    pento_seed = (pento_seed * 1119304217u) + seed_increment;
 }
 
 // int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
