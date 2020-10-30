@@ -1,6 +1,7 @@
 #include "KeyBindings.h"
 #include <iostream>
 #include <string>
+
 static constexpr auto keyBindingNames = {
     "LEFT",
     "RIGHT",
@@ -13,10 +14,13 @@ static constexpr auto keyBindingNames = {
     "D",
     "ESCAPE"
 };
+
 Shiro::KeyBindings::KeyBindings() : KeyBindings(0) {}
+
 /**
  * We have to guarantee some default control option for fresh installations, so
  * keyboard is the best option. Controllers don't currently have any defaults set.
+ * TODO: Discuss and decide on the default key configuration here while also closing issue #18.
  */
 Shiro::KeyBindings::KeyBindings(int playerNumber) {
     switch (playerNumber) {
@@ -47,6 +51,7 @@ Shiro::KeyBindings::KeyBindings(int playerNumber) {
             break;
     }
 }
+
 void Shiro::KeyBindings::read(PDINI::INI& ini) {
     const auto sectionName = "PLAYER_1_KEY_BINDINGS";
     SDL_Keycode* const keycodes[] = {

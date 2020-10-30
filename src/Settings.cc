@@ -11,33 +11,43 @@
 
 static void printHelp(const char* const executableName);
 
-Shiro::Settings::Settings() :
-    videoScale(1.0f),
-    videoStretch(1),
-    fullscreen(0),
-    vsync(0),
-    frameDelay(1),
-    vsyncTimestep(0),
+Shiro::Settings::Settings() {
+    setDefaults();
+}
+
+void Shiro::Settings::setDefaults(const std::string& configurationPath, const std::string& basePath) {
+    keyBindings = KeyBindings();
+    controllerBindings = ControllerBindings();
+    videoScale = 1.0f;
+    videoStretch = 1;
+    fullscreen = 0;
+    vsync = 0;
+    frameDelay = 16;
+    vsyncTimestep = 0;
 #ifdef ENABLE_OPENGL_INTERPOLATION
-    interpolate(0),
+    interpolate = 1;
 #endif
-    masterVolume(80),
-    sfxVolume(100),
-    musicVolume(90),
-    samplingRate(48000),
-    configurationPath(""),
-    basePath(""),
-    playerName("ARK") {}
+    masterVolume = 80;
+    sfxVolume = 100;
+    musicVolume = 90;
+    samplingRate = 48000;
+    this->configurationPath = configurationPath;
+    this->basePath = basePath;
+    playerName = "ARK";
+}
 
 bool Shiro::Settings::init(const int argc, const char* const argv[]) {
     basePath = std::filesystem::current_path();
     if (argc == 1) {
         configurationPath = basePath / "shiromino.ini";
         if (!std::filesystem::exists(configurationPath)) {
-            std::cerr << "Couldn't find configuration file `" << configurationPath.string() << "`, aborting" << std::endl;
-            return false;
+            std::cerr << "Couldn't find configuration file `" << configurationPath.string() << "`, creating a new configuration file" << std::endl;
+            setDefaults(configurationPath, basePath);
+            write();
         }
-        read(configurationPath.string());
+        else {
+            read(configurationPath.string());
+        }
     }
     /* TODO: Use an argument handler library here */
     else if (argc == 3) {
@@ -46,11 +56,14 @@ bool Shiro::Settings::init(const int argc, const char* const argv[]) {
         if (firstArgument == "--configuration-file" || firstArgument == "-c") {
             configurationPath = std::filesystem::path(secondArgument);
             if (!std::filesystem::exists(configurationPath)) {
-                std::cerr << "Couldn't find configuration file `" << configurationPath.string() << "`, aborting" << std::endl;
-                return false;
+                std::cerr << "Couldn't find configuration file `" << configurationPath.string() << "`, creating a new configuration file" << std::endl;
+                setDefaults(configurationPath, basePath);
+                write();
             }
-            basePath = std::filesystem::canonical(configurationPath).remove_filename();
-            read(configurationPath.string());
+            else {
+                basePath = std::filesystem::canonical(configurationPath).remove_filename();
+                read(configurationPath.string());
+            }
         }
         else {
             printHelp(argv[0]);
@@ -61,9 +74,6 @@ bool Shiro::Settings::init(const int argc, const char* const argv[]) {
         printHelp(argv[0]);
         return false;
     }
-
-    std::cerr << "Configuration file: " << configurationPath.string() << std::endl;
-    std::cerr << "Base path: " << basePath.string() << std::endl;
 
     return true;
 }
@@ -176,7 +186,7 @@ void Shiro::Settings::write() const {
 
     // Unfortunately, Microsoft left operator std::string() out of
     // std::filesystem::path. We can still get by with
-    // std::filesystem::string(), though.
+    // std::filesystem::path::string(), though.
     // TODO: If operator std::string() gets added to MSVC, change this to use
     // that operator.
     ini.write(configurationPath.string());

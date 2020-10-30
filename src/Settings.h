@@ -9,6 +9,7 @@ namespace Shiro {
     struct Settings {
         Settings();
 
+        void setDefaults(const std::string& configurationPath = "", const std::string& basePath = "");
         bool init(const int argc, const char* const argv[]);
         void read(const std::string filename);
         void write() const;
