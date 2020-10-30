@@ -142,7 +142,6 @@ void g123_seeds_preupdate() {
 void g123_seeds_update() {
     const Uint64 new_seed_counter = SDL_GetPerformanceCounter();
     const uint32_t seed_increment = uint32_t(new_seed_counter - old_seed_counter);
-    old_seed_counter = new_seed_counter;
 
     g1_seed = (g1_seed * 1497079797u) + seed_increment;
     g2_seed = (g2_seed * 4185316896u) + seed_increment;
