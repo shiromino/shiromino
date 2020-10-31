@@ -7,6 +7,7 @@
 #include "Asset/Sfx.h"
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 
 Shiro::SfxAssetLoader::SfxAssetLoader(const std::filesystem::path& basePath) :
     basePath(basePath) {}
@@ -70,7 +71,7 @@ bool Shiro::SfxAsset::play(const Shiro::Settings& settings) const {
         return false;
     }
 
-    Mix_VolumeChunk(data, static_cast<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.sfxVolume / 100.0f) * (settings.masterVolume / 100.0f)));
+    Mix_VolumeChunk(data, std::clamp<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.sfxVolume / 100.0f) * (settings.masterVolume / 100.0f), 0, MIX_MAX_VOLUME));
     Mix_PlayChannel(-1, data, 0);
     return true;
 }

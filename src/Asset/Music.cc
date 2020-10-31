@@ -7,6 +7,7 @@
 #include "Asset/Music.h"
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 
 namespace Shiro {
     MusicAssetLoader::MusicAssetLoader(const std::filesystem::path& basePath) :
@@ -63,7 +64,7 @@ namespace Shiro {
             return false;
         }
 
-        Mix_VolumeMusic(static_cast<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.musicVolume / 100.0f) * (settings.masterVolume / 100.0f)));
+        Mix_VolumeMusic(std::clamp<int>(MIX_MAX_VOLUME * (volume / 100.0f) * (settings.musicVolume / 100.0f) * (settings.masterVolume / 100.0f), 0, MIX_MAX_VOLUME));
         Mix_PlayMusic(data, -1);
         return true;
     }

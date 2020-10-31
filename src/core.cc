@@ -391,6 +391,77 @@ bool CoreState::init() {
             //{Shiro::AssetType::sfx, "clear_tetris"}
         });
 
+        {
+            PDINI::INI volumeINI;
+            auto [readSuccess, lineNum] = volumeINI.read((settings.basePath / "assets" / "audio" / "volume.ini").string());
+
+            if (readSuccess) {
+                std::string musicNames[] = {
+                    "tracks0",
+                    "tracks1",
+                    "tracks2",
+                    "tracks3",
+
+                    "g1_tracks0",
+                    "g1_tracks1",
+
+                    "g2_tracks0",
+                    "g2_tracks1",
+                    "g2_tracks2",
+                    "g2_tracks3",
+
+                    "g3_tracks0",
+                    "g3_tracks1",
+                    "g3_tracks2",
+                    "g3_tracks3",
+                    "g3_tracks4",
+                    "g3_tracks5"
+                };
+                for (const auto& name : musicNames) {
+                    Shiro::MusicAsset& asset = Shiro::MusicAsset::get(assetMgr, std::filesystem::path(name));
+                    volumeINI.get("", name, asset.volume);
+                }
+
+                std::string sfxNames[] = {
+                    "menu_choose",
+
+                    "ready",
+                    "go",
+                    "prerotate",
+                    "land",
+                    "lock",
+                    "lineclear",
+                    "dropfield",
+                    "newsection",
+                    "medal",
+                    "gradeup",
+
+                    "pieces0",
+                    "pieces1",
+                    "pieces2",
+                    "pieces3",
+                    "pieces4",
+                    "pieces5",
+                    "pieces6" //,
+
+                    //"clear_single",
+                    //"clear_double",
+                    //"clear_triple",
+                    //"clear_tetris"
+                };
+                for (const auto& name : sfxNames) {
+                    Shiro::SfxAsset& asset = Shiro::SfxAsset::get(assetMgr, std::filesystem::path(name));
+                    volumeINI.get("", name, asset.volume);
+                }
+            }
+            else {
+                std::cerr << "Failed reading `volume.ini`, defaulting to 100% individual asset volume for all sounds and music" << std::endl;
+                if (lineNum != 0u) {
+                    std::cerr << "First error in `volume.ini` on line " << lineNum << std::endl;
+                }
+            }
+        }
+
         // SDL_Texture *blank = NULL;
 
         // copy settings into main game structure
