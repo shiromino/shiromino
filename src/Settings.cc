@@ -15,7 +15,7 @@ Shiro::Settings::Settings() {
     setDefaults();
 }
 
-void Shiro::Settings::setDefaults(const std::string& configurationPath, const std::string& basePath) {
+void Shiro::Settings::setDefaults(const std::filesystem::path& configurationPath, const std::filesystem::path& basePath) {
     keyBindings = KeyBindings();
     controllerBindings = ControllerBindings();
     videoScale = 1.0f;
