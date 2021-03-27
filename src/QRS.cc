@@ -1593,11 +1593,7 @@ int qrs_spawn_garbage(game_t *g, unsigned int flags)
     qrsdata *q = (qrsdata *)g->data;
     std::size_t i = 0u;
 
-    if(!q->garbage.getWidth() || !q->garbage.getHeight())
-    {
-        // TODO
-    }
-    else if(flags & GARBAGE_COPY_BOTTOM_ROW)
+    if(flags & GARBAGE_COPY_BOTTOM_ROW)
     {
         for(i = 0u; i < QRS_FIELD_H - 1; i++)
         {
