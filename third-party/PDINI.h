@@ -303,6 +303,6 @@ namespace PDINI {
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> sections;
         std::unordered_map<std::string, std::string> rawSectionNames;
         std::unordered_map<std::string, std::string> rawKeyNames;
-        const bool caseInsenstive;
+        bool caseInsenstive;
     };
 }

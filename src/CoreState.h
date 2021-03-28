@@ -13,7 +13,7 @@
 #include "Input/Mouse.h"
 #include "Player.h"
 #include "Settings.h"
-#include "RecordList.h"
+#include "Records.h"
 #include "SDL.h"
 #include <vector>
 #define RECENT_FRAMES 60
@@ -113,7 +113,7 @@ struct CoreState {
     //long double avg_sleep_ms_recent_array[RECENT_FRAMES];
     //int recent_frame_overload;
 
-    Shiro::RecordList records;
+    Shiro::Records::List records;
     // struct scoredb archive;
     Shiro::Player player;
 };

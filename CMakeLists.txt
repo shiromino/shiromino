@@ -153,8 +153,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/QRS1.h
 		src/random.cc
 		src/random.h
-		src/RecordList.cc
-		src/RecordList.h
+		src/Records.cc
+		src/Records.h
 		src/RefreshRates.h
 		src/replay.cc
 		src/replay.h
@@ -269,7 +269,7 @@ else()
 	find_package(sdl2-mixer REQUIRED)
 	find_package(SQLite3 REQUIRED)
 	target_link_libraries(${GAME_EXECUTABLE}
-		PRIVATE
+		PUBLIC
 			SDL2::SDL2
 			SDL2::SDL2main
 			SDL2::SDL2_image
@@ -282,7 +282,7 @@ else()
 		# so they have to be explicitly added as dependencies to shiromino to work around that bug.
 		#
 		find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
-		target_link_libraries(${GAME_EXECUTABLE} PRIVATE ${VORBISFILE_LIBRARY})
+		target_link_libraries(${GAME_EXECUTABLE} PUBLIC ${VORBISFILE_LIBRARY})
 		add_compile_definitions(VCPKG_TOOLCHAIN)
 		set(VCPKG_CRT_LINKAGE dynamic)
 		set(VCPKG_LIBRARY_LINKAGE dynamic)
@@ -339,6 +339,6 @@ endif()
 #
 # Installation
 #
-install(DIRECTORY assets DESTINATION usr/share/${PROJECT_NAME})
+install(DIRECTORY data DESTINATION share/${PROJECT_NAME})
+install(FILES shiromino.ini TYPE SYSCONF)
 install(TARGETS ${GAME_EXECUTABLE} RUNTIME)
-install(FILES shiromino.ini DESTINATION etc)

@@ -1,4 +1,4 @@
-#include "RecordList.h"
+#include "Records.h"
 #include "Debug.h"
 #include "replay.h"
 #include "Player.h"
@@ -12,7 +12,7 @@
 
 static const int MAX_PLAYER_NAME_LENGTH = 64;
 
-void scoredb_init(Shiro::RecordList *records, const char *filename)
+void scoredb_init(Shiro::Records::List *records, const char *filename)
 {
     try {
         int ret = sqlite3_open_v2(filename, &records->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
@@ -62,27 +62,27 @@ void scoredb_init(Shiro::RecordList *records, const char *filename)
     }
 }
 
-void scoredb_terminate(Shiro::RecordList *records)
+void scoredb_terminate(Shiro::Records::List *records)
 {
     sqlite3_close(records->db);
 }
 
-Shiro::RecordList *scoredb_create(const char *filename)
+Shiro::Records::List *scoredb_create(const char *filename)
 {
-    Shiro::RecordList *records = (Shiro::RecordList *) malloc(sizeof(Shiro::RecordList));
+    Shiro::Records::List *records = (Shiro::Records::List *) malloc(sizeof(Shiro::Records::List));
     scoredb_init(records, filename);
 
     return records;
 }
 
-void scoredb_destroy(Shiro::RecordList *records)
+void scoredb_destroy(Shiro::Records::List *records)
 {
     scoredb_terminate(records);
 
     free(records);
 }
 
-void scoredb_create_player(Shiro::RecordList *records, Shiro::Player *out_player, const char *playerName)
+void scoredb_create_player(Shiro::Records::List *records, Shiro::Player *out_player, const char *playerName)
 {
     sqlite3_stmt *sql;
     try {
@@ -129,7 +129,7 @@ void scoredb_create_player(Shiro::RecordList *records, Shiro::Player *out_player
     sqlite3_finalize(sql);
 }
 
-void scoredb_update_player(Shiro::RecordList *records, Shiro::Player *p)
+void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p)
 {
     sqlite3_stmt *sql;
     try {
@@ -156,7 +156,7 @@ void scoredb_update_player(Shiro::RecordList *records, Shiro::Player *p)
     sqlite3_finalize(sql);
 }
 
-void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
+void scoredb_add(Shiro::Records::List *records, Shiro::Player* p, struct replay *r)
 {
     sqlite3_stmt *sql;
     try {
@@ -191,7 +191,7 @@ void scoredb_add(Shiro::RecordList *records, Shiro::Player* p, struct replay *r)
     sqlite3_finalize(sql);
 }
 
-int scoredb_get_replay_count(Shiro::RecordList *records, Shiro::Player *p)
+int scoredb_get_replay_count(Shiro::Records::List *records, Shiro::Player *p)
 {
     sqlite3_stmt *sql;
     int replayCount = 0;
@@ -218,7 +218,7 @@ int scoredb_get_replay_count(Shiro::RecordList *records, Shiro::Player *p)
     return replayCount;
 }
 
-struct replay *scoredb_get_replay_list(Shiro::RecordList *records, Shiro::Player *p, int *out_replayCount)
+struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Player *p, int *out_replayCount)
 {
     sqlite3_stmt *sql;
     const std::size_t replayCount = scoredb_get_replay_count(records, p);
@@ -259,7 +259,7 @@ struct replay *scoredb_get_replay_list(Shiro::RecordList *records, Shiro::Player
 }
 
 
-void scoredb_get_full_replay(Shiro::RecordList *records, struct replay *out_replay, int replay_id)
+void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_replay, int replay_id)
 {
     sqlite3_stmt *sql;
     try {
@@ -285,7 +285,7 @@ void scoredb_get_full_replay(Shiro::RecordList *records, struct replay *out_repl
     sqlite3_finalize(sql);
 }
 
-void scoredb_get_full_replay_by_condition(Shiro::RecordList *records, struct replay *out_replay, int mode)
+void scoredb_get_full_replay_by_condition(Shiro::Records::List *records, struct replay *out_replay, int mode)
 {
     sqlite3_stmt *sql;
     try {

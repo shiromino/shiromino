@@ -3,17 +3,17 @@ Attribution 4.0 International Public License.
 
 The following files are copyright (c) 2020 Damian Yerrick
 https://pineight.com/contact/:
-audio/danger.wav
-audio/gradeup.wav
-audio/newsection.wav
-audio/pieces0.wav
-audio/pieces1.wav
-audio/pieces2.wav
-audio/pieces3.wav
-audio/pieces4.wav
-audio/pieces5.wav
-audio/pieces6.wav
-audio/pieces7.wav
+data/audio/danger.wav
+data/audio/gradeup.wav
+data/audio/newsection.wav
+data/audio/pieces0.wav
+data/audio/pieces1.wav
+data/audio/pieces2.wav
+data/audio/pieces3.wav
+data/audio/pieces4.wav
+data/audio/pieces5.wav
+data/audio/pieces6.wav
+data/audio/pieces7.wav
 
 Attribution 4.0 International
 

@@ -17,6 +17,7 @@
 #include "Input/Mouse.h"
 #include "QRS1.h"
 #include "random.h"
+#include "Records.h"
 #include "RefreshRates.h"
 #include "replay.h"
 #include "SGUIL/SGUIL.h"
@@ -288,16 +289,14 @@ CoreState::~CoreState() {
 
 bool CoreState::init() {
     if (!screen.init(settings)) {
-        std::cerr << "Failed to init screen, aborting" << std::endl;
+        std::cerr << "Failed to initialize screen, aborting." << std::endl;
         return false;
     }
-
     try {
-        assetMgr.addLoader(Shiro::AssetType::image, std::unique_ptr<Shiro::AssetLoader>(new Shiro::ImageAssetLoader(settings.basePath / "assets" / "image", screen)));
-        assetMgr.addLoader(Shiro::AssetType::font, std::unique_ptr<Shiro::AssetLoader>(new Shiro::FontAssetLoader(settings.basePath / "assets" / "font", screen)));
-        assetMgr.addLoader(Shiro::AssetType::music, std::unique_ptr<Shiro::AssetLoader>(new Shiro::MusicAssetLoader(settings.basePath / "assets" / "audio")));
-        assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.basePath / "assets" / "audio")));
-
+        assetMgr.addLoader(Shiro::AssetType::image, std::unique_ptr<Shiro::AssetLoader>(new Shiro::ImageAssetLoader(settings.sharePath / "image", screen)));
+        assetMgr.addLoader(Shiro::AssetType::font, std::unique_ptr<Shiro::AssetLoader>(new Shiro::FontAssetLoader(settings.sharePath / "font", screen)));
+        assetMgr.addLoader(Shiro::AssetType::music, std::unique_ptr<Shiro::AssetLoader>(new Shiro::MusicAssetLoader(settings.sharePath / "audio")));
+        assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.sharePath / "audio")));
         assetMgr.preload({
             {Shiro::AssetType::image, "title"},
             {Shiro::AssetType::image, "title_emboss"},
@@ -313,7 +312,6 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "playfield_grid_alt"},
             {Shiro::AssetType::image, "misc"},
             {Shiro::AssetType::image, "medals"},
-
             {Shiro::AssetType::image, "bg0"},
             {Shiro::AssetType::image, "bg1"},
             {Shiro::AssetType::image, "bg2"},
@@ -326,46 +324,34 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "bg9"},
             {Shiro::AssetType::image, "bg_temp"},
             {Shiro::AssetType::image, "bg_darken"},
-
             {Shiro::AssetType::image, "animation_lineclear0"},
             {Shiro::AssetType::image, "animation_lineclear1"},
             {Shiro::AssetType::image, "animation_lineclear2"},
             {Shiro::AssetType::image, "animation_lineclear3"},
             {Shiro::AssetType::image, "animation_lineclear4"},
-
             {Shiro::AssetType::image, "g1_tetrion"},
             {Shiro::AssetType::image, "g2_tetrion_death"},
             {Shiro::AssetType::image, "g2_tetrion_master"},
             {Shiro::AssetType::image, "g3_tetrion_terror"},
-
-
             {Shiro::AssetType::font, "fixedsys"},
             // TODO: Convert remaining fonts to AngelCode bitmap font format.
-
-
             {Shiro::AssetType::music, "tracks0"},
             {Shiro::AssetType::music, "tracks1"},
             {Shiro::AssetType::music, "tracks2"},
             {Shiro::AssetType::music, "tracks3"},
-
             {Shiro::AssetType::music, "g1_tracks0"},
             {Shiro::AssetType::music, "g1_tracks1"},
-
             {Shiro::AssetType::music, "g2_tracks0"},
             {Shiro::AssetType::music, "g2_tracks1"},
             {Shiro::AssetType::music, "g2_tracks2"},
             {Shiro::AssetType::music, "g2_tracks3"},
-
             {Shiro::AssetType::music, "g3_tracks0"},
             {Shiro::AssetType::music, "g3_tracks1"},
             {Shiro::AssetType::music, "g3_tracks2"},
             {Shiro::AssetType::music, "g3_tracks3"},
             {Shiro::AssetType::music, "g3_tracks4"},
             {Shiro::AssetType::music, "g3_tracks5"},
-
-
             {Shiro::AssetType::sfx, "menu_choose"},
-
             {Shiro::AssetType::sfx, "ready"},
             {Shiro::AssetType::sfx, "go"},
             {Shiro::AssetType::sfx, "prerotate"},
@@ -376,7 +362,6 @@ bool CoreState::init() {
             {Shiro::AssetType::sfx, "newsection"},
             {Shiro::AssetType::sfx, "medal"},
             {Shiro::AssetType::sfx, "gradeup"},
-
             {Shiro::AssetType::sfx, "pieces0"},
             {Shiro::AssetType::sfx, "pieces1"},
             {Shiro::AssetType::sfx, "pieces2"},
@@ -384,32 +369,26 @@ bool CoreState::init() {
             {Shiro::AssetType::sfx, "pieces4"},
             {Shiro::AssetType::sfx, "pieces5"},
             {Shiro::AssetType::sfx, "pieces6"} //,
-
             //{Shiro::AssetType::sfx, "clear_single"},
             //{Shiro::AssetType::sfx, "clear_double"},
             //{Shiro::AssetType::sfx, "clear_triple"},
             //{Shiro::AssetType::sfx, "clear_tetris"}
         });
-
         {
             PDINI::INI volumeINI;
-            auto [readSuccess, lineNum] = volumeINI.read((settings.basePath / "assets" / "audio" / "volume.ini").string());
-
+            auto [readSuccess, lineNum] = volumeINI.read((settings.sharePath / "audio" / "volume.ini").string());
             if (readSuccess) {
                 std::string musicNames[] = {
                     "tracks0",
                     "tracks1",
                     "tracks2",
                     "tracks3",
-
                     "g1_tracks0",
                     "g1_tracks1",
-
                     "g2_tracks0",
                     "g2_tracks1",
                     "g2_tracks2",
                     "g2_tracks3",
-
                     "g3_tracks0",
                     "g3_tracks1",
                     "g3_tracks2",
@@ -421,10 +400,8 @@ bool CoreState::init() {
                     Shiro::MusicAsset& asset = Shiro::MusicAsset::get(assetMgr, std::filesystem::path(name));
                     volumeINI.get("", name, asset.volume);
                 }
-
                 std::string sfxNames[] = {
                     "menu_choose",
-
                     "ready",
                     "go",
                     "prerotate",
@@ -435,7 +412,6 @@ bool CoreState::init() {
                     "newsection",
                     "medal",
                     "gradeup",
-
                     "pieces0",
                     "pieces1",
                     "pieces2",
@@ -443,7 +419,6 @@ bool CoreState::init() {
                     "pieces4",
                     "pieces5",
                     "pieces6" //,
-
                     //"clear_single",
                     //"clear_double",
                     //"clear_triple",
@@ -461,9 +436,7 @@ bool CoreState::init() {
                 }
             }
         }
-
         // SDL_Texture *blank = NULL;
-
         // copy settings into main game structure
         if (SDL_NumJoysticks()) {
             const int numJoysticks = SDL_NumJoysticks();
@@ -516,44 +489,32 @@ bool CoreState::init() {
         else {
             std::cerr << "No joysticks are attached" << std::endl;
         }
-
         load_files();
-
         check(Gui_Init(screen.renderer, NULL), "Gui_Init() returned failure\n");
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
-
         bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
         // blank = Shiro::ImageAsset::get(assetMgr, "blank").getTexture();
-
         // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
-
         menu = menu_create(this);
         check(menu != NULL, "menu_create returned failure\n");
-
         menu->init(menu);
-
         screenManager->addScreen("main", mainMenu_create(this, screenManager, assets->fixedsys));
         //SDL_Rect gameScreenRect = {0, 0, 640, 480};
         //screenManager->addScreen("game", new GuiScreen {this, "game", NULL, gameScreenRect});
         screenManager->loadScreen("main");
-
         // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
-
-        // TODO: Configurable directory
-        static const char scoredb_file[] = "shiromino.sqlite";
-        scoredb_init(&records, scoredb_file);
+        const auto databasePath = settings.cachePath / Shiro::Records::filename;
+        scoredb_init(&records, databasePath.string().c_str());
         scoredb_create_player(&records, &player, settings.playerName.c_str());
-
         /*
         static const char archive_file[] = "archive.db";
         scoredb_init(&archive, archive_file);
         scoredb_create_player(&archive, &player, settings.player_name);
         */
-
         std::cerr << "PENTOMINO C: " << PENTOMINO_C_REVISION_STRING << std::endl;
     }
     catch (const std::logic_error& error) {
-        std::cerr << "Failed to init CoreState, aborting." << std::endl;
+        std::cerr << "Failed to initialize CoreState, aborting." << std::endl;
         return false;
     }
 
@@ -875,8 +836,8 @@ void CoreState::run() {
 
 static void load_image(CoreState *cs, gfx_image *img, const char *filename)
 {
-    std::filesystem::path path { cs->settings.basePath };
-    if(!img_load(img, path / "assets" / "image" / filename, cs))
+    std::filesystem::path path { cs->settings.sharePath };
+    if(!img_load(img, path / "image" / filename, cs))
     {
         log_warn("Failed to load image '%s'", filename);
     }
