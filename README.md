@@ -56,9 +56,9 @@ Usually, you can find your compiled game executable in `./build/shiromino`. Note
 
 Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
 
-Besides the game executable, the game needs a few files in order to run properly. For one, there's `shiromino.ini`, a configuration file that you can use to specify key bindings and other settings. Then, there's also the `assets` directory which includes audio and image files.
+Besides the game executable, the game needs a few files in order to run properly. For one, there's `shiromino.ini`, a configuration file that you can use to specify key bindings and other settings. Then, there's also the `data` directory which includes audio and image files.
 
-There are two ways to make the game find these files. The first way is to have your working directory where `shiromino.ini` and `assets` are. After doing that, you can run the game via:
+There are two ways to make the game find these files. The first way is to have your working directory where `shiromino.ini` and `data` are. After doing that, you can run the game via:
 ```shell
 $ ./build/shiromino
 ```
@@ -66,7 +66,8 @@ Especially during development, this approach is very inflexible. A second way is
 ```shell
 $ ./build/shiromino --configuration-file ./shiromino.ini
 ```
-The path to `assets` is resolved in the following order:
-- If `--configuration-file` is left unspecified, try `<working directory>/assets`.
-- Otherwise, if the configuration file sets `BASE_PATH`, try `${BASE_PATH}/assets`.
-- Otherwise, try `<working directory>/assets`.
+## Installing
+This game can be installed to an arbitrary directory. Please beware that Linux is currently the only supported platform. When building the game, make sure to set your installation path via `-DCMAKE_INSTALL_PREFIX`. In this example, we install the game into `~/.shiromino`:
+```shell
+$ cmake -DCMAKE_INSTALL_PREFIX=~/.shiromino -DCMAKE_BUILD_TYPE=Debug -B build -S . && cmake --build build -j$(nproc) && cmake --install build
+```
