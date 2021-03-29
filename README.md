@@ -1,13 +1,21 @@
 # shiromino
 <a href="https://github.com/shiromino/shiromino/actions" rel="Build status">![build](https://github.com/shiromino/shiromino/workflows/build/badge.svg)</a>
-## Building
+## Packages
+Depending on your setup, you might not have to build this game yourself. Instead, consider using one of the following packages. Please note that these are **unofficial packages**, meaning that we don't maintain them ourselves and that we have no means to fix them. If there's something wrong with them, please contact the package maintainer.
+| Repository                    | Package name
+| ----------------------------- | ---------------
+| Arch User Repository (AUR)    | [`shiromino-git`](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=shiromino-git)
+## Building from source
 The following table displays a set of build definitions. To set them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each definition that you want to enable in the CMake configuration step (which is the first CMake command you run).
 
 For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option, the flag that you would need to provide would be `-DENABLE_OPENGL_INTERPOLATION=0`.
 ### Build definitions
-| Definition                    | Values    | Description                                                                         |
-| ----------------------------- | --------- |  -----------------------------------------------------------------------------------|
-| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`  | Enables support for the `INTERPOLATE` option in `shiromino.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system.
+| Definition                    | Values                                               | Description                                            |
+| ----------------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
+| [`CMAKE_BUILD_TYPE`][]        | `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel`    | Controls the type of build that the build process will output.
+| [`CMAKE_INSTALL_PREFIX`][]    | any path                                              | When installing the project via `cmake --install`, this prefix will be prepended to all files that the installation process emits. In practice, this allows you to control the installation directory.
+| [`CMAKE_TOOLCHAIN_FILE`][]    | any path                                              | When building the project on Windows using `vcpkg`, CMake needs to know where it can find your installed packages. That's why `vcpkg` installations come with a toolchain file that you must specify here.
+| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`                                            | Enables support for the `INTERPOLATE` option in `shiromino.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system.
 ### Installing dependencies and compiling
 In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 #### Linux (pacman-based)
@@ -56,18 +64,92 @@ Usually, you can find your compiled game executable in `./build/shiromino`. Note
 
 Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
 
-Besides the game executable, the game needs a few files in order to run properly. For one, there's `shiromino.ini`, a configuration file that you can use to specify key bindings and other settings. Then, there's also the `data` directory which includes audio and image files.
-
-There are two ways to make the game find these files. The first way is to have your working directory where `shiromino.ini` and `data` are. After doing that, you can run the game via:
+In order to run the game, just launch the executable. Please beware a successful launch is tied to a successful [path resolution](#path-resolution).
 ```shell
 $ ./build/shiromino
 ```
-Especially during development, this approach is very inflexible. A second way is to specify a path to the configuration file (`shiromino.ini`) with `--configuration-file` or `-c` on the command line. For example, you could provide the flag like this from the source directory:
+<a name="custom-configuration-file"></a>
+If you would like to specify a custom configuration file, you can do so with the command-line options `--configuration-file` or `-c`. For example, you could provide the flag like this from the source directory:
 ```shell
 $ ./build/shiromino --configuration-file ./shiromino.ini
 ```
-## Installing
-This game can be installed to an arbitrary directory. Please beware that Linux is currently the only supported platform. When building the game, make sure to set your installation path via `-DCMAKE_INSTALL_PREFIX`. In this example, we install the game into `~/.shiromino`:
+<a name="path-resolution"></a>
+## Path resolution
+Besides the game executable, the game needs to resolve the following files or paths in order to run properly.
+### `shiromino.ini`
+This configuration file is where you specify key bindings and other settings.
+
+If no configuration file is specified, the game will look for this file here (in order):
+
+1. `<executable directory>/shiromino.ini`
+2. `<executable directory>/../etc/shiromino.ini`
+3. `<current working directory>/shiromino.ini`
+4. `$XDG_CONFIG_HOME/shiromino.ini`
+5. `$HOME/.config/shiromino.ini`
+6. `/usr/local/etc/shiromino.ini`
+7. `/etc/shiromino.ini`
+
+The first path that matches will be honored.
+
+If none match, the game will try to create a default configuration file here (in order):
+
+1. `$XDG_CONFIG_HOME/shiromino.ini`
+2. `$HOME/.config/shiromino.ini`
+3. `<executable directory>/shiromino.ini`
+
+You can also [specify a custom configuration file](#custom-configuration-file).
+### `SHARE_PATH`
+`SHARE_PATH` is a path to a directory which contains static game data such as assets or the license. The game assumes that there is a directory within `SHARE_PATH` named `data`.
+
+If `SHARE_PATH` is left unspecified, the game will look for it here (in order):
+
+1. `<executable directory>`
+2. `<executable directory>/../share/shiromino`
+3. `<current working directory>`
+4. `$XDG_DATA_HOME/shiromino`
+5. `$HOME/.local/share/shiromino`
+6. `/usr/local/share/shiromino`
+7. `/usr/share/shiromino`
+
+Any path in this list will match only if it contains a directory named `data`.
+
+The first path that matches will be honored.
+
+You can also specify a custom `SHARE_PATH` in the configuration file. If `SHARE_PATH` is relative, the path is assumed to be relative to the configuration file.
+### `CACHE_PATH`
+`CACHE_PATH` is a path to a directory which contains dynamic game data such as high scores.
+
+If `CACHE_PATH` is left unspecified, the game will look for it here (in order):
+
+1. `<executable directory>`
+2. `<executable directory>/../var/cache/shiromino`
+3. `<current working directory>`
+4. `$XDG_CACHE_HOME/shiromino`
+5. `$HOME/.cache/shiromino`
+6. `/usr/local/var/cache/shiromino`
+7. `/var/cache/shiromino`
+
+Any path in this list will match only if it contains a file named `shiromino.sqlite`.
+
+The first path that matches will be honored.
+
+If none match, the game will try to create the following directories and/or use them:
+
+1. `$XDG_CACHE_HOME/shiromino`
+2. `$HOME/.cache/shiromino`
+3. `<executable directory>`
+
+You can also specify a custom `CACHE_PATH` in the configuration file. If `CACHE_PATH` is relative, the path is assumed to be relative to the configuration file.
+## Installing and packaging
+This game can be installed through CMake. Please beware that currently, Linux is the only supported platform. When building the game, make sure to set your installation path via [`CMAKE_INSTALL_PREFIX`][]. In this example, we will install the game in `~/.shiromino`:
 ```shell
-$ cmake -DCMAKE_INSTALL_PREFIX=~/.shiromino -DCMAKE_BUILD_TYPE=Debug -B build -S . && cmake --build build -j$(nproc) && cmake --install build
+$ cmake -DCMAKE_INSTALL_PREFIX=~/.shiromino -DCMAKE_BUILD_TYPE=Release -B build -S .
+$ cmake --build build -j$(nproc)
+$ cmake --install build
 ```
+Installing the game via CMake will create a hierarchy of [`GNUInstallDirs`][] in [`CMAKE_INSTALL_PREFIX`][] that should be ideal for packaging this game.
+
+[`CMAKE_BUILD_TYPE`]: https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html
+[`CMAKE_INSTALL_PREFIX`]: https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html
+[`CMAKE_TOOLCHAIN_FILE`]: https://cmake.org/cmake/help/latest/variable/CMAKE_TOOLCHAIN_FILE.html
+[`GNUInstallDirs`]: https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html
