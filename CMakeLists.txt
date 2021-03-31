@@ -51,7 +51,14 @@ target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEAD
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 if(OPENGL_FOUND)
-	set(ENABLE_OPENGL_INTERPOLATION ON CACHE BOOL "Enables support for the `INTERPOLATE` option in `shiromino.ini`.")
+	#
+	# Apple has officially deprecated OpenGL.
+	# After some testing, it turns out that even if OpenGL is found, we can not rely on the fact that its initialization will work.
+	# So to make things work out of the box, let's disable OpenGL on macOS by default.
+	#
+	if(NOT APPLE)
+		set(ENABLE_OPENGL_INTERPOLATION ON CACHE BOOL "Enables support for the `INTERPOLATE` option in `shiromino.ini`.")
+	endif()
 endif()
 if(ENABLE_OPENGL_INTERPOLATION)
 	set(MINIMUM_SDL2_VERSION 2.0.10)
