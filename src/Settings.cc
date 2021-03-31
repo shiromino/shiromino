@@ -1,5 +1,6 @@
 #include "Settings.h"
 #include "Debug.h"
+#include "OS.h"
 #include "PDINI.h"
 #include "Records.h"
 #include "SDL.h"
@@ -126,9 +127,9 @@ void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &exe
         }
     }
 }
-bool Shiro::Settings::init(const int argc, const char* const argv[]) {
+bool Shiro::Settings::init(const int argc, const char *const argv[]) {
     const auto cwd = fs::current_path();
-    const auto executableDirectory = fs::canonical(fs::path(argv[0])).remove_filename();
+    const auto executableDirectory = OS::getExecutablePath().remove_filename();
     PDINI::INI configuration;
     if (argc == 1) {
         PDINI::INI configuration;

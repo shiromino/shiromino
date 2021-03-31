@@ -144,6 +144,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/Menu/ToggleOption.h
 		src/Mode/BaseMode.cc
 		src/Mode/BaseMode.h
+		src/OS.h
+		src/OS.cc
 		src/PieceDefinition.cc
 		src/PieceDefinition.h
 		src/Player.h
@@ -308,12 +310,15 @@ set_property(
 	PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--configuration-file ${NATIVE_CONFIGURATION_PATH}"
 )
 #
-# On Windows, doing this is needed to get rid of the `cmd.exe` process that spawns with the game.
-# Usually, you could just compile against `WinMain` directly, but as SDL2 already defines it in order to call `main`,
-# we're forced to provide `main`, which in turn spawns `cmd.exe` on Windows.
-# While that may be useful for debugging, it's very much undesired in actual release builds, so let's disable it here.
+# Unsurprisingly, Windows is unusable by default. Let's fix Microsoft's "compiler".
 #
 if(MSVC)
+	#
+	# On Windows, doing this is needed to get rid of the `cmd.exe` process that spawns with the game.
+	# Usually, you could just compile against `WinMain` directly, but as SDL2 already defines it in order to call `main`,
+	# we're forced to provide `main`, which in turn spawns `cmd.exe` on Windows.
+	# While that may be useful for debugging, it's very much undesired in actual release builds, so let's disable it here.
+	#
 	target_link_options(${GAME_EXECUTABLE}
 		PRIVATE
 			$<$<NOT:$<CONFIG:Debug>>:
@@ -321,6 +326,12 @@ if(MSVC)
 				/SUBSYSTEM:WINDOWS
 			>
 	)
+	#
+	# On Windows, MSVC defines lowercase macros in order to break things, err, I mean, "for backward compatibility".
+	# For instance, using `std::max` will give you a syntax error, a truly excellent default behavior.
+	# Of course, this little block game should account for Microsoft's historical mistakes.
+	#
+	add_definitions(-DNOMINMAX)
 endif()
 #
 # On clang and gcc, add a few sanitizers in the `Debug` configuration.

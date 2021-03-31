@@ -141,10 +141,8 @@ If none match, the game will try to create the following directories and/or use 
 
 You can also specify a custom `CACHE_PATH` in the configuration file. If `CACHE_PATH` is relative, the path is assumed to be relative to the configuration file.
 ## Installing and packaging
-This game can be installed through CMake. Please beware that currently, Linux is the only supported platform. When building the game, make sure to set your installation path via [`CMAKE_INSTALL_PREFIX`][]. In this example, we will install the game in `~/.shiromino`:
+This game can be installed through CMake. Please beware that currently, Linux is the only supported platform. In CMake's configuration step, you can set a custom installation path via [`CMAKE_INSTALL_PREFIX`][]. Note that in order to install shiromino, you must have built it first.
 ```shell
-$ cmake -DCMAKE_INSTALL_PREFIX=~/.shiromino -DCMAKE_BUILD_TYPE=Release -B build -S .
-$ cmake --build build -j$(nproc)
 $ cmake --install build
 ```
 Installing the game via CMake will create a hierarchy of [`GNUInstallDirs`][] in [`CMAKE_INSTALL_PREFIX`][] that should be ideal for packaging this game.
