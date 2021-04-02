@@ -6,9 +6,9 @@ project(shiromino
 	VERSION 0.1.0
 )
 set(GAME_EXECUTABLE ${PROJECT_NAME})
-set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #
 # Basic project layout
 #
@@ -32,7 +32,7 @@ endif()
 #
 # Suppress the `ZERO_CHECK` target
 #
-set(CMAKE_SUPPRESS_REGENERATION true)
+set(CMAKE_SUPPRESS_REGENERATION ON)
 #
 # Dynamic headers
 #
@@ -252,10 +252,16 @@ function(target_pkg_config_import TARGET DEPENDENCY)
 	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
 endfunction()
 if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
+	#
+	# Link anything that `pkg-config` can't resolve on its own.
+	#
 	target_link_libraries(${GAME_EXECUTABLE} PRIVATE
 		m
 		${CMAKE_DL_LIBS}
 	)
+	#
+	# Let `pkg-config` do its magic.
+	#
 	set(DEPENDENCIES
 		sdl2
 		SDL2_image
@@ -296,6 +302,41 @@ else()
 		set(VCPKG_CRT_LINKAGE dynamic)
 		set(VCPKG_LIBRARY_LINKAGE dynamic)
 	endif()
+endif()
+#
+# On distributions with prehistoric packages, clang/gcc are unable to link these libraries themselves.
+# NOTE: We should remove this section as soon as debian-stable adds `{clang,g++}-9`.
+#
+# See https://en.cppreference.com/w/cpp/filesystem
+#
+if(
+	CMAKE_CXX_COMPILER_ID STREQUAL GNU AND
+	CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 5.0 AND
+	CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1
+)
+	set(FILE_SYSTEM_LIBRARY_NAME stdc++fs)
+elseif(
+	CMAKE_CXX_COMPILER_ID STREQUAL Clang AND
+	CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 5.0 AND
+	CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0
+)
+	set(FILE_SYSTEM_LIBRARY_NAME c++fs)
+endif()
+if(DEFINED FILE_SYSTEM_LIBRARY_NAME)
+	find_library(FILE_SYSTEM ${FILE_SYSTEM_LIBRARY_NAME}
+		PATHS
+			/usr/lib/llvm-5/lib
+			/usr/lib/llvm-6/lib
+			/usr/lib/llvm-7/lib
+			/usr/lib/llvm-8/lib
+			/usr/lib/gcc/x86_64-linux-gnu/5
+			/usr/lib/gcc/x86_64-linux-gnu/6
+			/usr/lib/gcc/x86_64-linux-gnu/7
+			/usr/lib/gcc/x86_64-linux-gnu/8
+			/usr/lib/gcc/x86_64-linux-gnu/9
+		REQUIRED
+	)
+	target_link_libraries(${GAME_EXECUTABLE} PRIVATE ${FILE_SYSTEM})
 endif()
 #
 # Visual Studio doesn't know which project to start by default, so it defaults to `ALL_BUILD`, which just errors when you try to launch it.
@@ -348,7 +389,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
 	if(CMAKE_BUILD_TYPE STREQUAL Debug AND NOT MINGW)
 		target_link_libraries(${GAME_EXECUTABLE}
 			PRIVATE
-				-fsanitize=address,leak,pointer-compare,pointer-subtract,undefined
+				-fsanitize=address,leak,undefined
 				-fsanitize-address-use-after-scope
 				-fsanitize-undefined-trap-on-error
 		)
