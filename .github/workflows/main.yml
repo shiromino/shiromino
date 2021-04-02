@@ -1,8 +1,6 @@
 jobs:
   x64-linux:
-    # TODO: Replace `ubuntu-20.04` with `ubuntu-latest` once GitHub updates the alias.
-    # See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Fetch history for all tags
