@@ -1,7 +1,7 @@
 # shiromino
 <a href="https://github.com/shiromino/shiromino/actions" rel="Build status">![build](https://github.com/shiromino/shiromino/workflows/build/badge.svg)</a>
-## Packages
-Depending on your setup, you might not have to build this game yourself. Instead, consider using one of the following packages. Please note that these are **unofficial packages**, meaning that we don't maintain them ourselves and that we have no means to fix them. If there's something wrong with them, please contact the package maintainer.
+## Official packages
+Depending on your setup, you might not have to build this game yourself. Instead, consider using one of the following packages.
 | Repository                    | Package name
 | ----------------------------- | ---------------
 | Arch User Repository (AUR)    | [`shiromino-git`](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=shiromino-git)
@@ -133,7 +133,7 @@ Any path in this list will match only if it contains a file named `shiromino.sql
 
 The first path that matches will be honored.
 
-If none match, the game will try to create the following directories and/or use them:
+If none match, the game will try to create the following directories and use them (in order):
 
 1. `$XDG_CACHE_HOME/shiromino`
 2. `$HOME/.cache/shiromino`
