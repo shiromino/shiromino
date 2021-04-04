@@ -37,6 +37,27 @@ jobs:
         build-type:
           - Debug
           - Release
+  x64-windows-msys2:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fetch history for all tags
+      run: .github/workflows/fetch-tags
+    - uses: msys2/setup-msys2@v2
+    - name: Install dependencies
+      run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer}} sqlite3
+      shell: msys2 {0}
+    - name: Build targets
+      run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
+      shell: msys2 {0}
+    strategy:
+      matrix:
+        build-type:
+          - Debug
+          - Release
+        compiler:
+          - clang++
+          - g++
   windows-visual-studio:
     env:
       VCPKG_RESPONSE_FILE_PATH: '${{ github.workspace }}/vcpkg-response-file'
@@ -87,27 +108,28 @@ jobs:
           - architecture: x86
             cmake-architecture: Win32
             triplet: x86-windows
-  x64-windows-msys2:
-    runs-on: windows-latest
+  deploy-aur-package:
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - x64-linux
+      - x64-mac-os
+      - x64-windows-msys2
+      - windows-visual-studio
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
-    - uses: msys2/setup-msys2@v2
-    - name: Install dependencies
-      run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer}} sqlite3
-      shell: msys2 {0}
-    - name: Build targets
-      run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
-      shell: msys2 {0}
-    strategy:
-      matrix:
-        build-type:
-          - Debug
-          - Release
-        compiler:
-          - clang++
-          - g++
+    - run: echo "VERSION=$(git describe --tags | tr - +)" >> $GITHUB_ENV
+    - run: sed "s/\$VERSION/${{ env.VERSION }}/g" ./packages/aur/PKGBUILD > PKGBUILD
+    - uses: KSXGitHub/github-actions-deploy-aur@v2.2.3
+      with:
+        commit_email: shiromino+github@aur
+        commit_message: Released version ${{ env.VERSION }}
+        commit_username: shiromino-bot
+        pkgbuild: PKGBUILD
+        pkgname: shiromino-git
+        ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
 name: build
 on:
   - pull_request
