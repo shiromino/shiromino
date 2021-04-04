@@ -3,7 +3,7 @@ project(shiromino
 	DESCRIPTION "A fast-paced puzzle game with roots in the arcade."
 	HOMEPAGE_URL "https://github.com/shiromino/shiromino"
 	LANGUAGES CXX
-	VERSION 0.1.0
+	VERSION 0.1.1
 )
 set(GAME_EXECUTABLE ${PROJECT_NAME})
 set(CMAKE_VERBOSE_MAKEFILE ON)

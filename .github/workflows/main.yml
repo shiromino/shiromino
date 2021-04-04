@@ -60,7 +60,7 @@ jobs:
           - g++
   windows-visual-studio:
     env:
-      VCPKG_RESPONSE_FILE_PATH: '${{ github.workspace }}/vcpkg-response-file'
+      VCPKG_RESPONSE_FILE_PATH: "${{ github.workspace }}/vcpkg-response-file"
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -71,7 +71,7 @@ jobs:
       uses: lukka/run-vcpkg@v4
       with:
         appendedCacheKey: ${{ matrix.build-type }}-${{ hashFiles(env.VCPKG_RESPONSE_FILE_PATH) }}
-        vcpkgArguments:  '@${{ env.VCPKG_RESPONSE_FILE_PATH }}'
+        vcpkgArguments:  "@${{ env.VCPKG_RESPONSE_FILE_PATH }}"
         vcpkgDirectory: vcpkg
         vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
         vcpkgTriplet: ${{ matrix.triplet }}
@@ -130,6 +130,26 @@ jobs:
         pkgbuild: PKGBUILD
         pkgname: shiromino-git
         ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+  release:
+      if: startsWith(github.ref, 'refs/tags/')
+      needs:
+        - x64-linux
+        - x64-mac-os
+        - x64-windows-msys2
+        - windows-visual-studio
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/download-artifact@v2
+        - run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        - run: for FILE in *; do mv $FILE ${FILE//-${{ github.sha }}}-$VERSION; done
+        - run: for FILE in *; do zip -r $FILE.zip $FILE; done
+        - name: Create new release
+          uses: ncipollo/release-action@v1
+          with:
+            allowUpdates: true
+            artifactErrorsFailBuild: true
+            artifacts: "*.zip"
+            token: ${{ secrets.GITHUB_TOKEN }}
 name: build
 on:
   - pull_request
