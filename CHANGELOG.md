@@ -9,7 +9,7 @@
 - The CI pipeline now adds a new release for every pushed tag.
 - The CI pipeline also provides Windows builds for every release.
 ### Bug fixes
-- Garbage creation has been fixed in G2 Death and G3 Terror.
+- Garbage creation has been fixed in G3 Terror.
 ## 0.1.0
 ### New features
 - Joystick input is now fully configurable; no joystick input is enabled by default.
@@ -43,7 +43,7 @@
 - Fixed T tetromino floor-kick orientation limitations.
 - Fixed grade display when green line or orange line flags are applied.
 - No more grade-up sound effect in multi-editor.
-## 2018.05.07 beta3-pre1
+## beta3-pre1
 ### Bug fixes
 - Fixed I tetromino's wallkick behavior.
 ## beta3
