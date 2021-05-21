@@ -45,7 +45,7 @@ jobs:
       run: .github/workflows/fetch-tags
     - uses: msys2/setup-msys2@v2
     - name: Install dependencies
-      run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer}} sqlite3
+      run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer},sqlite3}
       shell: msys2 {0}
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}

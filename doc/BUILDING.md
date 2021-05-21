@@ -49,7 +49,7 @@ $ cmake --build build -j --config Release
 Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/). If during linking, you see errors about the linker not being able to find `-lmingw32`, reboot your computer before trying again. The following commands need to be run in a "MSYS2 MinGW 64-bit" shell.
 
 ```shell
-$ pacman --needed --noconfirm -S cmake gcc make mingw-w64-x86_64-{dlfcn,libvorbis,glew,SDL2{,_image,_mixer}} sqlite3
+$ pacman --needed --noconfirm -S make mingw-w64-x86_64-{cmake,dlfcn,gcc,glew,libvorbis,SDL2{,_image,_mixer},sqlite3}
 $ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j$(nproc)
 ```
 <a name="running"></a>
