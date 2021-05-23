@@ -9,3 +9,5 @@ Depending on your setup, you might not have to build this game yourself. Instead
 - [Building and installing](doc/BUILDING.md)
 - [Running](doc/RUNNING.md)
 - [Keyboard shortcuts](doc/KEYBOARD_SHORTCUTS.md)
+## Demo
+https://user-images.githubusercontent.com/4442505/119262956-60bb8280-bbdd-11eb-826a-13540b07b768.mp4
