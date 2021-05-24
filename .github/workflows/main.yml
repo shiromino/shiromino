@@ -3,6 +3,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install dependencies
@@ -23,10 +25,12 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - name: Install mac OS dependencies
-      run: brew install bash cmake gcc libvorbis pkg-config sdl2 sdl2_image sdl2_mixer
+      run: brew install bash cmake gcc libvorbis sdl2 sdl2_image sdl2_mixer
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
     strategy:
@@ -41,6 +45,8 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - uses: msys2/setup-msys2@v2
@@ -79,6 +85,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - uses: textbook/git-checkout-submodule-action@master
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - run: echo "VERSION=$(git describe --tags | tr - +)" >> $GITHUB_ENV

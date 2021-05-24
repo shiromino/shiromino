@@ -6,9 +6,10 @@ project(shiromino
 	VERSION 0.1.1
 )
 set(GAME_EXECUTABLE ${PROJECT_NAME})
-set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 #
 # Basic project layout
 #
@@ -191,8 +192,10 @@ include(FetchContent)
 FetchContent_Declare(pdbm_font
 	GIT_REPOSITORY https://github.com/nightmareci/PDBMFont.git
 )
+#
 # We don't use FetchContent_MakeAvailable here.
 # The reason for that is that the project's build pipeline doesn't cleanly export any targets that we can use.
+#
 FetchContent_GetProperties(pdbm_font)
 if(NOT pdbm_font_POPULATED)
 	FetchContent_Populate(pdbm_font)
@@ -228,66 +231,29 @@ source_group("Third-party" FILES "${EXECUTABLE_THIRD_PARTY}")
 #
 # Dependency management
 #
-find_package(PkgConfig)
 if(NOT DEFINED MINIMUM_SDL2_VERSION)
 	set(MINIMUM_SDL2_VERSION 2.0.5)
 endif()
 set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
 set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
 set(MINIMUM_SQLITE3_VERSION 3.24.0)
-function(target_pkg_config_import TARGET DEPENDENCY)
-	string(TOUPPER ${DEPENDENCY} DEPENDENCY_VARIABLE)
-	set(MINIMUM_VERSION ${MINIMUM_${DEPENDENCY_VARIABLE}_VERSION})
-	pkg_check_modules(${DEPENDENCY_VARIABLE} REQUIRED ${DEPENDENCY}>=${MINIMUM_VERSION})
-	target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS}")
-	target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS_OTHER}")
-	target_include_directories(${TARGET} SYSTEM PRIVATE "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
-	target_link_directories(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARY_DIRS}")
-	target_link_libraries(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARIES}")
-	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
-	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
-endfunction()
-if(PKG_CONFIG_FOUND)
-	#
-	# Link anything that `pkg-config` can't resolve on its own.
-	#
-	target_link_libraries(${GAME_EXECUTABLE} PRIVATE
-		m
+#
+# NOTE: Add version checks
+#
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_mixer REQUIRED)
+find_package(SQLite3 REQUIRED)
+target_link_libraries(${GAME_EXECUTABLE}
+	PUBLIC
 		${CMAKE_DL_LIBS}
-	)
-	#
-	# Let `pkg-config` do its magic.
-	#
-	set(DEPENDENCIES
-		sdl2
-		SDL2_image
-		SDL2_mixer
-		sqlite3
-	)
-	foreach(DEPENDENCY ${DEPENDENCIES})
-		target_pkg_config_import(${GAME_EXECUTABLE} ${DEPENDENCY})
-	endforeach()
-else()
-	#
-	# We *could* check for minimum version requirements here, but vcpkg packages don't have any
-	# version information attached that we could query for from CMake.
-	#
-	# According to https://github.com/Microsoft/vcpkg/issues/1681, package versioning in vcpkg hasn't been fully conceptualized yet.
-	# For now, we won't check the minimum version requirements here.
-	#
-	find_package(SDL2 REQUIRED)
-	find_package(sdl2-image REQUIRED)
-	find_package(sdl2-mixer REQUIRED)
-	find_package(SQLite3 REQUIRED)
-	target_link_libraries(${GAME_EXECUTABLE}
-		PUBLIC
-			SDL2::SDL2
-			SDL2::SDL2main
-			SDL2::SDL2_image
-			SDL2::SDL2_mixer
-			SQLite::SQLite3
-	)
-endif()
+		m
+		SDL2::Core
+		SDL2::Image
+		SDL2::Main
+		SDL2::Mixer
+		SQLite::SQLite3
+)
 #
 # On distributions with prehistoric packages, clang/gcc are unable to link these libraries themselves.
 # NOTE: We should remove this section as soon as debian-stable adds `{clang,g++}-9`.
