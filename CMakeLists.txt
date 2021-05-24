@@ -30,10 +30,6 @@ if(GIT_FOUND)
 	)
 endif()
 #
-# Suppress the `ZERO_CHECK` target
-#
-set(CMAKE_SUPPRESS_REGENERATION ON)
-#
 # Dynamic headers
 #
 set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY "${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include")
@@ -251,7 +247,7 @@ function(target_pkg_config_import TARGET DEPENDENCY)
 	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
 	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
 endfunction()
-if(PKG_CONFIG_FOUND AND NOT VCPKG_TOOLCHAIN)
+if(PKG_CONFIG_FOUND)
 	#
 	# Link anything that `pkg-config` can't resolve on its own.
 	#
@@ -291,17 +287,6 @@ else()
 			SDL2::SDL2_mixer
 			SQLite::SQLite3
 	)
-	if(VCPKG_TOOLCHAIN)
-		#
-		# When using dynamically linked libraries, vcpkg doesn't automatically copy over the vorbis library needed to play ogg files with SDL_mixer,
-		# so they have to be explicitly added as dependencies to shiromino to work around that bug.
-		#
-		find_library(VORBISFILE_LIBRARY vorbisfile REQUIRED)
-		target_link_libraries(${GAME_EXECUTABLE} PUBLIC ${VORBISFILE_LIBRARY})
-		add_compile_definitions(VCPKG_TOOLCHAIN)
-		set(VCPKG_CRT_LINKAGE dynamic)
-		set(VCPKG_LIBRARY_LINKAGE dynamic)
-	endif()
 endif()
 #
 # On distributions with prehistoric packages, clang/gcc are unable to link these libraries themselves.
@@ -337,49 +322,6 @@ if(DEFINED FILE_SYSTEM_LIBRARY_NAME)
 		REQUIRED
 	)
 	target_link_libraries(${GAME_EXECUTABLE} PRIVATE ${FILE_SYSTEM})
-endif()
-#
-# Visual Studio doesn't know which project to start by default, so it defaults to `ALL_BUILD`, which just errors when you try to launch it.
-# Therefore, we set the startup project here.
-#
-set_property(
-	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-	PROPERTY VS_STARTUP_PROJECT ${GAME_EXECUTABLE}
-)
-#
-# Visual Studio won't find the assets by default, since they're nowhere to be found in the build directory.
-#
-# However, it allows us to specify command-line flags for the debugger.
-# We use this to specify the configuration file.
-#
-file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/shiromino.ini" NATIVE_CONFIGURATION_PATH)
-set_property(
-	TARGET ${GAME_EXECUTABLE}
-	PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--configuration-file ${NATIVE_CONFIGURATION_PATH}"
-)
-#
-# Unsurprisingly, Windows is unusable by default. Let's fix Microsoft's "compiler".
-#
-if(MSVC)
-	#
-	# On Windows, doing this is needed to get rid of the `cmd.exe` process that spawns with the game.
-	# Usually, you could just compile against `WinMain` directly, but as SDL2 already defines it in order to call `main`,
-	# we're forced to provide `main`, which in turn spawns `cmd.exe` on Windows.
-	# While that may be useful for debugging, it's very much undesired in actual release builds, so let's disable it here.
-	#
-	target_link_options(${GAME_EXECUTABLE}
-		PRIVATE
-			$<$<NOT:$<CONFIG:Debug>>:
-				/ENTRY:mainCRTStartup
-				/SUBSYSTEM:WINDOWS
-			>
-	)
-	#
-	# On Windows, MSVC defines lowercase macros in order to break things, err, I mean, "for backward compatibility".
-	# For instance, using `std::max` will give you a syntax error, a truly excellent default behavior.
-	# Of course, this little block game should account for Microsoft's historical mistakes.
-	#
-	add_definitions(-DNOMINMAX)
 endif()
 #
 # On clang and gcc, add a few sanitizers in the `Debug` configuration.

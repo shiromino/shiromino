@@ -37,7 +37,7 @@ jobs:
         build-type:
           - Debug
           - Release
-  x64-windows-msys2:
+  x64-windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -75,7 +75,7 @@ jobs:
     needs:
       - x64-linux
       - x64-mac-os
-      - x64-windows-msys2
+      - x64-windows
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -96,7 +96,7 @@ jobs:
       needs:
         - x64-linux
         - x64-mac-os
-        - x64-windows-msys2
+        - x64-windows
       runs-on: ubuntu-latest
       steps:
         - uses: actions/download-artifact@v2

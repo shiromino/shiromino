@@ -7,7 +7,6 @@ For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option,
 | ----------------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
 | [`CMAKE_BUILD_TYPE`][]        | `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel`    | Controls the type of build that the build process will output.
 | [`CMAKE_INSTALL_PREFIX`][]    | any path                                              | When installing the project via `cmake --install`, this prefix will be prepended to all files that the installation process emits. In practice, this allows you to control the installation directory.
-| [`CMAKE_TOOLCHAIN_FILE`][]    | any path                                              | When building the project on Windows using `vcpkg`, CMake needs to know where it can find your installed packages. That's why `vcpkg` installations come with a toolchain file that you must specify here.
 | `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`                                            | Enables support for the `INTERPOLATE` option in `shiromino.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system, unless you're using macOS, as it has deprecated OpenGL.
 ## Installing dependencies and compiling
 In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
@@ -37,26 +36,18 @@ In case you're faced with a package-related error after running the `cmake` comm
 $ brew update
 $ brew upgrade pkg-config
 ```
-### Windows (Visual Studio, x64, via cmd.exe or PowerShell)
-Before running these instructions, make sure to install [CMake](https://cmake.org/download/), [vcpkg](https://github.com/Microsoft/vcpkg), and [Visual Studio](https://visualstudio.microsoft.com/downloads/). You must add the `vcpkg` installation directory to your `Path` environment variable to be able to use the command in the way we're using it below. Instead of doing that, you could also change into the `vcpkg` installation directory and run the `vcpkg` command there. But if you do, make sure to specify a valid path to `vcpkg-response-file`.
-
-```shell
-$ vcpkg install --triplet x64-windows @vcpkg-response-file
-$ cmake -B build -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake -S .
-$ cmake --build build -j --config Release
-```
-### Windows (MSYS2, x64)
-Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/). If during linking, you see errors about the linker not being able to find `-lmingw32`, reboot your computer before trying again. The following commands need to be run in a "MSYS2 MinGW 64-bit" shell.
+### Windows
+Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/). The following commands need to be run in a "MSYS2 MinGW 64-bit" shell.
 
 ```shell
 $ pacman --needed --noconfirm -S make mingw-w64-x86_64-{cmake,dlfcn,gcc,glew,libvorbis,SDL2{,_image,_mixer},sqlite3}
 $ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j$(nproc)
 ```
 <a name="running"></a>
-# Running
-Usually, you can find your compiled game executable in `./build/shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows. If you've built the game with Visual Studio, the executable is put into `.\build\Release\shiromino.exe`. For the rest of this section, we're going to assume that your executable is located at `./build/shiromino`.
+# Running the game
+You can find your compiled game executable in `./build/shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows.
 
-Note: If you used the MSYS2 build instructions, note that double-clicking the executable won't work unless you provide all the DLL files in the same directory. Be advised to start shiromino through the command line as outlined above.
+Note that if you're on Windows and you've built shiromino from source, double-clicking the executable won't work unless you've put all the dependent DLL files into the build directory. To remedy this, be advised to run shiromino through the command line. Alternatively, you could just grab one of our pre-built [Windows releases](https://github.com/shiromino/shiromino/releases) so that you don't have to compile the game from source.
 
 In order to run the game, just launch the executable. Please beware a successful launch is tied to a successful [path resolution](RUNNING.md#path-resolution).
 ```shell
