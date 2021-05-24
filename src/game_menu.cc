@@ -910,7 +910,7 @@ int mload_main(game_t *g, int val)
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 14;
+    d->numopts = 15;
     d->title = "MAIN MENU";
     d->x = 4 * 16;
     d->y = 3 * 16;
@@ -1041,6 +1041,14 @@ int mload_main(game_t *g, int val)
     d1->val = 0;
     m->x = 4 * 16;
     m->y = 14 * 16;
+
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "MULTI-EDITOR"));
+    m = &d->menu.back();
+    d1 = (Shiro::ActionOptionData *)m->data;
+    d1->action = mload_practice;
+    d1->val = 0;
+    m->x = 4 * 16;
+    m->y = 16 * 16;
 
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "SETTINGS"));
     m = &d->menu.back();
@@ -1533,8 +1541,11 @@ int mload_practice(game_t *g, int val)
     m = &d->menu[9];
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 4;
+
     // TODO: This will be rewritten in another way.
-    // d2->param = &q->pracdata->game_type;
+    //d2->param = &q->pracdata->game_type;
+    d2->param = &q->pracdata->game_type_int;
+
     d2->vals = (int *)malloc(4 * sizeof(int));
     assert(d2->vals != nullptr);
     d2->labels.clear();
@@ -1544,10 +1555,17 @@ int mload_practice(game_t *g, int val)
     d2->labels[1] = "G1";
     d2->labels[2] = "G2";
     d2->labels[3] = "G3";
+    /*
     d2->vals[0] = static_cast<int>(Shiro::GameType::SIMULATE_QRS);
     d2->vals[1] = static_cast<int>(Shiro::GameType::SIMULATE_G1);
     d2->vals[2] = static_cast<int>(Shiro::GameType::SIMULATE_G2);
     d2->vals[3] = static_cast<int>(Shiro::GameType::SIMULATE_G3);
+    */
+
+    d2->vals[0] = 0;
+    d2->vals[1] = 1;
+    d2->vals[2] = 2;
+    d2->vals[3] = 3;
 
     if(pracdata_mirror_existed)
     {

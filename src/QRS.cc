@@ -74,6 +74,7 @@ void qrsdata_destroy(qrsdata *q)
 }
 
 pracdata::pracdata() :
+    game_type_int(0),
     game_type(Shiro::GameType::SIMULATE_QRS),
     field_w(0),
     //long_history(nullptr),

@@ -2814,6 +2814,28 @@ int qs_update_pracdata(CoreState *cs)
 
     char rpt_count_strbuf[5];
 
+    switch(d->game_type_int)
+    {
+        default:
+            break;
+
+        case 0:
+            d->game_type = Shiro::GameType::SIMULATE_QRS;
+            break;
+
+        case 1:
+            d->game_type = Shiro::GameType::SIMULATE_G1;
+            break;
+
+        case 2:
+            d->game_type = Shiro::GameType::SIMULATE_G2;
+            break;
+
+        case 3:
+            d->game_type = Shiro::GameType::SIMULATE_G3;
+            break;
+    }
+
     q->game_type = d->game_type;
     q->field_w = d->field_w;
 
@@ -3296,8 +3318,14 @@ end_sequence_proc:
     }
     else
     {
-        for (size_t i = 0; i < 4; i++) {
-            q->previews.push_back(q->piecepool[q->randomizer->lookahead(q->randomizer, static_cast<unsigned>(i + 1))]);
+        for (size_t i = 0; i < 4; i++)
+        {
+            piece_id piece = q->randomizer->lookahead(q->randomizer, static_cast<unsigned>(i + 1));
+
+            if(piece != PIECE_ID_INVALID)
+            {
+                q->previews.push_back(q->piecepool[piece]);
+            }
         }
     }
 
