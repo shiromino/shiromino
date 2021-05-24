@@ -45,7 +45,7 @@ jobs:
       run: .github/workflows/fetch-tags
     - uses: msys2/setup-msys2@v2
     - name: Install dependencies
-      run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,ntldd,SDL2{,_image,_mixer},sqlite3}
+      run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer},sqlite3}
       shell: msys2 {0}
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
@@ -53,16 +53,14 @@ jobs:
     - name: Build artifact tree
       run: |
         mkdir artifacts
-        ldd build/shiromino.exe
-        ntldd build/shiromino.exe
         for DLL in $(ldd build/shiromino.exe | grep -v '/c/' | cut -d " " -f 3); do cp $DLL artifacts; done
         mv build/shiromino.exe data LICENSE* README.md shiromino.ini artifacts
       shell: msys2 {0}
-    - if: matrix.build-type == 'Release'
+    - if: matrix.build-type == 'Release' && matrix.compiler == 'clang++'
       name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: shiromino-${{ matrix.triplet }}-${{ github.sha }}
+        name: shiromino-windows-x64-${{ github.sha }}
         path: artifacts/*
     strategy:
       matrix:
@@ -72,63 +70,12 @@ jobs:
         compiler:
           - clang++
           - g++
-  windows-visual-studio:
-    env:
-      VCPKG_RESPONSE_FILE_PATH: "${{ github.workspace }}/vcpkg-response-file"
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Fetch history for all tags
-      run: .github/workflows/fetch-tags
-      shell: bash
-    - name: Run vcpkg
-      uses: lukka/run-vcpkg@v4
-      with:
-        appendedCacheKey: ${{ matrix.build-type }}-${{ hashFiles(env.VCPKG_RESPONSE_FILE_PATH) }}
-        vcpkgArguments:  "@${{ env.VCPKG_RESPONSE_FILE_PATH }}"
-        vcpkgDirectory: vcpkg
-        vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
-        vcpkgTriplet: ${{ matrix.triplet }}
-    - name: Build targets
-      uses: lukka/run-cmake@v3
-      with:
-        buildDirectory: build
-        cmakeAppendedArgs: -A ${{ matrix.cmake-architecture }}
-        cmakeBuildType: ${{ matrix.build-type }}
-        useVcpkgToolchainFile: true
-    - name: Build artifact tree
-      run: |
-        mkdir artifacts
-        mv build/{*.dll,shiromino.exe} data LICENSE* README.md shiromino.ini artifacts
-      shell: bash
-    - if: matrix.build-type == 'Release'
-      name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: shiromino-${{ matrix.triplet }}-${{ github.sha }}
-        path: artifacts/*
-    strategy:
-      matrix:
-        triplet:
-          - x64-windows
-          - x86-windows
-        build-type:
-          - Debug
-          - Release
-        include:
-          - architecture: x64
-            cmake-architecture: x64
-            triplet: x64-windows
-          - architecture: x86
-            cmake-architecture: Win32
-            triplet: x86-windows
   deploy-aur-package:
     if: github.ref == 'refs/heads/master'
     needs:
       - x64-linux
       - x64-mac-os
       - x64-windows-msys2
-      - windows-visual-studio
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -150,7 +97,6 @@ jobs:
         - x64-linux
         - x64-mac-os
         - x64-windows-msys2
-        - windows-visual-studio
       runs-on: ubuntu-latest
       steps:
         - uses: actions/download-artifact@v2
