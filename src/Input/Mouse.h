@@ -21,7 +21,8 @@ namespace Shiro {
         };
 
         // TODO: Consider changing how windowW/windowH are passed in.
-        void update(const int windowW, const int windowH);
+        void updateButtonState();
+        void updatePosition(const int windowW, const int windowH);
 
         int x;
         int y;

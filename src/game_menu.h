@@ -29,6 +29,7 @@ struct menudata
         y(0) {}
 
     std::vector<Shiro::MenuOption> menu;
+    std::vector<gfx_button> menuButtons;
     int menu_id;
 
     struct

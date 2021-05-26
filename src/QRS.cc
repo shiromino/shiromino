@@ -270,21 +270,29 @@ int qrsfield_set_w(Shiro::Grid *field, int w)
 
 int qrsfield_clear(Shiro::Grid *field) { return 0; }
 
-int ufu_not_exists(CoreState *cs)
+int undo_clear_button_should_activate(CoreState *cs)
 {
     if(!cs->p1game)
-        return 1;
+        return 0;
 
     qrsdata *q = (qrsdata *)cs->p1game->data;
     if(!q)
-        return 1;
+        return 0;
+
+    if(!q->pracdata)
+        return 0;
 
     if((q->pracdata->usr_field_undo.size() || q->pracdata->usr_field_redo.size()) && q->pracdata->paused == QRS_FIELD_EDIT)
-        return 0;
-    else
         return 1;
+    else
+        return 0;
 
-    return 1;
+    return 0;
+}
+
+int undo_clear_button_should_deactivate(CoreState *cs)
+{
+    return undo_clear_button_should_activate(cs) == 0;
 }
 
 int usr_field_bkp(CoreState *cs, pracdata *d) {
@@ -293,8 +301,8 @@ int usr_field_bkp(CoreState *cs, pracdata *d) {
     }
 
     if (!d->usr_field_undo.size()) {
-        gfx_createbutton(
-            cs, "CLEAR UNDO", QRS_FIELD_X + (16 * 16) - 6, QRS_FIELD_Y + 23 * 16 + 8 - 6, 0, push_undo_clear_confirm, ufu_not_exists, NULL, 0xC0C0FFFF);
+        /*gfx_createbutton(
+            cs, "CLEAR UNDO", QRS_FIELD_X + (16 * 16) - 6, QRS_FIELD_Y + 23 * 16 + 8 - 6, 0, push_undo_clear_confirm, undo_clear_button_should_activate, NULL, 0xC0C0FFFF);*/
     }
     d->usr_field_undo.push_back(d->usr_field);
 
@@ -344,8 +352,10 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
 {
     cs->button_emergency_override = true;
 
-    Shiro::MessageEntity::push(cs->gfx,
-        Shiro::FontAsset::get(cs->assetMgr, "square"),
+    // this crashes the game because of not being able to load the font
+
+    /*Shiro::MessageEntity::push(cs->gfx,
+        Shiro::FontAsset::get(cs->assetMgr, "squarefont"),
         "CONFIRM DELETE\nUNDO HISTORY?",
         640 / 2 - 7 * 16,
         480 / 2 - 16,
@@ -356,7 +366,7 @@ int push_undo_clear_confirm(CoreState *cs, void *data)
         SIZE_MAX,
         Shiro::GfxLayer::emergencyMessages,
         [cs] { return cs->button_emergency_inactive(); }
-    );
+    );*/
 
     gfx_createbutton(
         cs, "YES", 640 / 2 - 6 * 16 - 6, 480 / 2 + 3 * 16 - 6, BUTTON_EMERGENCY, undo_clear_confirm_yes, [](CoreState* cs) { return (int)cs->button_emergency_inactive(); }, NULL, 0xB0FFB0FF);
@@ -531,7 +541,7 @@ int qrs_input(game_t *g)
                         if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
                         {
                             d->field_selection = 0;
-                            cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
+                            //cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
                         }
                     }
                     else if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
@@ -838,19 +848,19 @@ int qrs_input(game_t *g)
             {
                 d->paused = QRS_FIELD_EDIT;
                 qs_update_pracdata(cs);
-                if(!ufu_not_exists(cs))
+                if(!undo_clear_button_should_activate(cs))
                 {
                     // if the clear undo button exists? doesn't exist? i feel like i should know what this means but i do not :|
                     // TODO use something more sane to detect for this sort of thing
-                    gfx_createbutton(cs,
+                    /*gfx_createbutton(cs,
                                      "CLEAR UNDO",
                                      QRS_FIELD_X + (16 * 16) - 6,
                                      QRS_FIELD_Y + 23 * 16 + 8 - 6,
                                      0,
                                      push_undo_clear_confirm,
-                                     ufu_not_exists,
+                                     undo_clear_button_should_activate,
                                      NULL,
-                                     0xC0C0FFFF);
+                                     0xC0C0FFFF);*/
                 }
             }
 

@@ -24,6 +24,11 @@ enum text_alignment {
     ALIGN_CENTER
 };
 
+enum gfx_button_type {
+    BUTTON_TYPE_ACTION,
+    BUTTON_TYPE_TOGGLE
+};
+
 struct png_monofont {
     SDL_Texture *sheet;
     SDL_Texture *outline_sheet;
@@ -54,12 +59,31 @@ struct gfx_button {
         flags(0u),
         highlighted(0),
         clicked(0),
+        toggleOffText(""),
+        toggleOnText(""),
+        toggleValue(false),
+        boolPtr(nullptr),
+        type(BUTTON_TYPE_ACTION),
+        active(false),
         action(nullptr),
-        delete_check(nullptr),
+        activate_check(nullptr),
+        deactivate_check(nullptr),
         data(nullptr),
         text_rgba_mod(0x00000000u) {}
 
+    ~gfx_button() {}
+
     std::string text;
+
+    std::string toggleOffText;
+    std::string toggleOnText;
+
+    bool toggleValue;
+    bool *boolPtr;
+
+    enum gfx_button_type type;
+
+    bool active;
     int x;
     int y;
     std::size_t w;
@@ -68,7 +92,8 @@ struct gfx_button {
     int highlighted;
     int clicked;
     int (*action)(CoreState *, void *);
-    int (*delete_check)(CoreState *);
+    int (*activate_check)(CoreState *);
+    int (*deactivate_check)(CoreState *);
     void *data;
     Uint32 text_rgba_mod;
 };

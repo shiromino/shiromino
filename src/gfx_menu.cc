@@ -241,6 +241,18 @@ int gfx_drawmenu(game_t *g)
                     dest.h = 16;
                 }
 
+                fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+                monofont = monofont_square;
+
+                if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                    monofont = monofont_thin;
+                if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
+                    monofont = monofont_small;
+                if(m->value_text_flags & DRAWTEXT_TINY_FONT)
+                    monofont = monofont_tiny;
+                if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
+                    monofont = monofont_fixedsys;
+
                 if(d7->leftmost_position > 0)
                 {
                     src.x = 64;
@@ -268,64 +280,81 @@ int gfx_drawmenu(game_t *g)
                     }
                     else
                     {
-                        dest.x = m->value_x + ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars);
+                        //dest.x = m->value_x + ((m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * d7->visible_chars);
+                        dest.x = m->value_x + (monofont->char_w * d7->visible_chars);
                     }
                     dest.y = m->value_y + 1;
 
                     SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
                 }
 
-                fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
-                monofont = monofont_square;
-
-                if(m->value_text_flags & DRAWTEXT_THIN_FONT)
-                    monofont = monofont_thin;
-                if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
-                    monofont = monofont_small;
-                if(m->value_text_flags & DRAWTEXT_TINY_FONT)
-                    monofont = monofont_tiny;
-                if(m->value_text_flags & DRAWTEXT_FIXEDSYS_FONT)
-                    monofont = monofont_fixedsys;
-
                 gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, &fmt);
+            }
 
-                if(d7->active)
+            if(d7->active)
+            {
+                // blinking vertical text cursor when typing is active
+                if((g->frame_counter / 30) % 2)
                 {
-                    if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                    SDL_Surface *cursorSurface = SDL_CreateRGBSurface(0, /*width*/ 1, /*height*/ monofont->char_h, 32, 0, 0, 0, 0);
+                    SDL_FillRect(cursorSurface, NULL, SDL_MapRGB(cursorSurface->format, 255, 255, 255));
+                    SDL_Texture *cursorTexture = SDL_CreateTextureFromSurface(cs->screen.renderer, cursorSurface);
+
+                    int cursorX = m->value_x + monofont->char_w * (d7->position - d7->leftmost_position);
+                    int cursorY = m->value_y;
+
+                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
                     {
-                        src.x = 15 * 13;
-                        src.y = 2 * 18;
-                        if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                            dest.x = static_cast<int>(std::size_t(m->value_x) - 13 * ((int(d7->text.size()) > d7->visible_chars ? std::size_t(d7->visible_chars) : d7->text.size())) + 13 * ((long long)d7->position - d7->leftmost_position));
-                        else
-                            dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
-                        dest.y = m->value_y + 18;
-
-                        src.w = 13;
-                        dest.w = 13;
-                        src.h = 18;
-                        dest.h = 18;
-
-                        SDL_RenderCopy(cs->screen.renderer, font_thin, &src, &dest);
-
-                        src.w = 16;
-                        dest.w = 16;
-                        src.h = 16;
-                        dest.h = 16;
+                        cursorX = static_cast<int>(std::size_t(m->value_x) - monofont->char_w * ((int(d7->text.size()) > d7->visible_chars ? std::size_t(d7->visible_chars) : d7->text.size())) + monofont->char_w * ((long long)d7->position - d7->leftmost_position));
                     }
-                    else
-                    {
-                        src.x = 15 * 16;
-                        src.y = 32;
-                        if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                            dest.x = static_cast<int>(m->value_x - 16 * ((int(d7->text.size()) > d7->visible_chars ? d7->visible_chars : d7->text.size())) + 16 * ((long long)d7->position - d7->leftmost_position));
-                        else
-                            dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
-                        dest.y = m->value_y + 16;
 
-                        SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
-                    }
+                    dest.x = cursorX;
+                    dest.y = cursorY;
+                    dest.w = 1;
+                    dest.h = 16;
+
+                    SDL_RenderCopy(cs->screen.renderer, cursorTexture, NULL, &dest);
+
+                    dest.w = 16;
+                    dest.h = 16;
                 }
+
+                /*
+                if(m->value_text_flags & DRAWTEXT_THIN_FONT)
+                {
+                    src.x = 15 * 13;
+                    src.y = 2 * 18;
+                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                        dest.x = static_cast<int>(std::size_t(m->value_x) - 13 * ((int(d7->text.size()) > d7->visible_chars ? std::size_t(d7->visible_chars) : d7->text.size())) + 13 * ((long long)d7->position - d7->leftmost_position));
+                    else
+                        dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
+                    dest.y = m->value_y + 18;
+
+                    src.w = 13;
+                    dest.w = 13;
+                    src.h = 18;
+                    dest.h = 18;
+
+                    SDL_RenderCopy(cs->screen.renderer, font_thin, &src, &dest);
+
+                    src.w = 16;
+                    dest.w = 16;
+                    src.h = 16;
+                    dest.h = 16;
+                }
+                else
+                {
+                    src.x = 15 * 16;
+                    src.y = 32;
+                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
+                        dest.x = static_cast<int>(m->value_x - 16 * ((int(d7->text.size()) > d7->visible_chars ? d7->visible_chars : d7->text.size())) + 16 * ((long long)d7->position - d7->leftmost_position));
+                    else
+                        dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
+                    dest.y = m->value_y + 16;
+
+                    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                }
+                */
             }
         }
 
@@ -349,6 +378,108 @@ int gfx_drawmenu(game_t *g)
                 gfx_drawtext(cs, d8->labels[1], m->value_x, m->value_y, monofont, &fmt);
             else
                 gfx_drawtext(cs, d8->labels[0], m->value_x, m->value_y, monofont, &fmt);
+        }
+    }
+
+    if(d->menuButtons.size() > 0)
+    {
+        for(auto it = d->menuButtons.begin(); it != d->menuButtons.end(); it++)
+        {
+            gfx_button& b = *it;
+
+            if(!b.active)
+            {
+                continue;
+            }
+
+            fmt = {
+                RGBA_DEFAULT,
+                RGBA_OUTLINE_DEFAULT,
+                true,
+                false,
+                1.0,
+                1.0,
+                ALIGN_LEFT,
+                0
+            };
+
+            src = { 0, 0, 6, 28 };
+            dest = { 0, 0, 6, 28 };
+
+            /*
+            if(type == EMERGENCY_OVERRIDE && !(b.flags & BUTTON_EMERGENCY))
+                continue;
+            if(type == 0 && (b.flags & BUTTON_EMERGENCY))
+                continue;
+            */
+
+            if(b.highlighted)
+            {
+                if(b.clicked)
+                {
+                    src.x = 362;
+                }
+                else
+                    src.x = 298;
+            }
+            else if(b.clicked)
+            {
+                src.x = 362;
+            }
+            else
+                src.x = 330;
+
+            src.w = 6;
+            dest.w = 6;
+            src.y = 26;
+            dest.x = b.x;
+            dest.y = b.y;
+
+            if(b.highlighted)
+            {
+                SDL_SetTextureColorMod(font, R(b.text_rgba_mod), G(b.text_rgba_mod), B(b.text_rgba_mod));
+                SDL_SetTextureAlphaMod(font, A(b.text_rgba_mod));
+            }
+
+            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+
+            src.x += 6;
+            dest.x += 6;
+            src.w = 16;
+            dest.w = 16;
+
+            for (decltype(b.text)::size_type j = 0; j < b.text.size(); j++)
+            {
+                if(j)
+                    dest.x += 16;
+
+                SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+            }
+
+            src.x += 16;
+            src.w = 6;
+            dest.w = 6;
+            dest.x += 16;
+
+            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+
+            SDL_SetTextureColorMod(font, 255, 255, 255);
+            SDL_SetTextureAlphaMod(font, 255);
+
+            if(b.highlighted || b.clicked)
+            {
+                fmt.outlined = false;
+                fmt.shadow = true;
+                fmt.rgba = 0x000000FF;
+            }
+            else
+            {
+                fmt.outlined = true;
+                fmt.shadow = false;
+                fmt.rgba = b.text_rgba_mod;
+            }
+
+            gfx_drawtext(cs, b.text, b.x + 6, b.y + 6, monofont_square, &fmt);
         }
     }
 

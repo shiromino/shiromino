@@ -385,7 +385,8 @@ Shiro::Grid* qrsfield_create();
 int qrsfield_set_w(Shiro::Grid* field, int w);
 int qrsfield_clear(Shiro::Grid* field);
 
-int ufu_not_exists(CoreState *cs);
+int undo_clear_button_should_activate(CoreState *cs);
+int undo_clear_button_should_deactivate(CoreState *cs);
 
 int usr_field_bkp(CoreState *cs, struct pracdata *d);
 int usr_field_undo(CoreState *cs, struct pracdata *d);

@@ -169,7 +169,7 @@ int gfx_darken_texture(SDL_Texture *tex, Uint8 amt)
 }
 */
 
-int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*delete_check)(CoreState *),
+int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*deactivate_check)(CoreState *),
                      void *data, Uint32 rgba)
 {
     if(!text)
@@ -185,11 +185,11 @@ int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int
     b.highlighted = 0;
     b.clicked = 0;
     b.action = action;
-    b.delete_check = delete_check;
+    b.deactivate_check = deactivate_check;
     b.data = data;
     b.text_rgba_mod = rgba;
 
-    cs->gfx_buttons.resize(cs->gfx_buttons.size() + 1);
+    //cs->gfx_buttons.resize(cs->gfx_buttons.size() + 1);
     cs->gfx_buttons.push_back(b);
 
     return 0;
@@ -296,7 +296,7 @@ int gfx_drawbuttons(CoreState *cs, int type)
         gfx_drawtext(cs, b.text, b.x + 6, b.y + 6, monofont_square, &fmt);
     }
 
-    cs->gfx_buttons.clear();
+    //cs->gfx_buttons.clear();
 
     return 0;
 }

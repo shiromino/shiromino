@@ -35,14 +35,16 @@ namespace Shiro {
         return !(*this == cmp);
     }
 
-    void Mouse::update(const int windowW, const int windowH) {
+    void Mouse::updateButtonState() {
         if (leftButton == Button::pressedThisFrame) {
             leftButton = Button::pressed;
         }
         if (rightButton == Button::pressedThisFrame) {
             rightButton = Button::pressed;
         }
+    }
 
+    void Mouse::updatePosition(const int windowW, const int windowH) {
         float scale;
         // Normal 4:3 aspect ratio, no conversion necessary
         if (windowW == (windowH * 4) / 3) {

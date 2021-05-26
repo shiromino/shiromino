@@ -652,7 +652,8 @@ void CoreState::run() {
             else if (p1game) {
                 p1game->frame_counter++;
             }
-            else if (menu && (!p1game || menu_input_override)) {
+
+            if (menu && (!p1game || menu_input_override)) {
                 menu->frame_counter++;
             }
 
@@ -936,16 +937,7 @@ bool CoreState::process_events() {
     auto previousMouse(mouse);
     auto previousKeys(keys_raw);
 
-#if 0
-    if(mouse_left_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
-    {
-        mouse_left_down = 1;
-    }
-    if(mouse_right_down == Shiro::Magic::BUTTON_PRESSED_THIS_FRAME)
-    {
-        mouse_right_down = 1;
-    }
-#endif
+    mouse.updateButtonState();
 
     if(select_all)
     {
@@ -964,48 +956,6 @@ bool CoreState::process_events() {
     int windowH;
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
 
-    /*
-    if(windowW == (windowH * 4) / 3)
-    {
-        float scale_ = (float)windowW / 640.0;
-        mouse.logicalX = (int)((float)mouse.x / scale_);
-        mouse.logicalY = (int)((float)mouse.y / scale_);
-    }
-    else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
-    {
-        float scale_ = (float)windowW / 640.0;
-        int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
-        if(mouse.y < yOffset || mouse.y >= windowH - yOffset)
-        {
-            mouse.logicalY = -1;
-        }
-        else
-        {
-            mouse.logicalY = (int)((float)(mouse.y - yOffset) / scale_);
-        }
-
-        mouse.logicalX = (int)((float)mouse.x / scale_);
-    }
-    else
-    {
-        float scale_ = (float)windowH / 480.0;
-        int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
-        if(mouse.x < xOffset || mouse.x >= windowW - xOffset)
-        {
-            mouse.logicalX = -1;
-        }
-        else
-        {
-            mouse.logicalX = (int)((float)(mouse.x - xOffset) / scale_);
-        }
-
-        mouse.logicalY = (int)((float)mouse.y / scale_);
-    }
-    */
-
-    //int windowW, windowH;
-
-    //SDL_GetWindowSize(screen.window, &windowW, &windowH);
     SDL_Event event;
 #define CHECK_BINDINGS(check) \
     check(left); \
@@ -1391,7 +1341,6 @@ bool CoreState::process_events() {
                 select_all = false;
                 undo = false;
                 redo = false;
-                //mouse.update(windowW, windowH);
                 break;
 
             case SDL_MOUSEBUTTONUP:
@@ -1402,7 +1351,6 @@ bool CoreState::process_events() {
                 select_all = false;
                 undo = false;
                 redo = false;
-                //mouse.update(windowW, windowH);
                 break;
 
             case SDL_MOUSEMOTION:
@@ -1411,7 +1359,6 @@ bool CoreState::process_events() {
                 select_all = false;
                 undo = false;
                 redo = false;
-                //mouse.update(windowW, windowH);
                 break;
 
             case SDL_WINDOWEVENT:
@@ -1421,7 +1368,6 @@ bool CoreState::process_events() {
                     select_all = false;
                     undo = false;
                     redo = false;
-                    //mouse.update(windowW, windowH);
                     break;
 
                 default:
@@ -1436,7 +1382,7 @@ bool CoreState::process_events() {
 
     SDL_GetMouseState(&mouse.x, &mouse.y);
 
-    mouse.update(windowW, windowH);
+    mouse.updatePosition(windowW, windowH);
 
 #undef CHECK_BINDINGS
 
@@ -1713,26 +1659,15 @@ void CoreState::gfx_buttons_input() {
         return;
     }
 
-    int i = 0;
-
-    int scaled_x = 0;
-    int scaled_y = 0;
-    int scaled_w = 0;
-    int scaled_h = 0;
-
     for (auto it = gfx_buttons.begin(); it != gfx_buttons.end(); it++) {
         gfx_button& b = *it;
-        scaled_x = static_cast<int>(settings.videoScale * static_cast<float>(b.x));
-        scaled_y = static_cast<int>(settings.videoScale * static_cast<float>(b.y));
-        scaled_w = static_cast<int>(settings.videoScale * static_cast<float>(b.w));
-        scaled_h = static_cast<int>(settings.videoScale * static_cast<float>(b.h));
 
         if(button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {
             b.highlighted = 0;
-            if(b.delete_check)
+            if(b.deactivate_check)
             {
-                if(b.delete_check(this))
+                if(b.deactivate_check(this))
                 {
                     gfx_buttons.erase(it);
                 }
@@ -1741,8 +1676,8 @@ void CoreState::gfx_buttons_input() {
             continue;
         }
 
-        if(mouse.x < scaled_x + scaled_w && mouse.x >= scaled_x && mouse.y < scaled_y + scaled_h &&
-           mouse.y >= scaled_y)
+        if(mouse.logicalX < b.x + b.w && mouse.logicalX >= b.x && mouse.logicalY < b.y + b.h &&
+           mouse.logicalY >= b.y)
             b.highlighted = 1;
         else
             b.highlighted = 0;
@@ -1760,9 +1695,9 @@ void CoreState::gfx_buttons_input() {
             b.clicked--;
         }
 
-        if(b.delete_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
+        if(b.deactivate_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
         {
-            if(b.delete_check(this))
+            if(b.deactivate_check(this))
             {
                 gfx_buttons.erase(it);
             }
@@ -1770,13 +1705,13 @@ void CoreState::gfx_buttons_input() {
     }
 
     for (auto it = gfx_buttons.begin(); it != gfx_buttons.end(); it++) {
-        gfx_button& b = gfx_buttons[i];
+        gfx_button& b = *it;
 
         if(button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
         {
-            if(b.delete_check)
+            if(b.deactivate_check)
             {
-                if(b.delete_check(this))
+                if(b.deactivate_check(this))
                 {
                     gfx_buttons.erase(it);
                 }
@@ -1785,9 +1720,9 @@ void CoreState::gfx_buttons_input() {
             continue;
         }
 
-        if(b.delete_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
+        if(b.deactivate_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
         {
-            if(b.delete_check(this))
+            if(b.deactivate_check(this))
             {
                 gfx_buttons.erase(it);
             }

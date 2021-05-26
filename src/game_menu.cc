@@ -831,6 +831,107 @@ int menu_input(game_t *g)
             break;
     }
 
+    // process mouse for menudata->menuButtons here
+
+    if(d->menuButtons.size() > 0)
+    {
+        for(auto it = d->menuButtons.begin(); it != d->menuButtons.end(); it++) {
+            gfx_button& b = *it;
+
+            if(b.activate_check)
+            {
+                if(b.activate_check(cs))
+                {
+                    b.active = true;
+                }
+            }
+
+            if(!b.active)
+            {
+                continue;
+            }
+
+            if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
+            {
+                b.highlighted = 0;
+                if(b.deactivate_check)
+                {
+                    if(b.deactivate_check(cs))
+                    {
+                        b.active = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if(cs->mouse.logicalX < b.x + b.w && cs->mouse.logicalX >= b.x && cs->mouse.logicalY < b.y + b.h &&
+               cs->mouse.logicalY >= b.y)
+                b.highlighted = 1;
+            else
+                b.highlighted = 0;
+
+            if(b.highlighted && cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
+            {
+                if(b.type == BUTTON_TYPE_ACTION && b.action)
+                {
+                    b.action(cs, b.data);
+                }
+                else if(b.type == BUTTON_TYPE_TOGGLE && b.boolPtr)
+                {
+                    (*b.boolPtr) = !(*b.boolPtr);
+                    b.toggleValue = !b.toggleValue;
+
+                    if(b.toggleValue == false)
+                        b.text = b.toggleOffText;
+                    else
+                        b.text = b.toggleOnText;
+
+                    b.w = 2 * 6 + 15 * (b.text.size());
+                }
+
+                b.clicked = 4;
+            }
+            if (b.clicked) {
+                b.clicked--;
+            }
+
+            if(b.deactivate_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
+            {
+                if(b.deactivate_check(cs))
+                {
+                    b.active = false;
+                }
+            }
+        }
+
+        for (auto it = d->menuButtons.begin(); it != d->menuButtons.end(); it++) {
+            gfx_button& b = *it;
+
+            if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
+            {
+                if(b.deactivate_check)
+                {
+                    if(b.deactivate_check(cs))
+                    {
+                        b.active = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if(b.deactivate_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
+            {
+                if(b.deactivate_check(cs))
+                {
+                    b.active = false;
+                }
+            }
+        }
+    }
+
+
     return 0;
 }
 
@@ -863,6 +964,7 @@ int menu_clear(game_t *g)
     }
 
     d->menu.clear();
+    d->menuButtons.clear();
     d->use_target_tex = 0;
 
     d->title = "";
@@ -1177,7 +1279,8 @@ int mload_practice(game_t *g, int val)
     else
         pracdata_mirror_existed = 1;
 
-    cs->bg.transition();
+    //cs->bg.transition();
+    cs->bg.transition(Shiro::ImageAsset::get(cs->assetMgr, "multi-editor-bg"));
 
     d->menu.resize(MENU_PRACTICE_NUMOPTS);
     d->menu_id = MENU_ID_PRACTICE;
@@ -1698,13 +1801,28 @@ int mload_practice(game_t *g, int val)
     d->menu[MENU_PRACTICE_NUMOPTS - 1] = Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE");
     m = &d->menu[MENU_PRACTICE_NUMOPTS - 1];
     d7 = (Shiro::TextOptionData *)m->data;
-    d7->visible_chars = 16;
+    d7->visible_chars = 24;
     m->x = 16 * 16;
     m->y = 8 * 16 + 15 * 16;
-    m->value_x = m->x + 16;
-    m->value_y = m->y + 16;
+    m->value_x = m->x;
+    m->value_y = m->y + 18;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT; //|DRAWTEXT_ALIGN_RIGHT;
+
+    gfx_button undoClearButton;
+    undoClearButton.type = BUTTON_TYPE_ACTION;
+    undoClearButton.action = undo_clear_confirm_yes;
+    undoClearButton.text = "CLEAR UNDO";
+    undoClearButton.active = false;
+    undoClearButton.activate_check = undo_clear_button_should_activate;
+    undoClearButton.deactivate_check = undo_clear_button_should_deactivate;
+    undoClearButton.x = QRS_FIELD_X + (16 * 16) - 6;
+    undoClearButton.y = QRS_FIELD_Y + 23 * 16 + 8 - 6;
+    undoClearButton.w = 2 * 6 + 15 * (undoClearButton.text.size());
+    undoClearButton.h = 28;
+    undoClearButton.text_rgba_mod = 0xC0C0FFFF;
+
+    d->menuButtons.push_back(undoClearButton);
 
     qs_update_pracdata(cs);
 
