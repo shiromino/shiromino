@@ -699,7 +699,7 @@ void CoreState::run() {
                     if (p1game) {
                         p1game->draw(p1game);
                     }
-                    else if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
+                    if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
                         g123_seeds_preupdate();
                         menu->draw(menu);
                         g123_seeds_update();
@@ -945,6 +945,7 @@ bool CoreState::process_events() {
     {
         mouse_right_down = 1;
     }
+#endif
 
     if(select_all)
     {
@@ -959,52 +960,52 @@ bool CoreState::process_events() {
         redo = 0;
     }
 
-    SDL_GetMouseState(&mouse_x, &mouse_y);
-
     int windowW;
     int windowH;
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
 
+    /*
     if(windowW == (windowH * 4) / 3)
     {
         float scale_ = (float)windowW / 640.0;
-        mouse.logicalX = (int)((float)mouse_x / scale_);
-        mouse.logicalY = (int)((float)mouse_y / scale_);
+        mouse.logicalX = (int)((float)mouse.x / scale_);
+        mouse.logicalY = (int)((float)mouse.y / scale_);
     }
     else if(windowW < (windowH * 4) / 3) // squished horizontally (results in horizontal bars on the top and bottom of window)
     {
         float scale_ = (float)windowW / 640.0;
         int yOffset = (windowH - ((windowW * 3) / 4)) / 2;
-        if(mouse_y < yOffset || mouse_y >= windowH - yOffset)
+        if(mouse.y < yOffset || mouse.y >= windowH - yOffset)
         {
             mouse.logicalY = -1;
         }
         else
         {
-            mouse.logicalY = (int)((float)(mouse_y - yOffset) / scale_);
+            mouse.logicalY = (int)((float)(mouse.y - yOffset) / scale_);
         }
 
-        mouse.logicalX = (int)((float)mouse_x / scale_);
+        mouse.logicalX = (int)((float)mouse.x / scale_);
     }
     else
     {
         float scale_ = (float)windowH / 480.0;
         int xOffset = (windowW - ((windowH * 4) / 3)) / 2;
-        if(mouse_x < xOffset || mouse_x >= windowW - xOffset)
+        if(mouse.x < xOffset || mouse.x >= windowW - xOffset)
         {
             mouse.logicalX = -1;
         }
         else
         {
-            mouse.logicalX = (int)((float)(mouse_x - xOffset) / scale_);
+            mouse.logicalX = (int)((float)(mouse.x - xOffset) / scale_);
         }
 
-        mouse.logicalY = (int)((float)mouse_y / scale_);
+        mouse.logicalY = (int)((float)mouse.y / scale_);
     }
-#endif
+    */
 
-    int windowW, windowH;
-    SDL_GetWindowSize(screen.window, &windowW, &windowH);
+    //int windowW, windowH;
+
+    //SDL_GetWindowSize(screen.window, &windowW, &windowH);
     SDL_Event event;
 #define CHECK_BINDINGS(check) \
     check(left); \
@@ -1390,7 +1391,7 @@ bool CoreState::process_events() {
                 select_all = false;
                 undo = false;
                 redo = false;
-                mouse.update(windowW, windowH);
+                //mouse.update(windowW, windowH);
                 break;
 
             case SDL_MOUSEBUTTONUP:
@@ -1401,16 +1402,16 @@ bool CoreState::process_events() {
                 select_all = false;
                 undo = false;
                 redo = false;
-                mouse.update(windowW, windowH);
+                //mouse.update(windowW, windowH);
                 break;
 
             case SDL_MOUSEMOTION:
-                mouse.x = event.motion.x;
-                mouse.y = event.motion.y;
+                //mouse.x = event.motion.x;
+                //mouse.y = event.motion.y;
                 select_all = false;
                 undo = false;
                 redo = false;
-                mouse.update(windowW, windowH);
+                //mouse.update(windowW, windowH);
                 break;
 
             case SDL_WINDOWEVENT:
@@ -1420,7 +1421,7 @@ bool CoreState::process_events() {
                     select_all = false;
                     undo = false;
                     redo = false;
-                    mouse.update(windowW, windowH);
+                    //mouse.update(windowW, windowH);
                     break;
 
                 default:
@@ -1432,6 +1433,11 @@ bool CoreState::process_events() {
                 break;
         }
     }
+
+    SDL_GetMouseState(&mouse.x, &mouse.y);
+
+    mouse.update(windowW, windowH);
+
 #undef CHECK_BINDINGS
 
     if (mouse.hideOnStartup) {

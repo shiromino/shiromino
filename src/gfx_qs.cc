@@ -197,6 +197,17 @@ int gfx_drawqs(game_t *g)
             if(q->pracdata->field_selection)
                 gfx_drawfield_selection(g, q->pracdata);
 
+            /*
+            std::string mouseLogicalPosStr = strtools::format("Mouse Logical Position: %d, %d", cs->mouse.logicalX, cs->mouse.logicalY);
+            gfx_drawtext(cs, mouseLogicalPosStr, 350, 16, monofont_fixedsys, NULL);
+
+            int cell_x = (cs->mouse.logicalX - q->fieldPos->first) / (16) - 1;
+            int cell_y = (cs->mouse.logicalY - q->fieldPos->second) / (16) - 2;
+
+            std::string cellPosStr = strtools::format("Cell Position: %d, %d", cell_x, cell_y);
+            gfx_drawtext(cs, cellPosStr, 350, 34, monofont_fixedsys, NULL);
+            */
+
             if(q->pracdata->usr_field_undo.size())
             {
                 undo_len = strtools::format("%d", q->pracdata->usr_field_undo.size());
@@ -236,13 +247,13 @@ int gfx_drawqs(game_t *g)
 
                 // gfx_drawtext(cs, next, 48 - 32 + QRS_FIELD_X, 26, 0, 0xFFFFFF8C, 0x0000008C);
 
-                if(q->num_previews > 0)
+                if(q->num_previews > 0 && q->previews.size() > 0)
                     gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
-                if(q->num_previews > 1)
+                if(q->num_previews > 1 && q->previews.size() > 1)
                     gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
-                if(q->num_previews > 2)
+                if(q->num_previews > 2 && q->previews.size() > 2)
                     gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
-                if(q->num_previews > 3)
+                if(q->num_previews > 3 && q->previews.size() > 3)
                     gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
             }
 
@@ -720,15 +731,15 @@ int gfx_drawqs(game_t *g)
             }
         }
 
-        if(q->num_previews > 0)
+        if(q->num_previews > 0 && q->previews.size() > 0)
             gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_flags | drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
-        if(q->num_previews > 1)
+        if(q->num_previews > 1 && q->previews.size() > 1)
             gfx_drawpiece(
                 cs, g->field, x, y, q->previews[1], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
-        if(q->num_previews > 2)
+        if(q->num_previews > 2 && q->previews.size() > 2)
             gfx_drawpiece(
                 cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
-        if(q->num_previews > 3)
+        if(q->num_previews > 3 && q->previews.size() > 3)
             gfx_drawpiece(
                 cs, g->field, x, y, q->previews[3], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
 

@@ -1074,7 +1074,8 @@ int qs_game_pracinit(game_t *g, int val)
     q->randomizer_seed = *(qrand->seedp);
     q->using_gems = false;
 
-    q->pracdata->usr_field = *g->field;
+    //q->pracdata->usr_field = *g->field;
+    *g->field = q->pracdata->usr_field;
 
     for(size_t i = 0; i < g->field->getWidth(); i++)
     {
@@ -2817,8 +2818,6 @@ int qs_update_pracdata(CoreState *cs)
     switch(d->game_type_int)
     {
         default:
-            break;
-
         case 0:
             d->game_type = Shiro::GameType::SIMULATE_QRS;
             break;
@@ -3309,7 +3308,7 @@ end_sequence_proc:
 
     if(q->pracdata->usr_seq_len)
     {
-        for (size_t i = 0; i < 4; i++) {
+        for (std::size_t i = 0; i < 4; i++) {
             int elem = qs_get_usrseq_elem(d, i);
             if (elem != USRSEQ_ELEM_OOB) {
                 q->previews.push_back(q->piecepool[elem]);
@@ -3318,7 +3317,7 @@ end_sequence_proc:
     }
     else
     {
-        for (size_t i = 0; i < 4; i++)
+        for (std::size_t i = 0; i < 4; i++)
         {
             piece_id piece = q->randomizer->lookahead(q->randomizer, static_cast<unsigned>(i + 1));
 
@@ -3328,16 +3327,6 @@ end_sequence_proc:
             }
         }
     }
-
-    if(d->brackets)
-        q->state_flags |= GAMESTATE_BRACKETS;
-    else
-        q->state_flags &= ~GAMESTATE_BRACKETS;
-
-    if(d->invisible)
-        q->state_flags |= GAMESTATE_INVISIBLE;
-    else
-        q->state_flags &= ~GAMESTATE_INVISIBLE;
 
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
@@ -3351,6 +3340,16 @@ end_sequence_proc:
             preview.flags = static_cast<Shiro::PieceDefinitionFlag>(preview.flags & ~Shiro::PDBRACKETS);
         }
     }
+
+    if(d->brackets)
+        q->state_flags |= GAMESTATE_BRACKETS;
+    else
+        q->state_flags &= ~GAMESTATE_BRACKETS;
+
+    if(d->invisible)
+        q->state_flags |= GAMESTATE_INVISIBLE;
+    else
+        q->state_flags &= ~GAMESTATE_INVISIBLE;
 
     return 0;
 }
@@ -3654,19 +3653,26 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
 
     if (p->def) {
         delete p->def;
+        p->def = NULL;
     }
-    p->def = new Shiro::PieceDefinition(q->previews[0]);
+
+    if(q->previews.size() > 0)
+        p->def = new Shiro::PieceDefinition(q->previews[0]);
 
     if(p->def)
         q->cur_piece_qrs_id = p->def->qrsID;
     else
         q->cur_piece_qrs_id = PIECE_ID_INVALID;
 
-    auto previews = q->previews;
-    q->previews.pop_back();
-    for (size_t i = 0; i < previews.size() - 1; i++) {
-        q->previews[i] = previews[i + 1];
+    if(q->previews.size() > 0)
+    {
+        auto previews = q->previews;
+        q->previews.pop_back();
+        for (size_t i = 0; i < previews.size() - 1; i++) {
+            q->previews[i] = previews[i + 1];
+        }
     }
+
     if (t != PIECE_ID_INVALID) {
         q->previews.push_back(q->piecepool[t]);
     }
@@ -3679,7 +3685,7 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
         }
     }
 
-    if(q->previews.size())
+    if(q->previews.size() > 0)
     {
         t = q->previews[0].qrsID;
 

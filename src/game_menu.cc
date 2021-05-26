@@ -1040,7 +1040,7 @@ int mload_main(game_t *g, int val)
     d1->action = mload_replay;
     d1->val = 0;
     m->x = 4 * 16;
-    m->y = 14 * 16;
+    m->y = 15 * 16;
 
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "MULTI-EDITOR"));
     m = &d->menu.back();
@@ -1048,7 +1048,7 @@ int mload_main(game_t *g, int val)
     d1->action = mload_practice;
     d1->val = 0;
     m->x = 4 * 16;
-    m->y = 16 * 16;
+    m->y = 17 * 16;
 
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "SETTINGS"));
     m = &d->menu.back();
