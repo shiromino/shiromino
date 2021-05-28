@@ -295,6 +295,56 @@ int undo_clear_button_should_deactivate(CoreState *cs)
     return undo_clear_button_should_activate(cs) == 0;
 }
 
+int usr_field_undo_history_exists(CoreState *cs)
+{
+    if(!cs->p1game)
+        return 0;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+    if(!q)
+        return 0;
+
+    if(!q->pracdata)
+        return 0;
+
+    if(q->pracdata->usr_field_undo.size() > 0 && q->pracdata->paused == QRS_FIELD_EDIT)
+        return 1;
+    else
+        return 0;
+
+    return 0;
+}
+
+int usr_field_undo_history_not_exists(CoreState *cs)
+{
+    return usr_field_undo_history_exists(cs) == 0;
+}
+
+int usr_field_redo_history_exists(CoreState *cs)
+{
+    if(!cs->p1game)
+        return 0;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+    if(!q)
+        return 0;
+
+    if(!q->pracdata)
+        return 0;
+
+    if(q->pracdata->usr_field_redo.size() > 0 && q->pracdata->paused == QRS_FIELD_EDIT)
+        return 1;
+    else
+        return 0;
+
+    return 0;
+}
+
+int usr_field_redo_history_not_exists(CoreState *cs)
+{
+    return usr_field_redo_history_exists(cs) == 0;
+}
+
 int usr_field_bkp(CoreState *cs, pracdata *d) {
     if (!d) {
         return 1;
@@ -403,6 +453,20 @@ int usr_field_undo_clear(CoreState *cs, void *data)
     q->pracdata->usr_field_redo.clear();
 
     return 0;
+}
+
+int usr_field_undo_button_action(CoreState *cs, void *data)
+{
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+
+    return usr_field_undo(cs, q->pracdata);
+}
+
+int usr_field_redo_button_action(CoreState *cs, void *data)
+{
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+
+    return usr_field_redo(cs, q->pracdata);
 }
 
 int qrs_input(game_t *g)
@@ -869,7 +933,10 @@ int qrs_input(game_t *g)
             return 0;
         }
         else
+        {
+            Mix_HaltMusic();
             return 1;
+        }
     }
 
     if(init < 120)

@@ -211,16 +211,18 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, cellPosStr, 350, 34, monofont_fixedsys, NULL);
             */
 
+            // TODO: Properly align these undo/redo draws to be symmetrical, and use right-alignment
+
             if(q->pracdata->usr_field_undo.size())
             {
                 undo_len = strtools::format("%d", q->pracdata->usr_field_undo.size());
 
-                gfx_drawtext(cs, undo, QRS_FIELD_X + 32, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
-                gfx_drawtext(cs, undo_len, QRS_FIELD_X + 32, QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
+                gfx_drawtext(cs, undo, QRS_FIELD_X + 26, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
+                gfx_drawtext(cs, undo_len, QRS_FIELD_X + 26, QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
 
                 src.x = 14 * 16;
                 src.y = 64;
-                dest.x = QRS_FIELD_X;
+                dest.x = QRS_FIELD_X - 2;
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
                 Shiro::RenderCopy(g->origin->screen, font, &src, &dest);
@@ -230,12 +232,23 @@ int gfx_drawqs(game_t *g)
             {
                 redo_len = strtools::format("%d", q->pracdata->usr_field_redo.size());
 
-                gfx_drawtext(cs, redo, QRS_FIELD_X + 9 * 16, QRS_FIELD_Y + 23 * 16, monofont_square, NULL);
-                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 - 16 * (int)redo_len.size(), QRS_FIELD_Y + 24 * 16, monofont_square, NULL);
+                struct text_formatting redoFmt = {
+                    RGBA_DEFAULT,
+                    RGBA_OUTLINE_DEFAULT,
+                    true,
+                    false,
+                    1.0,
+                    1.0,
+                    ALIGN_RIGHT,
+                    0
+                };
+
+                gfx_drawtext(cs, redo, QRS_FIELD_X + 13 * 16 + 6, QRS_FIELD_Y + 23 * 16, monofont_square, &redoFmt);
+                gfx_drawtext(cs, redo_len, QRS_FIELD_X + 13 * 16 + 6, QRS_FIELD_Y + 24 * 16, monofont_square, &redoFmt);
 
                 src.x = 16 * 16;
                 src.y = 64;
-                dest.x = QRS_FIELD_X + 13 * 16;
+                dest.x = QRS_FIELD_X + 13 * 16 + 2;
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
                 Shiro::RenderCopy(g->origin->screen, font, &src, &dest);
@@ -316,14 +329,13 @@ int gfx_drawqs(game_t *g)
         }
         else
         {
-            if(q->pracdata->invisible)
-            {
-                drawqrsfield_flags |= DRAWFIELD_INVISIBLE;
-            }
-
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
             gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
             gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT);
+
+            gfx_drawtext(cs, text_level, x + 14 * 16 + 4, y + 18 * 16, monofont_square, NULL);
+            //fmt.rgba = 0xFF7070FF;
+            gfx_drawtext(cs, level, x + 14 * 16 + 4, y + 20 * 16, monofont_square, &fmt);
 
             goto active_game_drawing;
         }

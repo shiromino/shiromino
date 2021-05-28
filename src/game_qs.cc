@@ -844,6 +844,8 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     {
         q->is_practice = 1;
 
+        q->mode_type = -1;
+
         if(!cs->pracdata_mirror)
         {
             q->pracdata = new pracdata;
@@ -1333,7 +1335,12 @@ int qs_game_frame(game_t *g)
         {
             qrs_lock(g, q->p1);
             (*s) = PSINACTIVE;
-            Mix_HaltMusic();
+
+            q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+
+            if(!q->pracdata)
+                Mix_HaltMusic();
+
             if(q->playback)
                 qrs_end_playback(g);
             else if(q->recording)
@@ -1810,7 +1817,14 @@ static int qs_are_expired(game_t *g)
     {
         qrs_lock(g, q->p1);
         (*s) = PSINACTIVE;
-        Mix_HaltMusic();
+
+        bool wasInvisible = (q->state_flags & GAMESTATE_INVISIBLE) != 0;
+
+        q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+
+        if(!q->pracdata)
+            Mix_HaltMusic();
+
         if(q->playback)
             qrs_end_playback(g);
         else if(q->recording)
@@ -1837,7 +1851,10 @@ static int qs_are_expired(game_t *g)
             }
         }
         else
-            q->state_flags |= GAMESTATE_TOPOUT_ANIM;
+        {
+            if(!wasInvisible)
+                q->state_flags |= GAMESTATE_TOPOUT_ANIM;
+        }
 
         return 0;
     }
@@ -2181,7 +2198,7 @@ int qs_process_lockflash(game_t *g)
                     break;
             }
 
-            if(!(q->state_flags & GAMESTATE_CREDITS) && !q->pracdata)
+            if(!(q->state_flags & GAMESTATE_CREDITS))
             {
                 if(q->game_type == Shiro::GameType::SIMULATE_G3 && n > 2)
                     q->lvlinc = 2 * n - 2;
@@ -2199,6 +2216,9 @@ int qs_process_lockflash(game_t *g)
                 // score/grade stuff
                 switch(q->mode_type)
                 {
+                    default:
+                        break;
+
                     case MODE_G1_MASTER:
                     case MODE_G1_20G:
                         pts = (static_cast<int>(ceil(q->level / 4.0)) + q->soft_drop_counter) * n * q->combo * (bravo ? 4 : 1);

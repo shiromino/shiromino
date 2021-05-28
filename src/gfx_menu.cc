@@ -126,6 +126,10 @@ int gfx_drawmenu(game_t *g)
             fmt.outline_rgba = 0x2020AFFF;
             fmt.shadow = true;
         }
+        else if(menu_is_practice(g))
+        {
+            fmt.outlined = false;
+        }
 
         gfx_drawtext(cs, m->label, m->x, m->y, monofont, &fmt);
 
@@ -134,6 +138,11 @@ int gfx_drawmenu(game_t *g)
             d2 = (Shiro::MultiOptionData *)m->data;
             fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
             monofont = monofont_square;
+
+            if(menu_is_practice(g))
+            {
+                fmt.outlined = false;
+            }
 
             if(m->value_text_flags & DRAWTEXT_THIN_FONT)
                 monofont = monofont_thin;
@@ -192,6 +201,11 @@ int gfx_drawmenu(game_t *g)
                 {
                     fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
                     monofont = monofont_square;
+
+                    if(menu_is_practice(g))
+                    {
+                        fmt.outlined = false;
+                    }
 
                     if(m->value_text_flags & DRAWTEXT_THIN_FONT)
                         monofont = monofont_thin;
@@ -340,6 +354,11 @@ int gfx_drawmenu(game_t *g)
             fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
             monofont = monofont_square;
 
+            if(menu_is_practice(g))
+            {
+                fmt.outlined = false;
+            }
+
             if(m->value_text_flags & DRAWTEXT_THIN_FONT)
                 monofont = monofont_thin;
             if(m->value_text_flags & DRAWTEXT_SMALL_FONT)
@@ -362,7 +381,7 @@ int gfx_drawmenu(game_t *g)
         {
             gfx_button& b = *it;
 
-            if(!b.active)
+            if(!b.active || !b.visible)
             {
                 continue;
             }
@@ -420,13 +439,13 @@ int gfx_drawmenu(game_t *g)
 
             src.x += 6;
             dest.x += 6;
-            src.w = 16;
-            dest.w = 16;
+            src.w = monofont_square->char_w;
+            dest.w = monofont_square->char_w;
 
             for (decltype(b.text)::size_type j = 0; j < b.text.size(); j++)
             {
                 if(j)
-                    dest.x += 16;
+                    dest.x += monofont_square->char_w;
 
                 Shiro::RenderCopy(cs->screen, font, &src, &dest);
             }
@@ -434,7 +453,7 @@ int gfx_drawmenu(game_t *g)
             src.x += 16;
             src.w = 6;
             dest.w = 6;
-            dest.x += 16;
+            dest.x += monofont_square->char_w;
 
             Shiro::RenderCopy(cs->screen, font, &src, &dest);
 

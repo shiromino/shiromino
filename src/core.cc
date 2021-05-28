@@ -296,6 +296,7 @@ bool CoreState::init() {
             //{Shiro::AssetType::image, "title"},
             {Shiro::AssetType::image, "title_emboss"},
             {Shiro::AssetType::image, "tetrion_qs_white"},
+            {Shiro::AssetType::image, "tetrion_qs_white_10x10"},
             //{Shiro::AssetType::image, "tets_bright_qs"},
             //{Shiro::AssetType::image, "tets_bright_qs_small"},
             //{Shiro::AssetType::image, "tets_dark_qs"},
@@ -318,6 +319,7 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "bg8"},
             {Shiro::AssetType::image, "bg9"},
             {Shiro::AssetType::image, "bg_temp"},
+            {Shiro::AssetType::image, "multi-editor-bg"},
             {Shiro::AssetType::image, "bg_darken"},
             {Shiro::AssetType::image, "animation_lineclear0"},
             {Shiro::AssetType::image, "animation_lineclear1"},
@@ -330,6 +332,7 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "g3_tetrion_terror"},
             {Shiro::AssetType::font, "fixedsys"},
             // TODO: Convert remaining fonts to AngelCode bitmap font format.
+            {Shiro::AssetType::music, "multi-editor-bgm"},
             {Shiro::AssetType::music, "tracks0"},
             {Shiro::AssetType::music, "tracks1"},
             {Shiro::AssetType::music, "tracks2"},
@@ -374,6 +377,7 @@ bool CoreState::init() {
             auto [readSuccess, lineNum] = volumeINI.read((settings.sharePath / "audio" / "volume.ini").string());
             if (readSuccess) {
                 std::string musicNames[] = {
+                    "multi-editor-bgm",
                     "tracks0",
                     "tracks1",
                     "tracks2",

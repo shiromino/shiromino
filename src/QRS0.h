@@ -388,6 +388,12 @@ int qrsfield_clear(Shiro::Grid* field);
 int undo_clear_button_should_activate(CoreState *cs);
 int undo_clear_button_should_deactivate(CoreState *cs);
 
+int usr_field_undo_history_exists(CoreState *cs);
+int usr_field_undo_history_not_exists(CoreState *cs);
+
+int usr_field_redo_history_exists(CoreState *cs);
+int usr_field_redo_history_not_exists(CoreState *cs);
+
 int usr_field_bkp(CoreState *cs, struct pracdata *d);
 int usr_field_undo(CoreState *cs, struct pracdata *d);
 int usr_field_redo(CoreState *cs, struct pracdata *d);
@@ -395,6 +401,9 @@ int push_undo_clear_confirm(CoreState *cs, void *data);
 int undo_clear_confirm_yes(CoreState *cs, void *data);
 int undo_clear_confirm_no(CoreState *cs, void *data);
 int usr_field_undo_clear(CoreState *cs, void *data);
+
+int usr_field_undo_button_action(CoreState *cs, void *data);
+int usr_field_redo_button_action(CoreState *cs, void *data);
 
 int qrs_input(game_t *g);
 

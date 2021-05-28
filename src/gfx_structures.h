@@ -65,6 +65,7 @@ struct gfx_button {
         toggleValue(false),
         boolPtr(nullptr),
         type(BUTTON_TYPE_ACTION),
+        visible(true),
         active(false),
         action(nullptr),
         activate_check(nullptr),
@@ -84,6 +85,7 @@ struct gfx_button {
 
     enum gfx_button_type type;
 
+    bool visible;
     bool active;
     int x;
     int y;

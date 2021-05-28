@@ -1320,6 +1320,13 @@ int mload_practice(game_t *g, int val)
     auto game_type_ = Shiro::GameType::SIMULATE_QRS;
     int lock_protect_ = 0;
 
+    // standard x values for the menu option labels and values
+    int optsX = 16 * 16;
+    int optsValueX = optsX + 24 * 8;
+
+    // y value for the first menu option
+    int optsY = 5 * 16;
+
     // TODO: piece sequence restore from pracdata struct (need to save char* that the user enters)
 
     menu_clear(g); // data->menu guaranteed to be NULL upon return
@@ -1339,6 +1346,8 @@ int mload_practice(game_t *g, int val)
     //cs->bg.transition();
     cs->bg.transition(Shiro::ImageAsset::get(cs->assetMgr, "multi-editor-bg"));
 
+    Shiro::MusicAsset::get(cs->assetMgr, "multi-editor-bgm").play(cs->settings);
+
     d->menu.resize(MENU_PRACTICE_NUMOPTS);
     d->menu_id = MENU_ID_PRACTICE;
     d->selection = 0;
@@ -1356,8 +1365,8 @@ int mload_practice(game_t *g, int val)
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_main;
     d1->val = 0;
-    m->x = 16 * 16;
-    m->y = 6 * 16;
+    m->x = optsX;
+    m->y = optsY;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
@@ -1369,8 +1378,8 @@ int mload_practice(game_t *g, int val)
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = qs_game_pracinit;
     d1->val = 0;
-    m->x = 16 * 16;
-    m->y = 7 * 16;
+    m->x = optsX;
+    m->y = optsY + 1 * 16;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
@@ -1445,9 +1454,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 1 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 3 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1487,9 +1496,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 2 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 4 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1527,9 +1536,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 3 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 5 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1567,9 +1576,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 4 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 6 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1607,9 +1616,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 5 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 7 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1647,9 +1656,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 6 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 8 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1686,9 +1695,9 @@ int mload_practice(game_t *g, int val)
         d2->selection = 3;
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 7 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 9 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1753,9 +1762,9 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 8 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 10 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1770,9 +1779,9 @@ int mload_practice(game_t *g, int val)
     d8->param = &q->pracdata->invisible;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 9 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 11 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1787,9 +1796,9 @@ int mload_practice(game_t *g, int val)
     d8->param = &q->pracdata->brackets;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 10 * 16;
-    m->value_x = m->x + 15 * 8;
+    m->x = optsX;
+    m->y = optsY + 12 * 16;
+    m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1798,16 +1807,16 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[12] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "INFINITE\nFLOORKICKS");
+    d->menu[12] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "INFINITE FLOORKICKS");
     m = &d->menu[12];
     d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->infinite_floorkicks;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 11 * 16;
-    m->value_x = m->x + 15 * 8;
-    m->value_y = m->y + 16;
+    m->x = optsX;
+    m->y = optsY + 13 * 16;
+    m->value_x = optsValueX;
+    m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->label_text_rgba = 0xA0A0FFFF;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1816,7 +1825,7 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[13] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK PROTECT");
+    d->menu[13] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK PROTECTION");
     m = &d->menu[13];
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 3;
@@ -1825,7 +1834,7 @@ int mload_practice(game_t *g, int val)
     assert(d2->vals != nullptr);
     d2->labels.clear();
     d2->labels.resize(3);
-    d2->labels[0] = "DEFAULT";
+    d2->labels[0] = "AUTO";
     d2->labels[1] = "OFF";
     d2->labels[2] = "ON";
     d2->vals[0] = -1;
@@ -1843,10 +1852,10 @@ int mload_practice(game_t *g, int val)
         (*d2->param) = d2->vals[d2->selection];
     }
 
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 13 * 16;
-    m->value_x = m->x + 15 * 8;
-    m->value_y = m->y + 16;
+    m->x = optsX;
+    m->y = optsY + 14 * 16;
+    m->value_x = optsValueX;
+    m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->label_text_rgba = 0xC0C020FF;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
@@ -1859,8 +1868,8 @@ int mload_practice(game_t *g, int val)
     m = &d->menu[MENU_PRACTICE_NUMOPTS - 1];
     d7 = (Shiro::TextOptionData *)m->data;
     d7->visible_chars = 24;
-    m->x = 16 * 16;
-    m->y = 8 * 16 + 15 * 16;
+    m->x = optsX;
+    m->y = optsY + 16 * 16;
     m->value_x = m->x;
     m->value_y = m->y + 18;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1869,17 +1878,45 @@ int mload_practice(game_t *g, int val)
     gfx_button undoClearButton;
     undoClearButton.type = BUTTON_TYPE_ACTION;
     undoClearButton.action = undo_clear_confirm_yes;
-    undoClearButton.text = "CLEAR UNDO";
+    undoClearButton.text = "CLEAR";
     undoClearButton.active = false;
     undoClearButton.activate_check = undo_clear_button_should_activate;
     undoClearButton.deactivate_check = undo_clear_button_should_deactivate;
-    undoClearButton.x = QRS_FIELD_X + (16 * 16) - 6;
-    undoClearButton.y = QRS_FIELD_Y + 23 * 16 + 8 - 6;
+    undoClearButton.x = 81; // old: QRS_FIELD_X + (16 * 16) - 6;
+    undoClearButton.y = 443; // old: QRS_FIELD_Y + 23 * 16 + 8 - 6;
     undoClearButton.w = 2 * 6 + 15 * (undoClearButton.text.size());
     undoClearButton.h = 28;
     undoClearButton.text_rgba_mod = 0xC0C0FFFF;
 
+    gfx_button doUndoButton;
+    doUndoButton.type = BUTTON_TYPE_ACTION;
+    doUndoButton.action = usr_field_undo_button_action;
+    doUndoButton.text = "";
+    doUndoButton.active = false;
+    //doUndoButton.visible = false;
+    doUndoButton.activate_check = usr_field_undo_history_exists;
+    doUndoButton.deactivate_check = usr_field_undo_history_not_exists;
+    doUndoButton.x = QRS_FIELD_X - 4;
+    doUndoButton.y = QRS_FIELD_Y + 23 * 16;
+    doUndoButton.w = 25;
+    doUndoButton.h = 27;
+
+    gfx_button doRedoButton;
+    doRedoButton.type = BUTTON_TYPE_ACTION;
+    doRedoButton.action = usr_field_redo_button_action;
+    doRedoButton.text = "";
+    doRedoButton.active = false;
+    //doRedoButton.visible = false;
+    doRedoButton.activate_check = usr_field_redo_history_exists;
+    doRedoButton.deactivate_check = usr_field_redo_history_not_exists;
+    doRedoButton.x = QRS_FIELD_X + 13 * 16 + 2 + 7;
+    doRedoButton.y = QRS_FIELD_Y + 23 * 16;
+    doRedoButton.w = 25;
+    doRedoButton.h = 27;
+
     d->menuButtons.push_back(undoClearButton);
+    d->menuButtons.push_back(doUndoButton);
+    d->menuButtons.push_back(doRedoButton);
 
     qs_update_pracdata(cs);
 
