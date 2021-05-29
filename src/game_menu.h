@@ -5,7 +5,6 @@
 #include "Game.h"
 #include "menu/Option.h"
 
-#define MENU_PRACTICE_NUMOPTS 15
 #define MENU_ID_MAIN 0
 #define MENU_ID_PRACTICE 1
 #define MENU_ID_REPLAY 2

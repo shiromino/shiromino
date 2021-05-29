@@ -73,7 +73,7 @@ void qrsdata_destroy(qrsdata *q)
     delete q;
 }
 
-pracdata::pracdata() :
+/*pracdata::pracdata() :
     game_type_int(0),
     game_type(Shiro::GameType::SIMULATE_QRS),
     field_w(0),
@@ -106,7 +106,7 @@ pracdata::pracdata() :
     for (int& item : usr_seq_expand) {
         item = 0;
     }
-}
+}*/
 
 void pracdata_destroy(pracdata *d)
 {

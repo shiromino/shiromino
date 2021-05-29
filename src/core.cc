@@ -669,7 +669,7 @@ void CoreState::run() {
                     if (p1game) {
                         p1game->draw(p1game);
                     }
-                    if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
+                    if (menu && (!p1game || menu_input_override)) {
                         g123_seeds_preupdate();
                         menu->draw(menu);
                         g123_seeds_update();

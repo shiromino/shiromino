@@ -211,6 +211,14 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, cellPosStr, 350, 34, monofont_fixedsys, NULL);
             */
 
+            if(q->pracdata->using_seed)
+            {
+                fmt.align = ALIGN_RIGHT;
+                std::string randomizer_seed_str = strtools::format("Seed: %d", q->pracdata->randomizer_seed);
+                gfx_drawtext(cs, randomizer_seed_str, 638, 2, monofont_fixedsys, &fmt);
+                fmt.align = ALIGN_LEFT;
+            }
+
             // TODO: Properly align these undo/redo draws to be symmetrical, and use right-alignment
 
             if(q->pracdata->usr_field_undo.size())
@@ -257,6 +265,24 @@ int gfx_drawqs(game_t *g)
             if(q->pracdata->usr_seq_len)
             {
                 if(qs_get_usrseq_elem(q->pracdata, 0) == QRS_I4 || qs_get_usrseq_elem(q->pracdata, 0) == QRS_I)
+                    drawpiece_next1_flags = DRAWPIECE_PREVIEW | DRAWPIECE_IPREVIEW;
+                else
+                    drawpiece_next1_flags = DRAWPIECE_PREVIEW;
+
+                // gfx_drawtext(cs, next, 48 - 32 + QRS_FIELD_X, 26, 0, 0xFFFFFF8C, 0x0000008C);
+
+                if(q->num_previews > 0 && q->previews.size() > 0)
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
+                if(q->num_previews > 1 && q->previews.size() > 1)
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
+                if(q->num_previews > 2 && q->previews.size() > 2)
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                if(q->num_previews > 3 && q->previews.size() > 3)
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
+            }
+            else if(q->pracdata->using_seed)
+            {
+                if(q->previews.size() > 0 && (q->previews[0].qrsID == QRS_I4 || q->previews[0].qrsID == QRS_I))
                     drawpiece_next1_flags = DRAWPIECE_PREVIEW | DRAWPIECE_IPREVIEW;
                 else
                     drawpiece_next1_flags = DRAWPIECE_PREVIEW;
@@ -336,6 +362,28 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, text_level, x + 14 * 16 + 4, y + 18 * 16, monofont_square, NULL);
             //fmt.rgba = 0xFF7070FF;
             gfx_drawtext(cs, level, x + 14 * 16 + 4, y + 20 * 16, monofont_square, &fmt);
+
+            if(q->pracdata->goal_level > 0)
+            {
+                std::string goal_level = strtools::format("%d", q->pracdata->goal_level);
+                SDL_Rect line_rect = {x + 14 * 16 + 2, y + 21 * 16 + 2, 3 * 15 + 4, 2};
+
+                if(q->pracdata->goal_level >= 1000)
+                    line_rect.w = 4 * 15 + 4;
+
+                Uint8 r_;
+                Uint8 g_;
+                Uint8 b_;
+                Uint8 a_;
+
+                SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
+                SDL_SetRenderDrawColor(cs->screen.renderer, 255, 255, 255, 255);
+                SDL_RenderDrawRect(cs->screen.renderer, &line_rect);
+                SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
+
+                fmt.rgba = 0xFFFFAFFF;
+                gfx_drawtext(cs, goal_level, x + 14 * 16 + 4, y + 21 * 16 + 6, monofont_square, &fmt);
+            }
 
             goto active_game_drawing;
         }

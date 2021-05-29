@@ -207,7 +207,41 @@ struct qrs_player
 
 struct pracdata
 {
-    pracdata();
+    pracdata() :
+        game_type_int(0),
+        game_type(Shiro::GameType::SIMULATE_QRS),
+        field_w(12),
+        goal_level(0),
+        goal_time(0),
+        usr_seq_len(0),
+        usr_seq_expand_len(0),
+        field_edit_in_progress(false),
+        palette_selection(0),
+        field_selection(0),
+        field_selection_vertex1_x(0),
+        field_selection_vertex1_y(0),
+        field_selection_vertex2_x(0),
+        field_selection_vertex2_y(0),
+        usr_timings(nullptr),
+        paused(0),
+        grid_lines_shown(true),
+        brackets(false),
+        invisible(false),
+        fading(false),
+        hist_index(0),
+        lock_protect(0),
+        infinite_floorkicks(false),
+        piece_subset(SUBSET_ALL),
+        randomizer_seed(0),
+        using_seed(false)
+    {
+        for (int& item : usr_sequence) {
+            item = 0;
+        }
+        for (int& item : usr_seq_expand) {
+            item = 0;
+        }
+    }
 
     int game_type_int;
     Shiro::GameType game_type;    // mirrors of values in qrsdata; these are just here so that..
@@ -216,6 +250,9 @@ struct pracdata
     //int *long_history;        // old idea, just history of all pieces placed,
                                 // going to re-add long_history but with placement locations included,
                                 // as well as game time/level, to allow piece-by-piece rewinds
+
+    int goal_level; // when goal is reached, the game will end (0 = disable)
+    int goal_time; // count timer backward from this many frames, and when timer reaches zero, game ends (0 = disable)
 
     int usr_sequence[2000];
     int usr_seq_expand[4000];
@@ -240,13 +277,15 @@ struct pracdata
     bool grid_lines_shown;
     bool brackets;
     bool invisible;
+    bool fading;
 
     int hist_index;
     int lock_protect;
     bool infinite_floorkicks;
     int piece_subset;
 
-    long randomizer_seed;
+    uint32_t randomizer_seed;
+    bool using_seed;
 };
 
 struct qrsdata
@@ -279,7 +318,7 @@ struct qrsdata
     unsigned int mode_flags;
     int randomizer_type;
 
-    long randomizer_seed;
+    uint32_t randomizer_seed;
     bool tetromino_only;
     bool pentomino_only;
 

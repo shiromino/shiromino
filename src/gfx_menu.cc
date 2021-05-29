@@ -225,7 +225,7 @@ int gfx_drawmenu(game_t *g)
         {
             d7 = (Shiro::TextOptionData *)m->data;
 
-            if(d7->text != "")
+            if(d7->text.size() > 0)
             {
                 textinput_display = d7->text.substr(d7->leftmost_position);
                 if (textinput_display != "" && textinput_display.size() > decltype(textinput_display)::size_type(d7->visible_chars))

@@ -124,7 +124,7 @@ namespace Shiro {
                 d7->selection = 0;
                 d7->leftmost_position = 0;
                 d7->visible_chars = 15;
-                d7->text = "";
+                d7->text.clear();
                 break;
 
             case ElementType::MENU_TOGGLE:

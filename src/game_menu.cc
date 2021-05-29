@@ -297,11 +297,8 @@ int menu_text_seek_home(CoreState *cs)
     if(cs->button_emergency_override)
         return 0;
 
-    if(d7->position > 0)
-    {
-        d7->position = 0;
-        d7->leftmost_position = 0;
-    }
+    d7->position = 0;
+    d7->leftmost_position = 0;
 
     return 0;
 }
@@ -315,13 +312,10 @@ int menu_text_seek_end(CoreState *cs)
     if(cs->button_emergency_override)
         return 0;
 
-    if(d7->position < int(t.size()))
-    {
-        d7->position = static_cast<int>(t.size());
-        d7->leftmost_position = d7->position - d7->visible_chars;
-        if(d7->leftmost_position < 0)
-            d7->leftmost_position = 0;
-    }
+    d7->position = static_cast<int>(t.size());
+    d7->leftmost_position = d7->position - d7->visible_chars;
+    if(d7->leftmost_position < 0)
+        d7->leftmost_position = 0;
 
     return 0;
 }
@@ -482,6 +476,7 @@ int menu_input(game_t *g)
     Shiro::GameOptionData *d4 = NULL;
     Shiro::MetaGameOptionData *d5 = NULL;
     Shiro::GameMultiOptionData *d6 = NULL;
+    Shiro::TextOptionData *d7 = NULL;
 
     int i = 0;
     bool update = d->target_tex_update;
@@ -739,6 +734,15 @@ int menu_input(game_t *g)
             break;
 
         case Shiro::ElementType::MENU_TEXTINPUT:
+            d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
+
+            if(d7->leftmost_position < 0)
+                d7->leftmost_position = 0;
+            if(d7->position < 0)
+                d7->position = 0;
+            if(d7->position > int(d7->text.size()))
+                d7->position = int(d7->text.size());
+
             break;
 
         case Shiro::ElementType::MENU_TOGGLE:
@@ -1069,7 +1073,6 @@ int mload_main(game_t *g, int val)
     d->menu_id = MENU_ID_MAIN;
     d->use_target_tex = 0;
     d->selection = d->main_menu_data.selection;
-    d->numopts = 15;
     d->title = "MAIN MENU";
     d->x = 4 * 16;
     d->y = 3 * 16;
@@ -1294,6 +1297,8 @@ int mload_main(game_t *g, int val)
     m->y = 2;
     m->label_text_rgba = 0x808080A0;
 
+    d->numopts = d->menu.size();
+
     return 0;
 }
 
@@ -1321,10 +1326,10 @@ int mload_practice(game_t *g, int val)
     int lock_protect_ = 0;
 
     // standard x values for the menu option labels and values
-    int optsX = 16 * 16;
-    int optsValueX = optsX + 24 * 8;
+    int optsX = 17 * 16;
+    int optsValueX = optsX + 27 * 8;
 
-    // y value for the first menu option
+    // y value for the first menu option, then incremented by multiples of 16
     int optsY = 5 * 16;
 
     // TODO: piece sequence restore from pracdata struct (need to save char* that the user enters)
@@ -1348,10 +1353,8 @@ int mload_practice(game_t *g, int val)
 
     Shiro::MusicAsset::get(cs->assetMgr, "multi-editor-bgm").play(cs->settings);
 
-    d->menu.resize(MENU_PRACTICE_NUMOPTS);
     d->menu_id = MENU_ID_PRACTICE;
     d->selection = 0;
-    d->numopts = MENU_PRACTICE_NUMOPTS;
     d->title = ""; // "PRACTICE";
     d->x = 20 * 16;
     d->y = 2 * 16;
@@ -1360,8 +1363,8 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[0] = Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "RETURN");
-    m = &d->menu[0];
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "RETURN"));
+    m = &d->menu.back();
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_main;
     d1->val = 0;
@@ -1373,21 +1376,183 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[1] = Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "PLAY");
-    m = &d->menu[1];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "PLAY"));
+    m = &d->menu.back();
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = qs_game_pracinit;
     d1->val = 0;
     m->x = optsX;
-    m->y = optsY + 1 * 16;
+    m->y = optsY;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
     /* */
     //
 
-    d->menu[2] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "GRAVITY");
-    m = &d->menu[2];
+    optsY += 32;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GOAL LEVEL"));
+    m = &d->menu.back();
+    d2 = (Shiro::MultiOptionData *)m->data;
+    d2->num = 22; // OFF, 100, 200, 300, 400, ..., 900, 999, 1000, ..., 1900, 2000 -> 22
+    d2->param = &q->pracdata->goal_level;
+    d2->vals = (int *)malloc(d2->num * sizeof(int));
+    d2->labels.resize(d2->num);
+
+    d2->labels[0] = "OFF";
+
+    for(i = 1; i < d2->num; i++)
+    {
+        if(i == 10)
+        {
+            d2->labels[i] = "999";
+            d2->vals[i] = 999;
+
+            continue;
+        }
+
+        int n_ = i;
+
+        if(i > 10)
+            n_--;
+
+        std::stringstream ss;
+        ss << 100 * n_;
+        d2->labels[i] = ss.str();
+        d2->vals[i] = 100 * n_;
+    }
+
+    if(pracdata_mirror_existed)
+    {
+        int goal_level_ = q->pracdata->goal_level;
+
+        if(goal_level_ == 0)
+        {
+            d2->selection = 0;
+        }
+        else
+        {
+            d2->selection = goal_level_ / 100;
+
+            if(d2->selection >= d2->num || d2->selection < 0)
+            {
+                d2->selection = 0;
+            }
+        }
+    }
+    else
+    {
+        d2->selection = 0;
+        (*d2->param) = d2->vals[d2->selection];
+    }
+
+    m->x = optsX;
+    m->y = optsY;
+    m->value_x = optsValueX;
+    m->value_y = m->y;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_rgba = 0xFFFFAFFF;
+    m->value_text_rgba = m->label_text_rgba;
+
+    //
+    /* */
+    //
+
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GOAL TIME"));
+    m = &d->menu.back();
+    d2 = (Shiro::MultiOptionData *)m->data;
+    d2->num = 23; // OFF, 55.00, 1:00, 1:01.68, 2:00, 3:00, ..., 19:00, 20:00 -> 23
+    d2->param = &q->pracdata->goal_time;
+    d2->vals = (int *)malloc(d2->num * sizeof(int));
+    d2->labels.resize(d2->num);
+
+    d2->labels[0] = "OFF";
+    d2->vals[0] = 0;
+
+    for(i = 1; i < d2->num; i++)
+    {
+        if(i == 1)
+        {
+            d2->labels[i] = "55.00";
+            d2->vals[i] = 55 * 60;
+        }
+        else if(i == 2)
+        {
+            d2->labels[i] = "1:00";
+            d2->vals[i] = (1 * 60 * 60);
+        }
+        else if(i == 3)
+        {
+            d2->labels[i] = "1:01.68";
+            d2->vals[i] = (1 * 60 * 60) + (1 * 60) + 41;
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << (i - 2) << ":00";
+            d2->labels[i] = ss.str();
+            d2->vals[i] = ((i - 2) * 60 * 60);
+        }
+    }
+
+    if(pracdata_mirror_existed)
+    {
+        int goal_time_ = q->pracdata->goal_time;
+
+        if(goal_time_ == 0)
+        {
+            d2->selection = 0;
+        }
+        else
+        {
+            if(goal_time_ == 55 * 60)
+            {
+                d2->selection = 1;
+            }
+            else if(goal_time_ == (1 * 60 * 60))
+            {
+                d2->selection = 2;
+            }
+            else if(goal_time_ == (1 * 60 * 60) + (1 * 60) + 41)
+            {
+                d2->selection = 3;
+            }
+            else
+            {
+                int n_ = goal_time_ / (60 * 60);
+                d2->selection = n_ + 2;
+
+                if(d2->selection >= d2->num || d2->selection < 0)
+                {
+                    d2->selection = 0;
+                }
+            }
+        }
+    }
+    else
+    {
+        d2->selection = 0;
+        (*d2->param) = d2->vals[d2->selection];
+    }
+
+    m->x = optsX;
+    m->y = optsY;
+    m->value_x = optsValueX;
+    m->value_y = m->y;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_rgba = 0xCFCFFFFF;
+    m->value_text_rgba = m->label_text_rgba;
+
+    //
+    /* */
+    //
+
+    optsY += 32;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "GRAVITY"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 135;
     d2->param = &q->pracdata->usr_timings->grav;
@@ -1455,7 +1620,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 3 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1467,8 +1632,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[3] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK");
-    m = &d->menu[3];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 101;
     d2->param = &q->pracdata->usr_timings->lock;
@@ -1497,7 +1663,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 4 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1509,8 +1675,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[4] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "ARE");
-    m = &d->menu[4];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "ARE"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->are;
@@ -1537,7 +1704,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 5 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1549,8 +1716,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[5] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LINE ARE");
-    m = &d->menu[5];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LINE ARE"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineare;
@@ -1577,7 +1745,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 6 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1589,8 +1757,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[6] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LINE CLEAR");
-    m = &d->menu[6];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LINE CLEAR"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineclear;
@@ -1617,7 +1786,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 7 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1629,8 +1798,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[7] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "DAS");
-    m = &d->menu[7];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "DAS"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 99;
     d2->param = &q->pracdata->usr_timings->das;
@@ -1657,7 +1827,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 8 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1669,8 +1839,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[8] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "WIDTH");
-    m = &d->menu[8];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "WIDTH"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 5;
     d2->param = &q->pracdata->field_w;
@@ -1696,7 +1867,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 9 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1706,8 +1877,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[9] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GAME TYPE");
-    m = &d->menu[9];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GAME TYPE"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 4;
 
@@ -1763,7 +1935,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 10 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1773,14 +1945,15 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[10] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, qs_update_pracdata, "INVISIBLE");
-    m = &d->menu[10];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "INVISIBLE"));
+    m = &d->menu.back();
     d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->invisible;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
     m->x = optsX;
-    m->y = optsY + 11 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1790,14 +1963,15 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[11] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, qs_update_pracdata, "BRACKETS");
-    m = &d->menu[11];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, qs_update_pracdata, "BRACKETS"));
+    m = &d->menu.back();
     d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->brackets;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
     m->x = optsX;
-    m->y = optsY + 12 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1807,14 +1981,15 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[12] = Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "INFINITE FLOORKICKS");
-    m = &d->menu[12];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "INFINITE FLOORKICKS"));
+    m = &d->menu.back();
     d8 = (Shiro::ToggleOptionData *)m->data;
     d8->param = &q->pracdata->infinite_floorkicks;
     d8->labels[0] = "OFF";
     d8->labels[1] = "ON";
     m->x = optsX;
-    m->y = optsY + 13 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1825,8 +2000,9 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[13] = Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK PROTECTION");
-    m = &d->menu[13];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "LOCK PROTECTION"));
+    m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
     d2->num = 3;
     d2->param = &q->pracdata->lock_protect;
@@ -1853,7 +2029,7 @@ int mload_practice(game_t *g, int val)
     }
 
     m->x = optsX;
-    m->y = optsY + 14 * 16;
+    m->y = optsY;
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1864,12 +2040,25 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    d->menu[MENU_PRACTICE_NUMOPTS - 1] = Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE");
-    m = &d->menu[MENU_PRACTICE_NUMOPTS - 1];
+    optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE"));
+    m = &d->menu.back();
     d7 = (Shiro::TextOptionData *)m->data;
     d7->visible_chars = 24;
     m->x = optsX;
-    m->y = optsY + 16 * 16;
+    m->y = optsY;
+    m->value_x = m->x;
+    m->value_y = m->y + 18;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT; //|DRAWTEXT_ALIGN_RIGHT;
+
+    optsY += 46;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "RANDOMIZER SEED"));
+    m = &d->menu.back();
+    d7 = (Shiro::TextOptionData *)m->data;
+    d7->visible_chars = 20;
+    m->x = optsX;
+    m->y = optsY;
     m->value_x = m->x;
     m->value_y = m->y + 18;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
@@ -1917,6 +2106,8 @@ int mload_practice(game_t *g, int val)
     d->menuButtons.push_back(undoClearButton);
     d->menuButtons.push_back(doUndoButton);
     d->menuButtons.push_back(doRedoButton);
+
+    d->numopts = d->menu.size();
 
     qs_update_pracdata(cs);
 

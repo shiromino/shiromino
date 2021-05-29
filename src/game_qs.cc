@@ -1116,7 +1116,14 @@ int qs_game_pracinit(game_t *g, int val)
 
     q->previews.clear();
 
-    qrand->init(qrand, NULL);
+    if(q->pracdata->using_seed)
+    {
+        qrand->init(qrand, &q->pracdata->randomizer_seed);
+    }
+    else
+    {
+        qrand->init(qrand, NULL);
+    }
 
     next1_id = qrand->pull(qrand);
     next2_id = qrand->pull(qrand);
@@ -1177,6 +1184,15 @@ int qs_game_pracinit(game_t *g, int val)
     q->p1->state = PSFALL;
     q->level = 0;
     q->pracdata->paused = 0;
+
+    if(q->pracdata->goal_time > 0)
+    {
+        q->timer.time = q->pracdata->goal_time;
+    }
+    else
+    {
+        q->timer.time = 0;
+    }
 
     return 0;
 }
@@ -1758,8 +1774,55 @@ int qs_game_frame(game_t *g)
     if(q->levelstop_time)
         q->levelstop_time++;
 
-    if (!(q->state_flags & GAMESTATE_CREDITS))
-        q->timer++;
+    if(!(q->state_flags & GAMESTATE_CREDITS))
+    {
+        if(!q->pracdata)
+        {
+            q->timer++;
+        }
+        else
+        {
+            if(q->pracdata->goal_level != 0)
+            {
+                if(q->level >= q->pracdata->goal_level)
+                {
+                    q->level = q->pracdata->goal_level;
+
+                    (*s) = PSINACTIVE;
+
+                    q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+
+                    if(q->playback)
+                        qrs_end_playback(g);
+                    else if(q->recording)
+                        qrs_end_record(g);
+                }
+            }
+
+            if(q->pracdata->goal_time != 0)
+            {
+                if(q->timer.time > 0)
+                {
+                    q->timer--;
+                    if(q->timer.time == 0)
+                    {
+                        (*s) = PSINACTIVE;
+
+                        q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+
+                        if(q->playback)
+                            qrs_end_playback(g);
+                        else if(q->recording)
+                            qrs_end_record(g);
+                    }
+                }
+            }
+            else
+            {
+                q->timer++;
+            }
+        }
+    }
 
     return 0;
 }
@@ -1771,7 +1834,7 @@ static int qs_are_expired(game_t *g)
     QRS_Counters *c = q->p1counters;
 
     q->lastclear = 0;
-    if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS))
+    if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS) && !q->pracdata)
     {
         switch(q->mode_type)
         {
@@ -1796,6 +1859,28 @@ static int qs_are_expired(game_t *g)
                 q->level++;
                 q->lvlinc = 1;
                 break;
+        }
+    }
+    else if(q->pracdata)
+    {
+        if(q->level % 100 != 99 && !(q->state_flags & GAMESTATE_CREDITS))
+        {
+            if(q->level == 998 && q->pracdata->goal_level == 999)
+            {
+                q->lvlinc = 0;
+                q->levelstop_time++;
+            }
+            else
+            {
+                q->level++;
+                q->lvlinc = 1;
+            }
+        }
+        else
+        {
+            q->lvlinc = 0;
+            if(q->level % 100 == 99)
+                q->levelstop_time++;
         }
     }
     else
@@ -2923,370 +3008,412 @@ int qs_update_pracdata(CoreState *cs)
 
     q->hold = NULL;
 
-    // and now for the hackiest check ever to see if we need to update the usr_seq
-
-    if(md->numopts == MENU_PRACTICE_NUMOPTS && md->menu[static_cast<size_t>(md->numopts) - 1].type == Shiro::ElementType::MENU_TEXTINPUT)
+    if(menu_is_practice(cs->menu))
     {
-        std::string seqStr = ((Shiro::TextOptionData*)(md->menu[static_cast<size_t>(md->numopts) - 1].data))->text;
-        for(i = 0; i < seqStr.size(); i++)
+        for(int menu_i = 0; i < md->numopts; menu_i++)
         {
-            c = seqStr[i];
-            if((c < 'A' || c > 'Z') && !(c == '*' || c == '(' || c == ')'))
+            Shiro::MenuOption *menu_opt = &md->menu[menu_i];
+            if(menu_opt->type == Shiro::ElementType::MENU_TEXTINPUT && menu_opt->label == "RANDOMIZER SEED")
             {
-                if(rpt_count)
+                std::string text = ((Shiro::TextOptionData*)(menu_opt->data))->text;
+
+                if(text.length() > 0)
                 {
-                    k = 0;
-                    while(k < 4 && i < seqStr.size() && seqStr[i] >= '0' && seqStr[i] <= '9')
+                    int rc = std::sscanf(text.c_str(), "%d", &q->pracdata->randomizer_seed);
+
+                    if(rc == 1)
                     {
-                        rpt_count_strbuf[k] = seqStr[i];
-                        rpt_count_strbuf[k + 1] = '\0';
-                        i++;
-                        k++;
-                    }
-
-                    i--;
-
-                    num++;
-
-                    if(k)
-                    {
-                        piece_seq[num - 1] = (strtol(rpt_count_strbuf, NULL, 10) & 1023);
+                        q->pracdata->using_seed = true;
                     }
                     else
                     {
-                        piece_seq[num - 1] = 1;
-                    }
-
-                    rpt_count = 0;
-                    continue;
-                }
-                else
-                    continue;
-            }
-
-            if(rpt_count)
-            {
-                num++;
-
-                if(i < seqStr.size() - 1)
-                {
-                    if(c == 'I' && seqStr[i + 1] == 'N' && seqStr[i + 2] == 'F')
-                    {
-                        piece_seq[num - 1] = SEQUENCE_REPEAT_INF;
-                        goto end_sequence_proc;
-                    }
-                    else
-                    {
-                        piece_seq[num - 1] = 1;
+                        q->pracdata->using_seed = false;
                     }
                 }
                 else
                 {
-                    piece_seq[num - 1] = 1;
+                    q->pracdata->using_seed = false;
                 }
 
-                rpt_count = 0;
-                continue;
+                break;
             }
+        }
+    }
 
-            if(c == '*')
+    // check to see if we need to update the usr_seq
+
+    if(menu_is_practice(cs->menu))
+    {
+        for(int menu_i = 0; i < md->numopts; menu_i++)
+        {
+            Shiro::MenuOption *menu_opt = &md->menu[menu_i];
+            if(menu_opt->type == Shiro::ElementType::MENU_TEXTINPUT && menu_opt->label == "PIECE SEQUENCE")
             {
-                if(rpt)
+                std::string seqStr = ((Shiro::TextOptionData*)(menu_opt->data))->text;
+
+                for(i = 0; i < seqStr.size(); i++)
                 {
-                    if(!rpt_start)
+                    c = seqStr[i];
+                    if((c < 'A' || c > 'Z') && !(c == '*' || c == '(' || c == ')'))
                     {
-                        rpt_count = 1;
-                        pre_rpt_count = 0;
-                        rpt = false;
-                        if(!(piece_seq[num - 1] & SEQUENCE_REPEAT_END))
+                        if(rpt_count)
+                        {
+                            k = 0;
+                            while(k < 4 && i < seqStr.size() && seqStr[i] >= '0' && seqStr[i] <= '9')
+                            {
+                                rpt_count_strbuf[k] = seqStr[i];
+                                rpt_count_strbuf[k + 1] = '\0';
+                                i++;
+                                k++;
+                            }
+
+                            i--;
+
+                            num++;
+
+                            if(k)
+                            {
+                                piece_seq[num - 1] = (strtol(rpt_count_strbuf, NULL, 10) & 1023);
+                            }
+                            else
+                            {
+                                piece_seq[num - 1] = 1;
+                            }
+
+                            rpt_count = 0;
+                            continue;
+                        }
+                        else
+                            continue;
+                    }
+
+                    if(rpt_count)
+                    {
+                        num++;
+
+                        if(i < seqStr.size() - 1)
+                        {
+                            if(c == 'I' && seqStr[i + 1] == 'N' && seqStr[i + 2] == 'F')
+                            {
+                                piece_seq[num - 1] = SEQUENCE_REPEAT_INF;
+                                goto end_sequence_proc;
+                            }
+                            else
+                            {
+                                piece_seq[num - 1] = 1;
+                            }
+                        }
+                        else
+                        {
+                            piece_seq[num - 1] = 1;
+                        }
+
+                        rpt_count = 0;
+                        continue;
+                    }
+
+                    if(c == '*')
+                    {
+                        if(rpt)
+                        {
+                            if(!rpt_start)
+                            {
+                                rpt_count = 1;
+                                pre_rpt_count = 0;
+                                rpt = false;
+                                if(!(piece_seq[num - 1] & SEQUENCE_REPEAT_END))
+                                    piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
+                            }
+
+                            continue;
+                        }
+                        else
+                        {
+                            if(num > 1)
+                            {
+                                if(!(piece_seq[num - 2] & SEQUENCE_REPEAT_END))
+                                {
+                                    rpt_count = 1;
+                                    pre_rpt_count = 0;
+                                    if(!(piece_seq[num - 1] & SEQUENCE_REPEAT_END))
+                                    {
+                                        piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
+                                        piece_seq[num - 1] |= SEQUENCE_REPEAT_START;
+                                    }
+                                    continue;
+                                }
+                                else
+                                    continue;
+                            }
+                            else if(num)
+                            {
+                                piece_seq[0] |= (SEQUENCE_REPEAT_START | SEQUENCE_REPEAT_END);
+                                rpt_count = 1;
+                                pre_rpt_count = 0;
+                                continue;
+                            }
+                            else
+                                continue;
+                        }
+                    }
+
+                    if(c == '(')
+                    {
+                        if(rpt)
+                            continue;
+
+                        rpt_start = 1;
+                        rpt = true;
+                        continue;
+                    }
+
+                    if(c == ')')
+                    {
+                        if(!rpt)
+                            continue;
+
+                        if(num > 0)
+                        {
                             piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
+                            pre_rpt_count = 1;
+                        }
+                        continue;
                     }
 
-                    continue;
-                }
-                else
-                {
-                    if(num > 1)
+                    if(pre_rpt_count)
                     {
-                        if(!(piece_seq[num - 2] & SEQUENCE_REPEAT_END))
-                        {
-                            rpt_count = 1;
-                            pre_rpt_count = 0;
-                            if(!(piece_seq[num - 1] & SEQUENCE_REPEAT_END))
-                            {
-                                piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
-                                piece_seq[num - 1] |= SEQUENCE_REPEAT_START;
-                            }
-                            continue;
-                        }
-                        else
-                            continue;
-                    }
-                    else if(num)
-                    {
-                        piece_seq[0] |= (SEQUENCE_REPEAT_START | SEQUENCE_REPEAT_END);
-                        rpt_count = 1;
+                        num++;
+                        piece_seq[num - 1] = 1;
                         pre_rpt_count = 0;
+                        i--;
                         continue;
                     }
-                    else
-                        continue;
-                }
-            }
 
-            if(c == '(')
-            {
-                if(rpt)
+                    name_str[0] = seqStr[i];
+
+                    if(seqStr[i + 1] == '4')
+                    {
+                        name_str[1] = '4';
+                        name_str[2] = '\0';
+
+                        for(j = 0; j < 25; j++)
+                        {
+                            if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
+                            {
+                                t = j;
+                                if(!q->pentomino_only)
+                                {
+                                    goto found;
+                                }
+                            }
+                        }
+                    }
+
+                    name_str[1] = '\0';
+
+                    for(j = 0; j < 25; j++)
+                    {
+                        if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
+                        {
+                            t = j;
+                            if(q->tetromino_only)
+                            {
+                                switch(t)
+                                {
+                                    case QRS_I:
+                                        t += 18;
+                                        break;
+                                    case QRS_T:
+                                        t += 10;
+                                        break;
+                                    case QRS_J:
+                                    case QRS_L:
+                                    case QRS_S:
+                                    case QRS_Z:
+                                        t += 19;
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                if(t >= 18)
+                                    goto found;
+                            }
+                            else if(q->pentomino_only)
+                            {
+                                switch(t)
+                                {
+                                    case QRS_I4:
+                                        t -= 18;
+                                        break;
+                                    case QRS_T4:
+                                        t -= 10;
+                                        break;
+                                    case QRS_J4:
+                                    case QRS_L4:
+                                    case QRS_S4:
+                                    case QRS_Z4:
+                                        t -= 19;
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                if(t < 18)
+                                    goto found;
+                            }
+                            else
+                            {
+                                goto found;
+                            }
+                        }
+                    }
+
+                    if(seqStr[i + 1] == 'a')
+                    {
+                        name_str[1] = 'a';
+                        name_str[2] = '\0';
+
+                        for(j = 0; j < 25; j++)
+                        {
+                            if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
+                            {
+                                t = j;
+                                if(q->tetromino_only)
+                                {
+                                    switch(t)
+                                    {
+                                        case QRS_I:
+                                            t += 18;
+                                            break;
+                                        case QRS_T:
+                                            t += 10;
+                                            break;
+                                        case QRS_J:
+                                        case QRS_L:
+                                        case QRS_S:
+                                        case QRS_Z:
+                                            t += 19;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    if(t >= 18)
+                                        goto found;
+                                }
+                                else if(q->pentomino_only)
+                                {
+                                    switch(t)
+                                    {
+                                        case QRS_I4:
+                                            t -= 18;
+                                            break;
+                                        case QRS_T4:
+                                            t -= 10;
+                                            break;
+                                        case QRS_J4:
+                                        case QRS_L4:
+                                        case QRS_S4:
+                                        case QRS_Z4:
+                                            t -= 19;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    if(t < 18)
+                                        goto found;
+                                }
+                                else
+                                {
+                                    goto found;
+                                }
+                            }
+                        }
+                    }
+                    else if(seqStr[i + 1] == 'b')
+                    {
+                        name_str[1] = 'b';
+                        name_str[2] = '\0';
+
+                        for(j = 0; j < 25; j++)
+                        {
+                            if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
+                            {
+                                t = j;
+                                if(q->tetromino_only)
+                                {
+                                    switch(t)
+                                    {
+                                        case QRS_I:
+                                            t += 18;
+                                            break;
+                                        case QRS_T:
+                                            t += 10;
+                                            break;
+                                        case QRS_J:
+                                        case QRS_L:
+                                        case QRS_S:
+                                        case QRS_Z:
+                                            t += 19;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    if(t >= 18)
+                                        goto found;
+                                }
+                                else if(q->pentomino_only)
+                                {
+                                    switch(t)
+                                    {
+                                        case QRS_I4:
+                                            t -= 18;
+                                            break;
+                                        case QRS_T4:
+                                            t -= 10;
+                                            break;
+                                        case QRS_J4:
+                                        case QRS_L4:
+                                        case QRS_S4:
+                                        case QRS_Z4:
+                                            t -= 19;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    if(t < 18)
+                                        goto found;
+                                }
+                                else
+                                {
+                                    goto found;
+                                }
+                            }
+                        }
+                    }
+
                     continue;
+                found:
+                    num++;
+                    piece_seq[num - 1] = (int)t;
 
-                rpt_start = 1;
-                rpt = true;
-                continue;
-            }
-
-            if(c == ')')
-            {
-                if(!rpt)
-                    continue;
-
-                if(num > 0)
-                {
-                    piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
-                    pre_rpt_count = 1;
-                }
-                continue;
-            }
-
-            if(pre_rpt_count)
-            {
-                num++;
-                piece_seq[num - 1] = 1;
-                pre_rpt_count = 0;
-                i--;
-                continue;
-            }
-
-            name_str[0] = seqStr[i];
-
-            if(seqStr[i + 1] == '4')
-            {
-                name_str[1] = '4';
-                name_str[2] = '\0';
-
-                for(j = 0; j < 25; j++)
-                {
-                    if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
+                    if(rpt_start)
                     {
-                        t = j;
-                        if(!q->pentomino_only)
-                        {
-                            goto found;
-                        }
+                        piece_seq[num - 1] |= SEQUENCE_REPEAT_START;
+                        rpt_start = 0;
+                    }
+                    else if(rpt_end)
+                    {
+                        piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
+                        rpt_end = 0;
                     }
                 }
-            }
 
-            name_str[1] = '\0';
-
-            for(j = 0; j < 25; j++)
-            {
-                if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
-                {
-                    t = j;
-                    if(q->tetromino_only)
-                    {
-                        switch(t)
-                        {
-                            case QRS_I:
-                                t += 18;
-                                break;
-                            case QRS_T:
-                                t += 10;
-                                break;
-                            case QRS_J:
-                            case QRS_L:
-                            case QRS_S:
-                            case QRS_Z:
-                                t += 19;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        if(t >= 18)
-                            goto found;
-                    }
-                    else if(q->pentomino_only)
-                    {
-                        switch(t)
-                        {
-                            case QRS_I4:
-                                t -= 18;
-                                break;
-                            case QRS_T4:
-                                t -= 10;
-                                break;
-                            case QRS_J4:
-                            case QRS_L4:
-                            case QRS_S4:
-                            case QRS_Z4:
-                                t -= 19;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        if(t < 18)
-                            goto found;
-                    }
-                    else
-                    {
-                        goto found;
-                    }
-                }
-            }
-
-            if(seqStr[i + 1] == 'a')
-            {
-                name_str[1] = 'a';
-                name_str[2] = '\0';
-
-                for(j = 0; j < 25; j++)
-                {
-                    if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
-                    {
-                        t = j;
-                        if(q->tetromino_only)
-                        {
-                            switch(t)
-                            {
-                                case QRS_I:
-                                    t += 18;
-                                    break;
-                                case QRS_T:
-                                    t += 10;
-                                    break;
-                                case QRS_J:
-                                case QRS_L:
-                                case QRS_S:
-                                case QRS_Z:
-                                    t += 19;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            if(t >= 18)
-                                goto found;
-                        }
-                        else if(q->pentomino_only)
-                        {
-                            switch(t)
-                            {
-                                case QRS_I4:
-                                    t -= 18;
-                                    break;
-                                case QRS_T4:
-                                    t -= 10;
-                                    break;
-                                case QRS_J4:
-                                case QRS_L4:
-                                case QRS_S4:
-                                case QRS_Z4:
-                                    t -= 19;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            if(t < 18)
-                                goto found;
-                        }
-                        else
-                        {
-                            goto found;
-                        }
-                    }
-                }
-            }
-            else if(seqStr[i + 1] == 'b')
-            {
-                name_str[1] = 'b';
-                name_str[2] = '\0';
-
-                for(j = 0; j < 25; j++)
-                {
-                    if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
-                    {
-                        t = j;
-                        if(q->tetromino_only)
-                        {
-                            switch(t)
-                            {
-                                case QRS_I:
-                                    t += 18;
-                                    break;
-                                case QRS_T:
-                                    t += 10;
-                                    break;
-                                case QRS_J:
-                                case QRS_L:
-                                case QRS_S:
-                                case QRS_Z:
-                                    t += 19;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            if(t >= 18)
-                                goto found;
-                        }
-                        else if(q->pentomino_only)
-                        {
-                            switch(t)
-                            {
-                                case QRS_I4:
-                                    t -= 18;
-                                    break;
-                                case QRS_T4:
-                                    t -= 10;
-                                    break;
-                                case QRS_J4:
-                                case QRS_L4:
-                                case QRS_S4:
-                                case QRS_Z4:
-                                    t -= 19;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            if(t < 18)
-                                goto found;
-                        }
-                        else
-                        {
-                            goto found;
-                        }
-                    }
-                }
-            }
-
-            continue;
-        found:
-            num++;
-            piece_seq[num - 1] = (int)t;
-
-            if(rpt_start)
-            {
-                piece_seq[num - 1] |= SEQUENCE_REPEAT_START;
-                rpt_start = 0;
-            }
-            else if(rpt_end)
-            {
-                piece_seq[num - 1] |= SEQUENCE_REPEAT_END;
-                rpt_end = 0;
+                break;
             }
         }
     }
@@ -3334,9 +3461,19 @@ end_sequence_proc:
     }
     else
     {
+        if(q->pracdata->using_seed)
+        {
+            q->randomizer->init(q->randomizer, &q->pracdata->randomizer_seed);
+        }
+
         for (std::size_t i = 0; i < 4; i++)
         {
             piece_id piece = q->randomizer->lookahead(q->randomizer, static_cast<unsigned>(i + 1));
+
+            if(q->randomizer->num_pieces == 7)
+            {
+                piece = ars_to_qrs_id(piece);
+            }
 
             if(piece != PIECE_ID_INVALID)
             {
@@ -3344,6 +3481,16 @@ end_sequence_proc:
             }
         }
     }
+
+    if(d->brackets)
+        q->state_flags |= GAMESTATE_BRACKETS;
+    else
+        q->state_flags &= ~GAMESTATE_BRACKETS;
+
+    if(d->invisible)
+        q->state_flags |= GAMESTATE_INVISIBLE;
+    else
+        q->state_flags &= ~GAMESTATE_INVISIBLE;
 
     if(q->state_flags & GAMESTATE_BRACKETS)
     {
@@ -3358,15 +3505,8 @@ end_sequence_proc:
         }
     }
 
-    if(d->brackets)
-        q->state_flags |= GAMESTATE_BRACKETS;
-    else
-        q->state_flags &= ~GAMESTATE_BRACKETS;
-
-    if(d->invisible)
-        q->state_flags |= GAMESTATE_INVISIBLE;
-    else
-        q->state_flags &= ~GAMESTATE_INVISIBLE;
+    if(q->pracdata->goal_level > 9999 || q->pracdata->goal_level < 0)
+        q->pracdata->goal_level = 0;
 
     return 0;
 }
