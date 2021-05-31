@@ -1400,6 +1400,7 @@ int mload_practice(game_t *g, int val)
     d2->labels.resize(d2->num);
 
     d2->labels[0] = "OFF";
+    d2->vals[0] = 0;
 
     for(i = 1; i < d2->num; i++)
     {
