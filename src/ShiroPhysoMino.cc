@@ -1,6 +1,7 @@
 #include "ShiroPhysoMino.h"
 #include "CoreState.h"
 #include "SGUIL/SGUIL.h"
+#include "Video/Render.h"
 #include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
 #include <iostream>
@@ -245,7 +246,7 @@ int TestSPM::draw()
             dest.y = fieldPos.y + (j * blockH);
 
             if (field->getCell(i, gridY) > 0) {
-                SDL_RenderFillRect(cs.screen.renderer, &dest);
+                Shiro::RenderFillRect(cs.screen, &dest);
             }
         }
     }
@@ -266,7 +267,7 @@ int TestSPM::draw()
                     dest.x = fieldPos.x + (gridX * blockW);
                     dest.y = fieldPos.y - ((static_cast<int>(field->getHeight()) - spec->visualFieldH) * blockH) + (gridY * blockH);
                     dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
-                    SDL_RenderFillRect(cs.screen.renderer, &dest);
+                    Shiro::RenderFillRect(cs.screen, &dest);
                 }
             }
         }
@@ -290,7 +291,7 @@ int TestSPM::draw()
                     if (m.getCell(i, j)) {
                         dest.x = fieldPos.x + (3 * 16) + (n * 5 * 16) + (i * 16);
                         dest.y = fieldPos.y - 54 + (j * 16);
-                        SDL_RenderFillRect(cs.screen.renderer, &dest);
+                        Shiro::RenderFillRect(cs.screen, &dest);
                     }
                 }
             }

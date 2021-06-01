@@ -8,6 +8,7 @@
 
 #include "CoreState.h"
 #include "Asset/Sfx.h"
+#include "Asset/Music.h"
 #include "game_menu.h"
 #include "GameType.h"
 #include "game_qs.h"
@@ -68,6 +69,60 @@ Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int
     }
 
     return m;
+}
+
+bool menu_is_using_target_tex(game_t *g)
+{
+    if(!g || !g->data)
+    {
+        return false;
+    }
+
+    menudata *d = (menudata *)g->data;
+    return d->use_target_tex != 0;
+}
+
+int menu_update_target_tex_size(game_t *g, int w, int h)
+{
+    if(!g || !g->data || w < 0 || h < 0)
+    {
+        return -1;
+    }
+
+    menudata *d = (menudata *)g->data;
+    bool usingTarget = false;
+
+    if(d->target_tex != nullptr)
+    {
+        if(SDL_GetRenderTarget(g->origin->screen.renderer) == d->target_tex)
+        {
+            usingTarget = true;
+            SDL_SetRenderTarget(g->origin->screen.renderer, NULL);
+        }
+
+        SDL_DestroyTexture(d->target_tex);
+    }
+
+    d->target_tex = SDL_CreateTexture(g->origin->screen.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+
+    if(d->target_tex == nullptr)
+    {
+        return -1;
+    }
+
+    if(usingTarget)
+    {
+        SDL_SetRenderTarget(g->origin->screen.renderer, d->target_tex);
+    }
+
+    for(int i = 0; i < d->numopts; i++)
+    {
+        d->menu[i].render_update = 1;
+    }
+
+    SDL_SetTextureBlendMode(d->target_tex, SDL_BLENDMODE_BLEND);
+
+    return 0;
 }
 
 int menu_text_toggle(CoreState *cs)
@@ -347,6 +402,7 @@ game_t *menu_create(CoreState *cs)
     menudata *d = (menudata *)(g->data);
 
     d->target_tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 640, 480);
+    SDL_SetTextureBlendMode(d->target_tex, SDL_BLENDMODE_BLEND);
     d->menu_id = -1;
     d->main_menu_data.selection = 0;
     d->main_menu_data.opt_selection = 0;

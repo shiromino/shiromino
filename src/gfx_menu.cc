@@ -2,6 +2,7 @@
 #include "CoreState.h"
 #include "game_menu.h"
 #include "gfx_old.h"
+#include "Video/Render.h"
 #include "Menu/ElementType.h"
 #include "Menu/GameMultiOption.h"
 #include "Menu/MultiOption.h"
@@ -20,6 +21,8 @@ int gfx_drawmenu(game_t *g)
         return -1;
 
     CoreState *cs = g->origin;
+
+    SDL_Texture *theRenderTarget = SDL_GetRenderTarget(cs->screen.renderer);
 
     SDL_Texture *font = Shiro::ImageAsset::get(cs->assetMgr, "font").getTexture();
     SDL_Texture *font_thin = Shiro::ImageAsset::get(cs->assetMgr, "font_thin").getTexture();
@@ -78,7 +81,7 @@ int gfx_drawmenu(game_t *g)
             //SDL_SetTextureAlphaMod(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), 150);
             SDL_SetTextureBlendMode(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), SDL_BLENDMODE_BLEND);
             SDL_SetTextureBlendMode(Shiro::ImageAsset::get(cs->assetMgr, "bg_temp").getTexture(), SDL_BLENDMODE_BLEND);
-            SDL_RenderCopy(cs->screen.renderer, Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), NULL, &titlePNGdest);
+            Shiro::RenderCopy(cs->screen, Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), NULL, &titlePNGdest);
         }
         else
         {
@@ -150,7 +153,7 @@ int gfx_drawmenu(game_t *g)
                 baroutlinedest.x = bardest.x;
                 bardest.y = m->value_y + 1;
                 baroutlinedest.y = m->value_y;
-                SDL_RenderCopy(cs->screen.renderer, font, &baroutlinesrc, &baroutlinedest);
+                Shiro::RenderCopy(cs->screen, font, &baroutlinesrc, &baroutlinedest);
 
                 if(d2->selection > 0)
                 {
@@ -171,7 +174,7 @@ int gfx_drawmenu(game_t *g)
                         else if((i % 3) == 0)
                             SDL_SetTextureColorMod(font, mod, mod, 255);
 
-                        SDL_RenderCopy(cs->screen.renderer, font, &barsrc, &bardest);
+                        Shiro::RenderCopy(cs->screen, font, &barsrc, &bardest);
                         bardest.x += 1;
                     }
 
@@ -230,7 +233,7 @@ int gfx_drawmenu(game_t *g)
                     {
                         dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * (k)-1;
 
-                        if(SDL_RenderCopy(cs->screen.renderer, font, &src, &dest)) {
+                        if(Shiro::RenderCopy(cs->screen, font, &src, &dest)) {
                             std::cerr << SDL_GetError() << std::endl;
                         }
                     }
@@ -243,6 +246,11 @@ int gfx_drawmenu(game_t *g)
 
                 fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
                 monofont = monofont_square;
+
+                if(menu_is_practice(g))
+                {
+                    fmt.outlined = false;
+                }
 
                 if(m->value_text_flags & DRAWTEXT_THIN_FONT)
                     monofont = monofont_thin;
@@ -267,7 +275,7 @@ int gfx_drawmenu(game_t *g)
                     }
                     dest.y = m->value_y + 1;
 
-                    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                    Shiro::RenderCopy(cs->screen, font, &src, &dest);
                 }
 
                 if(d7->leftmost_position < int(d7->text.size()) - d7->visible_chars)
@@ -285,7 +293,7 @@ int gfx_drawmenu(game_t *g)
                     }
                     dest.y = m->value_y + 1;
 
-                    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                    Shiro::RenderCopy(cs->screen, font, &src, &dest);
                 }
 
                 gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, &fmt);
@@ -296,10 +304,6 @@ int gfx_drawmenu(game_t *g)
                 // blinking vertical text cursor when typing is active
                 if((g->frame_counter / 30) % 2)
                 {
-                    SDL_Surface *cursorSurface = SDL_CreateRGBSurface(0, /*width*/ 1, /*height*/ monofont->char_h, 32, 0, 0, 0, 0);
-                    SDL_FillRect(cursorSurface, NULL, SDL_MapRGB(cursorSurface->format, 255, 255, 255));
-                    SDL_Texture *cursorTexture = SDL_CreateTextureFromSurface(cs->screen.renderer, cursorSurface);
-
                     int cursorX = m->value_x + monofont->char_w * (d7->position - d7->leftmost_position);
                     int cursorY = m->value_y;
 
@@ -313,48 +317,19 @@ int gfx_drawmenu(game_t *g)
                     dest.w = 1;
                     dest.h = 16;
 
-                    SDL_RenderCopy(cs->screen.renderer, cursorTexture, NULL, &dest);
+                    Uint8 r_;
+                    Uint8 g_;
+                    Uint8 b_;
+                    Uint8 a_;
+
+                    SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
+                    SDL_SetRenderDrawColor(cs->screen.renderer, 255, 255, 255, 255);
+                    Shiro::RenderFillRect(cs->screen, &dest);
+                    SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
 
                     dest.w = 16;
                     dest.h = 16;
                 }
-
-                /*
-                if(m->value_text_flags & DRAWTEXT_THIN_FONT)
-                {
-                    src.x = 15 * 13;
-                    src.y = 2 * 18;
-                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                        dest.x = static_cast<int>(std::size_t(m->value_x) - 13 * ((int(d7->text.size()) > d7->visible_chars ? std::size_t(d7->visible_chars) : d7->text.size())) + 13 * ((long long)d7->position - d7->leftmost_position));
-                    else
-                        dest.x = m->value_x + 13 * (d7->position - d7->leftmost_position);
-                    dest.y = m->value_y + 18;
-
-                    src.w = 13;
-                    dest.w = 13;
-                    src.h = 18;
-                    dest.h = 18;
-
-                    SDL_RenderCopy(cs->screen.renderer, font_thin, &src, &dest);
-
-                    src.w = 16;
-                    dest.w = 16;
-                    src.h = 16;
-                    dest.h = 16;
-                }
-                else
-                {
-                    src.x = 15 * 16;
-                    src.y = 32;
-                    if(m->value_text_flags & DRAWTEXT_ALIGN_RIGHT)
-                        dest.x = static_cast<int>(m->value_x - 16 * ((int(d7->text.size()) > d7->visible_chars ? d7->visible_chars : d7->text.size())) + 16 * ((long long)d7->position - d7->leftmost_position));
-                    else
-                        dest.x = m->value_x + 16 * (d7->position - d7->leftmost_position);
-                    dest.y = m->value_y + 16;
-
-                    SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
-                }
-                */
             }
         }
 
@@ -493,7 +468,9 @@ int gfx_drawmenu(game_t *g)
             d->menu[i].render_update = 0;
         }
 
-        SDL_RenderCopy(cs->screen.renderer, d->target_tex, NULL, NULL);
+        SDL_Rect dst_ = {0, 0, 640, 480};
+
+        Shiro::RenderCopy(cs->screen, d->target_tex, NULL, &dst_);
     }
 
     return 0;

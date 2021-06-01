@@ -6,6 +6,7 @@
  */
 // TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the backend of Graphic subclasses.
 #include "Video/Animation.h"
+#include "Video/Render.h"
 #include "Asset/Image.h"
 
 using namespace Shiro;
@@ -71,7 +72,7 @@ void AnimationGraphic::draw(const Screen& screen) const {
 
     SDL_SetTextureColorMod(frame, R(rgbaMod), G(rgbaMod), B(rgbaMod));
     SDL_SetTextureAlphaMod(frame, A(rgbaMod));
-    SDL_RenderCopy(screen.renderer, frame, NULL, &dest);
+    Shiro::RenderCopy(screen, frame, NULL, &dest);
     SDL_SetTextureAlphaMod(frame, 255);
     SDL_SetTextureColorMod(frame, 255, 255, 255);
 }

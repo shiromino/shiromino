@@ -103,6 +103,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/Video/Gfx.h
 		src/Video/MessageEntity.cc
 		src/Video/MessageEntity.h
+		src/Video/Render.cc
+		src/Video/Render.h
 		src/Video/Screen.cc
 		src/Video/Screen.h
 		src/Video/TextGraphic.cc

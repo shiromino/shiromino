@@ -5,6 +5,7 @@
  * directory for the full text of the license.
  */
 #include "Video/TextGraphic.h"
+#include "Video/Render.h"
 #include <sstream>
 #include <cassert>
 
@@ -67,7 +68,7 @@ namespace Shiro {
 
             SDL_SetTextureColorMod(std::get<0>(charData), R(color), G(color), B(color));
             SDL_SetTextureAlphaMod(std::get<0>(charData), A(color));
-            SDL_RenderCopy(screen.renderer, std::get<0>(charData), &std::get<1>(charData), &dstRect);
+            Shiro::RenderCopy(screen, std::get<0>(charData), &std::get<1>(charData), &dstRect);
 
             SDL_SetTextureColorMod(std::get<0>(charData), r, g, b);
             SDL_SetTextureAlphaMod(std::get<0>(charData), a);

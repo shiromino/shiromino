@@ -10,10 +10,11 @@ static GLuint CompileShader(GLenum shaderType, const GLchar* shaderSource);
 static GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geometryShaderSource, const GLchar* fragmentShaderSource);
 #endif
 
-Screen::Screen(const std::string& name, const unsigned w, const unsigned h) :
+Screen::Screen(const std::string& name, const unsigned w, const unsigned h, const float render_scale) :
     name(name),
     w(w),
     h(h),
+    render_scale(render_scale),
     window(nullptr),
     renderer(nullptr),
     target_tex(nullptr)
@@ -84,12 +85,13 @@ bool Screen::init(const Settings& settings) {
         }
     }
 
-    if (SDL_RenderSetLogicalSize(renderer, 640, 480) < 0) {
+    /*if (SDL_RenderSetLogicalSize(renderer, 640, 480) < 0) {
         log_err("SDL_RenderSetLogicalSize: %s", SDL_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         return false;
-    }
+    }*/
+
     if (!settings.videoStretch) {
         if (SDL_RenderSetIntegerScale(renderer, SDL_TRUE) < 0) {
             log_err("SDL_RenderSetIntegerScale: %s", SDL_GetError());
@@ -101,7 +103,7 @@ bool Screen::init(const Settings& settings) {
 
 #ifdef ENABLE_OPENGL_INTERPOLATION
     if (settings.interpolate) {
-        target_tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window),  SDL_TEXTUREACCESS_TARGET, 640, 480);
+        target_tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window),  SDL_TEXTUREACCESS_TARGET, static_cast<int>(640.0 * render_scale), static_cast<int>(480.0 * render_scale));
         if (target_tex == nullptr) {
             log_err("SDL_CreateTexture: %s", SDL_GetError());
             SDL_DestroyRenderer(renderer);

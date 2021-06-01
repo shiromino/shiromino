@@ -63,6 +63,9 @@ struct menudata
 
 Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label);
 
+bool menu_is_using_target_tex(game_t *g);
+int menu_update_target_tex_size(game_t *g, int w, int h);
+
 int menu_text_toggle(CoreState *cs);
 int menu_text_insert(CoreState *cs, char *);
 int menu_text_backspace(CoreState *cs);

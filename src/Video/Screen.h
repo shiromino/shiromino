@@ -16,7 +16,7 @@ namespace Shiro {
     struct Screen {
         Screen() = delete;
 
-        Screen(const std::string& name, const unsigned w, const unsigned h);
+        Screen(const std::string& name, const unsigned w, const unsigned h, const float render_scale);
         ~Screen();
 
         bool init(const Settings& settings);
@@ -24,6 +24,7 @@ namespace Shiro {
         std::string name;
         unsigned w;
         unsigned h;
+        float render_scale;
         SDL_Window* window;
         SDL_Renderer* renderer;
         SDL_Texture* target_tex;

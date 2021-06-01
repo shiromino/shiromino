@@ -36,6 +36,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
+#include "Video/Render.h"
 #include <string>
 #include <vector>
 #include <deque>
@@ -155,7 +156,7 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 }
 
 CoreState::CoreState(Shiro::Settings& settings) :
-    screen(Shiro::Version::DESCRIPTOR, static_cast<unsigned>(settings.videoScale * 640.0f), static_cast<unsigned>(settings.videoScale * 480.0f)),
+    screen(Shiro::Version::DESCRIPTOR, static_cast<unsigned>(settings.videoScale * 640.0f), static_cast<unsigned>(settings.videoScale * 480.0f), float(settings.videoScale)),
     settings(settings),
     bg(screen),
     gfx(screen)
@@ -305,6 +306,7 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "tets_bright_qs_small"},
             {Shiro::AssetType::image, "tets_dark_qs"},
             {Shiro::AssetType::image, "tets_jeweled"},
+            {Shiro::AssetType::image, "pieces-256x256"},
             //{Shiro::AssetType::image, "g2_tets_bright"},
             //{Shiro::AssetType::image, "g2_tets_bright_small"},
             //{Shiro::AssetType::image, "g2_tets_dark"},
@@ -436,6 +438,11 @@ bool CoreState::init() {
                 }
             }
         }
+
+        // bandaid because it won't recognize the volume.ini value
+        //Shiro::MusicAsset& multi_editor_bgm = Shiro::MusicAsset::get(this->assetMgr, "multi-editor-bgm");
+        //multi_editor_bgm.volume = 20;
+
         // SDL_Texture *blank = NULL;
         // copy settings into main game structure
         if (SDL_NumJoysticks()) {
@@ -494,7 +501,7 @@ bool CoreState::init() {
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
         bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
         // blank = Shiro::ImageAsset::get(assetMgr, "blank").getTexture();
-        // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+        // check(Shiro::RenderCopy(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
         menu = menu_create(this);
         check(menu != NULL, "menu_create returned failure\n");
         menu->init(menu);
@@ -502,7 +509,7 @@ bool CoreState::init() {
         //SDL_Rect gameScreenRect = {0, 0, 640, 480};
         //screenManager->addScreen("game", new GuiScreen {this, "game", NULL, gameScreenRect});
         screenManager->loadScreen("main");
-        // check(SDL_RenderCopy(screen.renderer, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+        // check(Shiro::RenderCopy(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
         const auto databasePath = settings.cachePath / Shiro::Records::filename;
         scoredb_init(&records, databasePath.string().c_str());
         scoredb_create_player(&records, &player, settings.playerName.c_str());
@@ -582,7 +589,7 @@ void CoreState::run() {
 
     while(running)
     {
-		
+
 #ifndef DEBUG_FRAME_TIMING
 		Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / fps;
 #else
@@ -809,11 +816,42 @@ void CoreState::run() {
 
             SDL_GL_SwapWindow(screen.window);
         }
-        else {
-            SDL_RenderPresent(screen.renderer);
+        else
+        {
+            SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
+
+            if(theRenderTarget != nullptr)
+            {
+                SDL_Rect dst_ = {0, 0, 640, 480};
+                SDL_SetRenderTarget(screen.renderer, NULL);
+                //Shiro::RenderCopy(screen, theRenderTarget, nullptr, &dst_);
+                Shiro::RenderCopy(screen, theRenderTarget, nullptr, nullptr);
+                SDL_RenderPresent(screen.renderer);
+
+                SDL_SetRenderTarget(screen.renderer, theRenderTarget);
+            }
+            else
+            {
+                SDL_RenderPresent(screen.renderer);
+            }
         }
 #else
-        SDL_RenderPresent(screen.renderer);
+        SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
+
+        if(theRenderTarget != nullptr)
+        {
+            SDL_Rect dst_ = {0, 0, 640, 480};
+            SDL_SetRenderTarget(screen.renderer, NULL);
+            //Shiro::RenderCopy(screen, theRenderTarget, nullptr, &dst_);
+            Shiro::RenderCopy(screen, theRenderTarget, nullptr, nullptr);
+            SDL_RenderPresent(screen.renderer);
+
+            SDL_SetRenderTarget(screen.renderer, theRenderTarget);
+        }
+        else
+        {
+            SDL_RenderPresent(screen.renderer);
+        }
 #endif
 
 #if 0
@@ -955,6 +993,11 @@ bool CoreState::process_events() {
     int windowW;
     int windowH;
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
+
+    float prevRenderScale = screen.render_scale;
+
+    int f = 0;
+    float ff = 0;
 
     SDL_Event event;
 #define CHECK_BINDINGS(check) \
@@ -1211,6 +1254,7 @@ bool CoreState::process_events() {
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 1;
                         SDL_SetWindowSize(screen.window, 640, 480);
+                        screen.render_scale = 1.0;
                     }
                     pressedDigits[1] = true;
                     break;
@@ -1219,6 +1263,7 @@ bool CoreState::process_events() {
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 2;
                         SDL_SetWindowSize(screen.window, 2 * 640, 2 * 480);
+                        screen.render_scale = 2.0;
                     }
                     pressedDigits[2] = true;
                     break;
@@ -1227,6 +1272,7 @@ bool CoreState::process_events() {
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 3;
                         SDL_SetWindowSize(screen.window, 3 * 640, 3 * 480);
+                        screen.render_scale = 3.0;
                     }
                     pressedDigits[3] = true;
                     break;
@@ -1235,6 +1281,7 @@ bool CoreState::process_events() {
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 4;
                         SDL_SetWindowSize(screen.window, 4 * 640, 4 * 480);
+                        screen.render_scale = 4.0;
                     }
                     pressedDigits[4] = true;
                     break;
@@ -1243,6 +1290,7 @@ bool CoreState::process_events() {
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 5;
                         SDL_SetWindowSize(screen.window, 5 * 640, 5 * 480);
+                        screen.render_scale = 5.0;
                     }
                     pressedDigits[5] = true;
                     break;
@@ -1365,6 +1413,8 @@ bool CoreState::process_events() {
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
                     SDL_GetWindowSize(screen.window, &windowW, &windowH);
+                    f = std::min(windowW / 640, windowH / 480);
+                    screen.render_scale = float(f);
                     select_all = false;
                     undo = false;
                     redo = false;
@@ -1381,6 +1431,34 @@ bool CoreState::process_events() {
     }
 
     SDL_GetMouseState(&mouse.x, &mouse.y);
+
+    SDL_RenderSetScale(screen.renderer, screen.render_scale, screen.render_scale);
+
+    if(screen.render_scale != prevRenderScale)
+    {
+        if(menu != nullptr)
+        {
+            //menu_update_target_tex_size(menu, static_cast<int>(640.0 * screen.render_scale), static_cast<int>(480.0 * screen.render_scale));
+        }
+
+        if(screen.target_tex != nullptr)
+        {
+            bool usingTarget = false;
+            if(SDL_GetRenderTarget(screen.renderer) == screen.target_tex)
+            {
+                usingTarget = true;
+                SDL_SetRenderTarget(screen.renderer, NULL);
+            }
+
+            SDL_DestroyTexture(screen.target_tex);
+
+            screen.target_tex = SDL_CreateTexture(screen.renderer, SDL_GetWindowPixelFormat(screen.window),  SDL_TEXTUREACCESS_TARGET, static_cast<int>(640.0 * screen.render_scale), static_cast<int>(480.0 * screen.render_scale));
+            if(screen.target_tex == nullptr) {
+                log_err("SDL_CreateTexture: %s", SDL_GetError());
+                return false;
+            }
+        }
+    }
 
     mouse.updatePosition(windowW, windowH);
 

@@ -2,6 +2,7 @@
 #include "DisplayMode.h"
 #include "game_qs.h"
 #include "GameType.h"
+#include "Video/Render.h"
 #include "Video/Animation.h"
 #include "gfx_old.h"
 #include "gfx_qs.h"
@@ -220,7 +221,7 @@ int gfx_drawqs(game_t *g)
                 dest.x = QRS_FIELD_X;
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
-                SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                Shiro::RenderCopy(g->origin->screen, font, &src, &dest);
             }
 
             if(q->pracdata->usr_field_redo.size())
@@ -235,7 +236,7 @@ int gfx_drawqs(game_t *g)
                 dest.x = QRS_FIELD_X + 13 * 16;
                 dest.y = QRS_FIELD_Y + 23 * 16;
 
-                SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                Shiro::RenderCopy(g->origin->screen, font, &src, &dest);
             }
 
             if(q->pracdata->usr_seq_len)
@@ -263,12 +264,12 @@ int gfx_drawqs(game_t *g)
                     continue;
 
                 palettesrc.x = i * 16;
-                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
                 if(q->pracdata->palette_selection - 1 == i)
                 {
                     palettesrc.x = 31 * 16;
                     SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                    SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+                    Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
                     SDL_SetTextureAlphaMod(tets_dark_qs, 255);
                 }
                 palettedest.y += 16;
@@ -279,35 +280,35 @@ int gfx_drawqs(game_t *g)
             for(i = 18; i < 26; i++)
             {
                 palettesrc.x = i * 16;
-                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
                 if(q->pracdata->palette_selection - 1 == i || (i == 25 && q->pracdata->palette_selection == -5))
                 {
                     palettesrc.x = 31 * 16;
                     SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                    SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+                    Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
                     SDL_SetTextureAlphaMod(tets_dark_qs, 255);
                 }
                 palettedest.y += 16;
             }
 
             palettesrc.x = 30 * 16;
-            SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+            Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
             if(q->pracdata->palette_selection == QRS_PIECE_BRACKETS)
             {
                 palettesrc.x = 31 * 16;
                 SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
                 SDL_SetTextureAlphaMod(tets_dark_qs, 255);
             }
 
             palettedest.y += 16;
             palettesrc.x = 32 * 16;
-            SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+            Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
             if(q->pracdata->palette_selection == QRS_PIECE_GEM)
             {
                 palettesrc.x = 31 * 16;
                 SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                SDL_RenderCopy(cs->screen.renderer, tets_dark_qs, &palettesrc, &palettedest);
+                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
                 SDL_SetTextureAlphaMod(tets_dark_qs, 255);
             }
         }
@@ -369,8 +370,8 @@ int gfx_drawqs(game_t *g)
             Uint8 g_;
             Uint8 b_;
             Uint8 a_;
-            SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
-            SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0x80);
+            SDL_GetRenderDrawColor(g->origin->screen.renderer, &r_, &g_, &b_, &a_);
+            SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0x80);
 
             for(int sec = 0; sec < MAX_SECTIONS; sec++)
             {
@@ -389,7 +390,7 @@ int gfx_drawqs(game_t *g)
 
                     secTimeBGRect.y = secY;
 
-                    SDL_RenderFillRect(cs->screen.renderer, &secTimeBGRect);
+                    Shiro::RenderFillRect(g->origin->screen, &secTimeBGRect);
 
                     int minutes = q->section_times[sec] / (60*60);
                     int seconds = (q->section_times[sec] / 60) % 60;
@@ -427,7 +428,7 @@ int gfx_drawqs(game_t *g)
                 secY += 24;
             }
 
-            SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
+            SDL_SetRenderDrawColor(g->origin->screen.renderer, r_, g_, b_, a_);
         }
 
         // uncomment this for DDR-esque input display :3
@@ -437,19 +438,19 @@ int gfx_drawqs(game_t *g)
             }
         }*/
 
-        SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
+        Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
         labg_src.x = 512 - 16;
         labg_src.w = 16;
         labg_dest.w = 16;
         labg_dest.x += (111 - 32);
-        SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
+        Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
 
         labg_dest.y -= 5 * 16;
         labg_src.w = 111;
         labg_src.x = 401;
         labg_dest.w = 111;
         labg_dest.x -= 111 - 32;
-        SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
+        Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
 
         if(q->p1->speeds->grav >= 20 * 256)
         {
@@ -482,7 +483,7 @@ int gfx_drawqs(game_t *g)
             float size_multiplier = 1.0;
 
             // draw a shadowy square behind the grade
-            // SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+            // Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
 
             grade_src.w = 64;
             grade_src.h = 64;
@@ -539,11 +540,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.w = 32;
                     grade_src.h = 32;
 
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     break;
 
                     /*case GRADE_S9:
-                        SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                        Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                         grade_src.y += 32;
                         grade_src.x += 128 + 8*32;
 
@@ -553,7 +554,7 @@ int gfx_drawqs(game_t *g)
                         grade_src.h = 32;
                         grade_dest.w = 32*size_multiplier;
                         grade_dest.h = 32*size_multiplier;
-                        SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                        Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                         break;*/
 
                 case GRADE_S1:
@@ -565,7 +566,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_S7:
                 case GRADE_S8:
                 case GRADE_S9:
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128 + 32 * (gradeWithoutFlags - GRADE_S1);
 
@@ -575,11 +576,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = static_cast<int>(32 * size_multiplier);
                     grade_dest.h = static_cast<int>(32 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_S10:
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128;
 
@@ -589,16 +590,16 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = static_cast<int>(32 * size_multiplier);
                     grade_dest.h = static_cast<int>(32 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     grade_src.x = 128 + 9 * 32;
                     grade_dest.x += static_cast<int>(20 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_S11:
                 case GRADE_S12:
                 case GRADE_S13:
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128;
 
@@ -608,10 +609,10 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = static_cast<int>(32 * size_multiplier);
                     grade_dest.h = static_cast<int>(32 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     grade_src.x += 32 * (gradeWithoutFlags - GRADE_S11);
                     grade_dest.x += static_cast<int>(20 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_M1:
@@ -624,7 +625,7 @@ int gfx_drawqs(game_t *g)
                 case GRADE_M8:
                 case GRADE_M9:
                     grade_src.x += 64;
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     grade_src.y += 32;
                     grade_src.x = 128 + 32 * (gradeWithoutFlags - GRADE_M1);
 
@@ -634,13 +635,13 @@ int gfx_drawqs(game_t *g)
                     grade_src.h = 32;
                     grade_dest.w = static_cast<int>(32 * size_multiplier);
                     grade_dest.h = static_cast<int>(32 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_M:
                     grade_src.x = 192;
                     grade_src.y += 64;
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
                     break;
 
                 case GRADE_MK:
@@ -651,11 +652,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 64;
 
                     grade_dest.x -= static_cast<int>(14 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
 
                     grade_src.x = 64 * (gradeWithoutFlags - GRADE_MK);
                     grade_dest.x += static_cast<int>(38 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
 
                     break;
 
@@ -664,11 +665,11 @@ int gfx_drawqs(game_t *g)
                     grade_src.y += 64;
 
                     grade_dest.x -= static_cast<int>(14 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
 
                     grade_src.x = 192;
                     grade_dest.x += static_cast<int>(38 * size_multiplier);
-                    SDL_RenderCopy(cs->screen.renderer, font, &grade_src, &grade_dest);
+                    Shiro::RenderCopy(g->origin->screen, font, &grade_src, &grade_dest);
 
                     break;
 
@@ -720,7 +721,7 @@ int gfx_drawqs(game_t *g)
                 labg_dest.y = y + 22 * 16;
                 labg_dest.w = 80;
                 labg_dest.h = 16;
-                SDL_RenderCopy(cs->screen.renderer, font, &labg_src, &labg_dest);
+                Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
 
                 gfx_drawtext(cs, "RANK", x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
 
@@ -952,10 +953,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
             dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest_);
         }
         else
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest);
     }
 
     dest.y += 24;
@@ -994,10 +995,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
             dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest_);
         }
         else
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest);
     }
 
     dest.y += 24;
@@ -1036,10 +1037,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
             dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest_);
         }
         else
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest);
     }
 
     dest.y += 24;
@@ -1078,10 +1079,10 @@ int gfx_drawqsmedals(game_t *g)
             dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
             dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
 
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest_);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest_);
         }
         else
-            SDL_RenderCopy(g->origin->screen.renderer, medals, &src, &dest);
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest);
     }
 
     return 0;
@@ -1091,12 +1092,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
 {
     qrsdata *q = (qrsdata *)g->data;
 
-    SDL_Texture *tets = Shiro::ImageAsset::get(g->origin->assetMgr, "tets_bright_qs").getTexture();
-    SDL_Rect src = { 31 * 16, 0, 16, 16 };
     SDL_Rect dest = { 0, 0, 16, 16 };
-
-    int i = 0;
-    int j = 0;
 
     int lesser_x = 0;
     int greater_x = 0;
@@ -1125,27 +1121,31 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
         greater_y = d->field_selection_vertex1_y;
     }
 
-    SDL_SetTextureColorMod(tets, 170, 170, 255);
-    SDL_SetTextureAlphaMod(tets, 160);
+    Uint8 r_;
+    Uint8 g_;
+    Uint8 b_;
+    Uint8 a_;
+    SDL_GetRenderDrawColor(g->origin->screen.renderer, &r_, &g_, &b_, &a_);
 
-    for(i = lesser_x; i <= greater_x; i++)
+    SDL_SetRenderDrawColor(g->origin->screen.renderer, 170, 170, 255, 160);
+
+    for(int i = lesser_x; i <= greater_x; i++)
     {
-        for(j = lesser_y; j <= greater_y; j++)
+        for(int j = lesser_y; j <= greater_y; j++)
         {
             if(i >= 0 && i < 12 && j >= 0 && j < 20)
             {
-                if (d->usr_field.getCell(i, static_cast<std::size_t>(j) + 2) != QRS_FIELD_W_LIMITER) {
+                if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 2) != QRS_FIELD_W_LIMITER) {
                     dest.x = q->fieldPos->first + 16 * (i + 1);
                     dest.y = QRS_FIELD_Y + 16 * (j + 2);
 
-                    SDL_RenderCopy(g->origin->screen.renderer, tets, &src, &dest);
+                    Shiro::RenderFillRect(g->origin->screen, &dest);
                 }
             }
         }
     }
 
-    SDL_SetTextureColorMod(tets, 255, 255, 255);
-    SDL_SetTextureAlphaMod(tets, 255);
+    SDL_SetRenderDrawColor(g->origin->screen.renderer, r_, g_, b_, a_);
 
     return 0;
 }
