@@ -19,7 +19,6 @@ namespace Shiro {
         int videoStretch;
         int fullscreen;
         int vsync;
-        int frameDelay;
         int vsyncTimestep;
 #ifdef ENABLE_OPENGL_INTERPOLATION
         int interpolate;

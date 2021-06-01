@@ -558,8 +558,8 @@ void CoreState::run() {
     //p1game = qs_game_create(this, 0, MODE_PENTOMINO, NO_REPLAY);
     //p1game->init(p1game);
 
-    double currentTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
-    double timeAccumulator = 0.0;
+	Uint64 currentTime = SDL_GetPerformanceCounter();
+    Uint64 timeAccumulator = 0u;
 // #define DEBUG_FRAME_TIMING
 #ifdef DEBUG_FRAME_TIMING
     // Due to limitations in SDL's display refresh rate reporting, FPS
@@ -569,34 +569,36 @@ void CoreState::run() {
     double videoFPS;
     {
         PDINI::INI ini;
-        ini.read(configurationPath);
+        ini.read(std::filesystem::path(settings.configurationPath));
         if (!ini.get("SCREEN", "VIDEO_FPS", videoFPS) || videoFPS <= 0.0) {
             videoFPS = 0.0;
         }
     }
-    double timeFromFrames = 0.0;
-    const double fpsTimeFrameDuration = 1.0;
-    double fpsTimeFrameStart = 0.0;
+    Uint64 timeFromFrames = 0u;
+    const Uint64 fpsTimeFrameDuration = SDL_GetPerformanceFrequency();
+    Uint64 fpsTimeFrameStart = 0u;
+	Uint64 startTime = SDL_GetPerformanceCounter();
 #endif
 
     while(running)
     {
-        double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency();
-        double renderFrameTime = newTime - currentTime;
-        if (renderFrameTime > 0.25) {
-            renderFrameTime = 0.25;
+		
+#ifndef DEBUG_FRAME_TIMING
+		Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / fps;
+#else
+		Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
+#endif
+        Uint64 newTime = SDL_GetPerformanceCounter();
+        Uint64 renderFrameTime = newTime - currentTime;
+        if (renderFrameTime > SDL_GetPerformanceFrequency() / 4u) {
+            renderFrameTime = SDL_GetPerformanceFrequency() / 4u;
         }
         currentTime = newTime;
         timeAccumulator += renderFrameTime;
 
         unsigned newFrames = 0u;
-        for (
-#ifdef DEBUG_FRAME_TIMING
-            double gameFrameTime = 1.0 / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
-#else
-            double gameFrameTime = 1.0 / fps;
-#endif
-            running && (timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync && newFrames == 0u));
+		for (;
+            running && (timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync));
             timeAccumulator -= gameFrameTime,
             newFrames++,
             frames++
@@ -719,21 +721,18 @@ void CoreState::run() {
 
             gfx.update();
 
-#ifndef DEBUG_FRAME_TIMING
-            gameFrameTime = 1.0 / fps;
-#else
-            gameFrameTime = 1.0 / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
+#ifdef DEBUG_FRAME_TIMING
             timeFromFrames += gameFrameTime;
             // TODO: From testing with this, the game apparently doesn't reset
             // FPS to 60 when returning to the menu from a game, so fix that.
             // Though each mode does use its correct FPS.
-            double realTime = static_cast<double>(SDL_GetPerformanceCounter()) / SDL_GetPerformanceFrequency() - startTime;
+            Uint64 realTime = SDL_GetPerformanceCounter() - startTime;
             std::cerr
-                << "real FPS: " << (realTime / timeFromFrames) * (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
+                << "real FPS: " << ((realTime / static_cast<double>(timeFromFrames)) * (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
                     ? videoFPS
                     : fps
-                ) << std::endl
-                << "game FPS: " << settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
+				)) << std::endl
+				<< "game FPS: " << (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
                     ? videoFPS
                     : fps
                 ) << std::endl;
@@ -743,7 +742,7 @@ void CoreState::run() {
             }
 #endif
             if (settings.vsync && settings.vsyncTimestep) {
-                timeAccumulator = 0.0;
+				break;
             }
         }
 
@@ -828,8 +827,10 @@ void CoreState::run() {
             }
         }
 #endif
-        if (!settings.vsync) {
-            SDL_Delay(settings.frameDelay);
+        if (!settings.vsyncTimestep) {
+			while (SDL_GetPerformanceCounter() < timeAccumulator + gameFrameTime) {
+				SDL_Delay(1u);
+			}
         }
     }
 }

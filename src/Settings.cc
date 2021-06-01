@@ -51,7 +51,6 @@ void Shiro::Settings::setDefaults() {
     videoStretch = 1;
     fullscreen = 0;
     vsync = 0;
-    frameDelay = 16;
     vsyncTimestep = 0;
 #ifdef ENABLE_OPENGL_INTERPOLATION
     interpolate = 1;
@@ -266,10 +265,6 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
     if (configuration.get("SCREEN", "V_SYNC", vsync)) {
         this->vsync = !!vsync;
     }
-    int frameDelay;
-    if (configuration.get("SCREEN", "FRAME_DELAY", frameDelay)) {
-        this->frameDelay = std::max(0, frameDelay);
-    }
     int vsyncTimestep;
     if (configuration.get("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep)) {
         this->vsyncTimestep = !!vsyncTimestep;
@@ -296,7 +291,6 @@ void Shiro::Settings::write() const {
     configuration.set("AUDIO", "MUSIC_VOLUME", musicVolume);
     configuration.set("AUDIO", "SAMPLING_RATE", samplingRate);
     configuration.set("AUDIO", "SFX_VOLUME", sfxVolume);
-    configuration.set("SCREEN", "FRAME_DELAY", frameDelay);
     configuration.set("SCREEN", "FULL_SCREEN", fullscreen);
 #ifdef ENABLE_OPENGL_INTERPOLATION
     configuration.set("SCREEN", "INTERPOLATE", interpolate);
