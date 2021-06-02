@@ -5,6 +5,7 @@ project(shiromino
 	LANGUAGES CXX
 	VERSION 0.1.1
 )
+list(APPEND CMAKE_MODULE_PATH "cmake")
 set(GAME_EXECUTABLE ${PROJECT_NAME})
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -13,6 +14,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Basic project layout
 #
 add_executable(${GAME_EXECUTABLE})
+#if(APPLE)
+	set_target_properties(${GAME_EXECUTABLE} PROPERTIES
+		MACOSX_BUNDLE TRUE
+		MACOSX_BUNDLE_ICON_FILE "o"
+	)
+#)
+#endif()
 target_include_directories(${GAME_EXECUTABLE} PRIVATE src)
 target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
 #
