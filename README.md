@@ -7,6 +7,7 @@ shiromino is a portable, free and open-source puzzle game made possible by a sma
 This list features official packages that we maintain. This allows you to install shiromino using your favorite package manager.
 | Repository                    | Package name
 | ----------------------------- | ---------------
+| Arch User Repository (AUR)    | [`shiromino`](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=shiromino)
 | Arch User Repository (AUR)    | [`shiromino-git`](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=shiromino-git)
 ### GitHub releases
 Our relases also come with [pre-built Windows executables](https://github.com/shiromino/shiromino/releases) that you can download straight from GitHub.
