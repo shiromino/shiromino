@@ -12,19 +12,7 @@ namespace Shiro {
     static void Quit();
 }
 
-#ifdef VCPKG_TOOLCHAIN
-#include <vorbis/vorbisfile.h>
-#endif
 void Shiro::Startup(const Shiro::Settings& settings) {
-#ifdef VCPKG_TOOLCHAIN
-    {
-        // Hack to force vcpkg to copy over the OGG/Vorbis libraries. Pretty much a
-        // no-op, so it has no performance penalty.
-        OggVorbis_File vf;
-        vf.seekable = 0;
-        ov_info(&vf, 0);
-    }
-#endif
 #ifdef ENABLE_OPENGL_INTERPOLATION
     if (settings.interpolate) {
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
