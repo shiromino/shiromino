@@ -82,10 +82,14 @@ jobs:
     - name: Fetch history for all tags
       run: .github/workflows/fetch-tags
     - run: echo "VERSION=$(git describe --tags | tr - +)" >> $GITHUB_ENV
-    - run: sed "s/\$VERSION/${{ env.VERSION }}/g" ./packages/aur/PKGBUILD > PKGBUILD
+    - name: Archive repository
+      run: git archive --prefix="${{ github.event.repository.name }}-$VERSION/" -o "${{ github.event.repository.name }}-$VERSION.tar.gz" master
+    - name: Set archive checksum
+      run: echo "CHECKSUM=$(sha256sum "${{ github.event.repository.name }}-$VERSION".tar.gz | awk '{ print $1 }')" >> $GITHUB_ENV
+    - run: sed "s/\$VERSION/${{ env.VERSION }}/g; s/\$CHECKSUM/${{ env.CHECKSUM }}/g" ./packages/aur/shiromino/PKGBUILD > PKGBUILD
     - uses: KSXGitHub/github-actions-deploy-aur@v2.2.4
       with:
-        commit_email: shiromino+github@aur
+        commit_email: shiromino+aur@github
         commit_message: Released version ${{ env.VERSION }}
         commit_username: shiromino-bot
         pkgbuild: PKGBUILD

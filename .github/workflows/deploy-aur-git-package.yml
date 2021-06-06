@@ -1,0 +1,25 @@
+jobs:
+  deploy-aur-shiromino-git:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fetch history for all tags
+      run: .github/workflows/fetch-tags
+    - run: echo "VERSION=$(git describe --tags | tr - +)" >> $GITHUB_ENV
+    - run: sed "s/\$VERSION/${{ env.VERSION }}/g" ./packages/aur/shiromino-git/PKGBUILD > PKGBUILD
+    - uses: KSXGitHub/github-actions-deploy-aur@v2.2.4
+      with:
+        commit_email: shiromino+aur@github
+        commit_message: Updated PKGBUILD (${{ env.VERSION }}
+        commit_username: shiromino-bot
+        pkgbuild: PKGBUILD
+        pkgname: shiromino
+        ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+name: deploy-aur-git-package
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - packages/aur/shiromino-git/**
