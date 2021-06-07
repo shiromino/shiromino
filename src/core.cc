@@ -299,20 +299,19 @@ bool CoreState::init() {
         assetMgr.addLoader(Shiro::AssetType::music, std::unique_ptr<Shiro::AssetLoader>(new Shiro::MusicAssetLoader(settings.sharePath / "audio")));
         assetMgr.addLoader(Shiro::AssetType::sfx, std::unique_ptr<Shiro::AssetLoader>(new Shiro::SfxAssetLoader(settings.sharePath / "audio")));
         assetMgr.preload({
-            {Shiro::AssetType::image, "title"},
+            //{Shiro::AssetType::image, "title"},
             {Shiro::AssetType::image, "title_emboss"},
             {Shiro::AssetType::image, "tetrion_qs_white"},
-            {Shiro::AssetType::image, "tets_bright_qs"},
-            {Shiro::AssetType::image, "tets_bright_qs_small"},
-            {Shiro::AssetType::image, "tets_dark_qs"},
-            {Shiro::AssetType::image, "tets_jeweled"},
+            //{Shiro::AssetType::image, "tets_bright_qs"},
+            //{Shiro::AssetType::image, "tets_bright_qs_small"},
+            //{Shiro::AssetType::image, "tets_dark_qs"},
+            //{Shiro::AssetType::image, "tets_jeweled"},
             {Shiro::AssetType::image, "pieces-256x256"},
             //{Shiro::AssetType::image, "g2_tets_bright"},
             //{Shiro::AssetType::image, "g2_tets_bright_small"},
             //{Shiro::AssetType::image, "g2_tets_dark"},
-            {Shiro::AssetType::image, "playfield_grid"},
-            {Shiro::AssetType::image, "playfield_grid_alt"},
-            {Shiro::AssetType::image, "misc"},
+            //{Shiro::AssetType::image, "playfield_grid"},
+            //{Shiro::AssetType::image, "playfield_grid_alt"},
             {Shiro::AssetType::image, "medals"},
             {Shiro::AssetType::image, "bg0"},
             {Shiro::AssetType::image, "bg1"},
@@ -531,6 +530,7 @@ bool CoreState::init() {
 void CoreState::run() {
     bool running = true;
 
+    /*
     int windowWidth = 620;
     int windowHeight = 460;
     SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
@@ -561,6 +561,7 @@ void CoreState::run() {
     QRS spec { qrs_variant_P, false };
     TestSPM SPMgame { *this, &spec };
     SPMgame.init();
+    */
 
     //p1game = qs_game_create(this, 0, MODE_PENTOMINO, NO_REPLAY);
     //p1game->init(p1game);

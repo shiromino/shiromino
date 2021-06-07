@@ -308,11 +308,9 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
         return -1;
 
     SDL_Texture *tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "tetrion_qs_white").getTexture();
-    SDL_Texture *playfield_grid = Shiro::ImageAsset::get(cs->assetMgr, "playfield_grid_alt").getTexture();
     //SDL_Texture *tets = Shiro::ImageAsset::get(cs->assetMgr, "tets_dark_qs").getTexture();
     SDL_Texture *tets = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
-    SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
-    SDL_Texture *misc = Shiro::ImageAsset::get(cs->assetMgr, "misc").getTexture();
+    //SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
 
     SDL_SetTextureColorMod(tets, 220, 220, 220);
 
@@ -340,8 +338,6 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     int g = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z - 1000) % 3000) / 3000.0)));
     int b = 127 + (int)(127.0 * sin(2.0 * 3.14159265358979 * ((double)((z - 2000) % 3000) / 3000.0)));
     */
-
-    // SDL_SetTextureAlphaMod(misc, 180);
 
     /*if(flags & TETRION_DEATH) {
         tetrion_qs = (asset_by_name(cs, "tetrion/tetrion_death"))->data;
@@ -389,12 +385,36 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
     Shiro::RenderCopy(cs->screen, tetrion_qs, NULL, &tdest);
 
+    int logicalW = QRS_FIELD_W;
+    int logicalH = QRS_FIELD_H;
+
     if((flags & DRAWFIELD_GRID) && !(flags & DRAWFIELD_BIG))
     {
-        if(flags & TEN_W_TETRION)
-            playfield_grid = Shiro::ImageAsset::get(cs->assetMgr, "playfield_grid_alt_10x10").getTexture();
+        SDL_Rect gridSrc = { 33 * 256, 0, 256, 256 };
+        SDL_Rect gridDest = { 0, 0, 16, 16 };
 
-        Shiro::RenderCopy(cs->screen, playfield_grid, NULL, &tdest);
+        for(i = 0; i < logicalW; i++)
+        {
+            for(j = QRS_FIELD_H - 20; j < logicalH; j++)
+            {
+                c = field->getCell(i, j);
+
+                if(c == GRID_OOB)
+                {
+                    return 1;
+                }
+
+                if(c == QRS_FIELD_W_LIMITER)
+                {
+                    continue;
+                }
+
+                gridDest.x = x + 16 + (i * 16);
+                gridDest.y = y + 32 + ((j - QRS_FIELD_H + 20) * 16);
+
+                Shiro::RenderCopy(cs->screen, tets, &gridSrc, &gridDest);
+            }
+        }
     }
 
     /*if(field == cs->p1game->field) {
@@ -418,9 +438,6 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     {
         SDL_SetTextureAlphaMod(misc, 140);
     }*/
-
-    int logicalW = QRS_FIELD_W;
-    int logicalH = QRS_FIELD_H;
 
     int cellSize = 16;
 
@@ -499,6 +516,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                         dest.x += 16;
                     }
 
+                    /*
                     if(flags & DRAWFIELD_JEWELED)
                     {
                         Shiro::RenderCopy(cs->screen, tets_jeweled, &src, &dest);
@@ -507,11 +525,15 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     {
                         Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                     }
+                    */
+
+                    Shiro::RenderCopy(cs->screen, tets, &src, &dest);
 
                     src.x = 32 * 256;
                 }
                 else
                 {
+                    /*
                     if(flags & DRAWFIELD_JEWELED)
                     {
                         src.x = ((c & 0xff) - 19) * 256;
@@ -520,6 +542,9 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     {
                         src.x = ((c & 0xff) - 1) * 256;
                     }
+                    */
+
+                    src.x = ((c & 0xff) - 1) * 256;
                 }
 
                 src.y = 0;
@@ -541,6 +566,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     {
                         if(GET_PIECE_FADE_COUNTER(c) > 10)
                         {
+                            /*
                             if(flags & DRAWFIELD_JEWELED)
                             {
                                 Shiro::RenderCopy(cs->screen, tets_jeweled, &src, &dest);
@@ -549,6 +575,9 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                             {
                                 Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                             }
+                            */
+
+                            Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                         }
                         else if(GET_PIECE_FADE_COUNTER(c) > 0)
                         {
@@ -559,6 +588,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     }
                     else
                     {
+                        /*
                         if(flags & DRAWFIELD_JEWELED)
                         {
                             Shiro::RenderCopy(cs->screen, tets_jeweled, &src, &dest);
@@ -567,6 +597,9 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                         {
                             Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                         }
+                        */
+
+                        Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                     }
 
                     if((!(c & QRS_PIECE_BRACKETS) || c < 0) && !(flags & DRAWFIELD_NO_OUTLINE))
@@ -640,7 +673,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     }
                 }
 
-                SDL_SetTextureColorMod(tets, 255, 255, 255);
+                SDL_SetTextureColorMod(tets, 220, 220, 220);
             }
         }
     }
@@ -652,9 +685,6 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     }*/
 
     SDL_SetTextureColorMod(tets, 255, 255, 255);
-
-    SDL_SetTextureColorMod(misc, 255, 255, 255);
-    SDL_SetTextureAlphaMod(misc, 255);
 
     return 0;
 }
@@ -1001,8 +1031,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
     }
 
     SDL_Texture *tets;
-    SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
-    SDL_Texture *misc = Shiro::ImageAsset::get(cs->assetMgr, "misc").getTexture();
+    //SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
 
     //   if(flags & GFX_G2) {
     //      if(flags & DRAWPIECE_SMALL)
@@ -1010,14 +1039,6 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
     //      else
     //         tets = Shiro::ImageAsset::get(cs->assetMgr, "g2_tets_bright_g2").getTexture();
     //   } else {
-    if(flags & DRAWPIECE_SMALL)
-    {
-        tets = Shiro::ImageAsset::get(cs->assetMgr, "tets_bright_qs_small").getTexture();
-    }
-    else
-    {
-        tets = Shiro::ImageAsset::get(cs->assetMgr, "tets_bright_qs").getTexture();
-    }
 
     tets = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
 
@@ -1099,54 +1120,67 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
 
                         if(!(flags & DRAWPIECE_PREVIEW))
                         {
-                            src.w = 16;
-                            src.h = 16;
+                            Uint8 r_;
+                            Uint8 g_;
+                            Uint8 b_;
+                            Uint8 a_;
+                            SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
+                            SDL_SetRenderDrawColor(cs->screen.renderer, 0xFF, 0xFF, 0xFF, 0x8C);
 
-                            c = field->getCell(cell_x, static_cast<std::size_t>(cell_y) - 1); // above, left, right, below
+                            SDL_Rect outlineRect = { dest.x, dest.y, size, 2 };
+
+                            c = field->getCell(i, static_cast<std::size_t>(j) - 1); // above
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
-                                src.x = 0;
-                                src.y = 48;
+                                outlineRect.x = dest.x;
+                                outlineRect.y = dest.y;
+                                outlineRect.w = size;
+                                outlineRect.h = 2;
 
-                                Shiro::RenderCopy(cs->screen, misc, &src, &dest);
+                                Shiro::RenderFillRect(cs->screen, &outlineRect);
                             }
 
-                            c = field->getCell(static_cast<std::size_t>(cell_x) - 1, cell_y); // above, left, right, below
+                            c = field->getCell(static_cast<std::size_t>(i) - 1, j); // left
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
-                                src.x = 16;
-                                src.y = 48;
+                                outlineRect.x = dest.x;
+                                outlineRect.y = dest.y;
+                                outlineRect.w = 2;
+                                outlineRect.h = size;
 
-                                Shiro::RenderCopy(cs->screen, misc, &src, &dest);
+                                Shiro::RenderFillRect(cs->screen, &outlineRect);
                             }
 
-                            c = field->getCell(static_cast<std::size_t>(cell_x) + 1, cell_y); // above, left, right, below
+                            c = field->getCell(static_cast<std::size_t>(i) + 1, j); // right
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
-                                src.x = 32;
-                                src.y = 48;
+                                outlineRect.x = dest.x + size - 2;
+                                outlineRect.y = dest.y;
+                                outlineRect.w = 2;
+                                outlineRect.h = size;
 
-                                Shiro::RenderCopy(cs->screen, misc, &src, &dest);
+                                Shiro::RenderFillRect(cs->screen, &outlineRect);
                             }
 
-                            c = field->getCell(cell_x, static_cast<std::size_t>(cell_y) + 1); // above, left, right, below
+                            c = field->getCell(i, static_cast<std::size_t>(j) + 1); // below
                             if(!IS_STACK(c) && c != QRS_FIELD_W_LIMITER && c != GRID_OOB)
                             {
-                                src.x = 48;
-                                src.y = 48;
+                                outlineRect.x = dest.x;
+                                outlineRect.y = dest.y + size - 2;
+                                outlineRect.w = size;
+                                outlineRect.h = 2;
 
-                                Shiro::RenderCopy(cs->screen, misc, &src, &dest);
+                                Shiro::RenderFillRect(cs->screen, &outlineRect);
                             }
 
-                            src.y = 0;
-                            src.w = 256;
-                            src.h = 256;
+                            SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
                         }
                     }
                 }
                 else
                 {
                     // gfx_drawtext(cs, piece_str, dest.x, dest.y, (gfx_piece_colors[pd->qrs_id] * 0x100) + A(rgba)); //Shiro::RenderCopy(cs->screen, tets, &src, &dest);
+                    /*
                     if(flags & DRAWPIECE_JEWELED)
                     {
                         Shiro::RenderCopy(cs->screen, tets_jeweled, &src, &dest);
@@ -1155,6 +1189,9 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                     {
                         Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                     }
+                    */
+
+                    Shiro::RenderCopy(cs->screen, tets, &src, &dest);
                 }
             }
         }

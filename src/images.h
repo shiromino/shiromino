@@ -1,6 +1,4 @@
 IMG(font)
-IMG(font_no_outline)
-IMG(font_outline_only)
 IMG(font_square_no_outline)
 IMG(font_square_outline_only)
 IMG(font_thin)

@@ -74,10 +74,11 @@ int gfx_drawqs(game_t *g)
     }*/
 
     SDL_Texture *font = Shiro::ImageAsset::get(cs->assetMgr, "font").getTexture();
-    SDL_Texture *tets_dark_qs = Shiro::ImageAsset::get(cs->assetMgr, "tets_dark_qs").getTexture();
-    //SDL_Texture *tets_jeweled = Shiro::ImageAsset::get(cs->assetMgr, "tets_jeweled").getTexture();
+    SDL_Texture *pieces_256x256 = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
 
-    SDL_Rect palettesrc = { 0, 0, 16, 16 };
+    SDL_SetTextureColorMod(pieces_256x256, 220, 220, 220);
+
+    SDL_Rect palettesrc = { 0, 0, 256, 256 };
     SDL_Rect palettedest = { FIELD_EDITOR_PALETTE_X, FIELD_EDITOR_PALETTE_Y, 16, 16 };
 
     SDL_Rect src = { 0, 0, 32, 32 };
@@ -263,14 +264,14 @@ int gfx_drawqs(game_t *g)
                 if(i < 3 || i == 4 || i == 5 || i > 10)
                     continue;
 
-                palettesrc.x = i * 16;
-                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
+                palettesrc.x = i * 256;
+                Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
                 if(q->pracdata->palette_selection - 1 == i)
                 {
-                    palettesrc.x = 31 * 16;
-                    SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                    Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
-                    SDL_SetTextureAlphaMod(tets_dark_qs, 255);
+                    palettesrc.x = 31 * 256;
+                    SDL_SetTextureAlphaMod(pieces_256x256, 140);
+                    Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
+                    SDL_SetTextureAlphaMod(pieces_256x256, 255);
                 }
                 palettedest.y += 16;
             }
@@ -279,37 +280,37 @@ int gfx_drawqs(game_t *g)
 
             for(i = 18; i < 26; i++)
             {
-                palettesrc.x = i * 16;
-                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
+                palettesrc.x = i * 256;
+                Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
                 if(q->pracdata->palette_selection - 1 == i || (i == 25 && q->pracdata->palette_selection == -5))
                 {
-                    palettesrc.x = 31 * 16;
-                    SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                    Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
-                    SDL_SetTextureAlphaMod(tets_dark_qs, 255);
+                    palettesrc.x = 31 * 256;
+                    SDL_SetTextureAlphaMod(pieces_256x256, 140);
+                    Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
+                    SDL_SetTextureAlphaMod(pieces_256x256, 255);
                 }
                 palettedest.y += 16;
             }
 
-            palettesrc.x = 30 * 16;
-            Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
+            palettesrc.x = 30 * 256;
+            Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
             if(q->pracdata->palette_selection == QRS_PIECE_BRACKETS)
             {
-                palettesrc.x = 31 * 16;
-                SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
-                SDL_SetTextureAlphaMod(tets_dark_qs, 255);
+                palettesrc.x = 31 * 256;
+                SDL_SetTextureAlphaMod(pieces_256x256, 140);
+                Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
+                SDL_SetTextureAlphaMod(pieces_256x256, 255);
             }
 
             palettedest.y += 16;
-            palettesrc.x = 32 * 16;
-            Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
+            palettesrc.x = 32 * 256;
+            Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
             if(q->pracdata->palette_selection == QRS_PIECE_GEM)
             {
-                palettesrc.x = 31 * 16;
-                SDL_SetTextureAlphaMod(tets_dark_qs, 140);
-                Shiro::RenderCopy(g->origin->screen, tets_dark_qs, &palettesrc, &palettedest);
-                SDL_SetTextureAlphaMod(tets_dark_qs, 255);
+                palettesrc.x = 31 * 256;
+                SDL_SetTextureAlphaMod(pieces_256x256, 140);
+                Shiro::RenderCopy(g->origin->screen, pieces_256x256, &palettesrc, &palettedest);
+                SDL_SetTextureAlphaMod(pieces_256x256, 255);
             }
         }
         else
@@ -843,6 +844,8 @@ int gfx_drawqs(game_t *g)
         gfx_drawtext(cs, ctp_overload_str, 640 - 16 + 16 * (1 - ctp_overload_str.size()), 2, monofont_square, &fmt);
     }
 #endif
+
+    SDL_SetTextureColorMod(pieces_256x256, 220, 220, 220);
 
     return 0;
 }
