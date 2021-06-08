@@ -12,245 +12,238 @@
 
 static const int MAX_PLAYER_NAME_LENGTH = 64;
 
-void scoredb_init(Shiro::Records::List *records, const char *filename)
-{
-    try {
+void scoredb_init(Shiro::Records::List *records, const char *filename) {
         int ret = sqlite3_open_v2(filename, &records->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
         check(ret == SQLITE_OK, "Could not open/create sqlite database: %s", sqlite3_errmsg(records->db));
 
-        const char enableForeignKeysSql[] =
-            "PRAGMA foreign_keys = ON;";
+        const char enableForeignKeysSql[] = "PRAGMA foreign_keys = ON;";
 
         ret = sqlite3_exec(records->db, enableForeignKeysSql, NULL, NULL, NULL);
         check(ret == 0, "Could not enable foreign key constraints");
 
-        const char createPlayerDbSql[] =
-            "CREATE TABLE IF NOT EXISTS players ("
-            "    playerId INTEGER PRIMARY KEY, "
-            "    name VARCHAR(64) UNIQUE NOT NULL COLLATE NOCASE, "
-            "    tetroCount INTEGER DEFAULT(0), "
-            "    pentoCount INTEGER DEFAULT(0), "
-            "    tetrisCount INTEGER DEFAULT(0)"
-            ");";
+        const char createPlayerDbSql[] = R"(
+            CREATE TABLE IF NOT EXISTS players (
+                playerId INTEGER PRIMARY KEY,
+                name VARCHAR(64) UNIQUE NOT NULL COLLATE NOCASE,
+                tetroCount INTEGER DEFAULT(0),
+                pentoCount INTEGER DEFAULT(0),
+                tetrisCount INTEGER DEFAULT(0)
+            );
+        )";
 
         ret = sqlite3_exec(records->db, createPlayerDbSql, NULL, NULL, NULL);
         check(ret == 0, "Could not create players table: %s", sqlite3_errmsg(records->db));
 
         // TODO: Actually design the database. Replay table? Player table + related columns? Indexes?
-        const char createTableSql[] =
-            "CREATE TABLE IF NOT EXISTS scores ("
-            "    scoreId INTEGER PRIMARY KEY, "
-            "    playerId INTEGER NOT NULL, "
-            "    mode INTEGER, "
-            "    grade INTEGER, "
-            "    startlevel INTEGER, "
-            "    level INTEGER, "
-            "    time INTEGER, "
-            "    replay BLOB, "
-            "    date INTEGER, "
-            "    FOREIGN KEY(playerId) REFERENCES players(playerId) "
-            ");";
-
+        const char createTableSql[] = R"(
+            CREATE TABLE IF NOT EXISTS scores (
+                scoreId INTEGER PRIMARY KEY,
+                playerId INTEGER NOT NULL,
+                mode INTEGER,
+                grade INTEGER,
+                startlevel INTEGER,
+                level INTEGER,
+                time INTEGER,
+                replay BLOB,
+                date INTEGER,
+                FOREIGN KEY(playerId) REFERENCES players(playerId)
+            );
+        )";
         ret = sqlite3_exec(records->db, createTableSql, NULL, NULL, NULL);
         check(ret == 0, "Could not create scores table");
 
         std::cerr << "Opened record list \"" << filename << "\"" << std::endl;
 
         // TODO: Create a view with human-readable data
-    }
-    catch (const std::logic_error& error) {
-    }
 }
 
-void scoredb_terminate(Shiro::Records::List *records)
-{
+void scoredb_terminate(Shiro::Records::List *records) {
     sqlite3_close(records->db);
 }
 
-Shiro::Records::List *scoredb_create(const char *filename)
-{
+Shiro::Records::List *scoredb_create(const char *filename) {
     Shiro::Records::List *records = (Shiro::Records::List *) malloc(sizeof(Shiro::Records::List));
     scoredb_init(records, filename);
-
     return records;
 }
 
-void scoredb_destroy(Shiro::Records::List *records)
-{
+void scoredb_destroy(Shiro::Records::List *records) {
     scoredb_terminate(records);
 
     free(records);
 }
 
-void scoredb_create_player(Shiro::Records::List *records, Shiro::Player *out_player, const char *playerName)
-{
+void scoredb_create_player(Shiro::Records::List *records, Shiro::Player *out_player, const char *playerName) {
     sqlite3_stmt *sql;
-    try {
-        const char insertPlayerSql[] =
-            "INSERT OR IGNORE INTO players (name)"
-            "VALUES (:playerName);";
+    const char insertPlayerSql[] = R"(
+        INSERT OR IGNORE INTO
+            players (name)
+        VALUES
+            (:playerName);
+    )";
 
-        check(sqlite3_prepare_v2(records->db, insertPlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check(sqlite3_prepare_v2(records->db, insertPlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        size_t playerNameLength = 0;
-        while (playerName[playerNameLength] != '\0' && ++playerNameLength < MAX_PLAYER_NAME_LENGTH);
+    size_t playerNameLength = 0;
+    while (playerName[playerNameLength] != '\0' && ++playerNameLength < MAX_PLAYER_NAME_LENGTH);
 
-        check(playerName != NULL && playerNameLength > 0, "Player name is invalid");
-        check_bind(records->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
+    check(playerName != NULL && playerNameLength > 0, "Player name is invalid");
+    check_bind(records->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
 
-        int ret = sqlite3_step(sql);
-        check(ret == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(records->db));
+    int ret = sqlite3_step(sql);
+    check(ret == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(records->db));
 
-        std::cerr << "Player \"" << playerName << "\" is in players table" << std::endl;
+    std::cerr << "Player \"" << playerName << "\" is in players table" << std::endl;
 
-        sqlite3_finalize(sql);
+    sqlite3_finalize(sql);
 
-        const char selectPlayerSql[] =
-            "SELECT playerId, name, tetroCount, pentoCount, tetrisCount "
-            "FROM players "
-            "WHERE name = :playerName;";
+    const char selectPlayerSql[] = R"(
+        SELECT
+            playerId,
+            name,
+            tetroCount,
+            pentoCount,
+            tetrisCount
+        FROM
+            players
+        WHERE
+            name = :playerName;
+    )";
+    check(sqlite3_prepare_v2(records->db, selectPlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check(sqlite3_prepare_v2(records->db, selectPlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check_bind(records->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
 
-        check_bind(records->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
+    ret = sqlite3_step(sql);
+    check(ret == SQLITE_ROW, "Could not get player \"%s\" from players table: %s", playerName, sqlite3_errmsg(records->db));
 
-        ret = sqlite3_step(sql);
-        check(ret == SQLITE_ROW, "Could not get player \"%s\" from players table: %s", playerName, sqlite3_errmsg(records->db));
-
-        out_player->playerId    = sqlite3_column_int(sql,  0);
-        out_player->name        = sqlite3_column_text(sql, 1);
-        out_player->tetroCount  = sqlite3_column_int(sql,  2);
-        out_player->pentoCount  = sqlite3_column_int(sql,  3);
-        out_player->tetrisCount = sqlite3_column_int(sql,  4);
-    }
-    catch (const std::logic_error& error) {
-    }
-
+    out_player->playerId = sqlite3_column_int(sql,  0);
+    out_player->name = sqlite3_column_text(sql, 1);
+    out_player->tetroCount = sqlite3_column_int(sql,  2);
+    out_player->pentoCount = sqlite3_column_int(sql,  3);
+    out_player->tetrisCount = sqlite3_column_int(sql,  4);
     sqlite3_finalize(sql);
 }
 
-void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p)
-{
+void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p) {
     sqlite3_stmt *sql;
-    try {
-        const char updatePlayerSql[] =
-            "UPDATE players "
-            "    SET tetroCount = :tetroCount, "
-            "        pentoCount = :pentoCount, "
-            "       tetrisCount = :tetrisCount "
-            "WHERE playerId = :playerId;";
+    const char updatePlayerSql[] = R"(
+        UPDATE
+            players
+        SET
+            tetroCount = :tetroCount,
+            pentoCount = :pentoCount,
+            tetrisCount = :tetrisCount
+        WHERE
+            playerId = :playerId;
+    )";
 
-        check(sqlite3_prepare_v2(records->db, updatePlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check(sqlite3_prepare_v2(records->db, updatePlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetroCount"), p->tetroCount));
-        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":pentoCount"), p->pentoCount));
-        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetrisCount"), p->tetrisCount));
-        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetroCount"), p->tetroCount));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":pentoCount"), p->pentoCount));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetrisCount"), p->tetrisCount));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
 
-        const int ret = sqlite3_step(sql);
-        check(ret == SQLITE_DONE, "Could not update players table for: %s", sqlite3_errmsg(records->db));
-    }
-    catch (const std::logic_error& error) {
-    }
-
+    const int ret = sqlite3_step(sql);
+    check(ret == SQLITE_DONE, "Could not update players table for: %s", sqlite3_errmsg(records->db));
     sqlite3_finalize(sql);
 }
 
-void scoredb_add(Shiro::Records::List *records, Shiro::Player* p, struct replay *r)
-{
+void scoredb_add(Shiro::Records::List *records, Shiro::Player* p, struct replay *r) {
     sqlite3_stmt *sql;
-    try {
-        std::string replayDescriptor = get_replay_descriptor(r);
+    std::string replayDescriptor = get_replay_descriptor(r);
+    const char insertSql[] = R"(
+        INSERT INTO scores
+            (mode, playerId, grade, startLevel, level, time, replay, date)
+        VALUES
+            (:mode, :playerID, :grade, :startLevel, :level, :time, :replay, strftime('%s', 'now'));
+    )";
 
-        const char insertSql[] =
-            "INSERT INTO scores (mode, playerId, grade, startLevel, level, time, replay, date) "
-            "VALUES (:mode, :playerId, :grade, :startLevel, :level, :time, :replay, strftime('%s', 'now'));";
+    check(sqlite3_prepare_v2(records->db, insertSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check(sqlite3_prepare_v2(records->db, insertSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    size_t replayLength = 0;
+    uint8_t *replayData = generate_raw_replay(r, &replayLength);
 
-        size_t replayLen = 0;
-        uint8_t *replayData = generate_raw_replay(r, &replayLen);
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), r->mode));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":grade"), r->grade));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), r->starting_level));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":level"), r->ending_level));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":time"), int(r->time)));
+    check_bind(records->db, sqlite3_bind_blob(sql, sqlite3_bind_parameter_index(sql, ":replay"), replayData, (int)replayLength, SQLITE_STATIC));
 
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":mode"),       r->mode));
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerId"),   p->playerId));
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":grade"),      r->grade));
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":startLevel"), r->starting_level));
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":level"),      r->ending_level));
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":time"),       int(r->time)));
-        check_bind(records->db, sqlite3_bind_blob(sql, sqlite3_bind_parameter_index(sql, ":replay"),     replayData, (int)replayLen, SQLITE_STATIC));
+    const int ret = sqlite3_step(sql);
+    check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(records->db));
+    dispose_raw_replay(replayData);
 
-        const int ret = sqlite3_step(sql);
-        check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(records->db));
-        dispose_raw_replay(replayData);
-
-        std::cerr << "Wrote replay " << replayLen << ": " << replayDescriptor << std::endl;
-    }
-    catch (const std::logic_error& error) {
-    }
-
+    std::cerr << "Wrote replay " << replayLength << ": " << replayDescriptor << std::endl;
     sqlite3_finalize(sql);
 }
 
-int scoredb_get_replay_count(Shiro::Records::List *records, Shiro::Player *p)
-{
+int scoredb_get_replay_count(Shiro::Records::List *records, Shiro::Player *p) {
     sqlite3_stmt *sql;
     int replayCount = 0;
-    try {
-        const char getReplayCountSql[] =
-            "SELECT COUNT(*) "
-            "FROM scores "
-            "WHERE playerId = :playerId;";
+    const char getReplayCountSql[] = R"(
+        SELECT
+            COUNT(*)
+        FROM
+            scores
+        WHERE
+            playerId = :playerID;
+    )";
 
-        check(sqlite3_prepare_v2(records->db, getReplayCountSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check(sqlite3_prepare_v2(records->db, getReplayCountSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
+    check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
 
-        const int ret = sqlite3_step(sql);
-        check(ret == SQLITE_ROW, "Could not get replay count: %s", sqlite3_errmsg(records->db));
+    const int ret = sqlite3_step(sql);
+    check(ret == SQLITE_ROW, "Could not get replay count: %s", sqlite3_errmsg(records->db));
 
-        replayCount = sqlite3_column_int(sql, 0);
-    }
-    catch (const std::logic_error& error) {
-    }
-
+    replayCount = sqlite3_column_int(sql, 0);
     sqlite3_finalize(sql);
-
     return replayCount;
 }
 
-struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Player *p, int *out_replayCount)
-{
+struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Player *p, int *out_replayCount) {
     sqlite3_stmt *sql;
     const std::size_t replayCount = scoredb_get_replay_count(records, p);
     struct replay *replayList = new struct replay[replayCount];
     assert(replayList != nullptr);
-    try {
-        // TODO: Pagination? Current interface expects a full list of replays
-        const char getReplayListSql[] =
-            "SELECT scoreId, mode, grade, startLevel, level, time, date "
-            "FROM scores "
-            "WHERE playerId = :playerId "
-            "ORDER BY mode, level DESC, time;";
+    // TODO: Pagination? Current interface expects a full list of replays
+    const char getReplayListSql[] = R"(
+        SELECT
+            scoreId,
+            mode,
+            grade,
+            startLevel,
+            level,
+            time,
+            date
+        FROM
+            scores
+        WHERE
+            playerId = :playerID
+        ORDER BY
+            mode,
+            level DESC,
+            time
+        )";
 
-        check(sqlite3_prepare_v2(records->db, getReplayListSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check(sqlite3_prepare_v2(records->db, getReplayListSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
+    check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
 
-        for (std::size_t i = 0; i < replayCount; i++)
-        {
-            int ret = sqlite3_step(sql);
-            check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
+    for (std::size_t i = 0; i < replayCount; i++) {
+        int ret = sqlite3_step(sql);
+        check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
-            replayList[i].index          = sqlite3_column_int(sql, 0);
-            replayList[i].mode           = sqlite3_column_int(sql, 1);
-            replayList[i].grade          = sqlite3_column_int(sql, 2);
-            replayList[i].starting_level = sqlite3_column_int(sql, 3);
-            replayList[i].ending_level   = sqlite3_column_int(sql, 4);
-            replayList[i].time           = sqlite3_column_int(sql, 5);
-            replayList[i].date           = sqlite3_column_int(sql, 6);
-        }
-    }
-    catch (const std::logic_error& error) {
+        replayList[i].index          = sqlite3_column_int(sql, 0);
+        replayList[i].mode           = sqlite3_column_int(sql, 1);
+        replayList[i].grade          = sqlite3_column_int(sql, 2);
+        replayList[i].starting_level = sqlite3_column_int(sql, 3);
+        replayList[i].ending_level   = sqlite3_column_int(sql, 4);
+        replayList[i].time           = sqlite3_column_int(sql, 5);
+        replayList[i].date           = sqlite3_column_int(sql, 6);
     }
     sqlite3_finalize(sql);
 
@@ -259,56 +252,58 @@ struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Pla
 }
 
 
-void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_replay, int replay_id)
-{
+void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_replay, int replay_id) {
     sqlite3_stmt *sql;
-    try {
-        const char *getReplaySql =
-            "SELECT replay FROM scores "
-            "WHERE scoreId = :scoreId;";
+    const char *getReplaySql = R"(
+        SELECT
+            replay
+        FROM
+            scores
+        WHERE
+            scoreId = :scoreID;
+    )";
 
-        check(sqlite3_prepare_v2(records->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check(sqlite3_prepare_v2(records->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":scoreId"), replay_id));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":scoreID"), replay_id));
 
-        const int ret = sqlite3_step(sql);
-        check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
+    const int ret = sqlite3_step(sql);
+    check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
-        const int replayBufferLength = sqlite3_column_bytes(sql, 0);
-        const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
+    const int replayBufferLength = sqlite3_column_bytes(sql, 0);
+    const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
 
-        read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
-    }
-    catch (const std::logic_error& error) {
-    }
-
+    read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
     sqlite3_finalize(sql);
 }
 
-void scoredb_get_full_replay_by_condition(Shiro::Records::List *records, struct replay *out_replay, int mode)
-{
+void scoredb_get_full_replay_by_condition(Shiro::Records::List *records, struct replay *out_replay, int mode) {
     sqlite3_stmt *sql;
-    try {
-        const char *getReplaySql =
-            "SELECT replay FROM scores "
-            "WHERE mode = :mode "
-            "ORDER BY grade DESC, level DESC, time, date "
-            "LIMIT 1;";
+    const char *getReplaySql = R"(
+        SELECT
+            replay
+        FROM
+            scores
+        WHERE
+            mode = :mode
+        ORDER BY
+            grade DESC,
+            level DESC,
+            time,
+            date
+        LIMIT 1;
+    )";
 
-        check(sqlite3_prepare_v2(records->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    check(sqlite3_prepare_v2(records->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
 
-        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
 
-        int ret = sqlite3_step(sql);
-        check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
+    int ret = sqlite3_step(sql);
+    check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
-        int replayBufferLength = sqlite3_column_bytes(sql, 0);
-        const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
+    int replayBufferLength = sqlite3_column_bytes(sql, 0);
+    const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
 
-        read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
-    }
-    catch (const std::logic_error& error) {
-    }
-
+    read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
     sqlite3_finalize(sql);
 }
