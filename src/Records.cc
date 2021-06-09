@@ -13,13 +13,13 @@
 static const int MAX_PLAYER_NAME_LENGTH = 64;
 
 void scoredb_init(Shiro::Records::List *records, const char *filename) {
-        int ret = sqlite3_open_v2(filename, &records->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-        check(ret == SQLITE_OK, "Could not open/create sqlite database: %s", sqlite3_errmsg(records->db));
+        int returnValue = sqlite3_open_v2(filename, &records->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+        check(returnValue == SQLITE_OK, "Could not open/create sqlite database: %s", sqlite3_errmsg(records->db));
 
         const char enableForeignKeysSql[] = "PRAGMA foreign_keys = ON;";
 
-        ret = sqlite3_exec(records->db, enableForeignKeysSql, NULL, NULL, NULL);
-        check(ret == 0, "Could not enable foreign key constraints");
+        returnValue = sqlite3_exec(records->db, enableForeignKeysSql, NULL, NULL, NULL);
+        check(returnValue == 0, "Could not enable foreign key constraints");
 
         const char createPlayerDbSql[] = R"(
             CREATE TABLE IF NOT EXISTS players (
@@ -31,8 +31,8 @@ void scoredb_init(Shiro::Records::List *records, const char *filename) {
             );
         )";
 
-        ret = sqlite3_exec(records->db, createPlayerDbSql, NULL, NULL, NULL);
-        check(ret == 0, "Could not create players table: %s", sqlite3_errmsg(records->db));
+        returnValue = sqlite3_exec(records->db, createPlayerDbSql, NULL, NULL, NULL);
+        check(returnValue == 0, "Could not create players table: %s", sqlite3_errmsg(records->db));
 
         // TODO: Actually design the database. Replay table? Player table + related columns? Indexes?
         const char createTableSql[] = R"(
@@ -49,8 +49,8 @@ void scoredb_init(Shiro::Records::List *records, const char *filename) {
                 FOREIGN KEY(playerId) REFERENCES players(playerId)
             );
         )";
-        ret = sqlite3_exec(records->db, createTableSql, NULL, NULL, NULL);
-        check(ret == 0, "Could not create scores table");
+        returnValue = sqlite3_exec(records->db, createTableSql, NULL, NULL, NULL);
+        check(returnValue == 0, "Could not create scores table");
 
         std::cerr << "Opened record list \"" << filename << "\"" << std::endl;
 
@@ -90,8 +90,8 @@ void scoredb_create_player(Shiro::Records::List *records, Shiro::Player *out_pla
     check(playerName != NULL && playerNameLength > 0, "Player name is invalid");
     check_bind(records->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
 
-    int ret = sqlite3_step(sql);
-    check(ret == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(records->db));
+    int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_DONE, "Could not insert value into players table: %s", sqlite3_errmsg(records->db));
 
     std::cerr << "Player \"" << playerName << "\" is in players table" << std::endl;
 
@@ -113,8 +113,8 @@ void scoredb_create_player(Shiro::Records::List *records, Shiro::Player *out_pla
 
     check_bind(records->db, sqlite3_bind_text(sql,  sqlite3_bind_parameter_index(sql, ":playerName"), playerName, (int)playerNameLength, SQLITE_STATIC));
 
-    ret = sqlite3_step(sql);
-    check(ret == SQLITE_ROW, "Could not get player \"%s\" from players table: %s", playerName, sqlite3_errmsg(records->db));
+    returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_ROW, "Could not get player \"%s\" from players table: %s", playerName, sqlite3_errmsg(records->db));
 
     out_player->playerId = sqlite3_column_int(sql,  0);
     out_player->name = sqlite3_column_text(sql, 1);
@@ -134,7 +134,7 @@ void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p) {
             pentoCount = :pentoCount,
             tetrisCount = :tetrisCount
         WHERE
-            playerId = :playerId;
+            playerId = :playerID;
     )";
 
     check(sqlite3_prepare_v2(records->db, updatePlayerSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
@@ -142,10 +142,10 @@ void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p) {
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetroCount"), p->tetroCount));
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":pentoCount"), p->pentoCount));
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":tetrisCount"), p->tetrisCount));
-    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerId"), p->playerId));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
 
-    const int ret = sqlite3_step(sql);
-    check(ret == SQLITE_DONE, "Could not update players table for: %s", sqlite3_errmsg(records->db));
+    const int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_DONE, "Could not update players table for: %s", sqlite3_errmsg(records->db));
     sqlite3_finalize(sql);
 }
 
@@ -172,8 +172,8 @@ void scoredb_add(Shiro::Records::List *records, Shiro::Player* p, struct replay 
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":time"), int(r->time)));
     check_bind(records->db, sqlite3_bind_blob(sql, sqlite3_bind_parameter_index(sql, ":replay"), replayData, (int)replayLength, SQLITE_STATIC));
 
-    const int ret = sqlite3_step(sql);
-    check(ret == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(records->db));
+    const int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_DONE, "Could not insert value into scores table: %s", sqlite3_errmsg(records->db));
     dispose_raw_replay(replayData);
 
     std::cerr << "Wrote replay " << replayLength << ": " << replayDescriptor << std::endl;
@@ -196,8 +196,8 @@ int scoredb_get_replay_count(Shiro::Records::List *records, Shiro::Player *p) {
 
     check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
 
-    const int ret = sqlite3_step(sql);
-    check(ret == SQLITE_ROW, "Could not get replay count: %s", sqlite3_errmsg(records->db));
+    const int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_ROW, "Could not get replay count: %s", sqlite3_errmsg(records->db));
 
     replayCount = sqlite3_column_int(sql, 0);
     sqlite3_finalize(sql);
@@ -234,8 +234,8 @@ struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Pla
     check_bind(records->db, sqlite3_bind_int(sql,  sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
 
     for (std::size_t i = 0; i < replayCount; i++) {
-        int ret = sqlite3_step(sql);
-        check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
+        int returnValue = sqlite3_step(sql);
+        check(returnValue == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
         replayList[i].index          = sqlite3_column_int(sql, 0);
         replayList[i].mode           = sqlite3_column_int(sql, 1);
@@ -267,8 +267,8 @@ void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_r
 
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":scoreID"), replay_id));
 
-    const int ret = sqlite3_step(sql);
-    check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
+    const int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
     const int replayBufferLength = sqlite3_column_bytes(sql, 0);
     const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
@@ -298,8 +298,8 @@ void scoredb_get_full_replay_by_condition(Shiro::Records::List *records, struct 
 
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
 
-    int ret = sqlite3_step(sql);
-    check(ret == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
+    int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
     int replayBufferLength = sqlite3_column_bytes(sql, 0);
     const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
