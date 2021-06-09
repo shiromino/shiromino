@@ -991,6 +991,13 @@ bool CoreState::process_events() {
         redo = 0;
     }
 
+    menudata *md = nullptr;
+
+    if(menu != nullptr)
+    {
+        md = (menudata *)(menu->data);
+    }
+
     int windowW;
     int windowH;
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
@@ -1235,14 +1242,25 @@ bool CoreState::process_events() {
                     if (settings.fullscreen) {
                         settings.fullscreen = false;
                         SDL_SetWindowFullscreen(screen.window, 0);
-                        SDL_SetWindowSize(screen.window, static_cast<int>(640.0 * settings.videoScale), static_cast<int>(480.0 * settings.videoScale));
+                        //SDL_SetWindowSize(screen.window, static_cast<int>(float(screen.logicalW) * settings.videoScale), static_cast<int>(float(screen.logicalH) * settings.videoScale));
+                        SDL_SetWindowSize(screen.window, screen.logicalW, screen.logicalH);
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
+                        }
                     }
                     else {
                         settings.fullscreen = true;
-                        SDL_SetWindowSize(screen.window, 640, 480);
-                        SDL_WindowFlags flags = (keyMod & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_FULLSCREEN;
+                        SDL_SetWindowSize(screen.window, screen.logicalW, screen.logicalH);
+                        SDL_WindowFlags flags = (keyMod & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_FULLSCREEN_DESKTOP;
                         if (SDL_SetWindowFullscreen(screen.window, flags) < 0) {
                             std::cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << std::endl;
+                        }
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
                         }
                     }
                     break;
@@ -1256,6 +1274,11 @@ bool CoreState::process_events() {
                         settings.videoScale = 1;
                         SDL_SetWindowSize(screen.window, screen.logicalW, screen.logicalH);
                         screen.render_scale = 1.0;
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
+                        }
                     }
                     pressedDigits[1] = true;
                     break;
@@ -1265,6 +1288,11 @@ bool CoreState::process_events() {
                         settings.videoScale = 2;
                         SDL_SetWindowSize(screen.window, 2 * screen.logicalW, 2 * screen.logicalH);
                         screen.render_scale = 2.0;
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
+                        }
                     }
                     pressedDigits[2] = true;
                     break;
@@ -1274,6 +1302,11 @@ bool CoreState::process_events() {
                         settings.videoScale = 3;
                         SDL_SetWindowSize(screen.window, 3 * screen.logicalW, 3 * screen.logicalH);
                         screen.render_scale = 3.0;
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
+                        }
                     }
                     pressedDigits[3] = true;
                     break;
@@ -1283,6 +1316,11 @@ bool CoreState::process_events() {
                         settings.videoScale = 4;
                         SDL_SetWindowSize(screen.window, 4 * screen.logicalW, 4 * screen.logicalH);
                         screen.render_scale = 4.0;
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
+                        }
                     }
                     pressedDigits[4] = true;
                     break;
@@ -1292,6 +1330,11 @@ bool CoreState::process_events() {
                         settings.videoScale = 5;
                         SDL_SetWindowSize(screen.window, 5 * screen.logicalW, 5 * screen.logicalH);
                         screen.render_scale = 5.0;
+
+                        if(md != nullptr)
+                        {
+                            md->target_tex_update = true;
+                        }
                     }
                     pressedDigits[5] = true;
                     break;
@@ -1413,9 +1456,11 @@ bool CoreState::process_events() {
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    SDL_GetWindowSize(screen.window, &windowW, &windowH);
-                    f = std::min(windowW / screen.logicalW, windowH / screen.logicalH);
-                    screen.render_scale = float(f);
+                    if(md != nullptr)
+                    {
+                        md->target_tex_update = true;
+                    }
+
                     select_all = false;
                     undo = false;
                     redo = false;
@@ -1432,6 +1477,8 @@ bool CoreState::process_events() {
     }
 
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
+    f = std::min(windowW / screen.logicalW, windowH / screen.logicalH);
+    screen.render_scale = float(f);
 
     screen.w = windowW;
     screen.h = windowH;
@@ -1443,9 +1490,11 @@ bool CoreState::process_events() {
 
     if(screen.render_scale != prevRenderScale)
     {
-        if(menu != nullptr)
+        //menu_update_target_tex_size(menu, static_cast<int>(640.0 * screen.render_scale), static_cast<int>(480.0 * screen.render_scale));
+
+        if(md != nullptr)
         {
-            //menu_update_target_tex_size(menu, static_cast<int>(640.0 * screen.render_scale), static_cast<int>(480.0 * screen.render_scale));
+            md->target_tex_update = true;
         }
 
         if(screen.target_tex != nullptr)

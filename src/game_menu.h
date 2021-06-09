@@ -18,6 +18,7 @@ struct menudata
         practice_menu_data({ nullptr, 0 }),
         target_tex(nullptr),
         use_target_tex(0),
+        target_tex_update(false),
         numopts(0),
         selection(0),
         is_paged(0),
@@ -46,6 +47,7 @@ struct menudata
 
     SDL_Texture *target_tex;
     int use_target_tex;
+    bool target_tex_update;
     int numopts;
     int selection;
 

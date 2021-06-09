@@ -484,7 +484,7 @@ int menu_input(game_t *g)
     Shiro::GameMultiOptionData *d6 = NULL;
 
     int i = 0;
-    int update = 0;
+    bool update = d->target_tex_update;
 
     const int DAS = 18;
 
@@ -522,7 +522,7 @@ int menu_input(game_t *g)
 
     if((cs->pressed.up || cs->is_up_input_repeat(DAS)) && d->selection > 0)
     {
-        update = 1;
+        update = true;
         for(i = d->selection - 1;; i--)
         {
             if(d->is_paged)
@@ -577,7 +577,7 @@ int menu_input(game_t *g)
 
     if((cs->pressed.down || cs->is_down_input_repeat(DAS)) && (d->selection < d->numopts - 1))
     {
-        update = 1;
+        update = true;
         for(i = d->selection + 1;; i++)
         {
             if(d->is_paged)
@@ -642,14 +642,14 @@ int menu_input(game_t *g)
     {
         if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d->page > 0)
         {
-            update = 1;
+            update = true;
             d->selection = d->selection - d->page_length;
             d->page--;
         }
 
         if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d->page < ((d->numopts - 1) / d->page_length))
         {
-            update = 1;
+            update = true;
             d->selection = d->selection + d->page_length;
             d->page++;
 
@@ -662,7 +662,7 @@ int menu_input(game_t *g)
     {
         for(i = 0; i < d->numopts; i++)
         {
-            d->menu[i].render_update = 1;
+            d->menu[i].render_update = true;
         }
     }
 
@@ -987,6 +987,7 @@ int menu_input(game_t *g)
         }
     }
 
+    d->target_tex_update = false;
 
     return 0;
 }

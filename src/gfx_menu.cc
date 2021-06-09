@@ -416,7 +416,7 @@ int gfx_drawmenu(game_t *g)
                 SDL_SetTextureAlphaMod(font, A(b.text_rgba_mod));
             }
 
-            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+            Shiro::RenderCopy(cs->screen, font, &src, &dest);
 
             src.x += 6;
             dest.x += 6;
@@ -428,7 +428,7 @@ int gfx_drawmenu(game_t *g)
                 if(j)
                     dest.x += 16;
 
-                SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+                Shiro::RenderCopy(cs->screen, font, &src, &dest);
             }
 
             src.x += 16;
@@ -436,7 +436,7 @@ int gfx_drawmenu(game_t *g)
             dest.w = 6;
             dest.x += 16;
 
-            SDL_RenderCopy(cs->screen.renderer, font, &src, &dest);
+            Shiro::RenderCopy(cs->screen, font, &src, &dest);
 
             SDL_SetTextureColorMod(font, 255, 255, 255);
             SDL_SetTextureAlphaMod(font, 255);
