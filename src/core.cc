@@ -156,7 +156,7 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 }
 
 CoreState::CoreState(Shiro::Settings& settings) :
-    screen(Shiro::Version::DESCRIPTOR, static_cast<unsigned>(settings.videoScale * 640.0f), static_cast<unsigned>(settings.videoScale * 480.0f), float(settings.videoScale)),
+    screen(Shiro::Version::DESCRIPTOR, static_cast<unsigned>(settings.videoScale * 640.0f), static_cast<unsigned>(settings.videoScale * 480.0f), 640, 480, float(settings.videoScale)),
     settings(settings),
     bg(screen),
     gfx(screen)
@@ -1254,7 +1254,7 @@ bool CoreState::process_events() {
                 case SDLK_1:
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 1;
-                        SDL_SetWindowSize(screen.window, 640, 480);
+                        SDL_SetWindowSize(screen.window, screen.logicalW, screen.logicalH);
                         screen.render_scale = 1.0;
                     }
                     pressedDigits[1] = true;
@@ -1263,7 +1263,7 @@ bool CoreState::process_events() {
                 case SDLK_2:
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 2;
-                        SDL_SetWindowSize(screen.window, 2 * 640, 2 * 480);
+                        SDL_SetWindowSize(screen.window, 2 * screen.logicalW, 2 * screen.logicalH);
                         screen.render_scale = 2.0;
                     }
                     pressedDigits[2] = true;
@@ -1272,7 +1272,7 @@ bool CoreState::process_events() {
                 case SDLK_3:
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 3;
-                        SDL_SetWindowSize(screen.window, 3 * 640, 3 * 480);
+                        SDL_SetWindowSize(screen.window, 3 * screen.logicalW, 3 * screen.logicalH);
                         screen.render_scale = 3.0;
                     }
                     pressedDigits[3] = true;
@@ -1281,7 +1281,7 @@ bool CoreState::process_events() {
                 case SDLK_4:
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 4;
-                        SDL_SetWindowSize(screen.window, 4 * 640, 4 * 480);
+                        SDL_SetWindowSize(screen.window, 4 * screen.logicalW, 4 * screen.logicalH);
                         screen.render_scale = 4.0;
                     }
                     pressedDigits[4] = true;
@@ -1290,7 +1290,7 @@ bool CoreState::process_events() {
                 case SDLK_5:
                     if (keyMod & KMOD_ALT) {
                         settings.videoScale = 5;
-                        SDL_SetWindowSize(screen.window, 5 * 640, 5 * 480);
+                        SDL_SetWindowSize(screen.window, 5 * screen.logicalW, 5 * screen.logicalH);
                         screen.render_scale = 5.0;
                     }
                     pressedDigits[5] = true;
@@ -1414,7 +1414,7 @@ bool CoreState::process_events() {
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
                     SDL_GetWindowSize(screen.window, &windowW, &windowH);
-                    f = std::min(windowW / 640, windowH / 480);
+                    f = std::min(windowW / screen.logicalW, windowH / screen.logicalH);
                     screen.render_scale = float(f);
                     select_all = false;
                     undo = false;
@@ -1430,6 +1430,12 @@ bool CoreState::process_events() {
                 break;
         }
     }
+
+    SDL_GetWindowSize(screen.window, &windowW, &windowH);
+
+    screen.w = windowW;
+    screen.h = windowH;
+    screen.updateRenderAreaPosition();
 
     SDL_GetMouseState(&mouse.x, &mouse.y);
 
@@ -1461,7 +1467,7 @@ bool CoreState::process_events() {
         }
     }
 
-    mouse.updatePosition(windowW, windowH);
+    mouse.updateLogicalPosition(screen);
 
 #undef CHECK_BINDINGS
 

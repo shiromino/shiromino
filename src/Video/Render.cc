@@ -40,26 +40,22 @@ namespace Shiro {
 
         int renderAreaW = w;
         int renderAreaH = h;
-        int renderAreaX = 0;
-        int renderAreaY = 0;
 
         float aspect = float(w) / float(h);
-        float aspectDefault = 640.0 / 480.0;
+        float aspectDefault = float(screen.logicalW) / float(screen.logicalH);
 
         if(aspect > aspectDefault) // extra width
         {
             renderAreaW = aspectDefault * float(h);
-            renderAreaX = (w - renderAreaW) / 2;
         }
         else if(aspect < aspectDefault) // extra height
         {
             renderAreaH = float(w) / aspectDefault;
-            renderAreaY = (h - renderAreaH) / 2;
         }
 
         if(dstrect == nullptr)
         {
-            SDL_Rect rect = { renderAreaX, renderAreaY, renderAreaW, renderAreaH};
+            SDL_Rect rect = { screen.renderAreaX, screen.renderAreaY, renderAreaW, renderAreaH };
 
             SDL_RenderSetScale(screen.renderer, 1.0, 1.0);
             int rc = SDL_RenderCopy(screen.renderer, tex, srcrect, &rect);
@@ -68,8 +64,8 @@ namespace Shiro {
             return rc;
         }
 
-        int scaledRenderAreaX = static_cast<int>(float((w - static_cast<int>(640.0 * scaleX)) / 2) / scaleX);
-        int scaledRenderAreaY = static_cast<int>(float((h - static_cast<int>(480.0 * scaleY)) / 2) / scaleY);
+        int scaledRenderAreaX = static_cast<int>(float(screen.innerRenderAreaX) / scaleX);
+        int scaledRenderAreaY = static_cast<int>(float(screen.innerRenderAreaY) / scaleY);
 
         SDL_Rect dst = { dstrect->x, dstrect->y, dstrect->w, dstrect->h };
 
@@ -97,30 +93,26 @@ namespace Shiro {
 
         int renderAreaW = w;
         int renderAreaH = h;
-        int renderAreaX = 0;
-        int renderAreaY = 0;
 
         float scaleX;
         float scaleY;
         SDL_RenderGetScale(screen.renderer, &scaleX, &scaleY);
 
         float aspect = float(w) / float(h);
-        float aspectDefault = 640.0 / 480.0;
+        float aspectDefault = float(screen.logicalW) / float(screen.logicalH);
 
         if(aspect > aspectDefault) // extra width
         {
             renderAreaW = aspectDefault * float(h);
-            renderAreaX = (w - renderAreaW) / 2;
         }
         else if(aspect < aspectDefault) // extra height
         {
             renderAreaH = float(w) / aspectDefault;
-            renderAreaY = (h - renderAreaH) / 2;
         }
 
         if(rect == nullptr)
         {
-            SDL_Rect rect_ = { renderAreaX, renderAreaY, renderAreaW, renderAreaH};
+            SDL_Rect rect_ = { screen.renderAreaX, screen.renderAreaY, renderAreaW, renderAreaH };
 
             SDL_RenderSetScale(screen.renderer, 1.0, 1.0);
             int rc = SDL_RenderFillRect(screen.renderer, &rect_);
@@ -129,8 +121,8 @@ namespace Shiro {
             return rc;
         }
 
-        int scaledRenderAreaX = static_cast<int>(float((w - static_cast<int>(640.0 * scaleX)) / 2) / scaleX);
-        int scaledRenderAreaY = static_cast<int>(float((h - static_cast<int>(480.0 * scaleY)) / 2) / scaleY);
+        int scaledRenderAreaX = static_cast<int>(float(screen.innerRenderAreaX) / scaleX);
+        int scaledRenderAreaY = static_cast<int>(float(screen.innerRenderAreaY) / scaleY);
 
         SDL_Rect dst = { rect->x, rect->y, rect->w, rect->h };
 

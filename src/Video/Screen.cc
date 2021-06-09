@@ -10,10 +10,16 @@ static GLuint CompileShader(GLenum shaderType, const GLchar* shaderSource);
 static GLuint CompileShadingProgram(const GLchar* vertexShaderSource, const GLchar* geometryShaderSource, const GLchar* fragmentShaderSource);
 #endif
 
-Screen::Screen(const std::string& name, const unsigned w, const unsigned h, const float render_scale) :
+Screen::Screen(const std::string& name, const unsigned w, const unsigned h, const unsigned logicalW, const unsigned logicalH, const float render_scale) :
     name(name),
     w(w),
     h(h),
+    logicalW(logicalW),
+    logicalH(logicalH),
+    renderAreaX(0),
+    renderAreaY(0),
+    innerRenderAreaX(0),
+    innerRenderAreaY(0),
     render_scale(render_scale),
     window(nullptr),
     renderer(nullptr),
@@ -223,6 +229,31 @@ bool Screen::init(const Settings& settings) {
     }
 #endif
     return true;
+}
+
+void Screen::updateRenderAreaPosition() {
+    int renderAreaW = w;
+    int renderAreaH = h;
+
+    float aspect = float(w) / float(h);
+    float aspectDefault = float(logicalW) / float(logicalH);
+
+    renderAreaX = 0;
+    renderAreaY = 0;
+
+    if(aspect > aspectDefault) // extra width
+    {
+        renderAreaW = aspectDefault * float(h);
+        renderAreaX = (w - renderAreaW) / 2;
+    }
+    else if(aspect < aspectDefault) // extra height
+    {
+        renderAreaH = float(w) / aspectDefault;
+        renderAreaY = (h - renderAreaH) / 2;
+    }
+
+    innerRenderAreaX = (w - static_cast<int>(float(logicalW) * render_scale)) / 2;
+    innerRenderAreaY = (h - static_cast<int>(float(logicalH) * render_scale)) / 2;
 }
 
 #ifdef ENABLE_OPENGL_INTERPOLATION

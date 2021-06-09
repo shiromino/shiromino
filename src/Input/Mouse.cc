@@ -5,6 +5,7 @@
  * directory for the full text of the license.
  */
 #include "Input/Mouse.h"
+#include "Video/Screen.h"
 
 namespace Shiro {
     Mouse::Mouse() :
@@ -44,7 +45,20 @@ namespace Shiro {
         }
     }
 
-    void Mouse::updatePosition(const int windowW, const int windowH) {
+    void Mouse::updateLogicalPosition(const Screen& screen) {
+        if( x < screen.innerRenderAreaX ||
+            x > ( screen.innerRenderAreaX + static_cast<int>(float(screen.logicalW) * screen.render_scale) ) ||
+            y < screen.innerRenderAreaY ||
+            y > ( screen.innerRenderAreaY + static_cast<int>(float(screen.logicalH) * screen.render_scale) ) )
+        {
+            logicalX = logicalY = -1;
+            return;
+        }
+
+        logicalX = static_cast<int>(float(x - screen.innerRenderAreaX) / screen.render_scale);
+        logicalY = static_cast<int>(float(y - screen.innerRenderAreaY) / screen.render_scale);
+
+        /*
         float scale;
         // Normal 4:3 aspect ratio, no conversion necessary
         if (windowW == (windowH * 4) / 3) {
@@ -78,5 +92,6 @@ namespace Shiro {
 
             logicalY = static_cast<int>(y / scale);
         }
+        */
     }
 }

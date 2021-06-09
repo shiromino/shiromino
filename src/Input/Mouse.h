@@ -6,6 +6,7 @@
  */
 #pragma once
 #include "SDL.h"
+#include "Video/Screen.h"
 
 namespace Shiro {
     struct Mouse {
@@ -22,7 +23,7 @@ namespace Shiro {
 
         // TODO: Consider changing how windowW/windowH are passed in.
         void updateButtonState();
-        void updatePosition(const int windowW, const int windowH);
+        void updateLogicalPosition(const Screen& screen);
 
         int x;
         int y;
