@@ -43,11 +43,6 @@
 #include <algorithm>
 #include <functional>
 #include <utility>
-#ifdef ENABLE_OPENGL_INTERPOLATION
-#define GL_GLEXT_PROTOTYPES
-#include "glad/glad.h"
-#endif
-
 #define PENTOMINO_C_REVISION_STRING "rev 1.3"
 #define FRAMEDELAY_ERR 0
 
@@ -760,83 +755,6 @@ void CoreState::run() {
 
         bg.draw();
         gfx.draw();
-
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        if (settings.interpolate) {
-            SDL_RenderFlush(screen.renderer);
-            SDL_SetRenderTarget(screen.renderer, NULL);
-
-            glUseProgram(screen.interpolate_shading_prog);
-            int w, h;
-            SDL_GL_GetDrawableSize(screen.window, &w, &h);
-            if ((SDL_GetWindowFlags(screen.window) & ~SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN) {
-                double widthFactor, heightFactor;
-                if (settings.videoStretch) {
-                    widthFactor = w / 640.0;
-                    heightFactor = h / 480.0;
-                }
-                else {
-                    widthFactor = w / 640;
-                    heightFactor = h / 480;
-                    if (widthFactor > settings.videoScale) {
-                        widthFactor = settings.videoScale;
-                    }
-                    if (heightFactor > settings.videoScale) {
-                        heightFactor = settings.videoScale;
-                    }
-                }
-                GLsizei viewportWidth, viewportHeight;
-                if (widthFactor > heightFactor) {
-                    viewportWidth = static_cast<GLsizei>(heightFactor * 640.0);
-                    viewportHeight = static_cast<GLsizei>(heightFactor * 480.0);
-                }
-                else {
-                    viewportWidth = static_cast<GLsizei>(widthFactor * 640.0);
-                    viewportHeight = static_cast<GLsizei>(widthFactor * 480.0);
-                }
-                glViewport((w - viewportWidth) / 2, (h - viewportHeight) / 2, viewportWidth, viewportHeight);
-                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), static_cast<GLfloat>(viewportWidth), static_cast<GLfloat>(viewportHeight));
-            }
-            else {
-                // TODO: Change this once a fullscreen resolution setting is supported.
-                glViewport(0, 0, w, h);
-                glUniform2f(glGetUniformLocation(screen.interpolate_shading_prog, "viewportSize"), static_cast<GLfloat>(w), static_cast<GLfloat>(h));
-            }
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            glActiveTexture(GL_TEXTURE0);
-            if (SDL_GL_BindTexture(screen.target_tex, NULL, NULL) < 0) {
-                std::cerr << "Failed to bind `target_tex`." << std::endl;
-            }
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4u);
-            glUseProgram(0u);
-            if (SDL_GL_UnbindTexture(screen.target_tex) < 0) {
-                std::cerr << "Failed to unbind `target_tex`." << std::endl;
-            }
-
-            SDL_GL_SwapWindow(screen.window);
-        }
-        else
-        {
-            SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
-
-            if(theRenderTarget != nullptr)
-            {
-                SDL_Rect dst_ = {0, 0, 640, 480};
-                SDL_SetRenderTarget(screen.renderer, NULL);
-                //Shiro::RenderCopy(screen, theRenderTarget, nullptr, &dst_);
-                Shiro::RenderCopy(screen, theRenderTarget, nullptr, nullptr);
-                SDL_RenderPresent(screen.renderer);
-
-                SDL_SetRenderTarget(screen.renderer, theRenderTarget);
-            }
-            else
-            {
-                SDL_RenderPresent(screen.renderer);
-            }
-        }
-#else
         SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
 
         if(theRenderTarget != nullptr)
@@ -853,20 +771,6 @@ void CoreState::run() {
         {
             SDL_RenderPresent(screen.renderer);
         }
-#endif
-
-#if 0
-        if (newFrames > 0u) {
-            for (size_t i = 0; i < gfx_messages_max; i++) {
-                if (gfx_messages[i].counter >= newFrames) {
-                    gfx_messages[i].counter -= newFrames;
-                }
-                else {
-                    gfx_messages[i].counter = 0u;
-                }
-            }
-        }
-#endif
         if (!settings.vsyncTimestep) {
 			while (SDL_GetPerformanceCounter() < timeAccumulator + gameFrameTime) {
 				SDL_Delay(1u);

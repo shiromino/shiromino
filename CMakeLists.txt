@@ -42,32 +42,6 @@ target_sources(${GAME_EXECUTABLE}
 )
 target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}")
 #
-# Support for OpenGL
-#
-set(OpenGL_GL_PREFERENCE GLVND)
-find_package(OpenGL)
-if(OPENGL_FOUND)
-	#
-	# Apple has officially deprecated OpenGL.
-	# After some testing, it turns out that even if OpenGL is found, we can not rely on the fact that its initialization will work.
-	# So to make things work out of the box, let's disable OpenGL on macOS by default.
-	#
-	if(NOT APPLE)
-		set(ENABLE_OPENGL_INTERPOLATION ON CACHE BOOL "Enables support for the `INTERPOLATE` option in `shiromino.ini`.")
-	endif()
-endif()
-if(ENABLE_OPENGL_INTERPOLATION)
-	set(MINIMUM_SDL2_VERSION 2.0.10)
-	find_package(OpenGL REQUIRED)
-	target_sources(${GAME_EXECUTABLE}
-		PRIVATE
-			third-party/glad/glad.cc
-			third-party/glad/glad.h
-			third-party/glad/khrplatform.h
-	)
-	target_link_libraries(${GAME_EXECUTABLE} PRIVATE OpenGL::GL)
-endif()
-#
 # Sources needed to build the game
 #
 target_sources(${GAME_EXECUTABLE}

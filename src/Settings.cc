@@ -52,9 +52,6 @@ void Shiro::Settings::setDefaults() {
     fullscreen = 0;
     vsync = 0;
     vsyncTimestep = 0;
-#ifdef ENABLE_OPENGL_INTERPOLATION
-    interpolate = 1;
-#endif
     masterVolume = 80;
     sfxVolume = 100;
     musicVolume = 90;
@@ -269,12 +266,6 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
     if (configuration.get("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep)) {
         this->vsyncTimestep = !!vsyncTimestep;
     }
-#ifdef ENABLE_OPENGL_INTERPOLATION
-    int interpolate;
-    if (configuration.get("SCREEN", "INTERPOLATE", interpolate)) {
-        this->interpolate = !!interpolate;
-    }
-#endif
     std::string playerName;
     if (configuration.get("ACCOUNT", "PLAYER_NAME", playerName)) {
         this->playerName = playerName;
@@ -292,9 +283,6 @@ void Shiro::Settings::write() const {
     configuration.set("AUDIO", "SAMPLING_RATE", samplingRate);
     configuration.set("AUDIO", "SFX_VOLUME", sfxVolume);
     configuration.set("SCREEN", "FULL_SCREEN", fullscreen);
-#ifdef ENABLE_OPENGL_INTERPOLATION
-    configuration.set("SCREEN", "INTERPOLATE", interpolate);
-#endif
     configuration.set("SCREEN", "VIDEO_SCALE", videoScale);
     configuration.set("SCREEN", "VIDEO_STRETCH", videoStretch);
     configuration.set("SCREEN", "V_SYNC", vsync);

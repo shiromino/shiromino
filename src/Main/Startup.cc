@@ -13,11 +13,6 @@ namespace Shiro {
 }
 
 void Shiro::Startup(const Shiro::Settings& settings) {
-#ifdef ENABLE_OPENGL_INTERPOLATION
-    if (settings.interpolate) {
-        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    }
-#endif
     if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         std::cerr << "SDL_Init: Error: " << SDL_GetError() << std::endl;
         std::exit(EXIT_FAILURE);

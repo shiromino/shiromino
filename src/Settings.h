@@ -20,9 +20,6 @@ namespace Shiro {
         int fullscreen;
         int vsync;
         int vsyncTimestep;
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        int interpolate;
-#endif
         int masterVolume;
         int sfxVolume;
         int musicVolume;

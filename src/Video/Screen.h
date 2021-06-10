@@ -7,9 +7,6 @@
 #pragma once
 #include "Settings.h"
 #include "SDL.h"
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        #include "glad/glad.h"
-#endif
 #include <string>
 
 namespace Shiro {
@@ -48,8 +45,5 @@ namespace Shiro {
         SDL_Window* window;
         SDL_Renderer* renderer;
         SDL_Texture* target_tex;
-#ifdef ENABLE_OPENGL_INTERPOLATION
-        GLuint interpolate_shading_prog;
-#endif
     };
 }

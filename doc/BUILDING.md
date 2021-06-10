@@ -1,13 +1,10 @@
 # Building from source
 The following table displays a set of build definitions. To set them, you can specify `-D${OPTION_NAME}=${VALUE}` as a build flag for each definition that you want to enable in the CMake configuration step (which is the first CMake command you run).
-
-For instance, if you wanted to disable the `ENABLE_OPENGL_INTERPOLATION` option, the flag that you would need to provide would be `-DENABLE_OPENGL_INTERPOLATION=0`.
 ## Build definitions
 | Definition                    | Values                                               | Description                                            |
 | ----------------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
 | [`CMAKE_BUILD_TYPE`][]        | `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel`    | Controls the type of build that the build process will output.
 | [`CMAKE_INSTALL_PREFIX`][]    | any path                                              | When installing the project via `cmake --install`, this prefix will be prepended to all files that the installation process emits. In practice, this allows you to control the installation directory.
-| `ENABLE_OPENGL_INTERPOLATION` | `0`, `1`                                            | Enables support for the `INTERPOLATE` option in `shiromino.ini`, which works best when combined with the video stretch option. Note that this definition requires OpenGL 3.3 Core Profile support. This definition defaults to `1` if OpenGL can be found on your system, unless you're using macOS, as it has deprecated OpenGL.
 ## Installing dependencies and compiling
 In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 ### Linux (pacman-based)
