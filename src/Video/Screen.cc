@@ -18,6 +18,8 @@ Screen::Screen(const std::string& name, const unsigned w, const unsigned h, cons
     logicalH(logicalH),
     renderAreaX(0),
     renderAreaY(0),
+    renderAreaW(0),
+    renderAreaH(0),
     innerRenderAreaX(0),
     innerRenderAreaY(0),
     render_scale(render_scale),
@@ -232,14 +234,13 @@ bool Screen::init(const Settings& settings) {
 }
 
 void Screen::updateRenderAreaPosition() {
-    int renderAreaW = w;
-    int renderAreaH = h;
-
     float aspect = float(w) / float(h);
     float aspectDefault = float(logicalW) / float(logicalH);
 
     renderAreaX = 0;
     renderAreaY = 0;
+    renderAreaW = w;
+    renderAreaH = h;
 
     if(aspect > aspectDefault) // extra width
     {

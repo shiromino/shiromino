@@ -32,9 +32,11 @@ namespace Shiro {
         unsigned logicalW;
         unsigned logicalH;
 
-        // window-relative position of the render area
+        // window-relative position and size of the render area
         int renderAreaX;
         int renderAreaY;
+        int renderAreaW;
+        int renderAreaH;
 
         // window-relative position of the render area used for GUI and sprites
         int innerRenderAreaX;
