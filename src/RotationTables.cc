@@ -1,6 +1,6 @@
 #include "RotationTables.h"
-#define O true
-#define _ false
+constexpr bool O = true;
+constexpr bool _ = false;
 const std::array<std::array<std::array<std::array<bool, 5>, 5>, 4>, 18> Shiro::PentoRotationTables =
 {
     std::array<std::array<std::array<bool, 5>, 5>, 4>
@@ -955,5 +955,3 @@ const std::array<std::array<std::array<std::array<bool, 4>, 4>, 4>, 7> Shiro::Te
         }
     }
 };
-#undef _
-#undef O
