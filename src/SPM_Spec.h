@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <vector>
-#include "SGUIL/SGUIL.h"
+#include "gui/GUI.h"
 #include "Grid.h"
 #include "random.h"
 #include "RotationTables.h"

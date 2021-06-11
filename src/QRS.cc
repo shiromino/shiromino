@@ -1,14 +1,14 @@
 #include "CoreState.h"
-#include "Asset/Sfx.h"
+#include "asset/Sfx.h"
 #include "game_menu.h" // questionable dependency - TODO look into these
 #include "game_qs.h"   // questionable dependency
 #include "GameType.h"
-#include "Video/MessageEntity.h"
+#include "video/MessageEntity.h"
 #include "gfx_old.h"   // questionable dependency
 #include "gfx_qs.h"    // very questionable dependency
 #include "gfx_structures.h"
 #include "Grid.h"
-#include "Input/KeyFlags.h"
+#include "input/KeyFlags.h"
 #include "PieceDefinition.h"
 #include "QRS0.h"
 #include "random.h"

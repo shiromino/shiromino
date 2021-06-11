@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreState.h"
 #include "Grid.h"
-#include "Input/KeyFlags.h"
+#include "input/KeyFlags.h"
 #include "Timer.h"
 #include "PieceDefinition.h"
 #include "gfx_structures.h"

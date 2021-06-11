@@ -1,6 +1,6 @@
 #include "replay.h"
 #include "game_qs.h"
-#include "Input/KeyFlags.h"
+#include "input/KeyFlags.h"
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>

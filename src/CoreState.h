@@ -1,16 +1,16 @@
 #pragma once
-#include "Asset/Asset.h"
+#include "asset/Asset.h"
 #include "AssetStore.h"
 #include "DASDirection.h"
 #include "DisplayMode.h"
 #include "Game.h"
-#include "GuiScreenManager.h"
-#include "Video/Screen.h"
-#include "Video/Background.h"
-#include "Video/Gfx.h"
+#include "gui/ScreenManager.h"
+#include "video/Screen.h"
+#include "video/Background.h"
+#include "video/Gfx.h"
 #include "gfx_structures.h"
-#include "Input/KeyFlags.h"
-#include "Input/Mouse.h"
+#include "input/KeyFlags.h"
+#include "input/Mouse.h"
 #include "Player.h"
 #include "Settings.h"
 #include "Records.h"
@@ -101,7 +101,7 @@ struct CoreState {
     game_t *p1game;
     game_t *menu;
     struct pracdata *pracdata_mirror;
-    GuiScreenManager *screenManager;
+    ScreenManager *screenManager;
 
     Shiro::DisplayMode displayMode;
     bool motionBlur;

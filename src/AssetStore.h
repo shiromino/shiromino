@@ -1,6 +1,6 @@
 #pragma once
 #include "gfx_structures.h"
-#include "SGUIL/SGUIL.h"
+#include "gui/GUI.h"
 // TODO: Refactor lists of assets with a number appended into arrays.
 namespace Shiro {
     struct AssetStore {

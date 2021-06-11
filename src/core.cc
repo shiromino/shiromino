@@ -1,9 +1,9 @@
 #include "CoreState.h"
 #include "Game.h"
-#include "Asset/Image.h"
-#include "Asset/Font.h"
-#include "Asset/Music.h"
-#include "Asset/Sfx.h"
+#include "asset/Image.h"
+#include "asset/Font.h"
+#include "asset/Music.h"
+#include "asset/Sfx.h"
 #include "Debug.h"
 #include "definitions.h"
 #include "DisplayMode.h"
@@ -11,16 +11,16 @@
 #include "gfx_structures.h"
 #include "game_menu.h"
 #include "game_qs.h"
-#include "GuiGridCanvas.h"
-#include "GuiScreenManager.h"
-#include "Input/KeyFlags.h"
-#include "Input/Mouse.h"
+#include "gui/GridCanvas.h"
+#include "gui/ScreenManager.h"
+#include "input/KeyFlags.h"
+#include "input/Mouse.h"
 #include "QRS1.h"
 #include "random.h"
 #include "Records.h"
 #include "RefreshRates.h"
 #include "replay.h"
-#include "SGUIL/SGUIL.h"
+#include "gui/GUI.h"
 #include "ShiroPhysoMino.h"
 #include "SPM_Spec.h"
 #include "Version.h"
@@ -36,7 +36,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
-#include "Video/Render.h"
+#include "video/Render.h"
 #include <string>
 #include <vector>
 #include <deque>
@@ -199,7 +199,7 @@ CoreState::CoreState(Shiro::Settings& settings) :
     p1game = NULL;
     menu = NULL;
 
-    screenManager = new GuiScreenManager {};
+    screenManager = new ScreenManager {};
 
     displayMode = Shiro::DisplayMode::DEFAULT;
     motionBlur = false;
@@ -241,7 +241,7 @@ CoreState::~CoreState() {
 #undef IMG
 
         // All the textures have been destroyed, so prevent them being freed by
-        // the GuiWindow destructor.
+        // the Window destructor.
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
         assets->name.isValid = false; \
         assets->name.sheet = nullptr; \
@@ -490,7 +490,7 @@ bool CoreState::init() {
             std::cerr << "No joysticks are attached" << std::endl;
         }
         load_files();
-        check(Gui_Init(screen.renderer, NULL), "Gui_Init() returned failure\n");
+        check(initializeGUI(screen.renderer, NULL), "initializeGUI() returned failure\n");
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
         bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
         // blank = Shiro::ImageAsset::get(assetMgr, "blank").getTexture();
@@ -500,7 +500,7 @@ bool CoreState::init() {
         menu->init(menu);
         screenManager->addScreen("main", mainMenu_create(this, screenManager, assets->fixedsys));
         //SDL_Rect gameScreenRect = {0, 0, 640, 480};
-        //screenManager->addScreen("game", new GuiScreen {this, "game", NULL, gameScreenRect});
+        //screenManager->addScreen("game", new GUIScreen {this, "game", NULL, gameScreenRect});
         screenManager->loadScreen("main");
         // check(Shiro::RenderCopy(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
         const auto databasePath = settings.cachePath / Shiro::Records::filename;
@@ -523,44 +523,7 @@ bool CoreState::init() {
 
 void CoreState::run() {
     bool running = true;
-
-    /*
-    int windowWidth = 620;
-    int windowHeight = 460;
-    SDL_Rect gridRect = { 16, 44, windowWidth - 32, windowHeight - 60 };
-
-    Shiro::Grid* g = new Shiro::Grid(gridRect.w / 16, gridRect.h / 16);
-    SDL_Texture *paletteTex = Shiro::ImageAsset::get(assetMgr, "tets_bright_qs").getTexture();
-
-    BindableInt paletteVar {"paletteVar", 0, 25};
-
-    GuiGridCanvas *gridCanvas = new GuiGridCanvas {
-        0,
-        g,
-        paletteVar,
-        paletteTex,
-        32, 32,
-        gridRect
-    };
-
-    SDL_Rect windowRect = { 10, 10, windowWidth, windowHeight };
-    // TODO: Fix how fixedsys is loaded/unloaded; currently, both SGUIL and
-    // Shiromio try to free it, with SGUIL freeing it first in the GuiWindow
-    // destructor.
-    GuiWindow window {this, "Shiromino", &assets->fixedsys, GUI_WINDOW_CALLBACK_NONE, windowRect};
-
-    window.addControlElement(gridCanvas);
-
-    // SPM_Spec spec;
-    QRS spec { qrs_variant_P, false };
-    TestSPM SPMgame { *this, &spec };
-    SPMgame.init();
-    */
-
-    //p1game = qs_game_create(this, 0, MODE_PENTOMINO, NO_REPLAY);
-    //p1game->init(p1game);
-
-	Uint64 currentTime = SDL_GetPerformanceCounter();
+    Uint64 currentTime = SDL_GetPerformanceCounter();
     Uint64 timeAccumulator = 0u;
 // #define DEBUG_FRAME_TIMING
 #ifdef DEBUG_FRAME_TIMING
@@ -828,7 +791,7 @@ void quit(CoreState *cs)
 #undef IMG
 
         // All the textures have been destroyed, so prevent them being freed by
-        // the GuiWindow destructor.
+        // the Window destructor.
 #define FONT(name, sheetName, outlineSheetName, charW, charH) \
         cs->assets->name.isValid = false; \
         cs->assets->name.sheet = nullptr; \

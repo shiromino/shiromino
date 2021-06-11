@@ -1,7 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "replay.h"
-#include "SGUIL/SGUIL.h"
+#include "gui/GUI.h"
 #include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
 #include <memory>
@@ -23,7 +23,7 @@ protected:
     SPM_Spec *spec;
 
     Shiro::Grid *field;
-    GuiPoint fieldPos;
+    GUIPoint fieldPos;
 
     Shiro::Timer* timer;
 

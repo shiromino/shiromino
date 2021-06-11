@@ -1,7 +1,7 @@
 #include "ShiroPhysoMino.h"
 #include "CoreState.h"
-#include "SGUIL/SGUIL.h"
-#include "Video/Render.h"
+#include "gui/GUI.h"
+#include "video/Render.h"
 #include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
 #include <iostream>
@@ -235,7 +235,7 @@ int TestSPM::draw()
     SDL_SetRenderDrawColor(cs.screen.renderer, 255, 255, 255, 180);
 
     SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * static_cast<int>(field->getWidth()), blockH * spec->visualFieldH};
-    Gui_DrawBorder(fieldRect, 1, GUI_RGBA_DEFAULT);
+    GUIDrawBorder(fieldRect, 1, Shiro::GUI::RGBA_DEFAULT);
 
     for(std::size_t i = 0; i < field->getWidth(); i++)
     {

@@ -1,5 +1,5 @@
 #include "MultiEditor.h"
-#include "SGUIL/SGUIL.h"
+#include "gui/GUI.h"
 #include "QRS0.h"
 #include <string>
 
@@ -23,14 +23,14 @@ MultiEditor::~MultiEditor()
 
 }
 /*
-GuiScreen *makeEditorScreen(GuiScreenManager *mngr)
+GUIScreen *makeEditorScreen(ScreenManager *mngr)
 {
-    GuiScreen *screen = new GuiScreen{
+    GUIScreen *screen = new GUIScreen{
         "Multi-Editor",
         ,
     };
 
-    GuiEnumerationButton (BindableEnumeration, displaystring, displaystring font, )
+    GUIEnumerationButton (BindableEnumeration, displaystring, displaystring font, )
 }
 */
 void MultiEditor::handleInput()
@@ -441,7 +441,7 @@ void MultiEditor::handleInput()
     }*/
 }
 
-void MultiEditor::handleGuiInteraction(GuiInteractable& interactable, GuiEvent& event)
+void MultiEditor::handleGUIInteraction(GUIInteractable& interactable, GUIEvent& event)
 {/*
     if(event.type != mouse_clicked)
     {
@@ -451,7 +451,7 @@ void MultiEditor::handleGuiInteraction(GuiInteractable& interactable, GuiEvent& 
     switch(interactable.ID)
     {
         case return_button_id:
-            origin->loadParentGui();
+            origin->loadParentGUI();
             break;
 
         default:

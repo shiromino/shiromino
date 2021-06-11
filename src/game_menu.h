@@ -3,7 +3,7 @@
 #include <vector>
 #include "CoreState.h"
 #include "Game.h"
-#include "Menu/Option.h"
+#include "menu/Option.h"
 
 #define MENU_PRACTICE_NUMOPTS 15
 #define MENU_ID_MAIN 0

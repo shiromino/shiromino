@@ -46,106 +46,58 @@ target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEAD
 #
 target_sources(${GAME_EXECUTABLE}
 	PRIVATE
-		src/Asset/Asset.cc
-		src/Asset/Asset.h
-		src/Asset/Font.cc
-		src/Asset/Font.h
-		src/Asset/Image.cc
-		src/Asset/Image.h
-		src/Asset/Music.cc
-		src/Asset/Music.h
-		src/Asset/Sfx.cc
-		src/Asset/Sfx.h
+		src/asset/Asset.cc
+		src/asset/Asset.h
+		src/asset/Font.cc
+		src/asset/Font.h
+		src/asset/Image.cc
+		src/asset/Image.h
+		src/asset/Music.cc
+		src/asset/Music.h
+		src/asset/Sfx.cc
+		src/asset/Sfx.h
 		src/AssetStore.h
-		src/core.cc
 		src/CoreState.h
 		src/Debug.h
 		src/DisplayMode.h
-		src/fonts.h
 		src/Game.cc
 		src/Game.h
 		src/GameType.h
-		src/game_menu.cc
-		src/game_menu.h
-		src/game_qs.cc
-		src/game_qs.h
-		src/Video/Animation.cc
-		src/Video/Animation.h
-		src/Video/Background.cc
-		src/Video/Background.h
-		src/Video/Gfx.cc
-		src/Video/Gfx.h
-		src/Video/MessageEntity.cc
-		src/Video/MessageEntity.h
-		src/Video/Render.cc
-		src/Video/Render.h
-		src/Video/Screen.cc
-		src/Video/Screen.h
-		src/Video/TextGraphic.cc
-		src/Video/TextGraphic.h
-		src/Main/Main.cc
-		src/Main/Startup.cc
-		src/Main/Startup.h
-		src/gfx_old.cc
-		src/gfx_old.h
-		src/gfx_helpers.cc
-		src/gfx_helpers.h
-		src/gfx_menu.cc
-		src/gfx_menu.h
-		src/gfx_qs.cc
-		src/gfx_qs.h
-		src/gfx_structures.h
 		src/Grid.cc
 		src/Grid.h
-		src/GuiGridCanvas.cc
-		src/GuiGridCanvas.h
-		src/GuiScreenManager.cc
-		src/GuiScreenManager.h
-		src/images.h
-		src/Input/ControllerBindings.cc
-		src/Input/ControllerBindings.h
-		src/Input/KeyBindings.cc
-		src/Input/KeyBindings.h
-		src/Input/KeyFlags.cc
-		src/Input/KeyFlags.h
-		src/Input/Mouse.cc
-		src/Input/Mouse.h
-		src/Menu/ActionOption.h
-		src/Menu/ElementType.h
-		src/Menu/GameArguments.h
-		src/Menu/GameMultiOption.h
-		src/Menu/GameOption.h
-		src/Menu/MetaGameOption.h
-		src/Menu/MultiOption.h
-		src/Menu/Option.cc
-		src/Menu/Option.h
-		src/Menu/TextOption.h
-		src/Menu/ToggleOption.h
-		src/Mode/BaseMode.cc
-		src/Mode/BaseMode.h
-		src/OS.h
+		src/input/ControllerBindings.cc
+		src/input/ControllerBindings.h
+		src/input/KeyBindings.cc
+		src/input/KeyBindings.h
+		src/input/KeyFlags.cc
+		src/input/KeyFlags.h
+		src/input/Mouse.cc
+		src/input/Mouse.h
+		src/main.cc
+		src/menu/ActionOption.h
+		src/menu/ElementType.h
+		src/menu/GameArguments.h
+		src/menu/GameMultiOption.h
+		src/menu/GameOption.h
+		src/menu/MetaGameOption.h
+		src/menu/MultiOption.h
+		src/menu/Option.cc
+		src/menu/Option.h
+		src/menu/TextOption.h
+		src/menu/ToggleOption.h
 		src/OS.cc
+		src/OS.h
 		src/PieceDefinition.cc
 		src/PieceDefinition.h
 		src/Player.h
-		src/Player/BasePlayer.h
 		src/QRS.cc
 		src/QRS0.h
 		src/QRS1.h
-		src/random.cc
-		src/random.h
 		src/Records.cc
 		src/Records.h
 		src/RefreshRates.h
-		src/replay.cc
-		src/replay.h
 		src/RotationTables.cc
 		src/RotationTables.h
-		src/SGUIL/SGUIL.cc
-		src/SGUIL/SGUIL.h
-		src/SGUIL/SGUIL_GuiButton.cc
-		src/SGUIL/SGUIL_GuiTextField.cc
-		src/SGUIL/SGUIL_GuiWindow.cc
 		src/SPM_Randomizer.cc
 		src/SPM_Randomizer.h
 		src/SPM_Spec.cc
@@ -154,10 +106,53 @@ target_sources(${GAME_EXECUTABLE}
 		src/Settings.h
 		src/ShiroPhysoMino.cc
 		src/ShiroPhysoMino.h
-		src/stringtools.h
 		src/TGM.h
 		src/Timer.cc
 		src/Timer.h
+		src/video/Animation.cc
+		src/video/Animation.h
+		src/video/Background.cc
+		src/video/Background.h
+		src/video/Gfx.cc
+		src/video/Gfx.h
+		src/video/MessageEntity.cc
+		src/video/MessageEntity.h
+		src/video/Render.cc
+		src/video/Render.h
+		src/video/Screen.cc
+		src/video/Screen.h
+		src/video/TextGraphic.cc
+		src/video/TextGraphic.h
+		src/core.cc
+		src/fonts.h
+		src/game_menu.cc
+		src/game_menu.h
+		src/game_qs.cc
+		src/game_qs.h
+		src/gfx_helpers.cc
+		src/gfx_helpers.h
+		src/gfx_menu.cc
+		src/gfx_menu.h
+		src/gfx_old.cc
+		src/gfx_old.h
+		src/gfx_qs.cc
+		src/gfx_qs.h
+		src/gfx_structures.h
+		src/gui/Button.cc
+		src/gui/GUI.cc
+		src/gui/GUI.h
+		src/gui/GridCanvas.cc
+		src/gui/GridCanvas.h
+		src/gui/ScreenManager.cc
+		src/gui/ScreenManager.h
+		src/gui/TextField.cc
+		src/gui/Window.cc
+		src/images.h
+		src/random.cc
+		src/random.h
+		src/replay.cc
+		src/replay.h
+		src/stringtools.h
 		third-party/PDINI.h
 )
 #

@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "Grid.h"
-#include "SGUIL/SGUIL.h"
+#include "gui/GUI.h"
 #include "QRS0.h"
 #define USRSEQ_MAX 2000
 #define USRSEQ_EXPAND_MAX 4000
@@ -34,7 +34,7 @@ public:
     ~MultiEditor();
 
     void handleInput();
-    void handleGuiInteraction(GuiInteractable&, GuiEvent&);
+    void handleGUIInteraction(GUIInteractable&, GUIEvent&);
 
     void updateGravity(BindableVariable *);
     void updateLock(BindableVariable *);
@@ -92,4 +92,4 @@ public:
 
     long randomizer_seed;
 };
-//GuiScreen *loadEditorScreen(GuiScreenManager *mngr);
+//GUIScreen *loadEditorScreen(ScreenManager *mngr);
