@@ -54,7 +54,7 @@ jobs:
       run: |
         mkdir artifacts
         for DLL in $(ldd build/shiromino.exe | grep -v '/c/' | cut -d " " -f 3); do cp $DLL artifacts; done
-        mv build/shiromino.exe data LICENSE* README.md shiromino.ini artifacts
+        mv build/shiromino.exe data LICENSE.md README.md shiromino.ini artifacts
       shell: msys2 {0}
     - if: matrix.build-type == 'Release' && matrix.compiler == 'clang++'
       name: Upload artifacts

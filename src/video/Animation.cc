@@ -1,9 +1,3 @@
-/**
- * Copyright (c) 2020 Brandon McGriff
- *
- * Licensed under the MIT license; see the LICENSE-src file at the top level
- * directory for the full text of the license.
- */
 // TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the backend of Graphic subclasses.
 #include "video/Animation.h"
 #include "video/Render.h"

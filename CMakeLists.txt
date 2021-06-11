@@ -312,6 +312,6 @@ endif()
 # Installation
 #
 install(DIRECTORY data DESTINATION usr/share/${PROJECT_NAME})
-install(FILES LICENSE-data LICENSE-src DESTINATION usr/share/licenses/${PROJECT_NAME})
+install(FILES LICENSE.md DESTINATION usr/share/licenses/${PROJECT_NAME})
 install(FILES shiromino.ini TYPE SYSCONF)
 install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION usr/bin)
