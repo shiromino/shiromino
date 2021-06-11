@@ -19,3 +19,7 @@ If you'd like to [compile the game from source](doc/BUILDING.md), that's fine, t
 - [Keyboard shortcuts](doc/KEYBOARD_SHORTCUTS.md)
 ## Demo
 https://user-images.githubusercontent.com/4442505/119262956-60bb8280-bbdd-11eb-826a-13540b07b768.mp4
+## Related work
+- [Cambridge](https://github.com/MillaBasset/cambridge)
+- [Minote](https://github.com/Tearnote/Minote)
+- [nullpomino](https://github.com/nullpomino/nullpomino)
