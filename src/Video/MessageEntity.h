@@ -5,8 +5,10 @@
  * directory for the full text of the license.
  */
 #pragma once
+#include "Video/Screen.h"
 #include "Video/Gfx.h"
 #include "Asset/Font.h"
+#include "Video/TextGraphic.h"
 #include "SDL.h"
 #include <string>
 #include <memory>
@@ -23,9 +25,9 @@ namespace Shiro {
         MessageEntity() = delete;
 
         MessageEntity(
+            const Screen& screen,
             const FontAsset& font,
             const std::string& text,
-            //const std::shared_ptr<std::pair<int, int>> pos,
             const int& x,
             const int& y,
             const int offsetX = 0u,
@@ -34,13 +36,17 @@ namespace Shiro {
             const std::uint32_t color = 0xFFFFFFFFu,
             const std::size_t numFrames = 1u,
             const std::size_t layerNum = GfxLayer::messages,
-            const std::function<bool()> deleteCheck = []() { return false; }
+            const std::function<bool()> deleteCheck = []() { return true; }
         );
 
         bool update(Layers& layers);
 
     private:
-        struct Impl;
-        std::shared_ptr<Impl> implPtr;
+        const int& x;
+        const int& y;
+        std::size_t counter;
+        const std::size_t layerNum;
+        const std::function<bool()> deleteCheck;
+        std::shared_ptr<TextGraphic> graphic;
     };
 }

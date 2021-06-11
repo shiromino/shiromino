@@ -59,7 +59,7 @@ namespace Shiro {
     struct Graphic {
         virtual ~Graphic();
 
-        virtual void draw(const Screen& screen) const = 0;
+        virtual void draw() const = 0;
     };
 
     class Gfx;
@@ -67,30 +67,25 @@ namespace Shiro {
         friend Gfx;
 
     public:
-        Layers() = delete;
-
-        Layers(const Screen& screen);
-
         /**
          * Pushes a new graphic onto the end of a layer's graphic list.
          * You can hold a shared_ptr to the graphic in an entity if you want to reuse it over multiple updates.
          * If you don't hold the pointer, then the graphic will be freed after a draw() or clear() call.
          */
-        void push(const size_t layerNum, std::shared_ptr<Graphic> graphic);
+        void push(const std::size_t layerNum, std::shared_ptr<Graphic> graphic);
 
     private:
         /**
          * Draw all graphics' layers in increasing order, with layer 0 being the bottom-most.
          * Graphics within a layer are drawn in submission order, back to front.
          */
-        void draw();
+        void draw() const;
 
         /**
          * Clears all layers.
          */
         void clear();
 
-        const Screen& screen;
         std::vector<std::vector<std::shared_ptr<Graphic>>> graphics;
     };
 
@@ -99,18 +94,14 @@ namespace Shiro {
         virtual ~Entity();
 
         /**
-         * Returns true if the entity should remain allocated for another update.
-         * Returns false if the entity is finished updating and is ready to be freed.
+         * Returns false if the entity should remain allocated for another update.
+         * Returns true if the entity is finished updating and is ready to be freed.
          */
         virtual bool update(Layers& layers) = 0;
     };
 
     class Gfx {
     public:
-        Gfx() = delete;
-
-        Gfx(const Screen& screen);
-
         /**
          * Pushes a new entity.
          */
@@ -126,12 +117,12 @@ namespace Shiro {
         /**
          * Draws all graphics of all layers. Call after an update() call.
          */
-        void draw();
+        void draw() const;
 
         /**
-         * Clears all entities and layers.
+         * Clears all entities.
          */
-        void clear();
+        void clearEntities();
 
         /**
          * Clears all layers.
@@ -139,7 +130,6 @@ namespace Shiro {
         void clearLayers();
 
     private:
-        const Screen& screen;
         Layers layers;
         std::forward_list<std::unique_ptr<Entity>> entities;
     };

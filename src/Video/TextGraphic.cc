@@ -11,6 +11,7 @@
 
 namespace Shiro {
     TextGraphic::TextGraphic(
+        const Screen& screen,
         const FontAsset& font,
         const std::string& text,
         const int x,
@@ -19,7 +20,7 @@ namespace Shiro {
         const int offsetY,
         const float scale,
         const std::uint32_t color
-    ) : x(x), y(y), offsetX(offsetX), offsetY(offsetY), scale(scale), color(color) {
+    ) : x(x), y(y), offsetX(offsetX), offsetY(offsetY), scale(scale), color(color), screen(screen) {
         if (text == "") {
             return;
         }
@@ -54,7 +55,7 @@ namespace Shiro {
         }
     }
 
-    void TextGraphic::draw(const Screen& screen) const {
+    void TextGraphic::draw() const {
         const int dstOffsetX = x + offsetX;
         const int dstOffsetY = y + offsetY;
         for (const auto& charData : textData) {

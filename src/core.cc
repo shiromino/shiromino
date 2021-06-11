@@ -153,8 +153,7 @@ bool CoreState::is_down_input_repeat(unsigned delay) {
 CoreState::CoreState(Shiro::Settings& settings) :
     screen(Shiro::Version::DESCRIPTOR, static_cast<unsigned>(settings.videoScale * 640.0f), static_cast<unsigned>(settings.videoScale * 480.0f), 640, 480, float(settings.videoScale)),
     settings(settings),
-    bg(screen),
-    gfx(screen)
+    bg(screen)
 {
     fps = Shiro::RefreshRates::menu;
     // keyquit = SDLK_F11;
@@ -668,7 +667,7 @@ void CoreState::run() {
 
                 OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
 
-                void draw(const Shiro::Screen& screen) const {
+                void draw() const {
                     drawLambda();
                 }
 
@@ -678,7 +677,7 @@ void CoreState::run() {
             class OldGfxEntity : public Shiro::Entity {
             public:
                 OldGfxEntity(
-                    const size_t layerNum,
+                    const std::size_t layerNum,
                     const std::function<void()> drawLambda
                 ) :
                     layerNum(layerNum),
@@ -686,11 +685,11 @@ void CoreState::run() {
 
                 bool update(Shiro::Layers& layers) {
                     layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
-                    return false;
+                    return true;
                 }
 
             private:
-                const size_t layerNum;
+                const std::size_t layerNum;
                 const std::function<void()> drawLambda;
             };
 

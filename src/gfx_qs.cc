@@ -882,7 +882,7 @@ int gfx_qs_lineclear(game_t *g, int row)
 
         if(row % 2)
         {
-            Shiro::AnimationEntity::push(g->origin->gfx,
+            Shiro::AnimationEntity::push(g->origin->gfx, g->origin->screen,
                 g->origin->assetMgr,
                 "animation_lineclear",
                 Shiro::GfxLayer::animations,
@@ -895,7 +895,7 @@ int gfx_qs_lineclear(game_t *g, int row)
         }
         else
         {
-            Shiro::AnimationEntity::push(g->origin->gfx,
+            Shiro::AnimationEntity::push(g->origin->gfx, g->origin->screen,
                 g->origin->assetMgr,
                 "animation_lineclear",
                 Shiro::GfxLayer::animations,

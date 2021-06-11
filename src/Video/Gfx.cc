@@ -6,62 +6,54 @@
  */
 #include "Video/Gfx.h"
 
-using namespace Shiro;
-using namespace std;
+namespace Shiro {
+	Graphic::~Graphic() {}
 
-Graphic::~Graphic() {}
+	void Layers::push(const std::size_t layerNum, std::shared_ptr<Graphic> graphic) {
+		if (layerNum >= graphics.size()) {
+			graphics.resize(layerNum + 1);
+		}
+		graphics[layerNum].push_back(graphic);
+	}
 
-Layers::Layers(const Screen& screen) : screen(screen) {}
+	void Layers::draw() const {
+		for (auto& layer : graphics) {
+			for (auto& graphic : layer) {
+				graphic->draw();
+			}
+		}
+	}
 
-void Layers::push(const size_t layerNum, shared_ptr<Graphic> graphic) {
-    if (layerNum >= graphics.size()) {
-        graphics.resize(layerNum + 1);
-    }
-    graphics[layerNum].push_back(graphic);
-}
+	void Layers::clear() {
+		graphics.clear();
+	}
 
-void Layers::draw() {
-    for (auto& layer : graphics) {
-        for (auto& graphic : layer) {
-            graphic->draw(screen);
-        }
-    }
-}
+	Entity::~Entity() {}
 
-void Layers::clear() {
-    graphics.clear();
-}
+	void Gfx::push(std::unique_ptr<Entity> entity) {
+		entities.push_front(std::move(entity));
+	}
 
-Entity::~Entity() {}
+	void Gfx::update() {
+		for (auto it = entities.before_begin(); next(it) != entities.end();) {
+			if ((*next(it))->update(layers)) {
+				entities.erase_after(it);
+			}
+			else {
+				it++;
+			}
+		}
+	}
 
-Gfx::Gfx(const Screen& screen) :
-    screen(screen),
-    layers(screen) {}
+	void Gfx::draw() const {
+		layers.draw();
+	}
 
-void Gfx::push(unique_ptr<Entity> entity) {
-    entities.push_front(move(entity));
-}
+	void Gfx::clearEntities() {
+		entities.clear();
+	}
 
-void Gfx::update() {
-    for (auto it = entities.before_begin(); next(it) != entities.end();) {
-        if (!(*next(it))->update(layers)) {
-            entities.erase_after(it);
-        }
-        else {
-            it++;
-        }
-    }
-}
-
-void Gfx::draw() {
-    layers.draw();
-}
-
-void Gfx::clear() {
-    entities.clear();
-    clearLayers();
-}
-
-void Gfx::clearLayers() {
-    layers.clear();
+	void Gfx::clearLayers() {
+		layers.clear();
+	}
 }

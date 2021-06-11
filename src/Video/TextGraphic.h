@@ -5,6 +5,7 @@
  * directory for the full text of the license.
  */
 #pragma once
+#include "Video/Screen.h"
 #include "Video/Gfx.h"
 #include "Asset/Font.h"
 #include "SDL.h"
@@ -21,6 +22,7 @@ namespace Shiro {
         TextGraphic() = delete;
 
         TextGraphic(
+            const Screen& screen,
             const FontAsset& font,
             const std::string& text,
             const int x,
@@ -31,7 +33,7 @@ namespace Shiro {
             const std::uint32_t color = 0xFFFFFFFFu
         );
 
-        void draw(const Screen& screen) const;
+        void draw() const;
 
         int x, y;
         int offsetX, offsetY;
@@ -39,6 +41,7 @@ namespace Shiro {
         std::uint32_t color;
 
     private:
+        const Screen& screen;
         std::vector<std::tuple<SDL_Texture*, SDL_Rect, SDL_Rect>> textData;
     };
 }
