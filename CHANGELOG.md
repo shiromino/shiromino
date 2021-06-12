@@ -25,7 +25,8 @@
 - Preview sounds are now playing.
 - Sound volume settings for individual music tracks and sound effects works now.
 - Frame timing now guaranteed to be perfect over time, regardless of mode; individual frames might be off a bit, depending on vertical sync and frame delay settings.
-## beta3-pre2
+## 0.0.3
+Originally released as `v.beta3-pre2` on 2018-06-19.
 ### New features
 - Added support for big blocks in all modes.
 - New mode: Big Master.
@@ -43,10 +44,10 @@
 - Fixed T tetromino floor-kick orientation limitations.
 - Fixed grade display when green line or orange line flags are applied.
 - No more grade-up sound effect in multi-editor.
-## beta3-pre1
+## 0.0.2
+Originally released as `v.beta3-pre1` on 2018-05-08.
 ### Bug fixes
 - Fixed I tetromino's wallkick behavior.
-## beta3
 ### New features
 - Window can be resized arbitrarily larger than the default `640×480`.
 - Added fullscreen mode and soft full-screen mode (hotkeys `F11` and `Shift + F11` respectively).
@@ -59,7 +60,8 @@
 - Removed `bstrlib` dependency.
 - V pentomino now floor-kicks.
 - T pentomino now floor-kicks even if airborne.
-## 2017.08.23 beta2
+## 0.0.1
+Originally released as `v.beta2` on 2017-08-23.
 ### New features
 - Joystick support (kind of… still very much recommend `Joy2Key`).
 - "Escape" button is now mappable.
@@ -102,6 +104,7 @@
 - T4 piece now floor-kicks correctly.
 - Garbage (gray) cells are now drawn with an outline.
 - `HOME_PATH` setting can work with different system path formats.
-## 2017.04.16 beta1
+## 0.0.0
+Originally released as `v.beta1` on 2017-04-16.
 ### New features
 - First release.
