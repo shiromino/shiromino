@@ -442,8 +442,8 @@ int qrs_input(game_t *g)
     {
         if(d->paused == QRS_FIELD_EDIT)
         {
-            cell_x = ((cs->mouse.logicalX - q->fieldPos->first) / 16) - 1;
-            cell_y = ((cs->mouse.logicalY - q->fieldPos->second) / 16) - 2;
+            cell_x = ((cs->mouse.logicalX - q->field_x) / 16) - 1;
+            cell_y = ((cs->mouse.logicalY - q->field_y) / 16) - 2;
             palette_cell_x = (cs->mouse.logicalX - FIELD_EDITOR_PALETTE_X) / 16;
             palette_cell_y = (cs->mouse.logicalY - FIELD_EDITOR_PALETTE_Y) / 16;
 

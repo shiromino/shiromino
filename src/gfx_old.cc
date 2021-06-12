@@ -1207,7 +1207,7 @@ int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Uint32 rgba)
 {
     SDL_Texture *font = cs->assets->font.tex;
     qrsdata *q = (qrsdata *)cs->p1game->data;
-    int y = q->fieldPos->second;
+    int y = q->field_y;
 
     SDL_Rect src = { 0, 96, 20, 32 };
     SDL_Rect dest = { x, 26 * 16 + 8 - QRS_FIELD_Y + y, 20, 32 };

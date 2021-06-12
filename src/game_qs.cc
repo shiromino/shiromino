@@ -583,7 +583,8 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->previews.clear();
     q->hold = NULL;
 
-    q->fieldPos = make_shared<pair<int, int>>(QRS_FIELD_X, QRS_FIELD_Y);
+    q->field_x = QRS_FIELD_X;
+    q->field_y = QRS_FIELD_Y;
     q->field_w = 12;
 
     q->randomizer_type = RANDOMIZER_NORMAL;
@@ -630,8 +631,8 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     {
         q->mode_type = MODE_G2_DEATH;
         q->grade = NO_GRADE;
-        // q->fieldPos->first = QRS_FIELD_X - 28;
-        // q->fieldPos->second = QRS_FIELD_Y - 16 + 2;
+        // q->field_x = QRS_FIELD_X - 28;
+        // q->field_y = QRS_FIELD_Y - 16 + 2;
         q->lock_protect = 1;
         flags |= static_cast<int>(Shiro::GameType::SIMULATE_G2);
         flags |= TETROMINO_ONLY;
@@ -741,7 +742,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     }
 
     if(q->game_type == Shiro::GameType::SIMULATE_QRS)
-        q->fieldPos->first = QRS_FIELD_X + 4;
+        q->field_x = QRS_FIELD_X + 4;
 
     uint32_t randomizer_flags = 0;
 
@@ -1230,11 +1231,11 @@ int qs_game_frame(game_t *g)
             default:
             case Shiro::DisplayMode::DEFAULT:
             case Shiro::DisplayMode::DETAILED:
-                q->fieldPos->first = QRS_FIELD_X;
+                q->field_x = QRS_FIELD_X;
                 break;
 
             case Shiro::DisplayMode::CENTERED:
-                q->fieldPos->first = 192;
+                q->field_x = 192;
                 break;
         }
     }
@@ -1287,10 +1288,8 @@ int qs_game_frame(game_t *g)
                 MessageEntity::push(cs->gfx, cs->screen,
                     FontAsset::get(cs->assetMgr, "fixedsys"),
                     "READY",
-                    q->fieldPos->first,
-                    q->fieldPos->second,
-                    4 * 16 + 8,
-                    11 * 16,
+                    q->field_x + 4 * 16 + 8,
+                    q->field_y + 11 * 16,
                     2.0f,
                     fmt.rgba,
                     60u,
@@ -1307,10 +1306,8 @@ int qs_game_frame(game_t *g)
                 MessageEntity::push(cs->gfx, cs->screen,
                     FontAsset::get(cs->assetMgr, "fixedsys"),
                     "GO",
-                    q->fieldPos->first,
-                    q->fieldPos->second,
-                    6 * 16,
-                    11 * 16,
+                    q->field_x + 6 * 16,
+                    q->field_y + 11 * 16,
                     2.0f,
                     fmt.rgba,
                     60u,

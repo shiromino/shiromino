@@ -21,8 +21,6 @@ namespace Shiro {
             const std::string& text,
             const int x,
             const int y,
-            const int offsetX = 0,
-            const int offsetY = 0,
             const float scale = 1.0f,
             const std::uint32_t color = 0xFFFFFFFFu
         );
@@ -30,7 +28,6 @@ namespace Shiro {
         void draw() const;
 
         int x, y;
-        int offsetX, offsetY;
         float scale;
         std::uint32_t color;
 

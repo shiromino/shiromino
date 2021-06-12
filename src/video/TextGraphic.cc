@@ -10,11 +10,9 @@ namespace Shiro {
         const std::string& text,
         const int x,
         const int y,
-        const int offsetX,
-        const int offsetY,
         const float scale,
         const std::uint32_t color
-    ) : x(x), y(y), offsetX(offsetX), offsetY(offsetY), scale(scale), color(color), screen(screen) {
+    ) : x(x), y(y), scale(scale), color(color), screen(screen) {
         if (text == "") {
             return;
         }
@@ -22,40 +20,40 @@ namespace Shiro {
         std::istringstream lines(text);
         int printY = 0;
         for (std::string line; std::getline(lines, line);) {
-            assert(font.bmFont.chars.count(line[0]));
-            int printX = -font.bmFont.chars.at(line[0]).xoffset;
-            for (std::size_t i = 0u; i < line.size(); i++) {
-                assert(font.bmFont.chars.count(line[i]));
-                const PDBMFont::BMFont::Char& ch = font.bmFont.chars.at(line[i]);
+            if (line.size() > 0u) {
+				assert(font.bmFont.chars.count(line[0]));
+				int printX = -font.bmFont.chars.at(line[0]).xoffset;
+				for (std::size_t i = 0u; i < line.size(); i++) {
+					assert(font.bmFont.chars.count(line[i]));
+					const PDBMFont::BMFont::Char& ch = font.bmFont.chars.at(line[i]);
 
-                textData.push_back({
-                    font.pages[ch.page],
-                    {
-                        int(ch.x), int(ch.y),
-                        int(ch.width), int(ch.height)
-                    },
-                    {
-                        int(scale * (printX + ch.xoffset)), int(scale * (printY + ch.yoffset)),
-                        int(scale * ch.width), int(scale * ch.height)
-                    }
-                });
+					textData.push_back({
+						font.pages[ch.page],
+						{
+							int(ch.x), int(ch.y),
+							int(ch.width), int(ch.height)
+						},
+						{
+							int(scale * (printX + ch.xoffset)), int(scale * (printY + ch.yoffset)),
+							int(scale * ch.width), int(scale * ch.height)
+						}
+					});
 
-                printX += int(ch.xadvance);
-                if (line[i + 1] != '\0' && font.bmFont.kernings.count({line[i], line[i + 1]})) {
-                    printX += font.bmFont.kernings.at({line[i], line[i + 1]});
-                }
+					printX += int(ch.xadvance);
+					if (line[i + 1] != '\0' && font.bmFont.kernings.count({line[i], line[i + 1]})) {
+						printX += font.bmFont.kernings.at({line[i], line[i + 1]});
+					}
+				}
             }
             printY += font.bmFont.common.lineHeight;
         }
     }
 
     void TextGraphic::draw() const {
-        const int dstOffsetX = x + offsetX;
-        const int dstOffsetY = y + offsetY;
         for (const auto& charData : textData) {
             auto dstRect = std::get<2>(charData);
-            dstRect.x += dstOffsetX;
-            dstRect.y += dstOffsetY;
+            dstRect.x += x;
+            dstRect.y += y;
 
             Uint8 r, g, b, a;
             SDL_GetTextureColorMod(std::get<0>(charData), &r, &g, &b);

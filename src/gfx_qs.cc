@@ -95,8 +95,8 @@ int gfx_drawqs(game_t *g)
     }
 
     int i = 0;
-    int x = q->fieldPos->first;
-    int y = q->fieldPos->second;
+    int x = q->field_x;
+    int y = q->field_y;
     int piece_x = x + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * q->p1->x);
     int piece_y = y + 16 + ((q->state_flags & GAMESTATE_BIGMODE ? 32 : 16) * (YTOROW(q->p1->y) - QRS_FIELD_H + 20));
 
@@ -203,8 +203,8 @@ int gfx_drawqs(game_t *g)
             std::string mouseLogicalPosStr = strtools::format("Mouse Logical Position: %d, %d", cs->mouse.logicalX, cs->mouse.logicalY);
             gfx_drawtext(cs, mouseLogicalPosStr, 350, 16, monofont_fixedsys, NULL);
 
-            int cell_x = (cs->mouse.logicalX - q->fieldPos->first) / (16) - 1;
-            int cell_y = (cs->mouse.logicalY - q->fieldPos->second) / (16) - 2;
+            int cell_x = (cs->mouse.logicalX - q->field_x) / (16) - 1;
+            int cell_y = (cs->mouse.logicalY - q->field_y) / (16) - 2;
 
             std::string cellPosStr = strtools::format("Cell Position: %d, %d", cell_x, cell_y);
             gfx_drawtext(cs, cellPosStr, 350, 34, monofont_fixedsys, NULL);
@@ -322,7 +322,7 @@ int gfx_drawqs(game_t *g)
 
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
             gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
-            gfx_drawkeys(cs, &cs->keys, q->fieldPos->first + (18 * 16), 27 * 16, RGBA_DEFAULT);
+            gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT);
 
             goto active_game_drawing;
         }
@@ -346,7 +346,7 @@ int gfx_drawqs(game_t *g)
 
         if(cs->displayMode == Shiro::DisplayMode::DETAILED)
         {
-            gfx_drawkeys(cs, &cs->keys, q->fieldPos->first + (14 * 16), 27 * 16, RGBA_DEFAULT);
+            gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
 
             std::string secTimeStr;
             struct text_formatting secTimeFmt = {
@@ -708,8 +708,8 @@ int gfx_drawqs(game_t *g)
             fmt.rgba = RGBA_DEFAULT;
             fmt.outlined = false;
 
-            gfx_drawtext(cs, next, q->fieldPos->first + 12, 13, monofont_small, &fmt);
-            gfx_drawtext(cs, next_name, q->fieldPos->first + 12, 25, monofont_small, &fmt);
+            gfx_drawtext(cs, next, q->field_x + 12, 13, monofont_small, &fmt);
+            gfx_drawtext(cs, next_name, q->field_x + 12, 25, monofont_small, &fmt);
 
             if(histrand_get_difficulty(q->randomizer) > 0.0)
             {
@@ -886,8 +886,8 @@ int gfx_qs_lineclear(game_t *g, int row)
                 g->origin->assetMgr,
                 "animation_lineclear",
                 Shiro::GfxLayer::animations,
-                q->fieldPos->first + (i * 16),
-                q->fieldPos->second + 16 + (16 * (row - QRS_FIELD_H + 20)),
+                q->field_x + (i * 16),
+                q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
                 5,
                 3,
                 mod
@@ -899,8 +899,8 @@ int gfx_qs_lineclear(game_t *g, int row)
                 g->origin->assetMgr,
                 "animation_lineclear",
                 Shiro::GfxLayer::animations,
-                q->fieldPos->first + (i * 16) + 16,
-                q->fieldPos->second + 16 + (16 * (row - QRS_FIELD_H + 20)),
+                q->field_x + (i * 16) + 16,
+                q->field_y + 16 + (16 * (row - QRS_FIELD_H + 20)),
                 5,
                 3,
                 mod
@@ -917,7 +917,7 @@ int gfx_drawqsmedals(game_t *g)
         return -1;
 
     qrsdata *q = (qrsdata *)g->data;
-    SDL_Rect dest = { 228 + q->fieldPos->first, 150, 40, 20 };
+    SDL_Rect dest = { 228 + q->field_x, 150, 40, 20 };
     SDL_Rect src = { 20, 0, 20, 10 };
     SDL_Texture *medals = Shiro::ImageAsset::get(g->origin->assetMgr, "medals").getTexture();
     bool medal = true;
@@ -1139,7 +1139,7 @@ int gfx_drawfield_selection(game_t *g, struct pracdata *d)
             if(i >= 0 && i < 12 && j >= 0 && j < 20)
             {
                 if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 2) != QRS_FIELD_W_LIMITER) {
-                    dest.x = q->fieldPos->first + 16 * (i + 1);
+                    dest.x = q->field_x + 16 * (i + 1);
                     dest.y = QRS_FIELD_Y + 16 * (j + 2);
 
                     Shiro::RenderFillRect(g->origin->screen, &dest);

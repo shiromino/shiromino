@@ -5,10 +5,8 @@ namespace Shiro {
 		const Screen& screen,
 		const FontAsset& font,
 		const std::string& text,
-		const int& x,
-		const int& y,
-		const int offsetX,
-		const int offsetY,
+		const int x,
+		const int y,
 		const float scale,
 		const std::uint32_t color,
 		const std::size_t numFrames,
@@ -20,11 +18,9 @@ namespace Shiro {
 		counter(numFrames),
 		layerNum(layerNum),
 		deleteCheck(deleteCheck),
-		graphic(std::make_shared<TextGraphic>(screen, font, text, x, y, offsetX, offsetY, scale, color)) {}
+		graphic(std::make_shared<TextGraphic>(screen, font, text, x, y, scale, color)) {}
 
 	bool MessageEntity::update(Layers& layers) {
-		graphic->x = x;
-		graphic->y = y;
 		layers.push(layerNum, graphic);
 		return (counter != SIZE_MAX && --counter == 0u) || deleteCheck();
 	}

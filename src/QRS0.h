@@ -283,7 +283,7 @@ struct qrsdata
     bool tetromino_only;
     bool pentomino_only;
 
-    std::shared_ptr<std::pair<int, int>> fieldPos; // in pixels (position of top-left of field)
+    int field_x, field_y; // in pixels (position of top-left of field)
     int field_w; // in cells (only player-accessible ones counted here)
 
     unsigned int max_floorkicks;

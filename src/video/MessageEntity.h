@@ -22,10 +22,8 @@ namespace Shiro {
             const Screen& screen,
             const FontAsset& font,
             const std::string& text,
-            const int& x,
-            const int& y,
-            const int offsetX = 0u,
-            const int offsetY = 0u,
+            const int x,
+            const int y,
             const float scale = 1.0f,
             const std::uint32_t color = 0xFFFFFFFFu,
             const std::size_t numFrames = 1u,
@@ -36,8 +34,8 @@ namespace Shiro {
         bool update(Layers& layers);
 
     private:
-        const int& x;
-        const int& y;
+        const int x;
+        const int y;
         std::size_t counter;
         const std::size_t layerNum;
         const std::function<bool()> deleteCheck;
