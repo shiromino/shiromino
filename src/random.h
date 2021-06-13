@@ -4,7 +4,6 @@
 #include <stdint.h>
 #define RNGSTATE(STR, SEED) ((uint64_t)(STR[0]) << 56
 #define RNGSTATE_STRLEN 14
-//#define RANDOMIZER_INIT_ERROR -1
 
 #define PENTO_READ_RAND_MAX 0x7fff
 
@@ -79,7 +78,6 @@
 
 enum { HISTRAND, G3RAND };
 
-// typedef uint64_t rngstate;
 typedef uint32_t seed32_t;
 typedef uint64_t seed64_t;
 
@@ -92,7 +90,6 @@ struct randomizer
     // TODO: implement PCG and make a read_rand() archetype to put here
     // this way we don't need to read r->type (to determine which read_rand() to use)
 
-    // uint32_t (*read_rand)(uint32_t *seedp);
     int (*init)(struct randomizer *, uint32_t *);
     piece_id (*pull)(struct randomizer *); // pop + push
     piece_id (*lookahead)(struct randomizer *, unsigned int);
@@ -108,7 +105,7 @@ struct histrand_data
     // if hist_len is 0 this is NULL
     piece_id *history;
 
-    // range from 0.0 to 100.0 (100 makes the randomizer a uniform distribution)
+    // range from 0.0 to 100.0
     double difficulty;
 
     // these three are not guaranteed to be filled in (set to NULL if not used)
@@ -129,10 +126,6 @@ piece_id ars_to_qrs_id(piece_id t);
 
 int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap);
 int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap);
-// char *sprintf_rngstate(char *strbuf, rngstate s);
-
-/* */
-
 void g123_seeds_init();
 
 // Only call preupdate before processing a non-gameplay frame, then call update
@@ -179,16 +172,6 @@ piece_id g3rand_pull(struct randomizer *r);
 piece_id g3rand_get_next(struct randomizer *r);
 piece_id g3rand_lookahead(struct randomizer *r, unsigned int distance);
 
-/* */
-
-/*
-uint32_t g2_state_read_rand(rngstate s);
-rngstate g2_state_rand(rngstate s);
-uint8_t state_hN(rngstate s, uint8_t n);
-rngstate state_set_hN(rngstate s, uint8_t n, uint8_t piece);
-rngstate from_hist_seed(char *history, uint32_t seed);
-*/
-
 uint32_t g2_get_seed();
 uint32_t g2_seed_rand(uint32_t seed);
 uint32_t g2_seed_bkp();
@@ -202,9 +185,3 @@ uint32_t g2_unrand(uint32_t n);
 uint32_t g123_read_rand(uint32_t *seedp);
 uint32_t pento_read_rand(uint32_t *seedp);
 piece_id g123_get_init_piece(uint32_t *seedp);
-
-/*
-piece_id g2_std_randomize(piece_id *history);
-rngstate g2_state_randomize(rngstate s);
-rngstate g2_state_init_randomize(rngstate s);
-*/

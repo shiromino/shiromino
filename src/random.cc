@@ -83,9 +83,6 @@ static uint32_t g3_bkp_seed = 0;
 static uint32_t pento_seed = 0;
 static uint32_t pento_bkp_seed = 0;
 
-// piece_id g3_bag[35];
-// piece_id *sakura_seq; TODO
-
 piece_id ars_to_qrs_id(piece_id t)
 {
     switch(t)
@@ -148,42 +145,6 @@ void g123_seeds_update() {
     g3_seed = (g3_seed * 2525892343u) + seed_increment;
     pento_seed = (pento_seed * 1119304217u) + seed_increment;
 }
-
-// int seeds_are_close(uint32_t s1, uint32_t s2, unsigned int max_gap)
-// {
-//     unsigned int i = 0;
-//     uint32_t s1_tmp_forward = s1;
-//     uint32_t s1_tmp_backward = s1;
-//
-//     for(i = 0; i < max_gap; i++) {
-//         s1_tmp_forward = g2_rand(s1_tmp_forward);
-//         if(s1_tmp_forward == s2)
-//             return 1;
-//
-//         s1_tmp_backward = g2_unrand(s1_tmp_backward);
-//         if(s1_tmp_backward == s2)
-//             return 1;
-//     }
-//
-//     return 0;
-// }
-//
-// int seed_is_after(uint32_t b, uint32_t a, unsigned int max_gap)
-// {
-//     unsigned int i = 0;
-//     for(i = 0; i < max_gap; i++) {
-//         a = g2_rand(a);
-//         if(a == b)
-//             return 1;
-//     }
-//
-//     return 0;
-// }
-
-// char *sprintf_rngstate(char *strbuf, rngstate s) {
-//     sprintf(strbuf, "%d%d%d%d,%lx", state_hN(s, 0), state_hN(s, 1), state_hN(s, 2), state_hN(s, 3), (long unsigned int)(s & 0xffffffff));
-//     return strbuf;
-// }
 
 struct randomizer *g1_randomizer_create(uint32_t flags)
 {
@@ -602,13 +563,14 @@ piece_id histrand_get_next(struct randomizer *r)
     piece_id t = PIECE_ID_INVALID;
 
     long double p = 0.0;
-    double old_sum = 0.0;
+    double oldSum = 0.0;
     double sum = 0.0;
     unsigned int *histogram = (unsigned int *)malloc(r->num_pieces * sizeof(unsigned int));
-    double *temp_weights = (double *)malloc(r->num_pieces * sizeof(double));
+    const auto weights = static_cast<float *>(malloc(r->num_pieces * sizeof(float)));
 
-    if(!seedp)
+    if(!seedp) {
         seedp = &g2_seed;
+    }
 
     if(!d->piece_weights) // if we are using rerolls and not weighted calculation
     {
@@ -629,7 +591,7 @@ piece_id histrand_get_next(struct randomizer *r)
             t = g123_read_rand(seedp) % 7;
         }
 
-        free(temp_weights);
+        free(weights);
         free(histogram);
 
         return t;
@@ -638,11 +600,11 @@ piece_id histrand_get_next(struct randomizer *r)
     else
     {
         // starts at 1 and counts up, bad pieces' weights are divided by this
-        int below_high_threshold = 1;
-
+        int belowHighThreshold = 1;
+        const float difficultyThreshold = 30;
         for(i = 0; i < r->num_pieces; i++)
         {
-            temp_weights[i] = d->piece_weights[i];
+            weights[i] = d->piece_weights[i];
             // histogram values are all offset by one from how many times the piece is actually in the history
             histogram[i] = 1;
 
@@ -653,37 +615,37 @@ piece_id histrand_get_next(struct randomizer *r)
                     histogram[i]++;
                     if(d->piece_weights[i] < QRS_WEIGHT_HIGHTIER_THRESHOLD)
                     {
-                        below_high_threshold++;
+                        belowHighThreshold++;
                     }
                 }
             }
 
-            temp_weights[i] /= (double)histogram[i] * histogram[i]; // OLD: * (i < 18 ? pieces[i] : 1)
+            weights[i] /= (double)histogram[i] * histogram[i]; // OLD: * (i < 18 ? pieces[i] : 1)
             if(d->drought_protection_coefficients && d->drought_times)
             {
                 // multiply by coefficient^(t/BASELINE)
                 // e.g. for coeff 2 and drought time BASELINE, weight *= 2
-                temp_weights[i] *= pow(d->drought_protection_coefficients[i], (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE);
+                weights[i] *= pow(d->drought_protection_coefficients[i], (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE);
 
-                if((d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD) && (QRS_DROUGHT_HIGHTIER_SOFTLIMIT >= 0))
+                if(d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD && QRS_DROUGHT_HIGHTIER_SOFTLIMIT >= 0)
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_HIGHTIER_SOFTLIMIT)
                     {
-                        temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1.0);
+                        weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1.0);
                     }
                 }
-                else if((d->difficulty >= 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD) && (QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0))
+                else if(d->difficulty >= difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD && QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0)
                 {
                     if(d->drought_times[i] >= QRS_DROUGHT_MIDTIER_SOFTLIMIT)
                     {
-                        temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1.0);
+                        weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1.0);
                     }
                 }
-                else if((d->difficulty >= 30.0) && (QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0))
+                else if(d->difficulty >= difficultyThreshold && QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0)
                 {
                     if(int(d->drought_times[i]) >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
                     {
-                        temp_weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1.0);
+                        weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1.0);
                     }
                 }
             }
@@ -693,25 +655,25 @@ piece_id histrand_get_next(struct randomizer *r)
         {
             if(d->piece_weights[i] < QRS_WEIGHT_HIGHTIER_THRESHOLD)
             {
-                temp_weights[i] /= (double)(below_high_threshold);
+                weights[i] /= belowHighThreshold;
             }
 
-            if((d->difficulty < 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_TOPTIER_THRESHOLD))
+            if(d->difficulty < difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_TOPTIER_THRESHOLD)
             {
-                temp_weights[i] *= pow(1.1, (30.0 - d->difficulty) / 3);
+                weights[i] *= pow(1.1, (difficultyThreshold - d->difficulty) / 3);
             }
 
-            if((d->difficulty < 30.0) && (d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD) && (d->piece_weights[i] < QRS_WEIGHT_TOPTIER_THRESHOLD))
+            if(d->difficulty < difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD && d->piece_weights[i] < QRS_WEIGHT_TOPTIER_THRESHOLD)
             {
-                temp_weights[i] *= pow(1.1, (30.0 - d->difficulty) / 6);
+                weights[i] *= pow(1.1, (difficultyThreshold - d->difficulty) / 6);
             }
 
-            sum += temp_weights[i];
+            sum += weights[i];
         }
 
-        if(d->difficulty > 30.0)
+        if(d->difficulty > difficultyThreshold)
         {
-            old_sum = sum;
+            oldSum = sum;
             sum = 0.0;
 
             for(i = 0; i < r->num_pieces; i++)
@@ -719,9 +681,8 @@ piece_id histrand_get_next(struct randomizer *r)
                 // final factor: difficulty, which brings weights closer to being equal to each other
                 // takes the difference from the average and multiplies by difficulty/100, then adds that to the weight
                 // note that if the weight was above average, a negative value is added
-                temp_weights[i] += ((d->difficulty - 30.0) / 100.0) * ((old_sum / r->num_pieces) - temp_weights[i]);
-
-                sum += temp_weights[i];
+                weights[i] += ((d->difficulty - difficultyThreshold) / 100.0) * ((oldSum / r->num_pieces) - weights[i]);
+                sum += weights[i];
             }
         }
 
@@ -735,17 +696,17 @@ piece_id histrand_get_next(struct randomizer *r)
         for(i = 0; i < r->num_pieces; i++)
         {
             // find which segment p is in
-            if(p >= (long double)(sum) && p < (long double)(sum + temp_weights[i]))
+            if(p >= (long double)(sum) && p < (long double)(sum + weights[i]))
             {
-                free(temp_weights);
+                free(weights);
                 free(histogram);
                 return i;
             }
             else
-                sum += temp_weights[i];
+                sum += weights[i];
         }
 
-        free(temp_weights);
+        free(weights);
         free(histogram);
 
         return 0;
@@ -833,103 +794,6 @@ piece_id g3rand_lookahead(struct randomizer *r, unsigned int distance)
     return d->history[distance - 1];
 }
 
-//
-/* */
-//
-
-/*
-uint32_t g2_state_read_rand(rngstate s)
-{
-    uint32_t seed = s;
-    return (g2_rand(seed) >> 10) & 0x7fff;
-}
-
-rngstate g2_state_rand(rngstate s)
-{
-    uint32_t oldseed = s & 0xffffffff;
-
-    uint64_t seed = g2_rand(oldseed);
-    uint64_t hist_only = (s >> 32) << 32;
-
-    return hist_only | seed;
-}
-
-uint8_t state_hN(rngstate s, uint8_t n)
-{
-    n &= 3;
-    return (s >> (56 - 8*n));
-}
-
-rngstate state_set_hN(rngstate s, uint8_t n, uint8_t piece)
-{
-    rngstate new = 0;
-
-    piece = piece % 7;
-    n = n % 4;
-
-    uint64_t piecemask = (uint64_t)(piece) << (56 - 8*n);
-    uint64_t mask = 0xffffffffffffffff;
-
-    mask ^= (uint64_t)(0xff) << (56 - 8*n);
-    new = (s & mask) | piecemask;
-
-    return new;
-}
-
-// TODO
-
-rngstate state_push(rngstate s, uint8_t piece)
-{
-    return s;
-}
-
-rngstate from_hist_seed(char *history_str, uint32_t seed)
-{
-    uint64_t seed_ = (uint64_t)(seed);
-    uint64_t history[4];
-    uint64_t vals[5];
-    uint64_t result = 0;
-    int i = 0;
-
-    for(i = 0; i < 4; i++) {
-        switch(history_str[i]) {
-            default:
-            case 'I':
-                history[i] = 0;
-                break;
-            case 'Z':
-                history[i] = 1;
-                break;
-            case 'S':
-                history[i] = 2;
-                break;
-            case 'J':
-                history[i] = 3;
-                break;
-            case 'L':
-                history[i] = 4;
-                break;
-            case 'O':
-                history[i] = 5;
-                break;
-            case 'T':
-                history[i] = 6;
-                break;
-        }
-
-        vals[i] = (history[i] << (56 - 8*i));
-    }
-
-    vals[4] = seed_;
-
-    for(i = 0; i < 5; i++) {
-        result |= vals[i];
-    }
-
-    return result;
-}
-*/
-
 uint32_t g2_get_seed() { return g2_seed; }
 
 uint32_t g2_seed_rand(uint32_t seed)
@@ -1009,92 +873,6 @@ piece_id g123_get_init_piece(uint32_t *seedp)
 
     return t;
 }
-
-/*
-uint8_t g2_std_randomize(uint8_t *history)
-{
-    uint8_t t = 0;
-    int i = 0;
-    int j = 0;
-
-    int is_in_history = 0;
-
-    for(i = 0; i < 5; i++) {
-        t = (uint8_t)(g123_read_rand(NULL) % 7);
-
-        for(j = 0; j < 4; j++) {
-            if(history[j] == t)
-                is_in_history = 1;
-        }
-
-        if(!is_in_history)
-            return t;
-
-        is_in_history = 0;
-        t = g123_read_rand(NULL) % 7;
-    }
-
-    return t;
-}
-
-rngstate g2_state_randomize(rngstate s)
-{
-    uint8_t t = 0;
-    int i = 0;
-    int j = 0;
-
-    int is_in_history = 0;
-
-    for(i = 0; i < 5; i++) {
-        t = (uint8_t)(g2_state_read_rand(s) % 7);
-        s = g2_state_rand(s);
-
-        for(j = 0; j < 4; j++) {
-            if(state_hN(s, j) == t)
-                is_in_history = 1;
-        }
-
-        if(!is_in_history) {
-            s = state_set_hN(s, 0, state_hN(s, 1));
-            s = state_set_hN(s, 1, state_hN(s, 2));
-            s = state_set_hN(s, 2, state_hN(s, 3));
-            s = state_set_hN(s, 3, t);
-
-            return s;
-        }
-
-        t = (uint8_t)(g2_state_read_rand(s) % 7);
-        s = g2_state_rand(s);
-    }
-
-    s = state_set_hN(s, 0, state_hN(s, 1));
-    s = state_set_hN(s, 1, state_hN(s, 2));
-    s = state_set_hN(s, 2, state_hN(s, 3));
-    s = state_set_hN(s, 3, t);
-
-    return s;
-}
-
-rngstate g2_state_init_randomize(rngstate s)
-{
-    uint8_t t = 1;
-    char pieces[7] = "IZSJLOT";
-
-    while(t == 1 || t == 2 || t == 5) {
-        t = (uint8_t)(g2_state_read_rand(s) % 7);
-        s = g2_state_rand(s);
-    }
-
-    std::cerr << "init piece = " << pieces[t] << std::endl;
-
-    s = state_set_hN(s, 0, state_hN(s, 1));
-    s = state_set_hN(s, 1, state_hN(s, 2));
-    s = state_set_hN(s, 2, state_hN(s, 3));
-    s = state_set_hN(s, 3, t);
-
-    return s;
-}
-*/
 
 piece_id g3_most_droughted_piece(int *histogram)
 {
