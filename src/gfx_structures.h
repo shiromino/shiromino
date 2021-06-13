@@ -1,6 +1,7 @@
 #pragma once
+#include "types.h"
+#include <SDL.h>
 #include <filesystem>
-#include "SDL.h"
 #include <string>
 #define EMERGENCY_OVERRIDE 1
 #define MESSAGE_EMERGENCY 0x1000000
@@ -37,9 +38,9 @@ struct png_monofont {
 };
 
 struct text_formatting {
-    Uint32 rgba;
-    Uint32 outline_rgba;
-    // Uint32 background_rgba;
+    Shiro::u32 rgba;
+    Shiro::u32 outline_rgba;
+    // Shiro::u32 background_rgba;
 
     bool outlined;
     bool shadow;
@@ -95,5 +96,5 @@ struct gfx_button {
     int (*activate_check)(CoreState *);
     int (*deactivate_check)(CoreState *);
     void *data;
-    Uint32 text_rgba_mod;
+    Shiro::u32 text_rgba_mod;
 };

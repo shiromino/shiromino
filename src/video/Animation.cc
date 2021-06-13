@@ -1,7 +1,8 @@
-// TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the backend of Graphic subclasses.
+// TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the back end of graphic subclasses.
 #include "video/Animation.h"
 #include "video/Render.h"
 #include "asset/Image.h"
+#include "types.h"
 
 namespace Shiro {
 	AnimationGraphic::AnimationGraphic(
@@ -9,7 +10,7 @@ namespace Shiro {
 		SDL_Texture* const frame,
 		const int x,
 		const int y,
-		const Uint32 rgbaMod
+		const u32 rgbaMod
 	) :
 		screen(screen),
 		frame(frame),
@@ -39,7 +40,7 @@ namespace Shiro {
 		const int y,
 		const std::size_t numFrames,
 		const std::size_t frameMultiplier,
-		const Uint32 rgbaMod
+		const u32 rgbaMod
 	) :
 		assetMgr(assetMgr),
 		frames(frames),

@@ -1,6 +1,7 @@
 #pragma once
-#include "SDL.h"
+#include "types.h"
 #include "video/Screen.h"
+#include <SDL.h>
 
 namespace Shiro {
     struct Mouse {
@@ -29,6 +30,6 @@ namespace Shiro {
 
         bool hideOnStartup;
         bool shown;
-        Uint32 hideTicks;
+        u32 hideTicks;
     };
 }

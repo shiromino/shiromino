@@ -10,7 +10,8 @@
 #include "stringtools.h"
 #include "random.h"
 #include "Timer.h"
-#include "SDL.h"
+#include "types.h"
+#include <SDL.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -87,7 +88,7 @@ int gfx_drawqs(game_t *g)
     const float lt = static_cast<float>(q->p1->speeds->lock);
     const float l = static_cast<float>(q->p1counters->lock);
     const char r = 255 - (char)(80 * l / lt);
-    Uint32 rgba = (r * 0x1000000) + (r * 0x10000) + (r * 0x100) + 0xFF;
+    Shiro::u32 rgba = (r * 0x1000000) + (r * 0x10000) + (r * 0x100) + 0xFF;
 
     if(YTOROW(q->p1->y) != q->locking_row)
     {

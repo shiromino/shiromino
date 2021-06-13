@@ -1,11 +1,9 @@
 #include "video/Screen.h"
 #include "Debug.h"
+#include "types.h"
 #include <iostream>
 
-using namespace Shiro;
-using namespace std;
-
-Screen::Screen(const std::string& name, const unsigned w, const unsigned h, const unsigned logicalW, const unsigned logicalH, const float render_scale) :
+Shiro::Screen::Screen(const std::string& name, const unsigned w, const unsigned h, const unsigned logicalW, const unsigned logicalH, const float render_scale) :
     name(name),
     w(w),
     h(h),
@@ -23,7 +21,7 @@ Screen::Screen(const std::string& name, const unsigned w, const unsigned h, cons
     target_tex(nullptr)
 {}
 
-Screen::~Screen() {
+Shiro::Screen::~Screen() {
     if (renderer) {
         SDL_DestroyRenderer(renderer);
     }
@@ -33,8 +31,8 @@ Screen::~Screen() {
     }
 }
 
-bool Screen::init(const Settings& settings) {
-    Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
+bool Shiro::Screen::init(const Settings& settings) {
+    u32 windowFlags = SDL_WINDOW_RESIZABLE;
     window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, windowFlags);
     if (window == nullptr) {
         log_err("SDL_CreateWindow: %s", SDL_GetError());
@@ -84,7 +82,7 @@ bool Screen::init(const Settings& settings) {
     return true;
 }
 
-void Screen::updateRenderAreaPosition() {
+void Shiro::Screen::updateRenderAreaPosition() {
     float aspect = float(w) / float(h);
     float aspectDefault = float(logicalW) / float(logicalH);
 

@@ -1,12 +1,13 @@
 #pragma once
 #include "CoreState.h"
+#include "gfx_structures.h"
 #include "Grid.h"
 #include "input/KeyFlags.h"
-#include "Timer.h"
 #include "PieceDefinition.h"
-#include "gfx_structures.h"
+#include "Timer.h"
+#include "types.h"
 #include <cstdlib>
-#include "SDL.h"
+#include <SDL.h>
 #include <string>
 
 #define QRS_FIELD_X 4
@@ -62,7 +63,7 @@ extern png_monofont *monofont_thin;
 extern png_monofont *monofont_square;
 extern png_monofont *monofont_fixedsys;
 
-struct text_formatting text_fmt_create(unsigned int flags, Uint32 rgba, Uint32 outline_rgba);
+struct text_formatting text_fmt_create(unsigned int flags, Shiro::u32 rgba, Shiro::u32 outline_rgba);
 
 int gfx_init(CoreState *cs);
 void gfx_quit(CoreState *cs);
@@ -76,13 +77,13 @@ void img_destroy(gfx_image *img);
 //int gfx_brighten_texture(SDL_Texture *tex, Uint8 amt);
 // int gfx_darken_texture(SDL_Texture *tex, Uint8 amt);
 
-int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*deactivate_check)(CoreState *), void *data, Uint32 rgba);
+int gfx_createbutton(CoreState *cs, const char *text, int x, int y, unsigned int flags, int (*action)(CoreState *, void *), int (*deactivate_check)(CoreState *), void *data, Shiro::u32 rgba);
 int gfx_drawbuttons(CoreState *cs, int type);
 
 int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsigned int flags, int x, int y);
-int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Uint32 rgba);
+int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Shiro::u32 rgba);
 
 int gfx_drawtext(CoreState *cs, std::string text, int x, int y, png_monofont *font, struct text_formatting *fmt);
 int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t len, int x, int y, png_monofont *font, struct text_formatting *fmt);
-int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDefinition& pd, unsigned int flags, int orient, int x, int y, Uint32 rgba);
-int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Uint32 rgba);
+int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, Shiro::PieceDefinition& pd, unsigned int flags, int orient, int x, int y, Shiro::u32 rgba);
+int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Shiro::u32 rgba);

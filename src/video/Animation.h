@@ -1,5 +1,6 @@
 #pragma once
 #include "asset/Asset.h"
+#include "types.h"
 #include "video/Gfx.h"
 #include "video/Screen.h"
 #include <filesystem>
@@ -15,7 +16,7 @@ namespace Shiro {
             SDL_Texture* const frame,
             const int x,
             const int y,
-            const Uint32 rgbaMod
+            const u32 rgbaMod
         );
 
         void draw() const;
@@ -24,7 +25,7 @@ namespace Shiro {
         SDL_Texture* frame;
         const int x;
         const int y;
-        const Uint32 rgbaMod;
+        const u32 rgbaMod;
     };
 
     class AnimationEntity : public Entity {
@@ -42,7 +43,7 @@ namespace Shiro {
             const int y,
             const std::size_t numFrames,
             const std::size_t frameMultiplier,
-            const Uint32 rgbaMod
+            const u32 rgbaMod
         );
 
         bool update(Layers& layers);
