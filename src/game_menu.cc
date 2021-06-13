@@ -1351,7 +1351,7 @@ int mload_practice(game_t *g, int val)
     //cs->bg.transition();
     cs->bg.transition(Shiro::ImageAsset::get(cs->assetMgr, "multi-editor-bg"));
 
-    Shiro::MusicAsset::get(cs->assetMgr, "multi-editor-bgm").play(cs->settings);
+    Shiro::MusicAsset::get(cs->assetMgr, "multi_editor_bgm").play(cs->settings);
 
     d->menu_id = MENU_ID_PRACTICE;
     d->selection = 0;

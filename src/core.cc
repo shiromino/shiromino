@@ -332,7 +332,7 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "g3_tetrion_terror"},
             {Shiro::AssetType::font, "fixedsys"},
             // TODO: Convert remaining fonts to AngelCode bitmap font format.
-            {Shiro::AssetType::music, "multi-editor-bgm"},
+            {Shiro::AssetType::music, "multi_editor_bgm"},
             {Shiro::AssetType::music, "tracks0"},
             {Shiro::AssetType::music, "tracks1"},
             {Shiro::AssetType::music, "tracks2"},
@@ -377,7 +377,7 @@ bool CoreState::init() {
             auto [readSuccess, lineNum] = volumeINI.read((settings.sharePath / "audio" / "volume.ini").string());
             if (readSuccess) {
                 std::string musicNames[] = {
-                    "multi-editor-bgm",
+                    "multi_editor_bgm",
                     "tracks0",
                     "tracks1",
                     "tracks2",
@@ -437,7 +437,7 @@ bool CoreState::init() {
         }
 
         // bandaid because it won't recognize the volume.ini value
-        //Shiro::MusicAsset& multi_editor_bgm = Shiro::MusicAsset::get(this->assetMgr, "multi-editor-bgm");
+        //Shiro::MusicAsset& multi_editor_bgm = Shiro::MusicAsset::get(this->assetMgr, "multi_editor_bgm");
         //multi_editor_bgm.volume = 20;
 
         // SDL_Texture *blank = NULL;
