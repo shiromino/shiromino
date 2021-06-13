@@ -1,6 +1,5 @@
 # Running shiromino
 You can run the game by just launching the executable. If your executable resides in a build tree, check [this section](BUILDING.md#running) for additional help.
-<a name="custom-configuration-file"></a>
 If you would like to specify a custom configuration file, you can do so with the command-line options `--configuration-file` or `-c`. For example, you could provide the flag like this from the source directory:
 ```shell
 $ ./build/shiromino --configuration-file ./shiromino.ini
@@ -29,7 +28,6 @@ If none match, the game will try to create a default configuration file here (in
 2. `$HOME/.config/shiromino.ini`
 3. `<executable directory>/shiromino.ini`
 
-You can also [specify a custom configuration file](BUILDING.md#custom-configuration-file).
 ### `SHARE_PATH`
 `SHARE_PATH` is a path to a directory which contains static game data such as assets or the license. The game assumes that there is a directory within `SHARE_PATH` named `data`.
 

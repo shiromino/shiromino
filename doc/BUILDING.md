@@ -28,11 +28,6 @@ Before running these instructions, make sure to install [Homebrew](https://brew.
 $ brew install cmake libvorbis pkg-config sdl2 sdl2_image sdl2_mixer
 $ cmake -B build -S . && cmake --build build -j$(sysctl -n hw.ncpu)
 ```
-In case you're faced with a package-related error after running the `cmake` command, you're likely using an outdated `brew` and need to update first:
-```shell
-$ brew update
-$ brew upgrade pkg-config
-```
 ### Windows
 Before running these instructions, make sure to install [MSYS2](https://www.msys2.org/). The following commands need to be run in a "MSYS2 MinGW 64-bit" shell.
 
