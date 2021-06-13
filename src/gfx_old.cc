@@ -890,8 +890,8 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
 
     int i = 0;
     int j = 0;
-    int w = int(pieceDefinition.rotationTable[0].getWidth());
-    int h = int(pieceDefinition.rotationTable[0].getWidth());
+    int w = pieceDefinition.rotationTable[0].getWidth();
+    int h = pieceDefinition.rotationTable[0].getWidth();
     int c = 0;
 
     int cell_x = 0;
@@ -1031,12 +1031,12 @@ int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Shiro::u32 rgba)
 
     int digits[6];
 
-    digits[0] = int(min / 10);
-    digits[1] = int(min % 10);
-    digits[2] = int(sec / 10);
-    digits[3] = int(sec % 10);
-    digits[4] = int(csec / 10);
-    digits[5] = int(csec % 10);
+    digits[0] = min / 10;
+    digits[1] = min % 10;
+    digits[2] = sec / 10;
+    digits[3] = sec % 10;
+    digits[4] = csec / 10;
+    digits[5] = csec % 10;
 
     SDL_SetTextureColorMod(font, R(rgba), G(rgba), B(rgba));
     SDL_SetTextureAlphaMod(font, A(rgba));
