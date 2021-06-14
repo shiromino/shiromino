@@ -1031,9 +1031,9 @@ int gfx_drawqsmedals(game_t *g)
 
     if(medal)
     {
-        if(g->frame_counter - q->last_medal_re_timestamp < 20)
+        if(g->frame_counter - q->last_medal_ac_timestamp < 20)
         {
-            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_ac_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
@@ -1115,9 +1115,9 @@ int gfx_drawqsmedals(game_t *g)
 
     if(medal)
     {
-        if(g->frame_counter - q->last_medal_re_timestamp < 20)
+        if(g->frame_counter - q->last_medal_ro_timestamp < 20)
         {
-            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_ro_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
@@ -1158,9 +1158,9 @@ int gfx_drawqsmedals(game_t *g)
 
     if(medal)
     {
-        if(g->frame_counter - q->last_medal_re_timestamp < 20)
+        if(g->frame_counter - q->last_medal_st_timestamp < 20)
         {
-            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_st_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
@@ -1200,9 +1200,9 @@ int gfx_drawqsmedals(game_t *g)
 
     if(medal)
     {
-        if(g->frame_counter - q->last_medal_co_timestamp < 20)
+        if(g->frame_counter - q->last_medal_re_timestamp < 20)
         {
-            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_co_timestamp));
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 
@@ -1242,9 +1242,9 @@ int gfx_drawqsmedals(game_t *g)
 
     if(medal)
     {
-        if(g->frame_counter - q->last_medal_st_timestamp < 20)
+        if(g->frame_counter - q->last_medal_co_timestamp < 20)
         {
-            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_st_timestamp));
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_co_timestamp));
 
             SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
 

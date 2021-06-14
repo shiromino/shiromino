@@ -367,6 +367,7 @@ struct qrsdata
     int credit_roll_counter;
     int credit_roll_lineclears;
 
+    int starting_level;
     unsigned level;
     int section;
     double rank;
@@ -389,6 +390,8 @@ struct qrsdata
     int section_times[MAX_SECTIONS];
     int section_tetrises[MAX_SECTIONS];
 
+    int best_section_times[MAX_SECTIONS];
+
     // values: 1 = set to 2 next time a rotate happens.
     //           2 = lock during THIS frame ( handled by qs_process_lock() )
     int lock_on_rotate;
@@ -407,9 +410,11 @@ struct qrsdata
     int recoveries;
     bool is_recovering;
 
-    unsigned long last_medal_re_timestamp;
+    unsigned long last_medal_ac_timestamp;
     unsigned long last_medal_sk_timestamp;
+    unsigned long last_medal_ro_timestamp;
     unsigned long last_medal_st_timestamp;
+    unsigned long last_medal_re_timestamp;
     unsigned long last_medal_co_timestamp;
 
     // medal values range from 0 to BRONZE (1) to PLATINUM (4)

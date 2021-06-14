@@ -23,7 +23,7 @@ void scoredb_checkfill_default_sectiontimes(Shiro::Records::List *records)
         FROM
             sectionTimes
         WHERE
-            startlevel = :startLevel;
+            startlevel = :startLevel
         AND
             mode = MODE_G2_DEATH;
     )";
@@ -204,7 +204,7 @@ int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int
         FROM
             sectionTimes
         WHERE
-            startlevel = :startLevel;
+            startlevel = :startLevel
         AND
             mode = :mode;
     )";
