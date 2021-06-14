@@ -216,6 +216,8 @@ struct pracdata
         usr_seq_len(0),
         usr_seq_expand_len(0),
         field_edit_in_progress(false),
+        usr_field_fumen(false),
+        usr_field_locked(false),
         palette_selection(0),
         field_selection(0),
         field_selection_vertex1_x(0),
@@ -228,6 +230,7 @@ struct pracdata
         brackets(false),
         invisible(false),
         fading(false),
+        garbage_delay(0),
         hist_index(0),
         lock_protect(0),
         infinite_floorkicks(false),
@@ -263,6 +266,9 @@ struct pracdata
     std::vector<Shiro::Grid> usr_field_redo;
     bool field_edit_in_progress;
 
+    bool usr_field_fumen; // true -> every piece placed in-game is saved as a new usr_field state
+    bool usr_field_locked;
+
     Shiro::Grid usr_field;
     int palette_selection;
     int field_selection;
@@ -278,6 +284,8 @@ struct pracdata
     bool brackets;
     bool invisible;
     bool fading;
+
+    int garbage_delay;
 
     int hist_index;
     int lock_protect;
@@ -432,6 +440,12 @@ int usr_field_undo_history_not_exists(CoreState *cs);
 
 int usr_field_redo_history_exists(CoreState *cs);
 int usr_field_redo_history_not_exists(CoreState *cs);
+
+int lock_usr_field(CoreState *cs, void *data);
+int unlock_usr_field(CoreState *cs, void *data);
+
+int usr_field_is_locked(CoreState *cs);
+int usr_field_is_unlocked(CoreState *cs);
 
 int usr_field_bkp(CoreState *cs, struct pracdata *d);
 int usr_field_undo(CoreState *cs, struct pracdata *d);

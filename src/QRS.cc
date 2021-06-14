@@ -292,7 +292,25 @@ int undo_clear_button_should_activate(CoreState *cs)
 
 int undo_clear_button_should_deactivate(CoreState *cs)
 {
-    return undo_clear_button_should_activate(cs) == 0;
+    if(undo_clear_button_should_activate(cs) == 0)
+        return 1;
+
+    if(!cs->p1game)
+        return 1;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+    if(!q)
+        return 1;
+
+    if(!q->pracdata)
+        return 1;
+
+    if(q->pracdata->usr_field_locked)
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 int usr_field_undo_history_exists(CoreState *cs)
@@ -343,6 +361,72 @@ int usr_field_redo_history_exists(CoreState *cs)
 int usr_field_redo_history_not_exists(CoreState *cs)
 {
     return usr_field_redo_history_exists(cs) == 0;
+}
+
+int lock_usr_field(CoreState *cs, void *data)
+{
+    if(!cs || !cs->p1game)
+        return -1;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+
+    if(q->pracdata)
+    {
+        q->pracdata->usr_field_locked = true;
+    }
+
+    return 0;
+}
+
+int unlock_usr_field(CoreState *cs, void *data)
+{
+    if(!cs || !cs->p1game)
+        return -1;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+
+    if(q->pracdata)
+    {
+        q->pracdata->usr_field_locked = false;
+    }
+
+    return 0;
+}
+
+int usr_field_is_locked(CoreState *cs)
+{
+    if(!cs || !cs->p1game)
+        return -1;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+
+    if(q->pracdata)
+    {
+        if(q->pracdata->usr_field_locked)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int usr_field_is_unlocked(CoreState *cs)
+{
+    if(!cs || !cs->p1game)
+        return -1;
+
+    qrsdata *q = (qrsdata *)cs->p1game->data;
+
+    if(q->pracdata)
+    {
+        if(!q->pracdata->usr_field_locked)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 int usr_field_bkp(CoreState *cs, pracdata *d) {
@@ -506,294 +590,340 @@ int qrs_input(game_t *g)
     {
         if(d->paused == QRS_FIELD_EDIT)
         {
-            cell_x = ((cs->mouse.logicalX - q->field_x) / 16) - 1;
-            cell_y = ((cs->mouse.logicalY - q->field_y) / 16) - 2;
-            palette_cell_x = (cs->mouse.logicalX - FIELD_EDITOR_PALETTE_X) / 16;
-            palette_cell_y = (cs->mouse.logicalY - FIELD_EDITOR_PALETTE_Y) / 16;
-
-            if(cs->select_all && !cs->text_editing)
-            {
-                d->field_selection = 1;
-                d->field_selection_vertex1_x = 0;
-                d->field_selection_vertex1_y = 0;
-                d->field_selection_vertex2_x = 11;
-                d->field_selection_vertex2_y = 19;
-            }
-
             if(cs->undo && !d->field_edit_in_progress)
-                usr_field_undo(cs, d);
+            {
+                if(SDL_GetModState() & KMOD_SHIFT)
+                {
+                    while(d->usr_field_undo.size() > 0)
+                    {
+                        usr_field_undo(cs, d);
+                    }
+                }
+                else
+                {
+                    usr_field_undo(cs, d);
+                }
+            }
 
             if(cs->redo && !d->field_edit_in_progress)
-                usr_field_redo(cs, d);
-
-            if(SDL_GetModState() & KMOD_SHIFT && cs->mouse.leftButton != Shiro::Mouse::Button::notPressed)
             {
-                if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
+                if(SDL_GetModState() & KMOD_SHIFT)
+                {
+                    while(d->usr_field_redo.size() > 0)
+                    {
+                        usr_field_redo(cs, d);
+                    }
+                }
+                else
+                {
+                    usr_field_redo(cs, d);
+                }
+            }
+
+            if(d->usr_field_locked)
+            {
+                d->field_selection = 0;
+            }
+
+            if(!d->usr_field_locked)
+            {
+                cell_x = ((cs->mouse.logicalX - q->field_x) / 16) - 1;
+                cell_y = ((cs->mouse.logicalY - q->field_y) / 16) - 2;
+                palette_cell_x = (cs->mouse.logicalX - FIELD_EDITOR_PALETTE_X) / 16;
+                palette_cell_y = (cs->mouse.logicalY - FIELD_EDITOR_PALETTE_Y) / 16;
+
+                // quick workaround
+                if(cs->mouse.logicalX < FIELD_EDITOR_PALETTE_X)
+                    palette_cell_x = -1;
+                if(cs->mouse.logicalY < FIELD_EDITOR_PALETTE_Y)
+                    palette_cell_y = -1;
+
+                if(cs->select_all && !cs->text_editing)
                 {
                     d->field_selection = 1;
-                    d->field_selection_vertex1_x = cell_x;
-                    d->field_selection_vertex1_y = cell_y;
+                    d->field_selection_vertex1_x = 0;
+                    d->field_selection_vertex1_y = 0;
+                    d->field_selection_vertex2_x = 11;
+                    d->field_selection_vertex2_y = 19;
                 }
 
-                d->field_selection_vertex2_x = cell_x;
-                d->field_selection_vertex2_y = cell_y;
-            }
-            else
-            {
-                if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed)
+                if(SDL_GetModState() & KMOD_SHIFT && cs->mouse.leftButton != Shiro::Mouse::Button::notPressed)
                 {
-                    if(palette_cell_x == 0)
+                    if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
                     {
-                        switch(palette_cell_y)
-                        {
-                            case 0:
-                                d->palette_selection = QRS_X + 1;
-                                break;
-                            case 1:
-                                d->palette_selection = QRS_N + 1;
-                                break;
-                            case 2:
-                                d->palette_selection = QRS_G + 1;
-                                break;
-                            case 3:
-                                d->palette_selection = QRS_U + 1;
-                                break;
-                            case 4:
-                                d->palette_selection = QRS_T + 1;
-                                break;
-                            case 5:
-                                d->palette_selection = QRS_Fa + 1;
-                                break;
-                            case 6:
-                                break;
-                            case 7:
-                                d->palette_selection = QRS_I4 + 1;
-                                break;
-                            case 8:
-                                d->palette_selection = QRS_T4 + 1;
-                                break;
-                            case 9:
-                                d->palette_selection = QRS_J4 + 1;
-                                break;
-                            case 10:
-                                d->palette_selection = QRS_L4 + 1;
-                                break;
-                            case 11:
-                                d->palette_selection = QRS_O + 1;
-                                break;
-                            case 12:
-                                d->palette_selection = QRS_S4 + 1;
-                                break;
-                            case 13:
-                                d->palette_selection = QRS_Z4 + 1;
-                                break;
-                            case 14:
-                                d->palette_selection = QRS_PIECE_GARBAGE;
-                                break;
-                            case 15:
-                                d->palette_selection = QRS_PIECE_BRACKETS;
-                                break;
-                            case 16:
-                                d->palette_selection = QRS_PIECE_GEM;
-                                break;
-                            default:
-                                break;
-                        }
+                        d->field_selection = 1;
+                        d->field_selection_vertex1_x = cell_x;
+                        d->field_selection_vertex1_y = cell_y;
                     }
-                    else if(d->field_selection)
+
+                    d->field_selection_vertex2_x = cell_x;
+                    d->field_selection_vertex2_y = cell_y;
+                }
+                else
+                {
+                    if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed)
                     {
-                        if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
+                        if(palette_cell_x == 0)
                         {
-                            d->field_selection = 0;
-                            //cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
-                        }
-                    }
-                    else if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
-                    {
-                        if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) != QRS_FIELD_W_LIMITER)
-                        {
-                            if(d->palette_selection != QRS_PIECE_GEM)
+                            switch(palette_cell_y)
                             {
-                                if(!d->field_edit_in_progress)
-                                    usr_field_bkp(cs, d);
-                                d->field_edit_in_progress = 1;
-                                edit_action_occurred = 1;
-                                d->usr_field.cell(cell_x, cell_y + 4) = d->palette_selection;
-                            }
-                            else if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) > 0)
-                            {
-                                if(!d->field_edit_in_progress)
-                                    usr_field_bkp(cs, d);
-                                d->field_edit_in_progress = 1;
-                                edit_action_occurred = 1;
-                                d->usr_field.cell(cell_x, cell_y + 4) |= QRS_PIECE_GEM;
+                                case 0:
+                                    d->palette_selection = QRS_X + 1;
+                                    break;
+                                case 1:
+                                    d->palette_selection = QRS_N + 1;
+                                    break;
+                                case 2:
+                                    d->palette_selection = QRS_G + 1;
+                                    break;
+                                case 3:
+                                    d->palette_selection = QRS_U + 1;
+                                    break;
+                                case 4:
+                                    d->palette_selection = QRS_T + 1;
+                                    break;
+                                case 5:
+                                    d->palette_selection = QRS_Fa + 1;
+                                    break;
+                                case 6:
+                                    break;
+                                case 7:
+                                    d->palette_selection = QRS_I4 + 1;
+                                    break;
+                                case 8:
+                                    d->palette_selection = QRS_T4 + 1;
+                                    break;
+                                case 9:
+                                    d->palette_selection = QRS_J4 + 1;
+                                    break;
+                                case 10:
+                                    d->palette_selection = QRS_L4 + 1;
+                                    break;
+                                case 11:
+                                    d->palette_selection = QRS_O + 1;
+                                    break;
+                                case 12:
+                                    d->palette_selection = QRS_S4 + 1;
+                                    break;
+                                case 13:
+                                    d->palette_selection = QRS_Z4 + 1;
+                                    break;
+                                case 14:
+                                    d->palette_selection = QRS_PIECE_GARBAGE;
+                                    break;
+                                case 15:
+                                    d->palette_selection = QRS_PIECE_BRACKETS;
+                                    break;
+                                case 16:
+                                    d->palette_selection = QRS_PIECE_GEM;
+                                    break;
+                                default:
+                                    break;
                             }
                         }
-                    }
-                }
-                else if(cs->mouse.rightButton != Shiro::Mouse::Button::notPressed)
-                {
-                    if(d->field_selection)
-                    {
-                        if(cs->mouse.rightButton == Shiro::Mouse::Button::pressedThisFrame)
+                        else if(d->field_selection)
                         {
-                            d->field_selection = 0;
-                            cs->mouse.rightButton = Shiro::Mouse::Button::notPressed;
-                        }
-                    }
-                    else if(cs->mouse.rightButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
-                    {
-                        if(d->usr_field.cell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
-                        {
-                            if(!d->field_edit_in_progress)
-                                usr_field_bkp(cs, d);
-                            d->field_edit_in_progress = 1;
-                            edit_action_occurred = 1;
-                            d->usr_field.cell(cell_x, cell_y + 4) = 0;
-                        }
-                    }
-                }
-
-                if(cs->delete_das == 2 || cs->backspace_das == 2)
-                {
-                    if(d->field_selection && !cs->text_editing)
-                    {
-                        if(d->field_selection_vertex1_x <= d->field_selection_vertex2_x)
-                        {
-                            lesser_x = d->field_selection_vertex1_x;
-                            greater_x = d->field_selection_vertex2_x;
-                        }
-                        else
-                        {
-                            lesser_x = d->field_selection_vertex2_x;
-                            greater_x = d->field_selection_vertex1_x;
-                        }
-
-                        if(d->field_selection_vertex1_y <= d->field_selection_vertex2_y)
-                        {
-                            lesser_y = d->field_selection_vertex1_y;
-                            greater_y = d->field_selection_vertex2_y;
-                        }
-                        else
-                        {
-                            lesser_y = d->field_selection_vertex2_y;
-                            greater_y = d->field_selection_vertex1_y;
-                        }
-
-                        for(i = lesser_x; i <= greater_x; i++)
-                        {
-                            for(j = lesser_y; j <= greater_y; j++)
+                            if(cs->mouse.leftButton == Shiro::Mouse::Button::pressedThisFrame)
                             {
-                                if(i >= 0 && i < 12 && j >= 0 && j < 20)
+                                d->field_selection = 0;
+                                //cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
+                            }
+                        }
+                        else if(cs->mouse.leftButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+                        {
+                            if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) != QRS_FIELD_W_LIMITER)
+                            {
+                                if(d->palette_selection != QRS_PIECE_GEM)
                                 {
-                                    if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) != QRS_FIELD_W_LIMITER)
-                                    {
-                                        if(!d->field_edit_in_progress)
-                                            usr_field_bkp(cs, d);
-                                        d->field_edit_in_progress = 1;
-                                        edit_action_occurred = 1;
-                                        d->usr_field.cell(i, j + 4) = 0;
-                                    }
+                                    if(!d->field_edit_in_progress)
+                                        usr_field_bkp(cs, d);
+                                    d->field_edit_in_progress = 1;
+                                    edit_action_occurred = 1;
+                                    d->usr_field.cell(cell_x, cell_y + 4) = d->palette_selection;
+                                }
+                                else if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) > 0)
+                                {
+                                    if(!d->field_edit_in_progress)
+                                        usr_field_bkp(cs, d);
+                                    d->field_edit_in_progress = 1;
+                                    edit_action_occurred = 1;
+                                    d->usr_field.cell(cell_x, cell_y + 4) |= QRS_PIECE_GEM;
                                 }
                             }
                         }
+                    }
+                    else if(cs->mouse.rightButton != Shiro::Mouse::Button::notPressed)
+                    {
+                        if(d->field_selection)
+                        {
+                            if(cs->mouse.rightButton == Shiro::Mouse::Button::pressedThisFrame)
+                            {
+                                d->field_selection = 0;
+                                cs->mouse.rightButton = Shiro::Mouse::Button::notPressed;
+                            }
+                        }
+                        else if(cs->mouse.rightButton != Shiro::Mouse::Button::notPressed && cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+                        {
+                            if(d->usr_field.cell(cell_x, cell_y + 4) != QRS_FIELD_W_LIMITER)
+                            {
+                                if(!d->field_edit_in_progress)
+                                    usr_field_bkp(cs, d);
+                                d->field_edit_in_progress = 1;
+                                edit_action_occurred = 1;
+                                d->usr_field.cell(cell_x, cell_y + 4) = 0;
+                            }
+                        }
+                    }
 
-                        d->field_selection = 0;
+                    if(cs->delete_das == 2 || cs->backspace_das == 2)
+                    {
+                        if(d->field_selection && !cs->text_editing)
+                        {
+                            if(d->field_selection_vertex1_x <= d->field_selection_vertex2_x)
+                            {
+                                lesser_x = d->field_selection_vertex1_x;
+                                greater_x = d->field_selection_vertex2_x;
+                            }
+                            else
+                            {
+                                lesser_x = d->field_selection_vertex2_x;
+                                greater_x = d->field_selection_vertex1_x;
+                            }
+
+                            if(d->field_selection_vertex1_y <= d->field_selection_vertex2_y)
+                            {
+                                lesser_y = d->field_selection_vertex1_y;
+                                greater_y = d->field_selection_vertex2_y;
+                            }
+                            else
+                            {
+                                lesser_y = d->field_selection_vertex2_y;
+                                greater_y = d->field_selection_vertex1_y;
+                            }
+
+                            for(i = lesser_x; i <= greater_x; i++)
+                            {
+                                for(j = lesser_y; j <= greater_y; j++)
+                                {
+                                    if(i >= 0 && i < 12 && j >= 0 && j < 20)
+                                    {
+                                        if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) != QRS_FIELD_W_LIMITER)
+                                        {
+                                            if(!d->field_edit_in_progress)
+                                                usr_field_bkp(cs, d);
+                                            d->field_edit_in_progress = 1;
+                                            edit_action_occurred = 1;
+                                            d->usr_field.cell(i, j + 4) = 0;
+                                        }
+                                    }
+                                }
+                            }
+
+                            d->field_selection = 0;
+                        }
                     }
                 }
-            }
 
-            c = 0;
-            if(cs->pressedDigits[0])
-            {
-                c = d->palette_selection;
-                if(d->field_selection)
-                    cs->pressedDigits[0] = false;
-            }
-            if(cs->pressedDigits[1])
-            {
-                c = 19;
-                if(d->field_selection)
-                    cs->pressedDigits[1] = false;
-            }
-            if(cs->pressedDigits[2])
-            {
-                c = 20;
-                if(d->field_selection)
-                    cs->pressedDigits[2] = false;
-            }
-            if(cs->pressedDigits[3])
-            {
-                c = 21;
-                if(d->field_selection)
-                    cs->pressedDigits[3] = false;
-            }
-            if(cs->pressedDigits[4])
-            {
-                c = 22;
-                if(d->field_selection)
-                    cs->pressedDigits[4] = false;
-            }
-            if(cs->pressedDigits[5])
-            {
-                c = 23;
-                if(d->field_selection)
-                    cs->pressedDigits[5] = false;
-            }
-            if(cs->pressedDigits[6])
-            {
-                c = 24;
-                if(d->field_selection)
-                    cs->pressedDigits[6] = false;
-            }
-            if(cs->pressedDigits[7])
-            {
-                c = 25;
-                if(d->field_selection)
-                    cs->pressedDigits[7] = false;
-            }
-            if(cs->pressedDigits[9])
-            {
-                c = QRS_PIECE_BRACKETS;
-                if(d->field_selection)
-                    cs->pressedDigits[9] = false;
-            }
-
-            if(c && d->field_selection)
-            {
-                if(d->field_selection_vertex1_x <= d->field_selection_vertex2_x)
+                c = 0;
+                if(cs->pressedDigits[0])
                 {
-                    lesser_x = d->field_selection_vertex1_x;
-                    greater_x = d->field_selection_vertex2_x;
+                    c = d->palette_selection;
+                    if(d->field_selection)
+                        cs->pressedDigits[0] = false;
                 }
-                else
+                if(cs->pressedDigits[1])
                 {
-                    lesser_x = d->field_selection_vertex2_x;
-                    greater_x = d->field_selection_vertex1_x;
+                    c = 19;
+                    if(d->field_selection)
+                        cs->pressedDigits[1] = false;
+                }
+                if(cs->pressedDigits[2])
+                {
+                    c = 20;
+                    if(d->field_selection)
+                        cs->pressedDigits[2] = false;
+                }
+                if(cs->pressedDigits[3])
+                {
+                    c = 21;
+                    if(d->field_selection)
+                        cs->pressedDigits[3] = false;
+                }
+                if(cs->pressedDigits[4])
+                {
+                    c = 22;
+                    if(d->field_selection)
+                        cs->pressedDigits[4] = false;
+                }
+                if(cs->pressedDigits[5])
+                {
+                    c = 23;
+                    if(d->field_selection)
+                        cs->pressedDigits[5] = false;
+                }
+                if(cs->pressedDigits[6])
+                {
+                    c = 24;
+                    if(d->field_selection)
+                        cs->pressedDigits[6] = false;
+                }
+                if(cs->pressedDigits[7])
+                {
+                    c = 25;
+                    if(d->field_selection)
+                        cs->pressedDigits[7] = false;
+                }
+                if(cs->pressedDigits[9])
+                {
+                    c = QRS_PIECE_BRACKETS;
+                    if(d->field_selection)
+                        cs->pressedDigits[9] = false;
                 }
 
-                if(d->field_selection_vertex1_y <= d->field_selection_vertex2_y)
+                if(c && d->field_selection)
                 {
-                    lesser_y = d->field_selection_vertex1_y;
-                    greater_y = d->field_selection_vertex2_y;
-                }
-                else
-                {
-                    lesser_y = d->field_selection_vertex2_y;
-                    greater_y = d->field_selection_vertex1_y;
-                }
-
-                for(i = lesser_x; i <= greater_x; i++)
-                {
-                    for(j = lesser_y; j <= greater_y; j++)
+                    if(d->field_selection_vertex1_x <= d->field_selection_vertex2_x)
                     {
-                        if(i >= 0 && i < 12 && j >= 0 && j < 20)
+                        lesser_x = d->field_selection_vertex1_x;
+                        greater_x = d->field_selection_vertex2_x;
+                    }
+                    else
+                    {
+                        lesser_x = d->field_selection_vertex2_x;
+                        greater_x = d->field_selection_vertex1_x;
+                    }
+
+                    if(d->field_selection_vertex1_y <= d->field_selection_vertex2_y)
+                    {
+                        lesser_y = d->field_selection_vertex1_y;
+                        greater_y = d->field_selection_vertex2_y;
+                    }
+                    else
+                    {
+                        lesser_y = d->field_selection_vertex2_y;
+                        greater_y = d->field_selection_vertex1_y;
+                    }
+
+                    for(i = lesser_x; i <= greater_x; i++)
+                    {
+                        for(j = lesser_y; j <= greater_y; j++)
                         {
-                            if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                            if(i >= 0 && i < 12 && j >= 0 && j < 20)
                             {
-                                if(SDL_GetModState() & KMOD_SHIFT)
+                                if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
                                 {
-                                    if(IS_STACK(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4)))
+                                    if(SDL_GetModState() & KMOD_SHIFT)
+                                    {
+                                        if(IS_STACK(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4)))
+                                        {
+                                            if(!d->field_edit_in_progress)
+                                                usr_field_bkp(cs, d);
+                                            d->field_edit_in_progress = 1;
+                                            edit_action_occurred = 1;
+                                            d->usr_field.cell(i, j + 4) = c;
+                                        }
+                                    }
+                                    else
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
@@ -802,20 +932,20 @@ int qrs_input(game_t *g)
                                         d->usr_field.cell(i, j + 4) = c;
                                     }
                                 }
-                                else
+                                else if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) > 0 && c == QRS_PIECE_GEM)
                                 {
-                                    if(!d->field_edit_in_progress)
-                                        usr_field_bkp(cs, d);
-                                    d->field_edit_in_progress = 1;
-                                    edit_action_occurred = 1;
-                                    d->usr_field.cell(i, j + 4) = c;
-                                }
-                            }
-                            else if(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4) > 0 && c == QRS_PIECE_GEM)
-                            {
-                                if(SDL_GetModState() & KMOD_SHIFT)
-                                {
-                                    if(IS_STACK(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4)))
+                                    if(SDL_GetModState() & KMOD_SHIFT)
+                                    {
+                                        if(IS_STACK(d->usr_field.getCell(i, static_cast<std::size_t>(j) + 4)))
+                                        {
+                                            if(!d->field_edit_in_progress)
+                                                usr_field_bkp(cs, d);
+                                            d->field_edit_in_progress = 1;
+                                            edit_action_occurred = 1;
+                                            d->usr_field.cell(i, j + 4) |= c;
+                                        }
+                                    }
+                                    else
                                     {
                                         if(!d->field_edit_in_progress)
                                             usr_field_bkp(cs, d);
@@ -824,30 +954,30 @@ int qrs_input(game_t *g)
                                         d->usr_field.cell(i, j + 4) |= c;
                                     }
                                 }
-                                else
+                            }
+                        }
+                    }
+
+                    d->field_selection = 0;
+                }
+                else if(c)
+                {
+                    if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
+                    {
+                        if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
+                        {
+                            if(SDL_GetModState() & KMOD_SHIFT)
+                            {
+                                if(IS_STACK(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4)))
                                 {
                                     if(!d->field_edit_in_progress)
                                         usr_field_bkp(cs, d);
                                     d->field_edit_in_progress = 1;
                                     edit_action_occurred = 1;
-                                    d->usr_field.cell(i, j + 4) |= c;
+                                    d->usr_field.cell(cell_x, cell_y + 4) = c;
                                 }
                             }
-                        }
-                    }
-                }
-
-                d->field_selection = 0;
-            }
-            else if(c)
-            {
-                if(cell_x >= 0 && cell_x < 12 && cell_y >= 0 && cell_y < 20)
-                {
-                    if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) != QRS_FIELD_W_LIMITER && c != QRS_PIECE_GEM)
-                    {
-                        if(SDL_GetModState() & KMOD_SHIFT)
-                        {
-                            if(IS_STACK(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4)))
+                            else
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
@@ -856,20 +986,20 @@ int qrs_input(game_t *g)
                                 d->usr_field.cell(cell_x, cell_y + 4) = c;
                             }
                         }
-                        else
+                        else if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) > 0 && c == QRS_PIECE_GEM)
                         {
-                            if(!d->field_edit_in_progress)
-                                usr_field_bkp(cs, d);
-                            d->field_edit_in_progress = 1;
-                            edit_action_occurred = 1;
-                            d->usr_field.cell(cell_x, cell_y + 4) = c;
-                        }
-                    }
-                    else if(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4) > 0 && c == QRS_PIECE_GEM)
-                    {
-                        if(SDL_GetModState() & KMOD_SHIFT)
-                        {
-                            if(IS_STACK(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4)))
+                            if(SDL_GetModState() & KMOD_SHIFT)
+                            {
+                                if(IS_STACK(d->usr_field.getCell(cell_x, static_cast<std::size_t>(cell_y) + 4)))
+                                {
+                                    if(!d->field_edit_in_progress)
+                                        usr_field_bkp(cs, d);
+                                    d->field_edit_in_progress = 1;
+                                    edit_action_occurred = 1;
+                                    d->usr_field.cell(cell_x, cell_y + 4) |= c;
+                                }
+                            }
+                            else
                             {
                                 if(!d->field_edit_in_progress)
                                     usr_field_bkp(cs, d);
@@ -877,14 +1007,6 @@ int qrs_input(game_t *g)
                                 edit_action_occurred = 1;
                                 d->usr_field.cell(cell_x, cell_y + 4) |= c;
                             }
-                        }
-                        else
-                        {
-                            if(!d->field_edit_in_progress)
-                                usr_field_bkp(cs, d);
-                            d->field_edit_in_progress = 1;
-                            edit_action_occurred = 1;
-                            d->usr_field.cell(cell_x, cell_y + 4) |= c;
                         }
                     }
                 }
@@ -911,6 +1033,12 @@ int qrs_input(game_t *g)
             if(d)
             {
                 d->paused = QRS_FIELD_EDIT;
+                if(!d->usr_field_fumen)
+                {
+                    usr_field_bkp(cs, d);
+                    d->usr_field = (*g->field);
+                }
+
                 qs_update_pracdata(cs);
                 if(!undo_clear_button_should_activate(cs))
                 {
@@ -1493,6 +1621,15 @@ int qrs_lock(game_t *g, qrs_player *p)
 
                 f->cell((int)to_x, (int)to_y) = value;
             }
+        }
+    }
+
+    if(q->pracdata != nullptr)
+    {
+        if(q->pracdata->usr_field_fumen)
+        {
+            usr_field_bkp(g->origin, q->pracdata);
+            q->pracdata->usr_field = (*g->field);
         }
     }
 

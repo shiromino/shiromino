@@ -196,7 +196,15 @@ int gfx_drawqs(game_t *g)
     {
         if(q->pracdata->paused == QRS_FIELD_EDIT)
         {
-            gfx_drawqrsfield(cs, &q->pracdata->usr_field, MODE_PENTOMINO, DRAWFIELD_GRID | DRAWFIELD_NO_OUTLINE, x, y);
+            if(q->pracdata->usr_field_locked)
+            {
+                gfx_drawqrsfield(cs, &q->pracdata->usr_field, MODE_PENTOMINO, 0, x, y);
+            }
+            else
+            {
+                gfx_drawqrsfield(cs, &q->pracdata->usr_field, MODE_PENTOMINO, DRAWFIELD_GRID /*| DRAWFIELD_NO_OUTLINE*/, x, y);
+            }
+
             if(q->pracdata->field_selection)
                 gfx_drawfield_selection(g, q->pracdata);
 
@@ -211,15 +219,25 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, cellPosStr, 350, 34, monofont_fixedsys, NULL);
             */
 
+            SDL_Rect padlockSrc = { 0, 280, 20, 20 };
+            SDL_Rect padlockDest = { QRS_FIELD_X + 14 * 16 + 2, QRS_FIELD_Y + 21 * 16, 20, 20 };
+
+            if(!q->pracdata->usr_field_locked)
+            {
+                padlockSrc.x += 20;
+            }
+
+            Shiro::RenderCopy(g->origin->screen, font, &padlockSrc, &padlockDest);
+
             if(q->pracdata->using_seed)
             {
                 fmt.align = ALIGN_RIGHT;
+                fmt.outlined = false;
                 std::string randomizer_seed_str = strtools::format("Seed: %d", q->pracdata->randomizer_seed);
-                gfx_drawtext(cs, randomizer_seed_str, 638, 2, monofont_fixedsys, &fmt);
+                gfx_drawtext(cs, randomizer_seed_str, 638 - 80, 2, monofont_fixedsys, &fmt);
                 fmt.align = ALIGN_LEFT;
+                fmt.outlined = true;
             }
-
-            // TODO: Properly align these undo/redo draws to be symmetrical, and use right-alignment
 
             if(q->pracdata->usr_field_undo.size())
             {

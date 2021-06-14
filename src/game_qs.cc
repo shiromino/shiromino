@@ -1080,6 +1080,12 @@ int qs_game_pracinit(game_t *g, int val)
     //q->pracdata->usr_field = *g->field;
     *g->field = q->pracdata->usr_field;
 
+    if(q->pracdata->usr_field_fumen)
+    {
+        undo_clear_confirm_yes(cs, nullptr);
+        q->pracdata->usr_field_locked = true;
+    }
+
     for(size_t i = 0; i < g->field->getWidth(); i++)
     {
         for(size_t j = 0; j < g->field->getHeight(); j++)
@@ -1113,6 +1119,12 @@ int qs_game_pracinit(game_t *g, int val)
         q->state_flags |= GAMESTATE_INVISIBLE;
     if(q->pracdata->brackets)
         q->state_flags |= GAMESTATE_BRACKETS;
+
+    if(q->pracdata->garbage_delay >= 0)
+    {
+        q->garbage_delay = q->pracdata->garbage_delay;
+        q->state_flags |= GAMESTATE_RISING_GARBAGE;
+    }
 
     q->previews.clear();
 

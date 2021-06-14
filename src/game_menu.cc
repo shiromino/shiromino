@@ -515,7 +515,7 @@ int menu_input(game_t *g)
         cs->text_cut = NULL;
     }
 
-    if((cs->pressed.up || cs->is_up_input_repeat(DAS)) && d->selection > 0)
+    if((cs->pressed.up || cs->is_up_input_repeat(DAS)) && d->selection > 0 && !(SDL_GetModState() & (KMOD_CTRL | KMOD_SHIFT)))
     {
         update = true;
         for(i = d->selection - 1;; i--)
@@ -570,7 +570,7 @@ int menu_input(game_t *g)
         }
     }
 
-    if((cs->pressed.down || cs->is_down_input_repeat(DAS)) && (d->selection < d->numopts - 1))
+    if((cs->pressed.down || cs->is_down_input_repeat(DAS)) && (d->selection < d->numopts - 1) && !(SDL_GetModState() & (KMOD_CTRL | KMOD_SHIFT)))
     {
         update = true;
         for(i = d->selection + 1;; i++)
@@ -635,14 +635,14 @@ int menu_input(game_t *g)
 
     if(d->is_paged)
     {
-        if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d->page > 0)
+        if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d->page > 0 && !(SDL_GetModState() & (KMOD_CTRL | KMOD_SHIFT)))
         {
             update = true;
             d->selection = d->selection - d->page_length;
             d->page--;
         }
 
-        if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d->page < ((d->numopts - 1) / d->page_length))
+        if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d->page < ((d->numopts - 1) / d->page_length) && !(SDL_GetModState() & (KMOD_CTRL | KMOD_SHIFT)))
         {
             update = true;
             d->selection = d->selection + d->page_length;
@@ -683,99 +683,112 @@ int menu_input(game_t *g)
 
     m = &d->menu[d->selection];
 
-    switch(m->type)
+    if(!(SDL_GetModState() & (KMOD_CTRL | KMOD_SHIFT)))
     {
-        case Shiro::ElementType::MENU_ACTION:
-            d1 = (Shiro::ActionOptionData *)d->menu[d->selection].data;
+        switch(m->type)
+        {
+            case Shiro::ElementType::MENU_ACTION:
+                d1 = (Shiro::ActionOptionData *)d->menu[d->selection].data;
 
-            if(cs->pressed.a == 1 || cs->pressed.start == 1)
-            {
-                if(d1->action)
+                if(cs->pressed.a == 1 || cs->pressed.start == 1)
                 {
-                    int quitStatus = d1->action(g, d1->val);
-                    if(quitStatus == 1)
+                    if(d1->action)
                     {
-                        std::cerr << "Received quit signal, shutting down." << std::endl;
-                        return 1;
-                    }
-                    else if (quitStatus == 2) {
-                        return 2;
-                    }
-
-                    return 0;
-                }
-            }
-
-            break;
-
-        case Shiro::ElementType::MENU_MULTIOPT:
-            d2 = (Shiro::MultiOptionData *)d->menu[d->selection].data;
-
-            if(!d->is_paged)
-            {
-
-                if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d2->selection > 0)
-                {
-                    d2->selection--;
-                    *(d2->param) = d2->vals[d2->selection];
-                    if(d->menu[d->selection].value_update_callback)
-                        d->menu[d->selection].value_update_callback(cs);
-                }
-
-                if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d2->selection < (d2->num - 1))
-                {
-                    d2->selection++;
-                    *(d2->param) = d2->vals[d2->selection];
-                    if(d->menu[d->selection].value_update_callback)
-                        d->menu[d->selection].value_update_callback(cs);
-                }
-            }
-
-            break;
-
-        case Shiro::ElementType::MENU_TEXTINPUT:
-            d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
-
-            if(d7->leftmost_position < 0)
-                d7->leftmost_position = 0;
-            if(d7->position < 0)
-                d7->position = 0;
-            if(d7->position > int(d7->text.size()))
-                d7->position = int(d7->text.size());
-
-            break;
-
-        case Shiro::ElementType::MENU_TOGGLE:
-            d3 = (Shiro::ToggleOptionData *)d->menu[d->selection].data;
-
-            if(!d->is_paged)
-            {
-                if(cs->pressed.a || cs->pressed.left || cs->pressed.right)
-                {
-                    *(d3->param) = *(d3->param) ? false : true;
-                    if(d->menu[d->selection].value_update_callback)
-                        d->menu[d->selection].value_update_callback(cs);
-                }
-            }
-
-            break;
-
-        case Shiro::ElementType::MENU_GAME:
-            d4 = (Shiro::GameOptionData *)d->menu[d->selection].data;
-
-            if(cs->pressed.a == 1 || cs->pressed.start == 1)
-            {
-                switch(d4->mode)
-                {
-                    case QUINTESSE:
-                        if(d4->args.ptrs)
+                        int quitStatus = d1->action(g, d1->val);
+                        if(quitStatus == 1)
                         {
-                            if(d4->args.ptrs[0] && d4->args.ptrs[1] && d4->args.ptrs[2] && d4->args.ptrs[3])
+                            std::cerr << "Received quit signal, shutting down." << std::endl;
+                            return 1;
+                        }
+                        else if (quitStatus == 2) {
+                            return 2;
+                        }
+
+                        return 0;
+                    }
+                }
+
+                break;
+
+            case Shiro::ElementType::MENU_MULTIOPT:
+                d2 = (Shiro::MultiOptionData *)d->menu[d->selection].data;
+
+                if(!d->is_paged)
+                {
+
+                    if((cs->pressed.left || cs->is_left_input_repeat(DAS)) && d2->selection > 0)
+                    {
+                        d2->selection--;
+                        *(d2->param) = d2->vals[d2->selection];
+                        if(d->menu[d->selection].value_update_callback)
+                            d->menu[d->selection].value_update_callback(cs);
+                    }
+
+                    if((cs->pressed.right || cs->is_right_input_repeat(DAS)) && d2->selection < (d2->num - 1))
+                    {
+                        d2->selection++;
+                        *(d2->param) = d2->vals[d2->selection];
+                        if(d->menu[d->selection].value_update_callback)
+                            d->menu[d->selection].value_update_callback(cs);
+                    }
+                }
+
+                break;
+
+            case Shiro::ElementType::MENU_TEXTINPUT:
+                d7 = (Shiro::TextOptionData *)d->menu[d->selection].data;
+
+                if(d7->leftmost_position < 0)
+                    d7->leftmost_position = 0;
+                if(d7->position < 0)
+                    d7->position = 0;
+                if(d7->position > int(d7->text.size()))
+                    d7->position = int(d7->text.size());
+
+                break;
+
+            case Shiro::ElementType::MENU_TOGGLE:
+                d3 = (Shiro::ToggleOptionData *)d->menu[d->selection].data;
+
+                if(!d->is_paged)
+                {
+                    if(cs->pressed.a || cs->pressed.left || cs->pressed.right)
+                    {
+                        *(d3->param) = *(d3->param) ? false : true;
+                        if(d->menu[d->selection].value_update_callback)
+                            d->menu[d->selection].value_update_callback(cs);
+                    }
+                }
+
+                break;
+
+            case Shiro::ElementType::MENU_GAME:
+                d4 = (Shiro::GameOptionData *)d->menu[d->selection].data;
+
+                if(cs->pressed.a == 1 || cs->pressed.start == 1)
+                {
+                    switch(d4->mode)
+                    {
+                        case QUINTESSE:
+                            if(d4->args.ptrs)
                             {
-                                g->origin->p1game = qs_game_create(*((CoreState **)(d4->args.ptrs[0])),
-                                                                   *((int *)(d4->args.ptrs[1])),
-                                                                   *((unsigned int *)(d4->args.ptrs[2])),
-                                                                   *((int *)(d4->args.ptrs[3])));
+                                if(d4->args.ptrs[0] && d4->args.ptrs[1] && d4->args.ptrs[2] && d4->args.ptrs[3])
+                                {
+                                    g->origin->p1game = qs_game_create(*((CoreState **)(d4->args.ptrs[0])),
+                                                                       *((int *)(d4->args.ptrs[1])),
+                                                                       *((unsigned int *)(d4->args.ptrs[2])),
+                                                                       *((int *)(d4->args.ptrs[3])));
+                                    if(g->origin->p1game)
+                                    {
+                                        g->origin->p1game->init(g->origin->p1game);
+
+                                        return 0;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                g->origin->p1game = qs_game_create(g->origin, 0, 0, NO_REPLAY);
                                 if(g->origin->p1game)
                                 {
                                     g->origin->p1game->init(g->origin->p1game);
@@ -783,60 +796,60 @@ int menu_input(game_t *g)
                                     return 0;
                                 }
                             }
-                        }
-                        else
-                        {
-                            g->origin->p1game = qs_game_create(g->origin, 0, 0, NO_REPLAY);
-                            if(g->origin->p1game)
-                            {
-                                g->origin->p1game->init(g->origin->p1game);
 
-                                return 0;
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                break;
+
+            case Shiro::ElementType::MENU_GAME_MULTIOPT:
+                d6 = (Shiro::GameMultiOptionData *)d->menu[d->selection].data;
+
+                if(!d->is_paged)
+                {
+                    if((cs->pressed.left == 1 || cs->is_left_input_repeat(DAS)) && d6->selection > 0)
+                    {
+                        d6->selection--;
+                    }
+
+                    if((cs->pressed.right == 1 || cs->is_right_input_repeat(DAS)) && d6->selection < (d6->num - 1))
+                    {
+                        d6->selection++;
+                    }
+
+                    if(d->menu_id == MENU_ID_MAIN)
+                        d->main_menu_data.opt_selection = d6->selection;
+                }
+
+                if(cs->pressed.a == 1 || cs->pressed.start == 1)
+                {
+                    switch(d6->mode)
+                    {
+                        case QUINTESSE:
+                            if(d6->args[d6->selection].ptrs)
+                            {
+                                if(d6->args[d6->selection].ptrs[0] && d6->args[d6->selection].ptrs[1] && d6->args[d6->selection].ptrs[2] &&
+                                   d6->args[d6->selection].ptrs[3])
+                                {
+                                    g->origin->p1game = qs_game_create(*((CoreState **)(d6->args[d6->selection].ptrs[0])),
+                                                                       *((int *)(d6->args[d6->selection].ptrs[1])),
+                                                                       *((unsigned int *)(d6->args[d6->selection].ptrs[2])),
+                                                                       NO_REPLAY);
+                                    if(g->origin->p1game)
+                                    {
+                                        g->origin->p1game->init(g->origin->p1game);
+
+                                        return 0;
+                                    }
+                                }
                             }
-                        }
-
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            break;
-
-        case Shiro::ElementType::MENU_GAME_MULTIOPT:
-            d6 = (Shiro::GameMultiOptionData *)d->menu[d->selection].data;
-
-            if(!d->is_paged)
-            {
-                if((cs->pressed.left == 1 || cs->is_left_input_repeat(DAS)) && d6->selection > 0)
-                {
-                    d6->selection--;
-                }
-
-                if((cs->pressed.right == 1 || cs->is_right_input_repeat(DAS)) && d6->selection < (d6->num - 1))
-                {
-                    d6->selection++;
-                }
-
-                if(d->menu_id == MENU_ID_MAIN)
-                    d->main_menu_data.opt_selection = d6->selection;
-            }
-
-            if(cs->pressed.a == 1 || cs->pressed.start == 1)
-            {
-                switch(d6->mode)
-                {
-                    case QUINTESSE:
-                        if(d6->args[d6->selection].ptrs)
-                        {
-                            if(d6->args[d6->selection].ptrs[0] && d6->args[d6->selection].ptrs[1] && d6->args[d6->selection].ptrs[2] &&
-                               d6->args[d6->selection].ptrs[3])
+                            else
                             {
-                                g->origin->p1game = qs_game_create(*((CoreState **)(d6->args[d6->selection].ptrs[0])),
-                                                                   *((int *)(d6->args[d6->selection].ptrs[1])),
-                                                                   *((unsigned int *)(d6->args[d6->selection].ptrs[2])),
-                                                                   NO_REPLAY);
+                                g->origin->p1game = qs_game_create(g->origin, 0, 0, NO_REPLAY);
                                 if(g->origin->p1game)
                                 {
                                     g->origin->p1game->init(g->origin->p1game);
@@ -844,51 +857,19 @@ int menu_input(game_t *g)
                                     return 0;
                                 }
                             }
-                        }
-                        else
-                        {
-                            g->origin->p1game = qs_game_create(g->origin, 0, 0, NO_REPLAY);
-                            if(g->origin->p1game)
-                            {
-                                g->origin->p1game->init(g->origin->p1game);
 
-                                return 0;
-                            }
-                        }
+                            break;
 
-                        break;
-
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
-            }
 
-            break;
+                break;
 
-        case Shiro::ElementType::MENU_METAGAME:
-            d5 = (Shiro::MetaGameOptionData *)d->menu[d->selection].data;
-
-#if 0
-            if(cs->pressed.a == 1 || cs->pressed.start == 1)
-            {
-                switch(d5->mode)
-                {
-                    case META_TAS:
-                        break;
-
-                    case META_REPLAY:
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-#endif
-
-            break;
-
-        default:
-            break;
+            default:
+                break;
+        }
     }
 
     // process mouse for menudata->menuButtons here
@@ -898,17 +879,27 @@ int menu_input(game_t *g)
         for(auto it = d->menuButtons.begin(); it != d->menuButtons.end(); it++) {
             gfx_button& b = *it;
 
-            if(b.activate_check)
-            {
-                if(b.activate_check(cs))
-                {
-                    b.active = true;
-                }
-            }
-
             if(!b.active)
             {
+                if(b.activate_check)
+                {
+                    if(b.activate_check(cs))
+                    {
+                        b.active = true;
+                    }
+                }
+
                 continue;
+            }
+
+            if(b.deactivate_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
+            {
+                if(b.deactivate_check(cs))
+                {
+                    b.active = false;
+
+                    continue;
+                }
             }
 
             if(cs->button_emergency_override && !(b.flags & BUTTON_EMERGENCY))
@@ -954,14 +945,6 @@ int menu_input(game_t *g)
             }
             if (b.clicked) {
                 b.clicked--;
-            }
-
-            if(b.deactivate_check && (!b.clicked || b.flags & BUTTON_EMERGENCY))
-            {
-                if(b.deactivate_check(cs))
-                {
-                    b.active = false;
-                }
             }
         }
 
@@ -1320,6 +1303,7 @@ int mload_practice(game_t *g, int val)
     int lineare_ = 0;
     int lineclear_ = 0;
     int das_ = 0;
+    int garbage_delay_ = 0;
     int width_ = 0;
 
     auto game_type_ = Shiro::GameType::SIMULATE_QRS;
@@ -1368,29 +1352,27 @@ int mload_practice(game_t *g, int val)
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = mload_main;
     d1->val = 0;
-    m->x = optsX;
-    m->y = optsY;
+    m->x = optsX + 10 * 8;
+    m->y = optsY - 48;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
     /* */
     //
 
-    optsY += 16;
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_ACTION, NULL, "PLAY"));
     m = &d->menu.back();
     d1 = (Shiro::ActionOptionData *)m->data;
     d1->action = qs_game_pracinit;
     d1->val = 0;
-    m->x = optsX;
-    m->y = optsY;
+    m->x = optsX + 11 * 8;
+    m->y = optsY - 32;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
 
     //
     /* */
     //
 
-    optsY += 32;
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GOAL LEVEL"));
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
@@ -1551,7 +1533,7 @@ int mload_practice(game_t *g, int val)
     /* */
     //
 
-    optsY += 32;
+    optsY += 24;
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "GRAVITY"));
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
@@ -1841,6 +1823,51 @@ int mload_practice(game_t *g, int val)
     //
 
     optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, NULL, "GARBAGE DELAY"));
+    m = &d->menu.back();
+    d2 = (Shiro::MultiOptionData *)m->data;
+    d2->num = 101;
+    d2->param = &q->pracdata->garbage_delay;
+    d2->vals = (int *)malloc(101 * sizeof(int));
+    assert(d2->vals != nullptr);
+    d2->labels.resize(101);
+
+    d2->vals[0] = -1;
+    d2->labels[0] = "OFF";
+
+    for(i = 1; i < 101; i++)
+    {
+        std::stringstream ss;
+        ss << i - 1;
+        d2->labels[i] = ss.str();
+        d2->vals[i] = i - 1;
+    }
+
+    if(pracdata_mirror_existed)
+    {
+        garbage_delay_ = q->pracdata->garbage_delay;
+        d2->selection = garbage_delay_ + 1;
+    }
+    else
+    {
+        d2->selection = 0;
+        (*d2->param) = d2->vals[d2->selection];
+    }
+
+    m->x = optsX;
+    m->y = optsY;
+    m->value_x = optsValueX;
+    m->value_y = m->y;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_rgba = 0xFF30A0FF;
+    m->value_text_rgba = m->label_text_rgba;
+
+    //
+    /* */
+    //
+
+    optsY += 24;
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "WIDTH"));
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
@@ -1994,7 +2021,6 @@ int mload_practice(game_t *g, int val)
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
-    m->label_text_rgba = 0xA0A0FFFF;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
 
     //
@@ -2034,7 +2060,6 @@ int mload_practice(game_t *g, int val)
     m->value_x = optsValueX;
     m->value_y = m->y;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
-    m->label_text_rgba = 0xC0C020FF;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
 
     //
@@ -2042,6 +2067,26 @@ int mload_practice(game_t *g, int val)
     //
 
     optsY += 16;
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TOGGLE, NULL, "FUMENIZE"));
+    m = &d->menu.back();
+    d8 = (Shiro::ToggleOptionData *)m->data;
+    d8->param = &q->pracdata->usr_field_fumen;
+    d8->labels[0] = "OFF";
+    d8->labels[1] = "ON";
+    m->x = optsX;
+    m->y = optsY;
+    m->value_x = optsValueX;
+    m->value_y = m->y;
+    m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
+    m->label_text_rgba = 0xFF1010FF;
+    m->value_text_rgba = m->label_text_rgba;
+    m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT | DRAWTEXT_ALIGN_RIGHT;
+
+    //
+    /* */
+    //
+
+    optsY += 38;
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "PIECE SEQUENCE"));
     m = &d->menu.back();
     d7 = (Shiro::TextOptionData *)m->data;
@@ -2052,8 +2097,9 @@ int mload_practice(game_t *g, int val)
     m->value_y = m->y + 18;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT; //|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_rgba = 0x00EF00FF;
 
-    optsY += 46;
+    optsY += 42;
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_TEXTINPUT, qs_update_pracdata, "RANDOMIZER SEED"));
     m = &d->menu.back();
     d7 = (Shiro::TextOptionData *)m->data;
@@ -2064,6 +2110,7 @@ int mload_practice(game_t *g, int val)
     m->value_y = m->y + 18;
     m->label_text_flags = DRAWTEXT_FIXEDSYS_FONT;
     m->value_text_flags = DRAWTEXT_FIXEDSYS_FONT; //|DRAWTEXT_ALIGN_RIGHT;
+    m->label_text_rgba = 0x2020FFFF;
 
     gfx_button undoClearButton;
     undoClearButton.type = BUTTON_TYPE_ACTION;
@@ -2104,9 +2151,37 @@ int mload_practice(game_t *g, int val)
     doRedoButton.w = 25;
     doRedoButton.h = 27;
 
+    gfx_button lockFieldButton;
+    lockFieldButton.type = BUTTON_TYPE_ACTION;
+    lockFieldButton.action = lock_usr_field;
+    lockFieldButton.text = "";
+    lockFieldButton.active = false;
+    lockFieldButton.visible = false;
+    lockFieldButton.activate_check = usr_field_is_unlocked;
+    lockFieldButton.deactivate_check = usr_field_is_locked;
+    lockFieldButton.x = QRS_FIELD_X + 14 * 16 + 2;
+    lockFieldButton.y = QRS_FIELD_Y + 21 * 16;
+    lockFieldButton.w = 20;
+    lockFieldButton.h = 20;
+
+    gfx_button unlockFieldButton;
+    unlockFieldButton.type = BUTTON_TYPE_ACTION;
+    unlockFieldButton.action = unlock_usr_field;
+    unlockFieldButton.text = "";
+    unlockFieldButton.active = false;
+    unlockFieldButton.visible = false;
+    unlockFieldButton.activate_check = usr_field_is_locked;
+    unlockFieldButton.deactivate_check = usr_field_is_unlocked;
+    unlockFieldButton.x = QRS_FIELD_X + 14 * 16 + 2;
+    unlockFieldButton.y = QRS_FIELD_Y + 21 * 16;
+    unlockFieldButton.w = 20;
+    unlockFieldButton.h = 20;
+
     d->menuButtons.push_back(undoClearButton);
     d->menuButtons.push_back(doUndoButton);
     d->menuButtons.push_back(doRedoButton);
+    d->menuButtons.push_back(lockFieldButton);
+    d->menuButtons.push_back(unlockFieldButton);
 
     d->numopts = d->menu.size();
 
