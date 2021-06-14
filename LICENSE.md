@@ -17,17 +17,17 @@ The copyright holder of the following files is [Emery Neufeld (beach glass)](htt
 
 The copyright holder of the following files is [Damian Yerrick](https://pineight.com/contact/) (© 2020):
 
-- data/audio/danger.wav
-- data/audio/gradeup.wav
-- data/audio/newsection.wav
-- data/audio/pieces0.wav
-- data/audio/pieces1.wav
-- data/audio/pieces2.wav
-- data/audio/pieces3.wav
-- data/audio/pieces4.wav
-- data/audio/pieces5.wav
-- data/audio/pieces6.wav
-- data/audio/pieces7.wav
+- data/audio/danger.ogg
+- data/audio/gradeup.ogg
+- data/audio/newsection.ogg
+- data/audio/pieces0.ogg
+- data/audio/pieces1.ogg
+- data/audio/pieces2.ogg
+- data/audio/pieces3.ogg
+- data/audio/pieces4.ogg
+- data/audio/pieces5.ogg
+- data/audio/pieces6.ogg
+- data/audio/pieces7.ogg
 
 The conditions under which these files may be used are as follows:
 
