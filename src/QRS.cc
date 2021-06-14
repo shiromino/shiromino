@@ -1033,7 +1033,7 @@ int qrs_input(game_t *g)
             if(d)
             {
                 d->paused = QRS_FIELD_EDIT;
-                if(!d->usr_field_fumen)
+                if(!d->usr_field_locked && !d->usr_field_fumen)
                 {
                     usr_field_bkp(cs, d);
                     d->usr_field = (*g->field);
@@ -1626,7 +1626,7 @@ int qrs_lock(game_t *g, qrs_player *p)
 
     if(q->pracdata != nullptr)
     {
-        if(q->pracdata->usr_field_fumen)
+        if(!q->pracdata->usr_field_locked && q->pracdata->usr_field_fumen)
         {
             usr_field_bkp(g->origin, q->pracdata);
             q->pracdata->usr_field = (*g->field);

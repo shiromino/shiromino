@@ -1080,10 +1080,9 @@ int qs_game_pracinit(game_t *g, int val)
     //q->pracdata->usr_field = *g->field;
     *g->field = q->pracdata->usr_field;
 
-    if(q->pracdata->usr_field_fumen)
+    if(!q->pracdata->usr_field_locked && q->pracdata->usr_field_fumen)
     {
         undo_clear_confirm_yes(cs, nullptr);
-        q->pracdata->usr_field_locked = true;
     }
 
     for(size_t i = 0; i < g->field->getWidth(); i++)
