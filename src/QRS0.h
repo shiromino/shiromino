@@ -123,6 +123,7 @@
 #define GAMESTATE_BETTER_NEXT_TIME          0x1000
 //#define GAMESTATE_RESULTS_SCREEN          0x2000
 #define GAMESTATE_CREDITS_TOPOUT            0x4000
+#define GAMESTATE_HALTING               0x00020000
 //#define GAMESTATE_PRE_PROMO_EXAM          0x8000
 //#define GAMESTATE_PROMO_RESULTS       0x00010000
 
@@ -411,9 +412,12 @@ struct qrsdata
     unsigned long last_medal_st_timestamp;
     unsigned long last_medal_co_timestamp;
 
-    int medal_re; // medal values range from 0 to BRONZE (1) to PLATINUM (4)
+    // medal values range from 0 to BRONZE (1) to PLATINUM (4)
+    int medal_ac;
     int medal_sk;
+    int medal_ro;
     int medal_st;
+    int medal_re;
     int medal_co;
 
     int speed_curve_index;

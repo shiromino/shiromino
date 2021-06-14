@@ -809,9 +809,11 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->last_medal_sk_timestamp = 0xFFFFFFFF;
     q->last_medal_st_timestamp = 0xFFFFFFFF;
     q->last_medal_co_timestamp = 0xFFFFFFFF;
-    q->medal_re = 0;
+    q->medal_ac = 0;
     q->medal_sk = 0;
+    q->medal_ro = 0;
     q->medal_st = 0;
+    q->medal_re = 0;
     q->medal_co = 0;
 
     q->speed_curve_index = 0;
@@ -1607,6 +1609,21 @@ int qs_game_frame(game_t *g)
         }
     }
 
+    if(q->state_flags & GAMESTATE_HALTING)
+    {
+        if((*s) & PSLINECLEAR)
+        {
+            qs_process_lineclear(g);
+        }
+        else
+        {
+            q->p1->state = PSINACTIVE;
+            q->state_flags &= ~GAMESTATE_HALTING;
+        }
+
+        return 0;
+    }
+
     if((*s) == PSINACTIVE)
     {
         return 0;
@@ -1799,9 +1816,8 @@ int qs_game_frame(game_t *g)
                 {
                     q->level = q->pracdata->goal_level;
 
-                    (*s) = PSINACTIVE;
-
                     q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+                    q->state_flags |= GAMESTATE_HALTING;
 
                     if(q->playback)
                         qrs_end_playback(g);
@@ -1817,9 +1833,8 @@ int qs_game_frame(game_t *g)
                     q->timer--;
                     if(q->timer.time == 0)
                     {
-                        (*s) = PSINACTIVE;
-
                         q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+                        q->state_flags |= GAMESTATE_HALTING;
 
                         if(q->playback)
                             qrs_end_playback(g);
@@ -2214,6 +2229,11 @@ int qs_process_prelockflash(game_t *g)
     {
         (*s) &= ~PSPRELOCKED;
         qrs_lock(g, q->p1);
+
+        if(q->previews.size() == 0)
+        {
+            q->state_flags |= GAMESTATE_HALTING;
+        }
 
         (*s) &= ~PSPRELOCKFLASH1;
         (*s) |= PSLOCKFLASH1;
@@ -2832,6 +2852,31 @@ int qs_process_lockflash(game_t *g)
             }
 
             q->combo_simple += (n > 1);
+
+            if(q->using_gems)
+            {
+                bool gems_in_field = false;
+                int cell = 0;
+
+                for(size_t i = 0; i < g->field->getWidth(); i++)
+                {
+                    for(size_t j = 0; j < g->field->getHeight(); j++)
+                    {
+                        cell = g->field->getCell(i, j);
+                        if(cell < 0 || cell == GRID_OOB)
+                            continue;
+
+                        if(cell & QRS_PIECE_GEM)
+                            gems_in_field = true;
+                    }
+                }
+
+                if(gems_in_field == false)
+                {
+                    std::cerr << "No gems left, terminating." << std::endl;
+                    q->state_flags |= GAMESTATE_HALTING;
+                }
+            }
         }
         else
         {
@@ -3769,29 +3814,6 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
             {
                 return 1;
             }
-        }
-    }
-
-    if(q->using_gems)
-    {
-        bool gems_in_field = false;
-        for(size_t i = 0; i < g->field->getWidth(); i++)
-        {
-            for(size_t j = 0; j < g->field->getHeight(); j++)
-            {
-                cell = g->field->getCell(i, j);
-                if(cell < 0 || cell == GRID_OOB)
-                    continue;
-
-                if(cell & QRS_PIECE_GEM)
-                    gems_in_field = true;
-            }
-        }
-
-        if(gems_in_field == false)
-        {
-            std::cerr << "No gems left, terminating." << std::endl;
-            return QSGAME_SHOULD_TERMINATE;
         }
     }
 

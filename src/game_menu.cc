@@ -1446,7 +1446,7 @@ int mload_practice(game_t *g, int val)
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GOAL TIME"));
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
-    d2->num = 23; // OFF, 55.00, 1:00, 1:01.68, 2:00, 3:00, ..., 19:00, 20:00 -> 23
+    d2->num = 26; // OFF, 20.00, 30.00, 55.00, 1:00, 1:01.68, 1:30, 2:00, 3:00, ..., 19:00, 20:00 -> 26
     d2->param = &q->pracdata->goal_time;
     d2->vals = (int *)malloc(d2->num * sizeof(int));
     d2->labels.resize(d2->num);
@@ -1458,23 +1458,38 @@ int mload_practice(game_t *g, int val)
     {
         if(i == 1)
         {
+            d2->labels[i] = "20.00";
+            d2->vals[i] = 20 * 60;
+        }
+        else if(i == 2)
+        {
+            d2->labels[i] = "30.00";
+            d2->vals[i] = 30 * 60;
+        }
+        else if(i == 3)
+        {
             d2->labels[i] = "55.00";
             d2->vals[i] = 55 * 60;
         }
-        else if(i == 2)
+        else if(i == 4)
         {
             d2->labels[i] = "1:00";
             d2->vals[i] = (1 * 60 * 60);
         }
-        else if(i == 3)
+        else if(i == 5)
         {
             d2->labels[i] = "1:01.68";
             d2->vals[i] = (1 * 60 * 60) + (1 * 60) + 41;
         }
+        else if(i == 6)
+        {
+            d2->labels[i] = "1:30";
+            d2->vals[i] = (1 * 60 * 60) + (30 * 60);
+        }
         else
         {
             std::stringstream ss;
-            ss << (i - 2) << ":00";
+            ss << (i - 5) << ":00";
             d2->labels[i] = ss.str();
             d2->vals[i] = ((i - 2) * 60 * 60);
         }
@@ -1490,22 +1505,34 @@ int mload_practice(game_t *g, int val)
         }
         else
         {
-            if(goal_time_ == 55 * 60)
+            if(goal_time_ == 20 * 60)
             {
                 d2->selection = 1;
             }
-            else if(goal_time_ == (1 * 60 * 60))
+            else if(goal_time_ == 30 * 60)
             {
                 d2->selection = 2;
             }
-            else if(goal_time_ == (1 * 60 * 60) + (1 * 60) + 41)
+            else if(goal_time_ == 55 * 60)
             {
                 d2->selection = 3;
+            }
+            else if(goal_time_ == (1 * 60 * 60))
+            {
+                d2->selection = 4;
+            }
+            else if(goal_time_ == (1 * 60 * 60) + (1 * 60) + 41)
+            {
+                d2->selection = 5;
+            }
+            else if(goal_time_ == (1 * 60 * 60) + (30 * 60))
+            {
+                d2->selection = 6;
             }
             else
             {
                 int n_ = goal_time_ / (60 * 60);
-                d2->selection = n_ + 2;
+                d2->selection = n_ + 5;
 
                 if(d2->selection >= d2->num || d2->selection < 0)
                 {

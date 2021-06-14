@@ -377,14 +377,14 @@ int gfx_drawqs(game_t *g)
             gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
             gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT);
 
-            gfx_drawtext(cs, text_level, x + 14 * 16 + 4, y + 18 * 16, monofont_square, NULL);
+            gfx_drawtext(cs, text_level, x + 14 * 16 + 4, y + 17 * 16, monofont_square, NULL);
             //fmt.rgba = 0xFF7070FF;
-            gfx_drawtext(cs, level, x + 14 * 16 + 4, y + 20 * 16, monofont_square, &fmt);
+            gfx_drawtext(cs, level, x + 14 * 16 + 4, y + 19 * 16, monofont_square, &fmt);
 
             if(q->pracdata->goal_level > 0)
             {
                 std::string goal_level = strtools::format("%d", q->pracdata->goal_level);
-                SDL_Rect line_rect = {x + 14 * 16 + 2, y + 21 * 16 + 2, 3 * 15 + 4, 2};
+                SDL_Rect line_rect = {x + 14 * 16 + 2, y + 20 * 16 + 2, 3 * 15 + 4, 2};
 
                 if(q->pracdata->goal_level >= 1000)
                     line_rect.w = 4 * 15 + 4;
@@ -400,7 +400,7 @@ int gfx_drawqs(game_t *g)
                 SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
 
                 fmt.rgba = 0xFFFFAFFF;
-                gfx_drawtext(cs, goal_level, x + 14 * 16 + 4, y + 21 * 16 + 6, monofont_square, &fmt);
+                gfx_drawtext(cs, goal_level, x + 14 * 16 + 4, y + 20 * 16 + 6, monofont_square, &fmt);
             }
 
             goto active_game_drawing;
@@ -782,7 +782,7 @@ int gfx_drawqs(game_t *g)
         }
 
     active_game_drawing:
-        if(q->mode_type == MODE_PENTOMINO)
+        if(q->mode_type == MODE_PENTOMINO || (q->pracdata && q->game_type == Shiro::GameType::SIMULATE_QRS))
         {
             fmt.rgba = RGBA_DEFAULT;
             fmt.outlined = false;
@@ -790,26 +790,23 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, next, q->field_x + 12, 13, monofont_small, &fmt);
             gfx_drawtext(cs, next_name, q->field_x + 12, 25, monofont_small, &fmt);
 
-            if(histrand_get_difficulty(q->randomizer) > 0.0)
-            {
-                labg_src.x = 432;
-                labg_src.y = 64;
-                labg_src.w = 80;
-                labg_src.h = 16;
+            labg_src.x = 432;
+            labg_src.y = 64;
+            labg_src.w = 80;
+            labg_src.h = 16;
 
-                labg_dest.x = x + 14 * 16 - 3;
-                labg_dest.y = y + 22 * 16;
-                labg_dest.w = 80;
-                labg_dest.h = 16;
-                Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
+            labg_dest.x = x + 14 * 16 - 3;
+            labg_dest.y = y + 22 * 16;
+            labg_dest.w = 80;
+            labg_dest.h = 16;
+            Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
 
-                gfx_drawtext(cs, "RANK", x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
+            gfx_drawtext(cs, "RANK", x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
 
-                fmt.rgba = 0xFFA0A0FF;
-                fmt.align = ALIGN_RIGHT;
-                gfx_drawtext(cs, strtools::format("%.1f", histrand_get_difficulty(q->randomizer)), x + 19 * 16 - 6, y + 22 * 16, monofont_fixedsys, &fmt);
-                fmt.align = ALIGN_LEFT;
-            }
+            fmt.rgba = 0xFFA0A0FF;
+            fmt.align = ALIGN_RIGHT;
+            gfx_drawtext(cs, strtools::format("%.1f", histrand_get_difficulty(q->randomizer)), x + 19 * 16 - 6, y + 22 * 16, monofont_fixedsys, &fmt);
+            fmt.align = ALIGN_LEFT;
         }
 
         if(q->num_previews > 0 && q->previews.size() > 0)
@@ -906,7 +903,17 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, columns_adj, QRS_FIELD_X + 16 + 8*(QRS_FIELD_W - q->field_w), QRS_FIELD_Y + 16, 0, 0xFFFFFFB0, 0x000000B0);
     }*/
 
-    gfx_drawqsmedals(g);
+    if(q->pracdata)
+    {
+        if(!q->pracdata->paused == QRS_FIELD_EDIT)
+        {
+            gfx_drawqsmedals(g);
+        }
+    }
+    else
+    {
+        gfx_drawqsmedals(g);
+    }
 
     fmt.shadow = true;
     fmt.outlined = false;
@@ -997,13 +1004,13 @@ int gfx_drawqsmedals(game_t *g)
 
     qrsdata *q = (qrsdata *)g->data;
     SDL_Rect dest = { 228 + q->field_x, 150, 40, 20 };
-    SDL_Rect src = { 20, 0, 20, 10 };
+    SDL_Rect src = { 100, 0, 20, 10 };
     SDL_Texture *medals = Shiro::ImageAsset::get(g->origin->assetMgr, "medals").getTexture();
     bool medal = true;
 
     float size_multiplier = 1.0;
 
-    switch(q->medal_re)
+    switch(q->medal_ac)
     {
         case BRONZE:
             src.y = 0;
@@ -1085,9 +1092,94 @@ int gfx_drawqsmedals(game_t *g)
 
     dest.y += 24;
     medal = true;
-    src.x = 0;
+    src.x = 80;
 
-    switch(q->medal_co)
+    switch(q->medal_ro)
+    {
+        case BRONZE:
+            src.y = 0;
+            break;
+        case SILVER:
+            src.y = 10;
+            break;
+        case GOLD:
+            src.y = 20;
+            break;
+        case PLATINUM:
+            src.y = 30;
+            break;
+        default:
+            medal = false;
+            break;
+    }
+
+    if(medal)
+    {
+        if(g->frame_counter - q->last_medal_re_timestamp < 20)
+        {
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
+
+            SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
+
+            dest_.w = static_cast<int>(dest_.w * size_multiplier);
+            dest_.h = static_cast<int>(dest_.h * size_multiplier);
+            dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
+            dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
+
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest_);
+        }
+        else
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest);
+    }
+
+    dest.y -= 48;
+    dest.x += 44;
+    medal = true;
+    src.x = 60;
+
+    switch(q->medal_st)
+    {
+        case BRONZE:
+            src.y = 0;
+            break;
+        case SILVER:
+            src.y = 10;
+            break;
+        case GOLD:
+            src.y = 20;
+            break;
+        case PLATINUM:
+            src.y = 30;
+            break;
+        default:
+            medal = false;
+            break;
+    }
+
+    if(medal)
+    {
+        if(g->frame_counter - q->last_medal_re_timestamp < 20)
+        {
+            size_multiplier = static_cast<float>(1.8f - 0.04f * (g->frame_counter - q->last_medal_re_timestamp));
+
+            SDL_Rect dest_ = { dest.x, dest.y, 40, 20 };
+
+            dest_.w = static_cast<int>(dest_.w * size_multiplier);
+            dest_.h = static_cast<int>(dest_.h * size_multiplier);
+            dest_.x -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 40.0f);
+            dest_.y -= static_cast<int>(((size_multiplier - 1.0f) / 2.0f) * 20.0f);
+
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest_);
+        }
+        else
+            Shiro::RenderCopy(g->origin->screen, medals, &src, &dest);
+    }
+
+    dest.y += 24;
+    medal = true;
+    src.x = 20;
+
+    switch(q->medal_re)
     {
         case BRONZE:
             src.y = 0;
@@ -1127,9 +1219,9 @@ int gfx_drawqsmedals(game_t *g)
 
     dest.y += 24;
     medal = true;
-    src.x = 80;
+    src.x = 0;
 
-    switch(q->medal_st)
+    switch(q->medal_co)
     {
         case BRONZE:
             src.y = 0;
