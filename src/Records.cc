@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "replay.h"
 #include "Player.h"
+#include "game_qs.h"
 #include <cinttypes>
 #include <cstdint>
 #include <cstdlib>
@@ -11,6 +12,36 @@
 #define check_bind(db, bind_call) check((bind_call) == SQLITE_OK, "Could not bind parameter value: %s", sqlite3_errmsg((db)))
 
 static const int MAX_PLAYER_NAME_LENGTH = 64;
+
+/*
+void scoredb_checkfill_default_sectiontimes(Shiro::Records::List *records)
+{
+    sqlite3_stmt *sql;
+    const char *getSectionTimeSql = R"(
+        SELECT
+            time
+        FROM
+            sectionTimes
+        WHERE
+            startlevel = :startLevel;
+        AND
+            mode = MODE_G2_DEATH;
+    )";
+
+    for(int i = 0; i < 10; i++)
+    {
+        check(sqlite3_prepare_v2(records->db, getSectionTimeSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), i * 100));
+
+        int returnValue = sqlite3_step(sql);
+        if(returnValue != SQLITE_ROW)
+        {
+            scoredb_add_sectiontime(records, )
+        }
+    }
+}
+*/
 
 void scoredb_init(Shiro::Records::List *records, const char *filename) {
         int returnValue = sqlite3_open_v2(filename, &records->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
@@ -50,6 +81,21 @@ void scoredb_init(Shiro::Records::List *records, const char *filename) {
             );
         )";
         returnValue = sqlite3_exec(records->db, createTableSql, NULL, NULL, NULL);
+        check(returnValue == 0, "Could not create scores table");
+
+        const char createSectionTimesTableSql[] = R"(
+            CREATE TABLE IF NOT EXISTS sectionTimes (
+                playerId INTEGER NOT NULL,
+                mode INTEGER,
+                grade INTEGER,
+                startlevel INTEGER,
+                endlevel INTEGER,
+                time INTEGER,
+                date INTEGER,
+                FOREIGN KEY(playerId) REFERENCES players(playerId)
+            );
+        )";
+        returnValue = sqlite3_exec(records->db, createSectionTimesTableSql, NULL, NULL, NULL);
         check(returnValue == 0, "Could not create scores table");
 
         std::cerr << "Opened record list \"" << filename << "\"" << std::endl;
@@ -149,7 +195,60 @@ void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p) {
     sqlite3_finalize(sql);
 }
 
-void scoredb_add(Shiro::Records::List *records, Shiro::Player* p, struct replay *r) {
+int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel)
+{
+    sqlite3_stmt *sql;
+    const char *getSectionTimeSql = R"(
+        SELECT
+            time
+        FROM
+            sectionTimes
+        WHERE
+            startlevel = :startLevel;
+        AND
+            mode = :mode;
+    )";
+
+    check(sqlite3_prepare_v2(records->db, getSectionTimeSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), startlevel));
+
+    int returnValue = sqlite3_step(sql);
+    if(returnValue == SQLITE_ROW)
+    {
+        return sqlite3_column_int(sql, 0);
+    }
+
+    return -1;
+}
+
+void scoredb_add_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int grade, int startlevel, int endlevel, int time)
+{
+    sqlite3_stmt *sql;
+    const char insertSql[] = R"(
+        INSERT INTO sectionTimes
+            (playerId, mode, grade, startlevel, endlevel, time, date)
+        VALUES
+            (:playerID, :mode, :grade, :startLevel, :endlevel, :time, strftime('%s', 'now'));
+    )";
+
+    check(sqlite3_prepare_v2(records->db, insertSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":grade"), grade));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), startlevel));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":level"), endlevel));
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":time"), time));
+
+    const int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_DONE, "Could not insert value into section times table: %s", sqlite3_errmsg(records->db));
+
+    sqlite3_finalize(sql);
+}
+
+void scoredb_add_replay(Shiro::Records::List *records, Shiro::Player* p, struct replay *r) {
     sqlite3_stmt *sql;
     std::string replayDescriptor = get_replay_descriptor(r);
     const char insertSql[] = R"(

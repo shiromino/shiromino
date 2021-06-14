@@ -1188,7 +1188,7 @@ int qrs_end_record(game_t* g)
     q->replay->ending_level = q->level;
     q->replay->grade = q->grade;
 
-    scoredb_add(&g->origin->records, &g->origin->player, q->replay);
+    scoredb_add_replay(&g->origin->records, &g->origin->player, q->replay);
 
     // TODO: Extract this into some (sum) method.
     int tetrisSum = 0;
