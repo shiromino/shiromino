@@ -917,6 +917,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     if(!level)
     {
         q->p1->speeds = &qs_curve[0];
+        q->starting_level = 0;
     }
     else
     {
@@ -1234,6 +1235,42 @@ int qs_game_quit(game_t *g)
 
     qrsdata *q = (qrsdata *)g->data;
 
+    if(!q->pracdata && !(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
+    {
+        for(int i = 0; i < MAX_SECTIONS; i++)
+        {
+            if(q->section_times[i] > 0)
+            {
+                if((q->best_section_times[i] < 0) || (q->section_times[i] < q->best_section_times[i]))
+                {
+                    int startlevel = i * 100;
+                    int endlevel = startlevel + 100;
+
+                    if(i == 9)
+                    {
+                        endlevel = 999;
+                        switch(q->mode_type)
+                        {
+                            case MODE_G2_MASTER:
+                            case MODE_G2_DEATH:
+                            case MODE_G1_20G:
+                            case MODE_G1_MASTER:
+                                endlevel = 999;
+                                break;
+
+                            case MODE_PENTOMINO:
+                            case MODE_G3_TERROR:
+                            default:
+                                break;
+                        }
+                    }
+
+                    scoredb_add_sectiontime(&g->origin->records, &g->origin->player, q->mode_type, q->grade, startlevel, endlevel, q->section_times[i]);
+                }
+            }
+        }
+    }
+
     free(q->p1->old_ys);
     free(q->p1->old_xs);
 
@@ -1242,7 +1279,9 @@ int qs_game_quit(game_t *g)
     }
 
     if(q)
+    {
         qrsdata_destroy(q);
+    }
 
     Mix_HaltMusic();
 
@@ -2591,34 +2630,37 @@ int qs_process_lockflash(game_t *g)
                     switch(q->mode_type)
                     {
                         case MODE_PENTOMINO:
-                            if(sectionTimeDelta < 0 - (2 * 60))
+                            if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                             {
-                                q->medal_st = PLATINUM;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                            }
-                            else if(sectionTimeDelta < 0)
-                            {
-                                q->medal_st = GOLD;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                            }
-                            else if(sectionTimeDelta < (5 * 60))
-                            {
-                                if(q->medal_st < SILVER)
+                                if(sectionTimeDelta < 0 - (2 * 60))
                                 {
-                                    q->medal_st = SILVER;
+                                    q->medal_st = PLATINUM;
                                     q->last_medal_st_timestamp = g->frame_counter;
                                     SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                                 }
-                            }
-                            else if(sectionTimeDelta < (10 * 60))
-                            {
-                                if(q->medal_st < BRONZE)
+                                else if(sectionTimeDelta < 0)
                                 {
-                                    q->medal_st = BRONZE;
+                                    q->medal_st = GOLD;
                                     q->last_medal_st_timestamp = g->frame_counter;
                                     SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                }
+                                else if(sectionTimeDelta < (5 * 60))
+                                {
+                                    if(q->medal_st < SILVER)
+                                    {
+                                        q->medal_st = SILVER;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
+                                }
+                                else if(sectionTimeDelta < (10 * 60))
+                                {
+                                    if(q->medal_st < BRONZE)
+                                    {
+                                        q->medal_st = BRONZE;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
                                 }
                             }
 
@@ -2680,7 +2722,7 @@ int qs_process_lockflash(game_t *g)
                             break;
 
                         case MODE_G2_MASTER:
-                            if(!(q->state_flags) & GAMESTATE_BIGMODE)
+                            if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                             {
                                 if(sectionTimeDelta < 0)
                                 {
@@ -2762,28 +2804,31 @@ int qs_process_lockflash(game_t *g)
                             break;
 
                         case MODE_G2_DEATH:
-                            if(sectionTimeDelta < 0)
+                            if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                             {
-                                q->medal_st = GOLD;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                            }
-                            else if(sectionTimeDelta < (5 * 60))
-                            {
-                                if(q->medal_st < SILVER)
+                                if(sectionTimeDelta < 0)
                                 {
-                                    q->medal_st = SILVER;
+                                    q->medal_st = GOLD;
                                     q->last_medal_st_timestamp = g->frame_counter;
                                     SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                                 }
-                            }
-                            else if(sectionTimeDelta < (10 * 60))
-                            {
-                                if(q->medal_st < BRONZE)
+                                else if(sectionTimeDelta < (5 * 60))
                                 {
-                                    q->medal_st = BRONZE;
-                                    q->last_medal_st_timestamp = g->frame_counter;
-                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    if(q->medal_st < SILVER)
+                                    {
+                                        q->medal_st = SILVER;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
+                                }
+                                else if(sectionTimeDelta < (10 * 60))
+                                {
+                                    if(q->medal_st < BRONZE)
+                                    {
+                                        q->medal_st = BRONZE;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
                                 }
                             }
 
@@ -2826,28 +2871,31 @@ int qs_process_lockflash(game_t *g)
                             break;
 
                         case MODE_G3_TERROR:
-                            if(sectionTimeDelta < 0)
+                            if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                             {
-                                q->medal_st = GOLD;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                            }
-                            else if(sectionTimeDelta < (3 * 60))
-                            {
-                                if(q->medal_st < SILVER)
+                                if(sectionTimeDelta < 0)
                                 {
-                                    q->medal_st = SILVER;
+                                    q->medal_st = GOLD;
                                     q->last_medal_st_timestamp = g->frame_counter;
                                     SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                                 }
-                            }
-                            else if(sectionTimeDelta < (7 * 60))
-                            {
-                                if(q->medal_st < BRONZE)
+                                else if(sectionTimeDelta < (3 * 60))
                                 {
-                                    q->medal_st = BRONZE;
-                                    q->last_medal_st_timestamp = g->frame_counter;
-                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    if(q->medal_st < SILVER)
+                                    {
+                                        q->medal_st = SILVER;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
+                                }
+                                else if(sectionTimeDelta < (7 * 60))
+                                {
+                                    if(q->medal_st < BRONZE)
+                                    {
+                                        q->medal_st = BRONZE;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
                                 }
                             }
 
@@ -2896,28 +2944,31 @@ int qs_process_lockflash(game_t *g)
 
                         case MODE_G1_20G:
                         case MODE_G1_MASTER:
-                            if(sectionTimeDelta < 0)
+                            if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                             {
-                                q->medal_st = GOLD;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                            }
-                            else if(sectionTimeDelta < (5 * 60))
-                            {
-                                if(q->medal_st < SILVER)
+                                if(sectionTimeDelta < 0)
                                 {
-                                    q->medal_st = SILVER;
+                                    q->medal_st = GOLD;
                                     q->last_medal_st_timestamp = g->frame_counter;
                                     SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                                 }
-                            }
-                            else if(sectionTimeDelta < (10 * 60))
-                            {
-                                if(q->medal_st < BRONZE)
+                                else if(sectionTimeDelta < (5 * 60))
                                 {
-                                    q->medal_st = BRONZE;
-                                    q->last_medal_st_timestamp = g->frame_counter;
-                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    if(q->medal_st < SILVER)
+                                    {
+                                        q->medal_st = SILVER;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
+                                }
+                                else if(sectionTimeDelta < (10 * 60))
+                                {
+                                    if(q->medal_st < BRONZE)
+                                    {
+                                        q->medal_st = BRONZE;
+                                        q->last_medal_st_timestamp = g->frame_counter;
+                                        SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                    }
                                 }
                             }
 
@@ -2978,7 +3029,7 @@ int qs_process_lockflash(game_t *g)
 
                         q->section++;
 
-                        if(!(q->state_flags) & GAMESTATE_BIGMODE)
+                        if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                         {
                             if(sectionTimeDelta < 0)
                             {
@@ -3025,28 +3076,31 @@ int qs_process_lockflash(game_t *g)
 
                         q->section++;
 
-                        if(sectionTimeDelta < 0)
+                        if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                         {
-                            q->medal_st = GOLD;
-                            q->last_medal_st_timestamp = g->frame_counter;
-                            SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                        }
-                        else if(sectionTimeDelta < (5 * 60))
-                        {
-                            if(q->medal_st < SILVER)
+                            if(sectionTimeDelta < 0)
                             {
-                                q->medal_st = SILVER;
+                                q->medal_st = GOLD;
                                 q->last_medal_st_timestamp = g->frame_counter;
                                 SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                             }
-                        }
-                        else if(sectionTimeDelta < (10 * 60))
-                        {
-                            if(q->medal_st < BRONZE)
+                            else if(sectionTimeDelta < (5 * 60))
                             {
-                                q->medal_st = BRONZE;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                if(q->medal_st < SILVER)
+                                {
+                                    q->medal_st = SILVER;
+                                    q->last_medal_st_timestamp = g->frame_counter;
+                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                }
+                            }
+                            else if(sectionTimeDelta < (10 * 60))
+                            {
+                                if(q->medal_st < BRONZE)
+                                {
+                                    q->medal_st = BRONZE;
+                                    q->last_medal_st_timestamp = g->frame_counter;
+                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                }
                             }
                         }
 
@@ -3078,28 +3132,31 @@ int qs_process_lockflash(game_t *g)
 
                         q->section++;
 
-                        if(sectionTimeDelta < 0)
+                        if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
                         {
-                            q->medal_st = GOLD;
-                            q->last_medal_st_timestamp = g->frame_counter;
-                            SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
-                        }
-                        else if(sectionTimeDelta < (5 * 60))
-                        {
-                            if(q->medal_st < SILVER)
+                            if(sectionTimeDelta < 0)
                             {
-                                q->medal_st = SILVER;
+                                q->medal_st = GOLD;
                                 q->last_medal_st_timestamp = g->frame_counter;
                                 SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
                             }
-                        }
-                        else if(sectionTimeDelta < (10 * 60))
-                        {
-                            if(q->medal_st < BRONZE)
+                            else if(sectionTimeDelta < (5 * 60))
                             {
-                                q->medal_st = BRONZE;
-                                q->last_medal_st_timestamp = g->frame_counter;
-                                SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                if(q->medal_st < SILVER)
+                                {
+                                    q->medal_st = SILVER;
+                                    q->last_medal_st_timestamp = g->frame_counter;
+                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                }
+                            }
+                            else if(sectionTimeDelta < (10 * 60))
+                            {
+                                if(q->medal_st < BRONZE)
+                                {
+                                    q->medal_st = BRONZE;
+                                    q->last_medal_st_timestamp = g->frame_counter;
+                                    SfxAsset::get(cs->assetMgr, "medal").play(cs->settings);
+                                }
                             }
                         }
 

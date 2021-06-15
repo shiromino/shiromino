@@ -559,7 +559,7 @@ int gfx_drawqs(game_t *g)
             int gradeWithoutFlags = q->grade & 0xff;
 
             SDL_Rect grade_src = { 0, 390, 64, 64 };
-            SDL_Rect grade_dest = { x + 14 * 16, y + 32, 64, 64 };
+            SDL_Rect grade_dest = { x + 13 * 16 + 8, y + 20, 64, 64 };
             float size_multiplier = 1.0;
 
             // draw a shadowy square behind the grade

@@ -233,19 +233,71 @@ void scoredb_add_sectiontime(Shiro::Records::List *records, Shiro::Player* p, in
             (:playerID, :mode, :grade, :startLevel, :endlevel, :time, strftime('%s', 'now'));
     )";
 
-    check(sqlite3_prepare_v2(records->db, insertSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+    const char *getSectionTimeSql = R"(
+        SELECT
+            mode,
+            startlevel,
+            time
+        FROM
+            sectionTimes
+        WHERE
+            startlevel = :startLevel
+        AND
+            mode = :mode;
+    )";
 
-    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
+    check(sqlite3_prepare_v2(records->db, getSectionTimeSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
-    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":grade"), grade));
     check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), startlevel));
-    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":level"), endlevel));
-    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":time"), time));
 
-    const int returnValue = sqlite3_step(sql);
-    check(returnValue == SQLITE_DONE, "Could not insert value into section times table: %s", sqlite3_errmsg(records->db));
+    bool preexisted = false;
 
-    sqlite3_finalize(sql);
+    int returnValue = sqlite3_step(sql);
+    if(returnValue == SQLITE_ROW)
+    {
+        preexisted = true;
+    }
+
+    if(preexisted)
+    {
+        const char *updateSectionTimeSql = R"(
+            UPDATE sectionTimes
+            SET
+                time = :time
+            WHERE
+                startlevel = :startLevel
+            AND
+                mode = :mode;
+        )";
+
+        check(sqlite3_prepare_v2(records->db, updateSectionTimeSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":time"), time));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), startlevel));
+
+        const int returnValue = sqlite3_step(sql);
+        check(returnValue == SQLITE_DONE, "Could not insert value into section times table: %s", sqlite3_errmsg(records->db));
+
+        sqlite3_finalize(sql);
+    }
+    else
+    {
+        check(sqlite3_prepare_v2(records->db, insertSql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":playerID"), p->playerId));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":mode"), mode));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":grade"), grade));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":startLevel"), startlevel));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":endlevel"), endlevel));
+        check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":time"), time));
+
+        const int returnValue = sqlite3_step(sql);
+        check(returnValue == SQLITE_DONE, "Could not insert value into section times table: %s", sqlite3_errmsg(records->db));
+
+        sqlite3_finalize(sql);
+    }
 }
 
 void scoredb_add_replay(Shiro::Records::List *records, Shiro::Player* p, struct replay *r) {
