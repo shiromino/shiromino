@@ -372,6 +372,10 @@ struct qrsdata
     int section;
     double rank;
 
+    int rotations;
+    int pieces_dealt;
+    int bravos;
+
     int score;
     int soft_drop_counter;
     int sonic_drop_height;

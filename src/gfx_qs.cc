@@ -905,7 +905,7 @@ int gfx_drawqs(game_t *g)
 
     if(q->pracdata)
     {
-        if(!q->pracdata->paused == QRS_FIELD_EDIT)
+        if(!(q->pracdata->paused == QRS_FIELD_EDIT))
         {
             gfx_drawqsmedals(g);
         }
@@ -914,6 +914,18 @@ int gfx_drawqs(game_t *g)
     {
         gfx_drawqsmedals(g);
     }
+
+    // TODO: Set up debug condition to draw these and some more game logic debug info
+    /*
+    fmt.rgba = 0xFFFFFFFF;
+    fmt.outlined = true;
+    std::string rotationsText = strtools::format("Ratio: %f", float(q->rotations) / float(q->pieces_dealt));
+    gfx_drawtext(cs, rotationsText, 640 - 16 * 9, 2, monofont_fixedsys, &fmt);
+    if(q->is_recovering)
+    {
+        gfx_drawtext(cs, "Recovering", 640 - 16 * 9, 2 + 16, monofont_fixedsys, &fmt);
+    }
+    */
 
     fmt.shadow = true;
     fmt.outlined = false;

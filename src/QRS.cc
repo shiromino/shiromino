@@ -1078,6 +1078,7 @@ int qrs_input(game_t *g)
         {
             if(qrs_rotate(g, p, Shiro::CCW) == 0)
             {
+                q->rotations++;
                 if(q->max_floorkicks != 0 && q->p1counters->floorkicks >= q->max_floorkicks)
                 {
                     if(q->lock_on_rotate == 1)
@@ -1094,6 +1095,7 @@ int qrs_input(game_t *g)
         {
             if(qrs_rotate(g, p, Shiro::CW) == 0)
             {
+                q->rotations++;
                 if(q->max_floorkicks != 0 && q->p1counters->floorkicks >= q->max_floorkicks)
                 {
                     if(q->lock_on_rotate == 1)
@@ -1351,6 +1353,7 @@ int qrs_irs(game_t *g)
     else if(direction)
     {
         Shiro::SfxAsset::get(g->origin->assetMgr, "prerotate").play(g->origin->settings);
+        q->rotations++;
     }
 
     return 0;
