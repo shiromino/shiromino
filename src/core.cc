@@ -43,7 +43,7 @@
 #include <algorithm>
 #include <functional>
 #include <utility>
-#define PENTOMINO_C_REVISION_STRING "rev 1.3"
+#define PENTOMINO_C_REVISION_STRING "rev 1.4"
 #define FRAMEDELAY_ERR 0
 
 #if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \

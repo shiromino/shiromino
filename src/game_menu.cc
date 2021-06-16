@@ -1274,7 +1274,7 @@ int mload_main(game_t *g, int val)
     m->x = 4 * 16;
     m->y = 27 * 16;
 
-    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "Pentomino C rev 1.3"));
+    d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_LABEL, NULL, "Pentomino C rev 1.4"));
     m = &d->menu.back();
     m->x = 638 - (19 * 15);
     m->y = 2;
