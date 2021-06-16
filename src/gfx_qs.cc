@@ -790,22 +790,39 @@ int gfx_drawqs(game_t *g)
             gfx_drawtext(cs, next, q->field_x + 12, 13, monofont_small, &fmt);
             gfx_drawtext(cs, next_name, q->field_x + 12, 25, monofont_small, &fmt);
 
-            labg_src.x = 432;
+            labg_src.x = 376;
             labg_src.y = 64;
-            labg_src.w = 80;
+            labg_src.w = 136;
             labg_src.h = 16;
 
-            labg_dest.x = x + 14 * 16 - 3;
-            labg_dest.y = y + 22 * 16;
-            labg_dest.w = 80;
+            labg_dest.x = x + 14 * 16 - 4;
+            labg_dest.y = y + 22 * 16 + 4;
+            labg_dest.w = 136;
             labg_dest.h = 16;
             Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
 
-            gfx_drawtext(cs, "RANK", x + 14 * 16 + 1, y + 22 * 16, monofont_fixedsys, &fmt);
+            gfx_drawtext(cs, "DIFFICULTY", x + 14 * 16, y + 22 * 16 + 4, monofont_fixedsys, &fmt);
 
-            fmt.rgba = 0xFFA0A0FF;
+            double difficulty = histrand_get_difficulty(q->randomizer);
+            if(difficulty < 20.0)
+            {
+                fmt.rgba = 0x00FF00FF;
+            }
+            else if(difficulty < 30.0)
+            {
+                fmt.rgba = 0xFFFF00FF;
+            }
+            else if(difficulty < 50.0)
+            {
+                fmt.rgba = 0xFF8F00FF;
+            }
+            else
+            {
+                fmt.rgba = 0xFF1010FF;
+            }
+
             fmt.align = ALIGN_RIGHT;
-            gfx_drawtext(cs, strtools::format("%.1f", histrand_get_difficulty(q->randomizer)), x + 19 * 16 - 6, y + 22 * 16, monofont_fixedsys, &fmt);
+            gfx_drawtext(cs, strtools::format("%.1f", histrand_get_difficulty(q->randomizer)), x + 14 * 16 + 136 - 7, y + 22 * 16 + 4, monofont_fixedsys, &fmt);
             fmt.align = ALIGN_LEFT;
         }
 
@@ -848,13 +865,13 @@ int gfx_drawqs(game_t *g)
                 {
                     case MODE_PENTOMINO:
                         if(q->level < 300)
-                            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
+                            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF80);
 
                         break;
 
                     default:
                         if(q->level < 100)
-                            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF60);
+                            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0xFFFFFF80);
 
                         break;
                 }
