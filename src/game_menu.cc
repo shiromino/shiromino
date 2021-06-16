@@ -1087,6 +1087,29 @@ int mload_main(game_t *g, int val)
     *(unsigned int *)(d6->args[d6->num - 1].ptrs[2]) = MODE_PENTOMINO;
     *(char **)(d6->args[d6->num - 1].ptrs[3]) = NULL;
 
+    d6->num++;
+    d6->labels.push_back("ULTIMATE ACID RAIN");
+    assert(d6->args != nullptr);
+    void* argsTemp2 = realloc(d6->args, d6->num * sizeof(Shiro::GameArguments));
+    assert(argsTemp2 != nullptr);
+    d6->args = (Shiro::GameArguments*)argsTemp2;
+
+    d6->args[d6->num - 1].num = 4;
+    d6->args[d6->num - 1].ptrs = (void **)malloc(4 * sizeof(void *));
+    assert(d6->args[d6->num - 1].ptrs != nullptr);
+    d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(CoreState *));
+    assert(d6->args[d6->num - 1].ptrs[0] != nullptr);
+    d6->args[d6->num - 1].ptrs[1] = malloc(sizeof(int));
+    assert(d6->args[d6->num - 1].ptrs[1] != nullptr);
+    d6->args[d6->num - 1].ptrs[2] = malloc(sizeof(unsigned int));
+    assert(d6->args[d6->num - 1].ptrs[2] != nullptr);
+    d6->args[d6->num - 1].ptrs[3] = malloc(sizeof(char *));
+    assert(d6->args[d6->num - 1].ptrs[3] != nullptr);
+    *(CoreState **)(d6->args[d6->num - 1].ptrs[0]) = cs;
+    *(int *)(d6->args[d6->num - 1].ptrs[1]) = 1700;
+    *(unsigned int *)(d6->args[d6->num - 1].ptrs[2]) = MODE_PENTOMINO;
+    *(char **)(d6->args[d6->num - 1].ptrs[3]) = NULL;
+
     if(d->main_menu_data.selection == 0)
         d6->selection = d->main_menu_data.opt_selection;
     else

@@ -2,7 +2,7 @@
 #include "Game.h"
 #include "QRS0.h"
 
-#define QS_CURVE_MAX 19
+#define QS_CURVE_MAX 20
 #define G1_MASTER_CURVE_MAX 30
 #define G2_MASTER_CURVE_MAX 35
 #define G2_DEATH_CURVE_MAX 9
@@ -123,6 +123,8 @@
 const char *get_grade_name(int grade);
 const char *get_internal_grade_name(int index);
 int internal_to_displayed_grade(int internal_grade);
+
+double pentomino_c_difficulty(int level);
 
 game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_id);
 int qs_game_init(game_t *g);

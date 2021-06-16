@@ -620,57 +620,75 @@ piece_id histrand_get_next(struct randomizer *r)
                 }
             }
 
-            weights[i] /= (double)histogram[i] * histogram[i]; // OLD: * (i < 18 ? pieces[i] : 1)
-            if(d->drought_protection_coefficients && d->drought_times)
+            // reduce piece weights for pieces that have been generated recently, and increase weights for pieces that haven't
+            // if difficulty is above 130.0 (past uniform randomness and into evil territory), don't perform any of these extra calculations
+            if(d->difficulty <= difficultyThreshold + 100.0)
             {
-                // multiply by coefficient^(t/BASELINE)
-                // e.g. for coeff 2 and drought time BASELINE, weight *= 2
-                weights[i] *= pow(d->drought_protection_coefficients[i], (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE);
+                weights[i] /= double(histogram[i] * histogram[i]); // OLD: * (i < 18 ? pieces[i] : 1)
+                if(d->drought_protection_coefficients && d->drought_times)
+                {
+                    // multiply by coefficient^(t/BASELINE)
+                    // e.g. for coeff 2 and drought time BASELINE, weight *= 2
+                    weights[i] *= pow(d->drought_protection_coefficients[i], (double)(d->drought_times[i]) / QRS_DROUGHT_BASELINE);
 
-                if(d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD && QRS_DROUGHT_HIGHTIER_SOFTLIMIT >= 0)
-                {
-                    if(d->drought_times[i] >= QRS_DROUGHT_HIGHTIER_SOFTLIMIT)
+                    if(d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD && QRS_DROUGHT_HIGHTIER_SOFTLIMIT >= 0)
                     {
-                        weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1.0);
+                        if(d->drought_times[i] >= QRS_DROUGHT_HIGHTIER_SOFTLIMIT)
+                        {
+                            weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_HIGHTIER_SOFTLIMIT + 1.0);
+                        }
+                    }
+                    else if(d->difficulty >= difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD && QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0)
+                    {
+                        if(d->drought_times[i] >= QRS_DROUGHT_MIDTIER_SOFTLIMIT)
+                        {
+                            weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1.0);
+                        }
+                    }
+                    else if(d->difficulty >= difficultyThreshold && QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0)
+                    {
+                        if(int(d->drought_times[i]) >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
+                        {
+                            weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1.0);
+                        }
                     }
                 }
-                else if(d->difficulty >= difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_MIDTIER_THRESHOLD && QRS_DROUGHT_MIDTIER_SOFTLIMIT >= 0)
+            }
+        }
+
+        // reduce piece weights for mid- and low-tier pieces collectively for each of them that has appeared recently
+        // if difficulty is below 30.0 (randomizer is extra nice), increase piece weights for all top-tier and high-tier pieces with separate uniform calculations
+        // if difficulty is above 130.0 (past uniform randomness and into evil territory), don't perform any of these extra calculations
+        if(d->difficulty <= difficultyThreshold + 100.0)
+        {
+            for(i = 0; i < r->num_pieces; i++)
+            {
+                if(d->piece_weights[i] < QRS_WEIGHT_HIGHTIER_THRESHOLD)
                 {
-                    if(d->drought_times[i] >= QRS_DROUGHT_MIDTIER_SOFTLIMIT)
-                    {
-                        weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_MIDTIER_SOFTLIMIT + 1.0);
-                    }
+                    weights[i] /= belowHighThreshold;
                 }
-                else if(d->difficulty >= difficultyThreshold && QRS_DROUGHT_LOWTIER_SOFTLIMIT >= 0)
+
+                if(d->difficulty < difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_TOPTIER_THRESHOLD)
                 {
-                    if(int(d->drought_times[i]) >= QRS_DROUGHT_LOWTIER_SOFTLIMIT)
-                    {
-                        weights[i] *= pow(1.3, (double)d->drought_times[i] - QRS_DROUGHT_LOWTIER_SOFTLIMIT + 1.0);
-                    }
+                    weights[i] *= pow(1.1, (difficultyThreshold - d->difficulty) / 3);
                 }
+
+                if(d->difficulty < difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD && d->piece_weights[i] < QRS_WEIGHT_TOPTIER_THRESHOLD)
+                {
+                    weights[i] *= pow(1.1, (difficultyThreshold - d->difficulty) / 6);
+                }
+
+
             }
         }
 
         for(i = 0; i < r->num_pieces; i++)
         {
-            if(d->piece_weights[i] < QRS_WEIGHT_HIGHTIER_THRESHOLD)
-            {
-                weights[i] /= belowHighThreshold;
-            }
-
-            if(d->difficulty < difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_TOPTIER_THRESHOLD)
-            {
-                weights[i] *= pow(1.1, (difficultyThreshold - d->difficulty) / 3);
-            }
-
-            if(d->difficulty < difficultyThreshold && d->piece_weights[i] >= QRS_WEIGHT_HIGHTIER_THRESHOLD && d->piece_weights[i] < QRS_WEIGHT_TOPTIER_THRESHOLD)
-            {
-                weights[i] *= pow(1.1, (difficultyThreshold - d->difficulty) / 6);
-            }
-
             sum += weights[i];
         }
 
+        // modulate piece weights to bring them closer to the average (if 30.0 <= difficulty <= 130.0)
+        // ...or make them more extreme in favor of worse pieces (if difficulty > 130.0)
         if(d->difficulty > difficultyThreshold)
         {
             oldSum = sum;
@@ -678,8 +696,7 @@ piece_id histrand_get_next(struct randomizer *r)
 
             for(i = 0; i < r->num_pieces; i++)
             {
-                // final factor: difficulty, which brings weights closer to being equal to each other
-                // takes the difference from the average and multiplies by difficulty/100, then adds that to the weight
+                // take the difference from the average and multiply by difficulty/100, then add that to the weight
                 // note that if the weight was above average, a negative value is added
                 weights[i] += ((d->difficulty - difficultyThreshold) / 100.0) * ((oldSum / r->num_pieces) - weights[i]);
                 sum += weights[i];
@@ -725,9 +742,6 @@ double histrand_get_difficulty(struct randomizer *r)
 
 int histrand_set_difficulty(struct randomizer *r, double difficulty)
 {
-    if(difficulty < 0.0 || difficulty > 100.0)
-        return 1;
-
     struct histrand_data *d = (struct histrand_data *)r->data;
     d->difficulty = difficulty;
 

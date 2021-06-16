@@ -67,6 +67,28 @@ static int g1_grade_score_reqs[17] =
     120000 // S9
 };
 
+static int qs_grade_score_reqs[17] =
+{
+    1000,
+    1400,
+    2000,
+    3000,
+    5000,
+    8000,
+    13000,
+    19000,
+
+    26000, // S1
+    33000,
+    41000,
+    50000, // S4 and score requirement at 500
+    60000,
+    72000,
+    87000,
+    114000,
+    132000 // S9
+};
+
 static QRS_Timings qs_curve[QS_CURVE_MAX] =
 {
     {0u, 4, 40, 12, 25, 25, 12},
@@ -88,7 +110,8 @@ static QRS_Timings qs_curve[QS_CURVE_MAX] =
     {800u, 20 * 256, 30, 8, 12, 12, 6},
     {900u, 20 * 256, 27, 8, 12, 12, 6},
     {1000u, 20 * 256, 22, 7, 10, 10, 4},
-    {1100u, 20 * 256, 20, 7, 8, 8, 4}
+    {1100u, 20 * 256, 20, 7, 8, 8, 4},
+    {1700u, 20 * 256, 17, 6, 6, 6, 4}
 };
 
 static QRS_Timings g1_master_curve[G1_MASTER_CURVE_MAX] =
@@ -496,6 +519,65 @@ static void update_music(qrsdata *q, CoreState *cs)
             log_warn("qrsdata->mode_type improperly set to %d\n", q->mode_type);
             break;
     }
+}
+
+double pentomino_c_difficulty(int level)
+{
+    double difficulty = 0;
+
+    if(level >= 1700)
+    {
+        // difficulty hits 230.0 at level 1800 exactly: 1.0472327 = 101.0 ^ (1/100)
+        double amount = pow(1.0472327, level - 1700);
+        difficulty = 129.0 + (amount > 101.0 ? 101.0 : amount);
+    }
+    else if(level >= 1500)
+    {
+        // difficulty hits 130.0 at level 1700 exactly: 1.0222154 = 81.0 ^ (1/200)
+        double amount = pow(1.0222154, level - 1500);
+        difficulty = 49.0 + (amount > 81.0 ? 81.0 : amount);
+    }
+    else if(level >= 1000)
+    {
+        // difficulty jumps to 30.0
+        // difficulty hits 50.0 at level 1160 exactly: 1.0192105 = 21.0 ^ (1/160)
+        double amount = pow(1.0192105, level - 1000);
+        difficulty = 29.0 + (amount > 21.0 ? 21.0 : amount);
+    }
+    else if(level >= 900)
+    {
+        // difficulty hits 21.0 at level 1000 exactly: 1.0139595 = 4.0 ^ (1/100)
+        double amount = pow(1.0139595, level - 900);
+        difficulty = 17.0 + (amount > 4.0 ? 4.0 : amount);
+    }
+    else if(level >= 700)
+    {
+        // difficulty hits 18.0 at level 900 exactly: 1.0069556 = 4.0 ^ (1/200)
+        double amount = pow(1.0069556, level - 700);
+        difficulty = 14.0 + (amount > 4.0 ? 4.0 : amount);
+    }
+    else if(level >= 500)
+    {
+        // difficulty drops to 10.0
+        // difficulty hits 15.0 at level 700 exactly: 1.0089990 = 6.0 ^ (1/200)
+        double amount = pow(1.0089990, level - 500);
+        difficulty = 9.0 + (amount > 6.0 ? 6.0 : amount);
+    }
+    else if(level >= 300)
+    {
+        // difficulty hits 30.0 at level 480 exactly: 1.0134108 = 11.0 ^ (1/180)
+        double amount = pow(1.0134108, level - 300);
+        difficulty = 19.0 + (amount > 11.0 ? 11.0 : amount);
+    }
+    else
+    {
+        // difficulty starts at 15.0
+        // difficulty hits 20.0 at level 300 exactly: 1.0059904 = 6.0 ^ (1/300)
+        double amount = pow(1.0059904, level);
+        difficulty = 14.0 + (amount > 6.0 ? 6.0 : amount);
+    }
+
+    return difficulty;
 }
 
 game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_id)
@@ -934,15 +1016,11 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
 
         q->section = level / 100;
         q->p1->speeds = &qs_curve[8];
+    }
 
-        if(q->mode_type == MODE_PENTOMINO)
-        {
-            if(q->level >= 1000)
-            {
-                double amount = pow(1.0192, q->level - 1000);
-                histrand_set_difficulty(q->randomizer, 29.0 + (amount > 21.0 ? 21.0 : amount));
-            }
-        }
+    if(q->mode_type == MODE_PENTOMINO)
+    {
+        histrand_set_difficulty(q->randomizer, pentomino_c_difficulty(q->level));
     }
 
     if(!(flags & QRS_PRACTICE))
@@ -1246,6 +1324,11 @@ int qs_game_pracinit(game_t *g, int val)
         q->timer.time = 0;
     }
 
+    if(q->game_type == Shiro::GameType::SIMULATE_QRS)
+    {
+        histrand_set_difficulty(q->randomizer, pentomino_c_difficulty(q->level));
+    }
+
     return 0;
 }
 
@@ -1466,18 +1549,6 @@ int qs_game_frame(game_t *g)
         if(!q->pracdata)
         {
             update_music(q, cs);
-
-            if(q->mode_type == MODE_PENTOMINO)
-            {
-                if(q->level < 500)
-                {
-                    histrand_set_difficulty(q->randomizer, 15.0);
-                }
-                else
-                {
-                    histrand_set_difficulty(q->randomizer, 10.0);
-                }
-            }
         }
     }
 
@@ -1860,14 +1931,9 @@ int qs_game_frame(game_t *g)
         }
     }
 
-    if(!q->pracdata && q->mode_type == MODE_PENTOMINO)
+    if(q->mode_type == MODE_PENTOMINO || (q->pracdata && q->game_type == Shiro::GameType::SIMULATE_QRS))
     {
-        if(q->level >= 1000)
-        {
-            // histrand_set_difficulty(q->randomizer, 5.0 + 0.2 * (q->level - 1000));
-            double amount = pow(1.0192, q->level - 1000);
-            histrand_set_difficulty(q->randomizer, 29.0 + (amount > 21.0 ? 21.0 : amount));
-        }
+        histrand_set_difficulty(q->randomizer, pentomino_c_difficulty(q->level));
 
         // for testing
         // histrand_set_difficulty(q->randomizer, 100.0);
@@ -2468,7 +2534,8 @@ int qs_process_lockflash(game_t *g)
 
                         q->score += pts;
 
-                        switch(n)
+                        // rank control: if you're playing well, the game gets harder; playing poorly, the game eases up
+                        /*switch(n)
                         {
                             case 1:
                                 histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) - 0.2);
@@ -2486,10 +2553,11 @@ int qs_process_lockflash(game_t *g)
                                 histrand_set_difficulty(q->randomizer, histrand_get_difficulty(q->randomizer) + 2.0);
                                 break;
                         }
+                        */
 
                         for(int i = 0; i < 17; i++)
                         {
-                            if(q->score - pts < g1_grade_score_reqs[i] && q->score >= g1_grade_score_reqs[i])
+                            if(q->score - pts < qs_grade_score_reqs[i] && q->score >= qs_grade_score_reqs[i])
                             {
                                 q->grade = GRADE_8 + i;
                                 if(!gradeup)
@@ -2580,8 +2648,6 @@ int qs_process_lockflash(game_t *g)
                                 {
                                     q->mroll_unlocked = false;
                                 }
-
-                                histrand_set_difficulty(q->randomizer, 10.0);
                             }
                             else if(q->section == 10)
                             {
@@ -2597,7 +2663,7 @@ int qs_process_lockflash(game_t *g)
                                 }
                                 else
                                 {
-                                    if(q->score < 126000)
+                                    if(q->score < 132000)
                                         q->mroll_unlocked = false;
 
                                     if(q->mroll_unlocked)
@@ -2612,7 +2678,7 @@ int qs_process_lockflash(game_t *g)
                             {
                                 q->level = 1200;
 
-                                if(q->score < 126000)
+                                if(q->score < 132000)
                                     q->mroll_unlocked = false;
 
                                 if(q->mroll_unlocked)
@@ -2939,13 +3005,13 @@ int qs_process_lockflash(game_t *g)
 
                 for(int i = 0; i < 17; i++)
                 {
-                    if(q->score >= g1_grade_score_reqs[i])
+                    if(q->score >= qs_grade_score_reqs[i])
                     {
                         q->grade = GRADE_8 + i;
                     }
                 }
 
-                if(q->score < g1_grade_score_reqs[0])
+                if(q->score < qs_grade_score_reqs[0])
                     q->grade = GRADE_9;
 
                 if(old_grade != q->grade)
