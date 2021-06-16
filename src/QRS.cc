@@ -216,7 +216,7 @@ std::vector<Shiro::PieceDefinition> qrspool_create()
                 pool[i].flags |
                 Shiro::PDFLATFLOORKICKS |
                 Shiro::PDONECELLFLOORKICKS |
-                Shiro::PDPREFERWKICK |
+                //Shiro::PDPREFERWKICK |
                 Shiro::PDAIRBORNEFKICKS
             );
         }
@@ -230,6 +230,11 @@ std::vector<Shiro::PieceDefinition> qrspool_create()
                 Shiro::PDPREFERWKICK |
                 Shiro::PDAIRBORNEFKICKS
             );
+        }
+
+        if(i >= 18u)
+        {
+            pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(pool[i].flags | Shiro::PDNOCEILKICKS);
         }
     }
 
@@ -1268,7 +1273,7 @@ int qrs_rotate(game_t *g, qrs_player *p, int direction)
 
     if(qrs_chkcollision(*g, *p))
     {
-        if(p->def->flags & Shiro::PDPREFERWKICK)
+        if((p->def->flags & Shiro::PDPREFERWKICK) || (p->def->qrsID == QRS_T && p->orient == Shiro::FLIP))
         {
             if(qrs_wallkick(g, p))
             {
@@ -1405,31 +1410,53 @@ int qrs_wallkick(game_t *g, qrs_player *p)
             break;
     }
 
-    if(qrs_move(g, p, MOVE_RIGHT))
+    bool failedBothKicks = false;
+
+    if(c == QRS_T && o == Shiro::CW)
     {
+        // special case: T pentomino rotated to the clockwise position:
+        // try to kick left before right (prevents unintuitive "Felicity's conspiracy" situation)
         if(qrs_move(g, p, MOVE_LEFT))
         {
-            if(c == QRS_P && p->orient == Shiro::FLIP)
+            if(qrs_move(g, p, MOVE_RIGHT))
             {
-                return qrs_move(g, p, -2);
+                failedBothKicks = true;
             }
-            if(c == QRS_Q && p->orient == Shiro::FLIP)
+        }
+    }
+    else
+    {
+        if(qrs_move(g, p, MOVE_RIGHT))
+        {
+            if(qrs_move(g, p, MOVE_LEFT))
             {
-                return qrs_move(g, p, 2);
+                failedBothKicks = true;
             }
+        }
+    }
 
-            if(p->def->rotationTable[0].getWidth() == 4 && c != QRS_I4)
-                return 1;
-            if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
-                return 1;
-            if((c == QRS_J || c == QRS_L || c == QRS_Ya || c == QRS_Yb) && (p->orient == Shiro::CW || p->orient == Shiro::CCW))
-                return 1;
+    if(failedBothKicks)
+    {
+        if(c == QRS_P && p->orient == Shiro::FLIP)
+        {
+            return qrs_move(g, p, -2);
+        }
+        if(c == QRS_Q && p->orient == Shiro::FLIP)
+        {
+            return qrs_move(g, p, 2);
+        }
 
-            if(qrs_move(g, p, 2))
-            {
-                if(qrs_move(g, p, -2))
-                    return 1;
-            }
+        if(p->def->rotationTable[0].getWidth() == 4 && c != QRS_I4)
+            return 1;
+        if(c != QRS_I4 && c != QRS_I && c != QRS_J && c != QRS_L && c != QRS_Ya && c != QRS_Yb)
+            return 1;
+        if((c == QRS_J || c == QRS_L || c == QRS_Ya || c == QRS_Yb) && (p->orient == Shiro::CW || p->orient == Shiro::CCW))
+            return 1;
+
+        if(qrs_move(g, p, 2))
+        {
+            if(qrs_move(g, p, -2))
+                return 1;
         }
     }
 
@@ -1499,6 +1526,7 @@ int qrs_floorkick(game_t *g, qrs_player *p)
         return 1;
     }
 
+    // T tetromino is the only piece to use this flag
     if(p->def->flags & Shiro::PDFLIPFLOORKICKS)
     {
         if(p->orient != Shiro::FLIP)
@@ -1506,7 +1534,9 @@ int qrs_floorkick(game_t *g, qrs_player *p)
             return 1;
         }
     }
-    else if(p->def->flags & Shiro::PDFLATFLOORKICKS)
+
+    // T5 pentomino is the only piece to use this flag
+    if(p->def->flags & Shiro::PDFLATFLOORKICKS)
     {
         if(p->orient == Shiro::CW || p->orient == Shiro::CCW)
         {
@@ -1550,7 +1580,7 @@ int qrs_ceilingkick(game_t *g, qrs_player *p)
     qrsdata *q = (qrsdata *)g->data;
     int bkp_y = p->y;
 
-    if(q->mode_type != MODE_PENTOMINO)
+    if(p->def->flags & Shiro::PDNOCEILKICKS)
     {
         return 1;
     }

@@ -10,13 +10,14 @@ namespace Shiro {
         PDNONE,
         PDNOWKICK           = 0x00000001,
         PDNOFKICK           = 0x00000002,
+        PDNOCEILKICKS       = 0x00000004,
 
-        PDBRACKETS          = 0x00000004,
-        PDFLATFLOORKICKS    = 0x00000008,
-        PDONECELLFLOORKICKS = 0x00000010,
-        PDPREFERWKICK       = 0x00000020,
-        PDAIRBORNEFKICKS    = 0x00000040,
-        PDFLIPFLOORKICKS    = 0x00000080
+        PDBRACKETS          = 0x00000008,
+        PDFLATFLOORKICKS    = 0x00000010,
+        PDONECELLFLOORKICKS = 0x00000020,
+        PDPREFERWKICK       = 0x00000040,
+        PDAIRBORNEFKICKS    = 0x00000080,
+        PDFLIPFLOORKICKS    = 0x00000100
     };
 
     enum Orientation {
