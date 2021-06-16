@@ -22,8 +22,8 @@
 #include <string>
 #include <utility>
 #include <memory>
-const char *qrspiece_names[25] = {"I", "J", "L",  "X",  "S", "Z",       "N",  "G",  "U",  "T", "Fa", "Fb", "P",
-                                  "Q", "W", "Ya", "Yb", "V", /**/ "I4", "T4", "J4", "L4", "O", "S4", "Z4"};
+const char *qrspiece_names[25] = {"I5", "J5", "L5",  "X",  "S5", "Z5",       "N",  "G",  "U",  "T5", "Fa", "Fb", "P",
+                                  "Q", "W", "Ya", "Yb", "V", /**/ "I", "T", "J", "L", "O", "S", "Z"};
 
 QRS_Timings::QRS_Timings() : QRS_Timings(0u, 4, 30, 14, 30, 30, 40) {}
 

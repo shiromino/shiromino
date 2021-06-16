@@ -942,6 +942,8 @@ int gfx_drawqs(game_t *g)
     {
         gfx_drawtext(cs, "Recovering", 640 - 16 * 9, 2 + 16, monofont_fixedsys, &fmt);
     }
+    std::string comboText = strtools::format("Combo: %d", q->combo_simple);
+    gfx_drawtext(cs, comboText, 640 - 16 * 9, 2 + 32, monofont_fixedsys, &fmt);
     */
 
     fmt.shadow = true;

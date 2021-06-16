@@ -2573,7 +2573,7 @@ int qs_process_lockflash(game_t *g)
 
                     case MODE_G2_MASTER:
                         pts = grade_points_table[q->internal_grade][n - 1];
-                        combo_mult = g2_grade_point_combo_table[q->combo_simple - 1][n - 1];
+                        combo_mult = g2_grade_point_combo_table[q->combo_simple][n - 1];
 
                         q->grade_points += (int)ceil(pts * combo_mult) * (1 + q->level / 250);
 
@@ -3708,9 +3708,9 @@ int qs_update_pracdata(CoreState *cs)
 
                     name_str[0] = seqStr[i];
 
-                    if(seqStr[i + 1] == '4')
+                    if(seqStr[i + 1] == '5')
                     {
-                        name_str[1] = '4';
+                        name_str[1] = '5';
                         name_str[2] = '\0';
 
                         for(j = 0; j < 25; j++)
@@ -3718,7 +3718,7 @@ int qs_update_pracdata(CoreState *cs)
                             if(strcmp(name_str, get_qrspiece_name(j).c_str()) == 0)
                             {
                                 t = j;
-                                if(!q->pentomino_only)
+                                if(!q->tetromino_only)
                                 {
                                     goto found;
                                 }
