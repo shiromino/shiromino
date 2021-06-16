@@ -2993,7 +2993,7 @@ int qs_process_lockflash(game_t *g)
         else
         {
             q->combo = 1;
-            q->combo_simple = 1;
+            q->combo_simple = 0;
 
             if(q->mode_type == MODE_PENTOMINO && q->levelstop_time > 0 && q->levelstop_time < 500)
             {
@@ -3026,8 +3026,8 @@ int qs_process_lockflash(game_t *g)
     int sectionTimeDeltaPlatinum = 0 - (2 * 60);
 
     int skillValueBronze = 4;
-    int skillValueSilver = 8;
-    int skillValueGold = 13;
+    int skillValueSilver = 7;
+    int skillValueGold = 11;
     int skillValuePlatinum = 15;
 
     int comboValueBronze = 4;
