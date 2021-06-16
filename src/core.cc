@@ -295,8 +295,8 @@ bool CoreState::init() {
         assetMgr.preload({
             //{Shiro::AssetType::image, "title"},
             {Shiro::AssetType::image, "title_emboss"},
-            {Shiro::AssetType::image, "tetrion_qs_white"},
-            {Shiro::AssetType::image, "tetrion_qs_white_10x10"},
+            {Shiro::AssetType::image, "qs_tetrion"},
+            {Shiro::AssetType::image, "qs_tetrion_10"},
             //{Shiro::AssetType::image, "tets_bright_qs"},
             //{Shiro::AssetType::image, "tets_bright_qs_small"},
             //{Shiro::AssetType::image, "tets_dark_qs"},
@@ -327,6 +327,7 @@ bool CoreState::init() {
             {Shiro::AssetType::image, "animation_lineclear3"},
             {Shiro::AssetType::image, "animation_lineclear4"},
             {Shiro::AssetType::image, "g1_tetrion"},
+            {Shiro::AssetType::image, "g1_tetrion_20g"},
             {Shiro::AssetType::image, "g2_tetrion_death"},
             {Shiro::AssetType::image, "g2_tetrion_master"},
             {Shiro::AssetType::image, "g3_tetrion_terror"},

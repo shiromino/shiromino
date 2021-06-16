@@ -262,7 +262,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     if(!cs || !field)
         return -1;
 
-    SDL_Texture *tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "tetrion_qs_white").getTexture();
+    SDL_Texture *tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "qs_tetrion").getTexture();
     SDL_Texture *blocks = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
 
     SDL_SetTextureColorMod(blocks, 220, 220, 220);
@@ -283,8 +283,11 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     switch(mode)
     {
         case MODE_G1_MASTER:
-        case MODE_G1_20G:
             tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "g1_tetrion").getTexture();
+            break;
+
+        case MODE_G1_20G:
+            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "g1_tetrion_20g").getTexture();
             break;
 
         case MODE_G2_MASTER:
@@ -307,7 +310,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     {
         if(q->pracdata->field_w <= 10)
         {
-            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "tetrion_qs_white_10x10").getTexture();
+            tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "qs_tetrion_10").getTexture();
             flags |= TEN_W_TETRION;
         }
     }
