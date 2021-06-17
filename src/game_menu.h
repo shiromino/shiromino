@@ -67,6 +67,9 @@ Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int
 bool menu_is_using_target_tex(game_t *g);
 int menu_update_target_tex_size(game_t *g, int w, int h);
 
+void menu_update_replay_pagination(menudata *d, int from_selection);
+int menu_delete_selected_replay(CoreState *cs, void *data);
+
 int menu_text_toggle(CoreState *cs);
 int menu_text_insert(CoreState *cs, char *);
 int menu_text_backspace(CoreState *cs);

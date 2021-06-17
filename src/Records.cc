@@ -259,6 +259,8 @@ void scoredb_add_sectiontime(Shiro::Records::List *records, Shiro::Player* p, in
         preexisted = true;
     }
 
+    sqlite3_finalize(sql);
+
     if(preexisted)
     {
         const char *updateSectionTimeSql = R"(
@@ -402,6 +404,23 @@ struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Pla
     return replayList;
 }
 
+void scoredb_delete_replay(Shiro::Records::List *records, int replay_id)
+{
+    sqlite3_stmt *sql;
+    const char *getReplaySql = R"(
+        DELETE FROM scores
+        WHERE scoreId = :scoreID;
+    )";
+
+    check(sqlite3_prepare_v2(records->db, getReplaySql, -1, &sql, NULL) == SQLITE_OK, "Could not prepare sql statement: %s", sqlite3_errmsg(records->db));
+
+    check_bind(records->db, sqlite3_bind_int(sql, sqlite3_bind_parameter_index(sql, ":scoreID"), replay_id));
+
+    const int returnValue = sqlite3_step(sql);
+    check(returnValue == SQLITE_DONE, "Could not get replay: %s", sqlite3_errmsg(records->db));
+
+    sqlite3_finalize(sql);
+}
 
 void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_replay, int replay_id) {
     sqlite3_stmt *sql;

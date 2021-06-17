@@ -31,5 +31,6 @@ int scoredb_get_replay_count(Shiro::Records::List *records, Shiro::Player* p);
 // Get list of replay descriptors (no replay data)
 struct replay *scoredb_get_replay_list(Shiro::Records::List *records, Shiro::Player *p, int *out_replayCount);
 
+void scoredb_delete_replay(Shiro::Records::List *records, int replay_id);
 void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_replay, int replay_id);
 void scoredb_get_full_replay_by_condition(Shiro::Records::List *records, struct replay *out_replay, int mode);

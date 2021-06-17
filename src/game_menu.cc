@@ -125,6 +125,64 @@ int menu_update_target_tex_size(game_t *g, int w, int h)
     return 0;
 }
 
+void menu_update_replay_pagination(menudata *d, int from_selection)
+{
+    if(d == nullptr)
+    {
+        return;
+    }
+
+    if(!d->is_paged)
+    {
+        return;
+    }
+
+    for(int i = from_selection; i < d->menu.size(); i++)
+    {
+        d->menu[i].y = 60 + (i % 20) * 20;
+        d->menu[i].label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT;
+    }
+
+    for(int i = 0; i < d->numopts; i++)
+    {
+        d->menu[i].render_update = true;
+    }
+
+    d->target_tex_update = true;
+}
+
+int menu_delete_selected_replay(CoreState *cs, void *data)
+{
+    menudata *d = (menudata *)cs->menu->data;
+
+    if(d->selection < 0 || d->selection >= d->menu.size())
+    {
+        return 0;
+    }
+
+    Shiro::MenuOption m = d->menu[d->selection];
+    if(m.type == Shiro::ElementType::MENU_GAME)
+    {
+        Shiro::GameOptionData *d4 = (Shiro::GameOptionData *)m.data;
+        int replay_id = *(int *)(d4->args.ptrs[3]);
+
+        scoredb_delete_replay(&cs->records, replay_id);
+
+        d->menu.erase(d->menu.begin() + d->selection);
+
+        if(d->selection >= d->menu.size())
+        {
+            d->selection = d->menu.size() - 1;
+        }
+
+        d->numopts--;
+
+        menu_update_replay_pagination(d, d->selection);
+    }
+
+    return 0;
+}
+
 int menu_text_toggle(CoreState *cs)
 {
     menudata *d = (menudata *)cs->menu->data;
@@ -653,14 +711,6 @@ int menu_input(game_t *g)
         }
     }
 
-    if(update && d->use_target_tex)
-    {
-        for(i = 0; i < d->numopts; i++)
-        {
-            d->menu[i].render_update = true;
-        }
-    }
-
     if(d->menu_id == MENU_ID_MAIN)
         d->main_menu_data.selection = d->selection;
     else if(d->menu_id == MENU_ID_PRACTICE)
@@ -897,6 +947,10 @@ int menu_input(game_t *g)
                 if(b.deactivate_check(cs))
                 {
                     b.active = false;
+                    if(b.visible)
+                    {
+                        update = true;
+                    }
 
                     continue;
                 }
@@ -910,6 +964,10 @@ int menu_input(game_t *g)
                     if(b.deactivate_check(cs))
                     {
                         b.active = false;
+                        if(b.visible)
+                        {
+                            update = true;
+                        }
                     }
                 }
 
@@ -971,6 +1029,14 @@ int menu_input(game_t *g)
                     b.active = false;
                 }
             }
+        }
+    }
+
+    if(update && d->use_target_tex)
+    {
+        for(i = 0; i < d->numopts; i++)
+        {
+            d->menu[i].render_update = true;
         }
     }
 
@@ -2337,6 +2403,24 @@ int mload_replay(game_t *g, int val)
             m->label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT;
         }
     }
+
+    auto activateLambda = [](CoreState *cs) { int c = ((SDL_GetModState() & KMOD_SHIFT) != 0); return c; };
+    auto deactivateLambda = [](CoreState *cs) { int c = ((SDL_GetModState() & KMOD_SHIFT) == 0); return c; };
+
+    gfx_button deleteReplayButton;
+    deleteReplayButton.type = BUTTON_TYPE_ACTION;
+    deleteReplayButton.action = menu_delete_selected_replay;
+    deleteReplayButton.text = "DELETE";
+    deleteReplayButton.active = false;
+    deleteReplayButton.activate_check = activateLambda;
+    deleteReplayButton.deactivate_check = deactivateLambda;
+    deleteReplayButton.w = 2 * 6 + 15 * (deleteReplayButton.text.size());
+    deleteReplayButton.h = 28;
+    deleteReplayButton.x = 320 - (deleteReplayButton.w / 2);
+    deleteReplayButton.y = 9;
+    deleteReplayButton.text_rgba_mod = 0xFF0000FF;
+
+    d->menuButtons.push_back(deleteReplayButton);
 
     delete[] replaylist;
 
