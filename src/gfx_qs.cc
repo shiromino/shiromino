@@ -192,6 +192,205 @@ int gfx_drawqs(game_t *g)
     if(q->state_flags & GAMESTATE_INVISIBLE)
         drawqrsfield_flags |= DRAWFIELD_INVISIBLE;
 
+    if(!q->pracdata && cs->displayMode == Shiro::DisplayMode::DETAILED)
+    {
+        gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
+    }
+
+    bool inMenu = cs->menu_input_override;
+
+    if((q->pracdata && !inMenu) || cs->displayMode == Shiro::DisplayMode::DETAILED)
+    {
+        std::string secTimeStr;
+        struct text_formatting secTimeFmt = {
+            RGBA_DEFAULT,
+            0x000000A0,
+            false,
+            false,
+            1.0,
+            1.0,
+            ALIGN_RIGHT,
+            0
+        };
+
+        long cumulativeTime = 0;
+
+        int secX = 428;
+        int secY = 82;
+
+        if(q->pracdata)
+        {
+            secX -= 96;
+        }
+
+        SDL_Rect secTimeBGRect = { secX, secY, 180, 24 };
+
+        Uint8 r_;
+        Uint8 g_;
+        Uint8 b_;
+        Uint8 a_;
+        SDL_GetRenderDrawColor(g->origin->screen.renderer, &r_, &g_, &b_, &a_);
+        SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0x40);
+
+        int maxSection = 9;
+        switch(q->mode_type)
+        {
+            case MODE_PENTOMINO:
+                maxSection = 11;
+                break;
+            case MODE_G3_TERROR:
+                maxSection = 12;
+                break;
+            default:
+                break;
+        }
+
+        if(q->pracdata)
+        {
+            maxSection = -1;
+        }
+
+        int numSectionsDrawn = maxSection + 1;
+
+        for(int i = 0; i < MAX_SECTIONS; i++)
+        {
+            if(q->section_times[i] != -1 && i > maxSection)
+            {
+                numSectionsDrawn++;
+            }
+        }
+
+        if(numSectionsDrawn > 0)
+        {
+            int secTimeBGHeight = 18 * (numSectionsDrawn - 1) + 16;
+            SDL_Rect secTimeOuterBGRect = { secX - 3, secY - 3, secTimeBGRect.w + 6, secTimeBGHeight + 6 };
+
+            for(int i = 0; i < 3; i++)
+            {
+                Shiro::RenderFillRect(g->origin->screen, &secTimeOuterBGRect);
+                secTimeOuterBGRect.x++;
+                secTimeOuterBGRect.y++;
+                secTimeOuterBGRect.w -= 2;
+                secTimeOuterBGRect.h -= 2;
+            }
+        }
+
+        SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0x60);
+
+        for(int sec = 0; sec < MAX_SECTIONS; sec++)
+        {
+            if(q->section_times[sec] != -1)
+            {
+                cumulativeTime += q->section_times[sec];
+
+                if(sec < MAX_SECTIONS - 1 && q->section_times[sec + 1] != -1)
+                {
+                    secTimeBGRect.h = 18;
+                }
+                else
+                {
+                    secTimeBGRect.h = 16;
+                }
+
+                secTimeBGRect.y = secY;
+
+                Shiro::RenderFillRect(g->origin->screen, &secTimeBGRect);
+
+                int minutes = q->section_times[sec] / (60*60);
+                int seconds = (q->section_times[sec] / 60) % 60;
+                int centiseconds = (int)((double)(q->section_times[sec] % 60) * 100.0 / 60.0);
+
+                int cuMinutes = cumulativeTime / (60*60);
+                int cuSeconds = (cumulativeTime / 60) % 60;
+                int cuCentiseconds = (int)((double)(cumulativeTime % 60) * 100.0 / 60.0);
+
+                int textX = secX + 180 - 2;
+
+                secTimeStr = strtools::format("%d:%02d:%02d", cuMinutes, cuSeconds, cuCentiseconds);
+                secTimeFmt.rgba = 0x00B000FF;
+                gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                secTimeFmt.rgba = RGBA_DEFAULT;
+                textX -= 9*8;
+
+                if(!q->pracdata && ((q->best_section_times[sec] < 0) || (q->section_times[sec] < q->best_section_times[sec])))
+                {
+                    secTimeFmt.rgba = 0xFFFF60FF;
+                }
+
+                if(minutes == 0)
+                {
+                    secTimeStr = strtools::format("   %02d:%02d", seconds, centiseconds);
+                    gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                }
+                else
+                {
+                    secTimeStr = strtools::format(" %d:%02d:%02d", minutes, seconds, centiseconds);
+                    gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+                }
+
+                textX -= 9*8;
+                secTimeStr = strtools::format("%d", (sec+1) * 100);
+                secTimeFmt.rgba = 0x2828FFFF;
+                gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+            }
+            else
+            {
+                if(sec > maxSection)
+                {
+                    continue;
+                }
+
+                if(sec != maxSection)
+                {
+                    secTimeBGRect.h = 18;
+                }
+                else
+                {
+                    secTimeBGRect.h = 16;
+                }
+
+                secTimeBGRect.y = secY;
+
+                Shiro::RenderFillRect(g->origin->screen, &secTimeBGRect);
+
+                int textX = secX + 180 - 2;
+                textX -= 9*8;
+
+                int minutes = q->best_section_times[sec] / (60*60);
+                int seconds = (q->best_section_times[sec] / 60) % 60;
+                int centiseconds = (int)((double)(q->best_section_times[sec] % 60) * 100.0 / 60.0);
+
+                if(q->best_section_times[sec] < 0)
+                {
+                    secTimeStr = "   --:--";
+                }
+                else
+                {
+                    if(minutes == 0)
+                    {
+                        secTimeStr = strtools::format("   %02d:%02d", seconds, centiseconds);
+                    }
+                    else
+                    {
+                        secTimeStr = strtools::format(" %d:%02d:%02d", minutes, seconds, centiseconds);
+                    }
+                }
+
+                secTimeFmt.rgba = 0x909090FF;
+                gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+
+                textX -= 9*8;
+                secTimeStr = strtools::format("%d", (sec+1) * 100);
+                //secTimeFmt.rgba = 0x2020FFFF;
+                gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
+            }
+
+            secY += 18;
+        }
+
+        SDL_SetRenderDrawColor(g->origin->screen.renderer, r_, g_, b_, a_);
+    }
+
     if(q->pracdata)
     {
         if(q->pracdata->paused == QRS_FIELD_EDIT)
@@ -423,94 +622,6 @@ int gfx_drawqs(game_t *g)
         else
             gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
 
-        if(cs->displayMode == Shiro::DisplayMode::DETAILED)
-        {
-            gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
-
-            std::string secTimeStr;
-            struct text_formatting secTimeFmt = {
-                RGBA_DEFAULT,
-                0x000000A0,
-                false,
-                false,
-                2.0,
-                1.0,
-                ALIGN_RIGHT,
-                0
-            };
-
-            long cumulativeTime = 0;
-
-            int secX = 356;
-            int secY = 48;
-
-            SDL_Rect secTimeBGRect = { secX, secY, 640 - secX + 6, 24 };
-
-            Uint8 r_;
-            Uint8 g_;
-            Uint8 b_;
-            Uint8 a_;
-            SDL_GetRenderDrawColor(g->origin->screen.renderer, &r_, &g_, &b_, &a_);
-            SDL_SetRenderDrawColor(g->origin->screen.renderer, 0, 0, 0, 0x80);
-
-            for(int sec = 0; sec < MAX_SECTIONS; sec++)
-            {
-                if(q->section_times[sec] != -1)
-                {
-                    cumulativeTime += q->section_times[sec];
-
-                    if(sec < MAX_SECTIONS - 1 && q->section_times[sec + 1] != -1)
-                    {
-                        secTimeBGRect.h = 24;
-                    }
-                    else
-                    {
-                        secTimeBGRect.h = 32;
-                    }
-
-                    secTimeBGRect.y = secY;
-
-                    Shiro::RenderFillRect(g->origin->screen, &secTimeBGRect);
-
-                    int minutes = q->section_times[sec] / (60*60);
-                    int seconds = (q->section_times[sec] / 60) % 60;
-                    int centiseconds = (int)((double)(q->section_times[sec] % 60) * 100.0 / 60.0);
-
-                    int cuMinutes = cumulativeTime / (60*60);
-                    int cuSeconds = (cumulativeTime / 60) % 60;
-                    int cuCentiseconds = (int)((double)(cumulativeTime % 60) * 100.0 / 60.0);
-
-                    int textX = 634;
-
-                    secTimeStr = strtools::format("%d:%02d:%02d", cuMinutes, cuSeconds, cuCentiseconds);
-                    secTimeFmt.rgba = 0x909090FF;
-                    gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
-                    secTimeFmt.rgba = RGBA_DEFAULT;
-                    textX -= 7*16 + 8;
-
-                    if(minutes == 0)
-                    {
-                        secTimeStr = strtools::format("   %02d:%02d", seconds, centiseconds);
-                        gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
-                    }
-                    else
-                    {
-                        secTimeStr = strtools::format(" %d:%02d:%02d", minutes, seconds, centiseconds);
-                        gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
-                    }
-
-                    textX -= 7*16 + 8;
-                    secTimeStr = strtools::format("%d", sec+1);
-                    secTimeFmt.rgba = 0x8080B0FF;
-                    gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
-                }
-
-                secY += 24;
-            }
-
-            SDL_SetRenderDrawColor(g->origin->screen.renderer, r_, g_, b_, a_);
-        }
-
         // uncomment this for DDR-esque input display :3
         /*if(q->playback) {
             for(i = 1; i < 24 && i < (q->replay->len - q->playback_index)/3; i++) {
@@ -525,12 +636,15 @@ int gfx_drawqs(game_t *g)
         labg_dest.x += (111 - 32);
         Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
 
-        labg_dest.y -= 5 * 16;
-        labg_src.w = 111;
-        labg_src.x = 401;
-        labg_dest.w = 111;
-        labg_dest.x -= 111 - 32;
-        Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
+        if(q->game_type != Shiro::GameType::SIMULATE_G3)
+        {
+            labg_dest.y -= 5 * 16;
+            labg_src.w = 111;
+            labg_src.x = 401;
+            labg_dest.w = 111;
+            labg_dest.x -= 111 - 32;
+            Shiro::RenderCopy(g->origin->screen, font, &labg_src, &labg_dest);
+        }
 
         if(q->p1->speeds->grav >= 20 * 256)
         {
@@ -760,25 +874,28 @@ int gfx_drawqs(game_t *g)
             SDL_SetTextureColorMod(font, 255, 255, 255);
         }
 
-        if(q->p1->speeds->grav >= 20 * 256)
+        if(q->game_type != Shiro::GameType::SIMULATE_G3)
         {
-            if(cs->frames % 4 != 3)
+            if(q->p1->speeds->grav >= 20 * 256)
             {
-                fmt.rgba = 0xE0E030FF;
+                if(cs->frames % 4 != 3)
+                {
+                    fmt.rgba = 0xE0E030FF;
+                }
+                else
+                    fmt.rgba = RGBA_DEFAULT;
+
+                gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
+                fmt.rgba = 0x6060FFFF;
+                gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
             }
             else
+            {
                 fmt.rgba = RGBA_DEFAULT;
-
-            gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
-            fmt.rgba = 0x6060FFFF;
-            gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
-        }
-        else
-        {
-            fmt.rgba = RGBA_DEFAULT;
-            gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
-            fmt.rgba = 0x20FF20FF;
-            gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
+                gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
+                fmt.rgba = 0x20FF20FF;
+                gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
+            }
         }
 
     active_game_drawing:

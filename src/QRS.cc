@@ -1534,9 +1534,8 @@ int qrs_floorkick(game_t *g, qrs_player *p)
             return 1;
         }
     }
-
     // T5 pentomino is the only piece to use this flag
-    if(p->def->flags & Shiro::PDFLATFLOORKICKS)
+    else if(p->def->flags & Shiro::PDFLATFLOORKICKS)
     {
         if(p->orient == Shiro::CW || p->orient == Shiro::CCW)
         {

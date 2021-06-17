@@ -669,6 +669,11 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->field_y = QRS_FIELD_Y;
     q->field_w = 12;
 
+    if(cs->displayMode == Shiro::DisplayMode::CENTERED)
+    {
+        q->field_x = 192;
+    }
+
     q->randomizer_type = RANDOMIZER_NORMAL;
     q->tetromino_only = 0;
     q->pentomino_only = 0;
@@ -823,9 +828,6 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->lock_protect = 1;
         q->hold_enabled = 1;
     }
-
-    if(q->game_type == Shiro::GameType::SIMULATE_QRS)
-        q->field_x = QRS_FIELD_X + 4;
 
     uint32_t randomizer_flags = 0;
 
@@ -1225,6 +1227,16 @@ int qs_game_pracinit(game_t *g, int val)
     q->medal_re = 0;
     q->medal_co = 0;
 
+    for(int i = 0; i < MAX_SECTIONS; i++)
+    {
+        q->section_times[i] = -1;
+        q->section_tetrises[i] = 0;
+        q->best_section_times[i] = -1;
+    }
+
+    q->section = 0;
+    q->cur_section_timestamp = 0;
+
     q->p1->speeds = q->pracdata->usr_timings;
     if(q->pracdata->usr_timings->lock < 0)
         q->lock_delay_enabled = 0;
@@ -1318,6 +1330,7 @@ int qs_game_pracinit(game_t *g, int val)
     if(q->pracdata->goal_time > 0)
     {
         q->timer.time = q->pracdata->goal_time;
+        q->cur_section_timestamp = q->pracdata->goal_time;
     }
     else
     {
@@ -1940,7 +1953,23 @@ int qs_game_frame(game_t *g)
     }
 
     if(q->levelstop_time)
+    {
+        if(q->levelstop_time == 1)
+        {
+            switch(q->game_type)
+            {
+                case Shiro::GameType::SIMULATE_G3:
+                case Shiro::GameType::SIMULATE_QRS:
+                    SfxAsset::get(cs->assetMgr, "levelstop").play(cs->settings);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         q->levelstop_time++;
+    }
 
     if(!(q->state_flags & GAMESTATE_CREDITS))
     {
@@ -2623,7 +2652,7 @@ int qs_process_lockflash(game_t *g)
 
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
-                q->section_times[q->section] = static_cast<int>(q->timer.time - q->cur_section_timestamp);
+                q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
                 q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                 sectionTimeDelta = -1;
@@ -2636,6 +2665,8 @@ int qs_process_lockflash(game_t *g)
                 q->section++;
 
                 q->levelstop_time = 0;
+
+                SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
 
                 if(!q->pracdata)
                 {
@@ -2869,7 +2900,6 @@ int qs_process_lockflash(game_t *g)
                             break;
                     }
 
-                    SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
                     if(q->section < 13)
                     {
                         cs->bg.transition(ImageAsset::get(cs->assetMgr, "bg", q->section));
@@ -2883,7 +2913,8 @@ int qs_process_lockflash(game_t *g)
                 switch(q->mode_type)
                 {
                     case MODE_G2_MASTER:
-                        q->section_times[q->section] = static_cast<int>(q->timer.time - q->cur_section_timestamp);
+                        SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
+                        q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
                         q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                         if(q->best_section_times[q->section] > 0)
@@ -2902,7 +2933,8 @@ int qs_process_lockflash(game_t *g)
                         break;
 
                     case MODE_G2_DEATH:
-                        q->section_times[q->section] = static_cast<int>(q->timer.time - q->cur_section_timestamp);
+                        SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
+                        q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
                         q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                         if(q->best_section_times[q->section] > 0)
@@ -2930,7 +2962,8 @@ int qs_process_lockflash(game_t *g)
 
                     case MODE_G1_20G:
                     case MODE_G1_MASTER:
-                        q->section_times[q->section] = static_cast<int>(q->timer.time - q->cur_section_timestamp);
+                        SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
+                        q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
                         q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                         if(q->best_section_times[q->section] > 0)
@@ -3117,7 +3150,7 @@ int qs_process_lockflash(game_t *g)
             if( (((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10) ||
                 (q->level == 999 && q->lvlinc && is999mode) )
             {
-                if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0)
+                if(!(q->state_flags & GAMESTATE_BIGMODE) && q->starting_level == 0 && !q->pracdata)
                 {
                     bool medalAwarded = false;
 

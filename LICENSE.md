@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 The copyright holder of the following files is [Emery Neufeld (beach glass)](https://beach-glass.bandcamp.com/) (© 2021):
 
 - data/audio/multi_editor_bgm.ogg "Lunar Ramble"
+- data/audio/levelstop.ogg
 
 The copyright holder of the following files is [Damian Yerrick](https://pineight.com/contact/) (© 2020):
 

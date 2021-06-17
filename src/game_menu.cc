@@ -1514,7 +1514,7 @@ int mload_practice(game_t *g, int val)
             std::stringstream ss;
             ss << (i - 5) << ":00";
             d2->labels[i] = ss.str();
-            d2->vals[i] = ((i - 2) * 60 * 60);
+            d2->vals[i] = ((i - 5) * 60 * 60);
         }
     }
 
