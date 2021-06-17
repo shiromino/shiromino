@@ -21,9 +21,12 @@ void scoredb_destroy(Shiro::Records::List *records);
 void scoredb_create_player(Shiro::Records::List *records, Shiro::Player *out_player, const char *playerName);
 void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p);
 
-int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel);
+void scoredb_add_live_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel, int endlevel, int time);
+void scoredb_clear_live_sectiontimes(Shiro::Records::List *records);
 
+int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel);
 void scoredb_add_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int grade, int startlevel, int endlevel, int time);
+
 void scoredb_add_replay(Shiro::Records::List *records, Shiro::Player* p, struct replay *r);
 
 int scoredb_get_replay_count(Shiro::Records::List *records, Shiro::Player* p);

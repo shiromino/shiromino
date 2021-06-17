@@ -1342,6 +1342,8 @@ int qs_game_pracinit(game_t *g, int val)
         histrand_set_difficulty(q->randomizer, pentomino_c_difficulty(q->level));
     }
 
+    scoredb_clear_live_sectiontimes(&g->origin->records);
+
     return 0;
 }
 
@@ -1367,7 +1369,6 @@ int qs_game_quit(game_t *g)
 
                     if(i == 9)
                     {
-                        endlevel = 999;
                         switch(q->mode_type)
                         {
                             case MODE_G2_MASTER:
@@ -1377,8 +1378,6 @@ int qs_game_quit(game_t *g)
                                 endlevel = 999;
                                 break;
 
-                            case MODE_PENTOMINO:
-                            case MODE_G3_TERROR:
                             default:
                                 break;
                         }
@@ -1391,6 +1390,8 @@ int qs_game_quit(game_t *g)
             }
         }
     }
+
+    scoredb_clear_live_sectiontimes(&g->origin->records);
 
     if(numBestSections > 0)
     {
@@ -2653,6 +2654,28 @@ int qs_process_lockflash(game_t *g)
             if(((q->level - q->lvlinc) % 100) > 90 && (q->level % 100) < 10)
             {
                 q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
+
+                int startlevel = q->section * 100;
+                int endlevel = startlevel + 100;
+
+                if(q->section == 9)
+                {
+                    switch(q->mode_type)
+                    {
+                        case MODE_G1_MASTER:
+                        case MODE_G1_20G:
+                        case MODE_G2_MASTER:
+                        case MODE_G2_DEATH:
+                            endlevel = 999;
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                scoredb_add_live_sectiontime(&g->origin->records, &g->origin->player, q->mode_type, startlevel, endlevel, q->section_times[q->section]);
+
                 q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                 sectionTimeDelta = -1;
@@ -2915,6 +2938,9 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G2_MASTER:
                         SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
                         q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
+
+                        scoredb_add_live_sectiontime(&g->origin->records, &g->origin->player, q->mode_type, 900, 999, q->section_times[q->section]);
+
                         q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                         if(q->best_section_times[q->section] > 0)
@@ -2935,6 +2961,9 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G2_DEATH:
                         SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
                         q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
+
+                        scoredb_add_live_sectiontime(&g->origin->records, &g->origin->player, q->mode_type, 900, 999, q->section_times[q->section]);
+
                         q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                         if(q->best_section_times[q->section] > 0)
@@ -2964,6 +2993,9 @@ int qs_process_lockflash(game_t *g)
                     case MODE_G1_MASTER:
                         SfxAsset::get(cs->assetMgr, "newsection").play(cs->settings);
                         q->section_times[q->section] = abs(static_cast<int>(q->timer.time - q->cur_section_timestamp));
+
+                        scoredb_add_live_sectiontime(&g->origin->records, &g->origin->player, q->mode_type, 900, 999, q->section_times[q->section]);
+
                         q->cur_section_timestamp = static_cast<long>(q->timer.time);
 
                         if(q->best_section_times[q->section] > 0)
