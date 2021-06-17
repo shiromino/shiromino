@@ -22,6 +22,7 @@ The grading in Pentomino C is entirely score-based. The scores required for each
 - Grade S7: 87,000pts
 - Grade S8: 114,000pts
 - Grade S9: 132,000pts
+
 At levels 500 and 1000, there are grade and time requirements which, if passed, grant the player access to the grades of M (Master) and GM (Grand Master).
 ### Requirements for M and GM
 - At level 500: Grade S4 and time <= 5:30
