@@ -55,8 +55,7 @@ bool Shiro::Screen::init(const Settings& settings) {
 
     SDL_SetWindowMinimumSize(window, 640, 480);
     if (settings.fullscreen) {
-        SDL_SetWindowSize(window, 640, 480);
-        if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN) < 0) {
+        if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP) < 0) {
             log_err("SDL_SetWindowFullscreen: %s", SDL_GetError());
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(window);
@@ -71,6 +70,7 @@ bool Shiro::Screen::init(const Settings& settings) {
         return false;
     }*/
 
+    /*
     if (!settings.videoStretch) {
         if (SDL_RenderSetIntegerScale(renderer, SDL_TRUE) < 0) {
             log_err("SDL_RenderSetIntegerScale: %s", SDL_GetError());
@@ -79,6 +79,7 @@ bool Shiro::Screen::init(const Settings& settings) {
             return false;
         }
     }
+    */
     return true;
 }
 
