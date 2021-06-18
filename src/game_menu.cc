@@ -1422,7 +1422,7 @@ int mload_practice(game_t *g, int val)
         pracdata_mirror_existed = 1;
 
     //cs->bg.transition();
-    cs->bg.transition(Shiro::ImageAsset::get(cs->assetMgr, "multi-editor-bg"));
+    cs->bg.transition(Shiro::ImageAsset::get(cs->assetMgr, "multi_editor_bg"));
 
     Shiro::MusicAsset::get(cs->assetMgr, "multi_editor_bgm").play(cs->settings);
 
@@ -1535,7 +1535,7 @@ int mload_practice(game_t *g, int val)
     d->menu.push_back(Shiro::create_menu_option(Shiro::ElementType::MENU_MULTIOPT, qs_update_pracdata, "GOAL TIME"));
     m = &d->menu.back();
     d2 = (Shiro::MultiOptionData *)m->data;
-    d2->num = 26; // OFF, 20.00, 30.00, 55.00, 1:00, 1:01.68, 1:30, 2:00, 3:00, ..., 19:00, 20:00 -> 26
+    d2->num = 26; // OFF, 20.00, 30.00, 54.00, 1:00, 1:01.68, 1:30, 2:00, 3:00, ..., 19:00, 20:00 -> 26
     d2->param = &q->pracdata->goal_time;
     d2->vals = (int *)malloc(d2->num * sizeof(int));
     d2->labels.resize(d2->num);
@@ -1557,8 +1557,8 @@ int mload_practice(game_t *g, int val)
         }
         else if(i == 3)
         {
-            d2->labels[i] = "55.00";
-            d2->vals[i] = 55 * 60;
+            d2->labels[i] = "54.00";
+            d2->vals[i] = 54 * 60;
         }
         else if(i == 4)
         {
@@ -1602,7 +1602,7 @@ int mload_practice(game_t *g, int val)
             {
                 d2->selection = 2;
             }
-            else if(goal_time_ == 55 * 60)
+            else if(goal_time_ == 54 * 60)
             {
                 d2->selection = 3;
             }

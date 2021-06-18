@@ -1,4 +1,39 @@
 # shiromino version history
+## 0.2.0
+### New features
+- Re-introduced Multi-Editor.
+- Added new background and music track to Multi-Editor.
+- Added goal level, goal time, garbage delay, fumenize, and randomizer seed options to Multi-Editor.
+- Added padlock button to Multi-Editor which locks the playfield grid from editing.
+- Added several new keyboard shortcuts to Multi-Editor.
+- Added new 10-wide tetrion graphics for both the G1 20G mode and the Multi-Editor.
+- Live section times are now saved to the SQLite database during gameplay and automatically cleared upon game exit.
+- Best section times for each mode are now automatically saved to the SQLite database upon game exit.
+- Added support for ST, SK, CO, AC, RE, and RO medals to all game modes.
+- Added credit roll to every mode.
+- Added scrolling credits to credit roll.
+- Added level-stop bell to Pentomino C and G3 Terror modes.
+- Replays can now be deleted from within the replay menu.
+### Updated features
+- Pentomino C revision: `1.3` → `1.4`.
+- Increased score requirements for each grade in Pentomino C.
+- Removed rank control from Pentomino C.
+- Pentomino C now has a difficulty curve.
+- Pentomino C: Removed ceiling kicks for tetrominoes.
+- Changed pentomino/tetromino naming scheme to use '5' suffix for pentominoes instead of using '4' suffix for tetrominoes.
+- Improved kick behavior and rotation tables for T5 pentomino and the P/Q pentominoes respectively.
+- Improved stack animations and added new overlay text for game over, credit roll, and credit roll clear.
+- The M and GM grades are no longer awarded unless the game was started from level 0.
+- Sprites and GUI now use integer scaling only and automatically center to the window.
+- The game no longer forces 640x480 resolution before upscaling to fit the window.
+- Removed OpenGL.
+- Swapped hard fullscreen and soft fullscreen hotkeys.
+- Removed FRAME_DELAY configuration option.
+- Removed VIDEO_STRETCH configuration option.
+- Renamed `tetrion_qs_white` to `qs_tetrion`.
+### Bug fixes
+- Fixed combo value calculation.
+- Fixed all-clear (bravo) detection.
 ## 0.1.1
 ### New features
 - The game now supports looking up the configuration file, the SQLite database, and the assets under various different paths.

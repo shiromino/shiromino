@@ -263,7 +263,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
         return -1;
 
     SDL_Texture *tetrion_qs = Shiro::ImageAsset::get(cs->assetMgr, "qs_tetrion").getTexture();
-    SDL_Texture *blocks = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
+    SDL_Texture *blocks = Shiro::ImageAsset::get(cs->assetMgr, "pieces_256x256").getTexture();
 
     SDL_SetTextureColorMod(blocks, 220, 220, 220);
 
@@ -990,7 +990,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
     }
 
     SDL_Texture *blocks;
-    blocks = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
+    blocks = Shiro::ImageAsset::get(cs->assetMgr, "pieces_256x256").getTexture();
     int size = (flags & DRAWPIECE_SMALL) ? 8 : (flags & DRAWPIECE_BIG ? 32 : 16);
     SDL_Rect src = { 0, 0, 256, 256 };
     SDL_Rect dest = { 0, 0, size, size };

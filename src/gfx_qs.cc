@@ -162,7 +162,7 @@ int gfx_drawqs(game_t *g)
     }*/
 
     SDL_Texture *font = Shiro::ImageAsset::get(cs->assetMgr, "font").getTexture();
-    SDL_Texture *pieces_256x256 = Shiro::ImageAsset::get(cs->assetMgr, "pieces-256x256").getTexture();
+    SDL_Texture *pieces_256x256 = Shiro::ImageAsset::get(cs->assetMgr, "pieces_256x256").getTexture();
 
     SDL_SetTextureColorMod(pieces_256x256, 220, 220, 220);
 
