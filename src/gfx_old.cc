@@ -348,6 +348,63 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
             }
         }
     }
+
+    if(q->state_flags & GAMESTATE_CREDITS && q->credits_tex)
+    {
+        SDL_Rect creditsViewport = { 0, 0, 160, 320 };
+        SDL_Rect creditsDest = { x + 32, y + 32, 160, 320 };
+
+        int creditsTime = q->credit_roll_length - q->credit_roll_counter;
+        //creditsTime = cs->p1game->frame_counter;
+
+        float scrollTimeRatio = float(creditsTime) / float(q->credit_roll_length - (5 * 60));
+
+        creditsViewport.y = static_cast<int>(float(q->credits_tex_height + 320) * scrollTimeRatio) - 320;
+
+        if(creditsViewport.y < 0)
+        {
+            creditsDest.h = creditsViewport.h = (creditsViewport.y + 320);
+            creditsDest.y = creditsDest.y + 320 - creditsDest.h;
+            creditsViewport.y = 0;
+        }
+        else if(creditsViewport.y + 320 > q->credits_tex_height)
+        {
+            creditsDest.h = creditsViewport.h = (q->credits_tex_height - creditsViewport.y);
+            if(creditsDest.h < 0)
+            {
+                creditsDest.h = creditsViewport.h = 0;
+            }
+
+            if(creditsViewport.y + 160 > q->credits_tex_height)
+            {
+                SDL_Texture *titleKanji = Shiro::ImageAsset::get(cs->assetMgr, "title_kanji").getTexture();
+                SDL_Rect titleViewport = { 0, 0, 3200, 1600 };
+                SDL_Rect titleDest = { x + 32 + (5 * 16) - 60, y + 32 + (10 * 16) - 30, 120, 60 };
+
+                SDL_SetTextureColorMod(titleKanji, 0x20, 0x20, 0xFF);
+
+                int diff = 30 + q->credits_tex_height - creditsViewport.y;
+
+                titleDest.y += (diff < 0 ? 0 : diff);
+
+                if(titleDest.y + titleDest.h > (y + 32 + 320))
+                {
+                    titleDest.h = (y + 32 + 320) - titleDest.y;
+                    titleViewport.h = (titleDest.h * 80) / 3;
+                }
+
+                Shiro::RenderCopy(cs->screen, titleKanji, &titleViewport, &titleDest);
+
+                SDL_SetTextureColorMod(titleKanji, 0xFF, 0xFF, 0xFF);
+            }
+        }
+
+        if(creditsDest.h != 0)
+        {
+            Shiro::RenderCopy(cs->screen, q->credits_tex, &creditsViewport, &creditsDest);
+        }
+    }
+
     int cellSize = 16;
 
     if(flags & DRAWFIELD_BIG)
@@ -710,6 +767,13 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
 
     for(i = pos; i < text.size() && i < len; i++)
     {
+        int thisLineLength = lines[linefeeds].size() - (linefeeds != lines.size() - 1 ? 1 : 0);
+
+        if(thisLineLength > fmt->wrap_length)
+        {
+            thisLineLength = fmt->wrap_length;
+        }
+
         if(i == 0)
         {
             switch(fmt->align)
@@ -724,10 +788,10 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
                     break;
 
                 case ALIGN_CENTER:
-                    if (fmt->wrap_length < lines[0].size() - last_wrap_line_pos)
+                    /*if (fmt->wrap_length < lines[0].size() - last_wrap_line_pos)
                         dest.x = x;
-                    else
-                        dest.x = x + static_cast<int>((fmt->size_multiplier * (float)font->char_w / 2.0f) * (fmt->wrap_length - (lines[0].size() - last_wrap_line_pos)));
+                    else*/
+                        dest.x = x - static_cast<int>((fmt->size_multiplier * (float)font->char_w / 2.0f) * float(thisLineLength));
 
                     break;
             }
@@ -738,7 +802,8 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
             if(text[i] == '\n')
             {
                 linefeeds++;
-                last_wrap_line_pos = i - last_wrap_pos + last_wrap_line_pos;
+                //last_wrap_line_pos = i - last_wrap_pos + last_wrap_line_pos;
+                last_wrap_line_pos = 0;
                 last_wrap_pos = i;
             }
             else if(i != 0 && i % fmt->wrap_length == 0)
@@ -761,10 +826,10 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
                     break;
 
                 case ALIGN_CENTER:
-                    if(fmt->wrap_length < lines[linefeeds].size() - last_wrap_line_pos)
+                    /*if(fmt->wrap_length < lines[linefeeds].size() - last_wrap_line_pos)
                         dest.x = x;
-                    else
-                        dest.x = (int)(x + (font->char_w / 2) * (fmt->wrap_length - (lines[linefeeds].size() - last_wrap_line_pos)));
+                    else*/
+                        dest.x = x - static_cast<int>((fmt->size_multiplier * (float)font->char_w / 2.0f) * float(thisLineLength));
 
                     break;
             }

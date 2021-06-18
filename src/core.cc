@@ -295,6 +295,7 @@ bool CoreState::init() {
         assetMgr.preload({
             //{Shiro::AssetType::image, "title"},
             {Shiro::AssetType::image, "title_emboss"},
+            {Shiro::AssetType::image, "title_kanji"},
             {Shiro::AssetType::image, "qs_tetrion"},
             {Shiro::AssetType::image, "qs_tetrion_10"},
             //{Shiro::AssetType::image, "tets_bright_qs"},

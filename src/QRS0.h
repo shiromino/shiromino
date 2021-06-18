@@ -303,7 +303,6 @@ struct qrsdata
     struct randomizer *randomizer;
     struct pracdata *pracdata;
     struct replay *replay;
-    std::ifstream credits;
     Shiro::Grid garbage;
     piece_id *piece_seq;
 
@@ -312,6 +311,16 @@ struct qrsdata
     QRS_Counters *p1counters;
     std::vector<Shiro::PieceDefinition> previews;
     Shiro::PieceDefinition* hold;
+
+    std::ifstream credits;
+    SDL_Texture *credits_tex;
+    int credits_tex_height;
+    int num_credits_lines;
+    int credit_roll_length;
+
+    // counts down to 0 (measured in frames)
+    int credit_roll_counter;
+    int credit_roll_lineclears;
 
 // fields which are assumed to be read-only during normal gameplay
 
@@ -362,10 +371,6 @@ struct qrsdata
 
     // general purpose frame counter to keep track of top out animation, etc.
     int stack_anim_counter;
-
-    // counts down to 0 (measured in frames)
-    int credit_roll_counter;
-    int credit_roll_lineclears;
 
     int starting_level;
     unsigned level;

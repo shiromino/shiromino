@@ -16,10 +16,12 @@
 #include "replay.h"
 #include "Timer.h"
 #include "SDL.h"
+#include "OS.h"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -601,6 +603,35 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     g->data = new qrsdata;
     q = (qrsdata *)(g->data);
 
+    const auto executableDirectory = OS::getExecutablePath().remove_filename();
+    const std::vector<std::optional<fs::path>> configurationPrefixes = {
+        executableDirectory,
+        std::filesystem::weakly_canonical(executableDirectory / ".." / "etc")
+    };
+    for (const auto &prefix : configurationPrefixes) {
+        if (!prefix) {
+            continue;
+        }
+        const auto candidate = prefix.value() / "credits.txt";
+        if (std::filesystem::exists(candidate)) {
+            q->credits.open(candidate.string());
+            break;
+        }
+    }
+
+    if(q->credits.is_open())
+    {
+        q->num_credits_lines = 1 + std::count(std::istreambuf_iterator<char>(q->credits), std::istreambuf_iterator<char>(), '\n');
+        q->credits_tex = gfx_create_credits_tex(cs, q->credits, q->num_credits_lines);
+        q->credits_tex_height = 16 * q->num_credits_lines;
+        q->credits.close();
+    }
+    else
+    {
+        q->credits_tex = nullptr;
+        q->credits_tex_height = 0;
+    }
+
     q->mode_flags = flags;
 
     q->piecepool = qrspool_create();
@@ -687,7 +718,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     q->piece_fade_rate = 300;
     q->stack_anim_counter = 0;
     // default credit roll is 60 seconds
-    q->credit_roll_counter = 60 * 60;
+    q->credit_roll_length = q->credit_roll_counter = 60 * 60;
     q->credit_roll_lineclears = 0;
 
     q->state_flags = 0;
@@ -726,6 +757,9 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         flags |= TETROMINO_ONLY;
         flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G1);
         flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G3);
+
+        // 61.68 "game seconds", or 60 realtime seconds
+        q->credit_roll_length = q->credit_roll_counter = 3701;
     }
     else if(flags & MODE_G3_TERROR)
     {
@@ -745,7 +779,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
             q->state_flags |= GAMESTATE_BRACKETS;
         }
 
-        q->credit_roll_counter = 54 * 60;
+        q->credit_roll_length = q->credit_roll_counter = 54 * 60;
     }
     else if(flags & MODE_G1_MASTER)
     {
@@ -775,7 +809,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         flags &= ~static_cast<int>(Shiro::GameType::SIMULATE_G3);
 
         // 61.68 "game seconds", or 60 realtime seconds
-        q->credit_roll_counter = 3701;
+        q->credit_roll_length = q->credit_roll_counter = 3701;
     }
 
     if(flags & NIGHTMARE_MODE)
@@ -1393,6 +1427,11 @@ int qs_game_quit(game_t *g)
 
     scoredb_clear_live_sectiontimes(&g->origin->records);
 
+    if(q->credits.is_open())
+    {
+        q->credits.close();
+    }
+
     if(numBestSections > 0)
     {
         std::cout << "Wrote " << numBestSections << " new best section times" << std::endl;
@@ -1548,7 +1587,7 @@ int qs_game_frame(game_t *g)
             qrs_lock(g, q->p1);
             (*s) = PSINACTIVE;
 
-            q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+            q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE | GAMESTATE_CREDITS);
 
             if(!q->pracdata)
                 Mix_HaltMusic();
@@ -2101,7 +2140,7 @@ static int qs_are_expired(game_t *g)
 
         bool wasInvisible = (q->state_flags & GAMESTATE_INVISIBLE) != 0;
 
-        q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE);
+        q->state_flags &= ~(GAMESTATE_FADING | GAMESTATE_INVISIBLE | GAMESTATE_CREDITS);
 
         if(!q->pracdata)
             Mix_HaltMusic();

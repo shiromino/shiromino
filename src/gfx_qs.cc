@@ -11,6 +11,8 @@
 #include "random.h"
 #include "Timer.h"
 #include "types.h"
+#include <fstream>
+#include <sstream>
 #include <SDL.h>
 #include <stdlib.h>
 #include <string>
@@ -46,6 +48,55 @@ int piece_colors[26] =
     0x808080 // grey
 };
 // clang-format on
+
+SDL_Texture *gfx_create_credits_tex(CoreState *cs, std::ifstream& in, int num_lines)
+{
+    if(!in.is_open() || num_lines <= 0)
+    {
+        return nullptr;
+    }
+
+    SDL_Texture *tex = SDL_CreateTexture(cs->screen.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 160, num_lines * 16);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+
+    SDL_Texture *theRenderTarget = SDL_GetRenderTarget(cs->screen.renderer);
+    SDL_SetRenderTarget(cs->screen.renderer, tex);
+
+    Uint8 r_, g_, b_, a_;
+    SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
+    SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0);
+
+    SDL_RenderFillRect(cs->screen.renderer, nullptr);
+
+    struct text_formatting fmt = {
+        RGBA_DEFAULT,
+        RGBA_OUTLINE_DEFAULT,
+        false,
+        false,
+        1.0,
+        1.0,
+        ALIGN_CENTER,
+        20
+    };
+
+    std::string contents;
+    in.seekg(0, std::ios::end);
+    contents.resize(in.tellg());
+    in.seekg(0, std::ios::beg);
+    in.read(&contents[0], contents.size());
+
+    std::vector<std::string> lines = strtools::split(contents, '\n');
+
+    for(int i = 0; i < lines.size(); i++)
+    {
+        gfx_drawtext(cs, lines[i], 80, i * 16, monofont_fixedsys, &fmt);
+    }
+
+    SDL_SetRenderTarget(cs->screen.renderer, theRenderTarget);
+    SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
+
+    return tex;
+}
 
 int gfx_drawqs(game_t *g)
 {
