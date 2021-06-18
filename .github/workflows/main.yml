@@ -92,6 +92,7 @@ jobs:
         commit_email: shiromino+aur@github
         commit_message: Released version ${{ env.VERSION }}
         commit_username: shiromino-bot
+        force_push: true
         pkgbuild: PKGBUILD
         pkgname: shiromino
         ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}

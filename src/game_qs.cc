@@ -27,7 +27,7 @@
 #include <string>
 #include <memory>
 #include <functional>
-
+#include <optional>
 using namespace Shiro;
 using namespace std;
 
