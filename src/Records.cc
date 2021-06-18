@@ -270,10 +270,15 @@ int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int
     int returnValue = sqlite3_step(sql);
     if(returnValue == SQLITE_ROW)
     {
-        return sqlite3_column_int(sql, 0);
+        returnValue = sqlite3_column_int(sql, 0);
+    }
+    else {
+        returnValue = -1;
     }
 
-    return -1;
+    sqlite3_finalize(sql);
+
+    return returnValue;
 }
 
 void scoredb_add_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int grade, int startlevel, int endlevel, int time)
