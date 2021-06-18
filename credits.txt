@@ -1,17 +1,17 @@
-STAFF
+#STAFF
 
 
 
 
 
-GAME DESIGN
+#GAME DESIGN
 
 Felicity Violette
 
 
 
-GITHUB
-CONTRIBUTORS
+#GITHUB
+#CONTRIBUTORS
 
 ericjtaylor
 
@@ -35,17 +35,17 @@ zeamador
 
 
 
-MUSIC
+#MUSIC
 
 beach glass
 
-Robert Kooima
-
 Ian Walker
 
+Robert Kooima
 
 
-SOUND EFFECTS
+
+#SOUND EFFECTS
 
 beach glass
 
@@ -53,13 +53,13 @@ Damian Yerrick
 
 
 
-VISUAL DESIGN
+#VISUAL DESIGN
 
 Felicity Violette
 
 
 
-SPECIAL THANKS
+#SPECIAL THANKS
 
 raincomplex
 

@@ -79,6 +79,19 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, std::ifstream& in, int num_li
         20
     };
 
+    const std::vector<uint32_t> colors = {
+        0xFFFF00FF, // yellow
+        0x3030FFFF, // blue
+        0xFFA030FF, // orange
+        0xFFA030FF, // orange
+        0xFF1010FF, // red
+        0x00FF00FF, // green
+        0xFF10AFFF, // magenta
+        0xFFFF00FF // yellow
+    };
+
+    int colorIndex = 0;
+
     std::string contents;
     in.seekg(0, std::ios::end);
     contents.resize(in.tellg());
@@ -89,7 +102,30 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, std::ifstream& in, int num_li
 
     for(int i = 0; i < lines.size(); i++)
     {
-        gfx_drawtext(cs, lines[i], 80, i * 16, monofont_fixedsys, &fmt);
+        if(lines[i].size() == 0)
+        {
+            continue;
+        }
+
+        if(lines[i][0] == '#')
+        {
+            if(colorIndex < colors.size())
+            {
+                fmt.rgba = colors[colorIndex];
+                colorIndex++;
+            }
+            else
+            {
+                fmt.rgba = RGBA_DEFAULT;
+            }
+
+            gfx_drawtext(cs, lines[i].substr(1), 80, i * 16, monofont_fixedsys, &fmt);
+        }
+        else
+        {
+            fmt.rgba = RGBA_DEFAULT;
+            gfx_drawtext(cs, lines[i], 80, i * 16, monofont_fixedsys, &fmt);
+        }
     }
 
     SDL_SetRenderTarget(cs->screen.renderer, theRenderTarget);
@@ -380,7 +416,16 @@ int gfx_drawqs(game_t *g)
                 }
 
                 textX -= 9*8;
-                secTimeStr = strtools::format("%d", (sec+1) * 100);
+
+                if(maxSection == 9 && sec == 9)
+                {
+                    secTimeStr = "999";
+                }
+                else
+                {
+                    secTimeStr = strtools::format("%d", (sec+1) * 100);
+                }
+
                 secTimeFmt.rgba = 0x2828FFFF;
                 gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
             }
@@ -431,7 +476,16 @@ int gfx_drawqs(game_t *g)
                 gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
 
                 textX -= 9*8;
-                secTimeStr = strtools::format("%d", (sec+1) * 100);
+
+                if(maxSection == 9 && sec == 9)
+                {
+                    secTimeStr = "999";
+                }
+                else
+                {
+                    secTimeStr = strtools::format("%d", (sec+1) * 100);
+                }
+
                 //secTimeFmt.rgba = 0x2020FFFF;
                 gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
             }
@@ -1087,6 +1141,56 @@ int gfx_drawqs(game_t *g)
         if(q->pracdata->paused == QRS_FIELD_EDIT)
             gfx_drawtext(cs, columns_adj, QRS_FIELD_X + 16 + 8*(QRS_FIELD_W - q->field_w), QRS_FIELD_Y + 16, 0, 0xFFFFFFB0, 0x000000B0);
     }*/
+
+    if(q->state_flags & GAMESTATE_FIREWORKS)
+    {
+        struct text_formatting messageFmt = {
+            0x00FF00FF,
+            0x00000020,
+            true,
+            false,
+            2.0,
+            1.0,
+            ALIGN_CENTER,
+            10
+        };
+
+        if(q->grade == GRADE_GM)
+        {
+            gfx_drawtext(cs, "YOU ARE", x + 16 + 96, y + 32 + 64, monofont_fixedsys, &messageFmt);
+            gfx_drawtext(cs, "GRAND", x + 16 + 96, y + 32 + 128, monofont_fixedsys, &messageFmt);
+            gfx_drawtext(cs, "MASTER!", x + 16 + 96, y + 32 + 160, monofont_fixedsys, &messageFmt);
+        }
+        else
+        {
+            gfx_drawtext(cs, "WELL", x + 16 + 96, y + 32 + 128, monofont_fixedsys, &messageFmt);
+            gfx_drawtext(cs, "DONE!", x + 16 + 96, y + 32 + 160, monofont_fixedsys, &messageFmt);
+        }
+    }
+
+    if(q->state_flags & GAMESTATE_GAMEOVER)
+    {
+        struct text_formatting messageFmt = {
+            0x00FF00FF,
+            RGBA_OUTLINE_DEFAULT,
+            false,
+            false,
+            2.0,
+            1.0,
+            ALIGN_CENTER,
+            10
+        };
+
+        if(q->topped_out)
+        {
+            messageFmt.rgba = 0xFF1010FF;
+            gfx_drawtext(cs, "GAME OVER", x + 16 + 96, y + 32 + 144, monofont_fixedsys, &messageFmt);
+        }
+        else
+        {
+            gfx_drawtext(cs, "ALL CLEAR", x + 16 + 96, y + 32 + 144, monofont_fixedsys, &messageFmt);
+        }
+    }
 
     if(q->pracdata)
     {

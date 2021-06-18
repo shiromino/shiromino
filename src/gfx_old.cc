@@ -274,6 +274,11 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     qrsdata *q = (qrsdata *)cs->p1game->data;
     int use_deltas = 0;
 
+    if(q->state_flags & (GAMESTATE_TOPOUT_ANIM | GAMESTATE_SOFT_CREDITS_TOPOUT | GAMESTATE_CREDITS_TOPOUT_ANIM))
+    {
+        flags |= DRAWFIELD_NO_OUTLINE;
+    }
+
     int i = 0;
     int j = 0;
     int c = 0;
@@ -418,6 +423,8 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     dest.w = cellSize;
     dest.h = cellSize;
 
+    Uint8 blockAlpha = 0xFF;
+
     for(i = 0; i < logicalW; i++)
     { // test feature: last 31 frames of every 91 frames make the stack shine
         for(j = QRS_FIELD_H - 20; j < logicalH; j++)
@@ -429,6 +436,42 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     continue;
                 }
             }
+
+            blockAlpha = 0xFF;
+
+            if(((q->state_flags & (GAMESTATE_TOPOUT_ANIM | GAMESTATE_SOFT_CREDITS_TOPOUT)) && q->topped_out) ||
+                q->state_flags & GAMESTATE_CREDITS_TOPOUT_ANIM)
+            {
+                int row_ = (21 - (j - QRS_FIELD_H + 20)) * 6;
+
+                if(q->stack_anim_counter >= row_)
+                {
+                    blockAlpha = 0;
+                }
+                else if(q->stack_anim_counter > (row_ - 6))
+                {
+                    blockAlpha = 252 - (42 * (q->stack_anim_counter - row_ + 6));
+                }
+            }
+            else if(q->topped_out && !(q->state_flags & GAMESTATE_STACK_REVEAL_DELAY))
+            {
+                blockAlpha = 0;
+            }
+
+            if(q->state_flags & GAMESTATE_GAMEOVER)
+            {
+                blockAlpha = 0;
+            }
+
+            if(blockAlpha == 0)
+            {
+                continue;
+            }
+            else
+            {
+                SDL_SetTextureAlphaMod(blocks, blockAlpha);
+            }
+
             c = field->getCell(i, j);
             if(c == GRID_OOB) {
                 return 1;
@@ -592,6 +635,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     }*/
 
     SDL_SetTextureColorMod(blocks, 255, 255, 255);
+    SDL_SetTextureAlphaMod(blocks, 255);
 
     return 0;
 }

@@ -122,8 +122,10 @@
 #define GAMESTATE_FIREWORKS                 0x0800
 #define GAMESTATE_BETTER_NEXT_TIME          0x1000
 //#define GAMESTATE_RESULTS_SCREEN          0x2000
-#define GAMESTATE_CREDITS_TOPOUT            0x4000
+#define GAMESTATE_CREDITS_TOPOUT_ANIM       0x4000
 #define GAMESTATE_HALTING               0x00020000
+#define GAMESTATE_SOFT_CREDITS_TOPOUT   0x00040000
+#define GAMESTATE_STACK_REVEAL_DELAY    0x00080000
 //#define GAMESTATE_PRE_PROMO_EXAM          0x8000
 //#define GAMESTATE_PROMO_RESULTS       0x00010000
 
@@ -321,6 +323,9 @@ struct qrsdata
     // counts down to 0 (measured in frames)
     int credit_roll_counter;
     int credit_roll_lineclears;
+
+    bool cleared_game;
+    bool topped_out;
 
 // fields which are assumed to be read-only during normal gameplay
 

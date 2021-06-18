@@ -1061,14 +1061,20 @@ int qrs_input(game_t *g)
                 }
             }
 
+            q->state_flags = 0;
+            q->topped_out = false;
+
             cs->pressed.escape = 0;
 
             return 0;
         }
         else
         {
-            Mix_HaltMusic();
-            return 1;
+            if((!(q->state_flags & (GAMESTATE_CREDITS | GAMESTATE_FADE_TO_CREDITS)) && (!q->topped_out)) || q->topped_out || q->playback || (q->state_flags & GAMESTATE_GAMEOVER))
+            {
+                Mix_HaltMusic();
+                return 1;
+            }
         }
     }
 
