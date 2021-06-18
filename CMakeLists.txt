@@ -58,6 +58,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/asset/Sfx.h
 		src/AssetStore.h
 		src/CoreState.h
+		src/Credits.cc
+		src/Credits.h
 		src/Debug.h
 		src/DisplayMode.h
 		src/Game.cc

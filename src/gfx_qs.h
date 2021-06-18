@@ -3,7 +3,7 @@
 #include "CoreState.h"
 #include <fstream>
 
-SDL_Texture *gfx_create_credits_tex(CoreState *cs, std::ifstream& in, int num_lines);
+SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines);
 int gfx_drawqs(game_t *g);
 int gfx_qs_lineclear(game_t *g, int row);
 int gfx_drawqsmedals(game_t *g);

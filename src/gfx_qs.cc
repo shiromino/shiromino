@@ -11,6 +11,7 @@
 #include "random.h"
 #include "Timer.h"
 #include "types.h"
+#include "Credits.h"
 #include <fstream>
 #include <sstream>
 #include <SDL.h>
@@ -49,9 +50,9 @@ int piece_colors[26] =
 };
 // clang-format on
 
-SDL_Texture *gfx_create_credits_tex(CoreState *cs, std::ifstream& in, int num_lines)
+SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
 {
-    if(!in.is_open() || num_lines <= 0)
+    if(num_lines <= 0)
     {
         return nullptr;
     }
@@ -92,13 +93,7 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, std::ifstream& in, int num_li
 
     int colorIndex = 0;
 
-    std::string contents;
-    in.seekg(0, std::ios::end);
-    contents.resize(in.tellg());
-    in.seekg(0, std::ios::beg);
-    in.read(&contents[0], contents.size());
-
-    std::vector<std::string> lines = strtools::split(contents, '\n');
+    std::vector<std::string> lines = strtools::split(Shiro::Credits::creditsString, '\n');
 
     for(int i = 0; i < lines.size(); i++)
     {

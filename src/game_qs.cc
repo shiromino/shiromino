@@ -17,6 +17,7 @@
 #include "Timer.h"
 #include "SDL.h"
 #include "OS.h"
+#include "Credits.h"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -603,6 +604,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     g->data = new qrsdata;
     q = (qrsdata *)(g->data);
 
+    /*
     const auto executableDirectory = OS::getExecutablePath().remove_filename();
     const std::vector<std::optional<fs::path>> configurationPrefixes = {
         executableDirectory,
@@ -631,6 +633,11 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->credits_tex = nullptr;
         q->credits_tex_height = 0;
     }
+    */
+
+    q->num_credits_lines = 1 + std::count(Shiro::Credits::creditsString.begin(), Shiro::Credits::creditsString.end(), '\n');
+    q->credits_tex = gfx_create_credits_tex(cs, q->num_credits_lines);
+    q->credits_tex_height = 16 * q->num_credits_lines;
 
     q->mode_flags = flags;
 
@@ -1431,10 +1438,12 @@ int qs_game_quit(game_t *g)
 
     scoredb_clear_live_sectiontimes(&g->origin->records);
 
+    /*
     if(q->credits.is_open())
     {
         q->credits.close();
     }
+    */
 
     if(numBestSections > 0)
     {
