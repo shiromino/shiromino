@@ -327,7 +327,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
     if((flags & DRAWFIELD_GRID) && !(flags & DRAWFIELD_BIG))
     {
-        SDL_Rect gridSrc = { 33 * 256, 0, 256, 256 };
+        SDL_Rect gridSrc = { 6 * 256, 6 * 256, 256, 256 };
         SDL_Rect gridDest = { 0, 0, 16, 16 };
 
         for(i = 0; i < logicalW; i++)
@@ -479,35 +479,41 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
             if(c != -2 && c)
             {
-                if(c == -5)
+                if(c == -5) // garbage block
                 {
-                    src.x = 25 * 256;
+                    src.x = 5 * 256;
+                    src.y = 2 * 256;
                 }
                 else if(c == QRS_FIELD_W_LIMITER)
                 {
+                    src.y = 6 * 256;
                     if(!(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) - 1, j))) && !(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) + 1, j))))
-                        src.x = 27 * 256;
+                        src.x = 1 * 256;
                     else if((IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) - 1, j))) && !(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) + 1, j))))
-                        src.x = 28 * 256;
+                        src.x = 2 * 256;
                     else if(!(IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) - 1, j))) && (IS_INBOUNDS(field->getCell(static_cast<std::size_t>(i) + 1, j))))
-                        src.x = 29 * 256;
+                        src.x = 3 * 256;
                 }
                 else if(c & QRS_PIECE_BRACKETS)
                 {
-                    src.x = 30 * 256;
+                    src.x = 6 * 256;
+                    src.y = 2 * 256;
                 }
                 else if(c & QRS_PIECE_GEM)
                 {
-                    if(flags & DRAWFIELD_JEWELED)
+                    int p_ = ((c & 0xff) - 1);
+
+                    if(p_ < 18)
                     {
-                        src.x = ((c & 0xff) - 19) * 256;
+                        src.x = (p_ % 7) * 256;
+                        src.y = (p_ / 7) * 256;
                     }
                     else
                     {
-                        src.x = ((c & 0xff) - 1) * 256;
+                        src.x = (p_ - 18) * 256;
+                        src.y = 3 * 256;
                     }
 
-                    src.y = 0;
                     dest.x = x + 16 + (i * cellSize);
                     dest.y = y + 32 + ((j - QRS_FIELD_H + 20) * cellSize);
 
@@ -515,16 +521,28 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     {
                         dest.x += 16;
                     }
+
                     Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
 
-                    src.x = 32 * 256;
+                    src.x = 5 * 256;
+                    src.y = 6 * 256;
                 }
                 else
                 {
-                    src.x = ((c & 0xff) - 1) * 256;
+                    int p_ = ((c & 0xff) - 1);
+
+                    if(p_ < 18)
+                    {
+                        src.x = (p_ % 7) * 256;
+                        src.y = (p_ / 7) * 256;
+                    }
+                    else
+                    {
+                        src.x = (p_ - 18) * 256;
+                        src.y = 3 * 256;
+                    }
                 }
 
-                src.y = 0;
                 dest.x = x + 16 + (i * cellSize);
                 dest.y = y + 32 + ((j - QRS_FIELD_H + 20) * cellSize);
 
@@ -1010,10 +1028,17 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
     int cell_y = 0;
 
     g = &pieceDefinition.rotationTable[orient & 3];
-    src.x = pieceDefinition.qrsID * 256;
-    if(flags & DRAWPIECE_JEWELED) {
-        src.x -= 18 * 256;
+    if(pieceDefinition.qrsID >= 18)
+    {
+        src.x = (pieceDefinition.qrsID - 18) * 256;
+        src.y = 3 * 256;
     }
+    else
+    {
+        src.x = (pieceDefinition.qrsID % 7) * 256;
+        src.y = (pieceDefinition.qrsID / 7) * 256;
+    }
+
     SDL_SetTextureColorMod(blocks, R(rgba), G(rgba), B(rgba));
     SDL_SetTextureAlphaMod(blocks, A(rgba));
 
@@ -1042,11 +1067,15 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                 }
 
                 if(flags & DRAWPIECE_BRACKETS || pieceDefinition.flags & Shiro::PDBRACKETS)
-                    src.x = 30 * 256;
+                {
+                    src.x = 6 * 256;
+                    src.y = 2 * 256;
+                }
 
                 if(flags & DRAWPIECE_LOCKFLASH && !(flags & DRAWPIECE_BRACKETS) && !(pieceDefinition.flags & Shiro::PDBRACKETS))
                 {
-                    src.x = 26 * 256;
+                    src.x = 0;
+                    src.y = 6 * 256;
                     cell_x = (x - field_x - 16) / size + i;
                     cell_y = (y - field_y - 32) / size + j + QRS_FIELD_H - 20;
 
