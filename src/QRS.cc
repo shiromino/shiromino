@@ -210,6 +210,12 @@ std::vector<Shiro::PieceDefinition> qrspool_create()
             pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(pool[i].flags ^ Shiro::PDNOFKICK);
         }
 
+        if((i == QRS_Ya) || (i == QRS_Yb) || (i == QRS_L) || (i == QRS_J) || (i == QRS_N) || (i == QRS_G))
+        {
+            pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(
+                pool[i].flags | Shiro::PDONECELLFLOORKICKS);
+        }
+
         if(i == QRS_T)
         {
             pool[i].flags = static_cast<Shiro::PieceDefinitionFlag>(
@@ -1525,11 +1531,56 @@ int qrs_floorkick(game_t *g, qrs_player *p)
         return 1;
 
     qrsdata *q = (qrsdata *)g->data;
+    piece_id c = p->def->qrsID;
+    int o = p->orient;
     int bkp_y = p->y;
+
+    std::pair<int, int> pos;
+    qrs_chkcollision(*g, *p, pos);
+    int x = pos.first;
+    int y = pos.second;
 
     if(!q->max_floorkicks)
     {
         return 1;
+    }
+
+    switch(c)
+    {
+        case QRS_N:
+            if(o == Shiro::CW && y == 2)
+                return 1;
+            else if(o == Shiro::CCW && y == 1)
+                return 1;
+            break;
+        case QRS_G:
+            if(o == Shiro::CW && y == 1)
+                return 1;
+            else if(o == Shiro::CCW && y == 2)
+                return 1;
+            break;
+        case QRS_T:
+            if(o == Shiro::FLAT && y == 1)
+                return 1;
+            break;
+        case QRS_Ya:
+            if(o == Shiro::CW && x == 1)
+                return 1;
+            break;
+        case QRS_Yb:
+            if(o == Shiro::CCW && x == 2)
+                return 1;
+            break;
+        case QRS_J:
+            if(o == Shiro::CCW && x == 3)
+                return 1;
+            break;
+        case QRS_L:
+            if(o == Shiro::CW && x == 0)
+                return 1;
+            break;
+        default:
+            break;
     }
 
     // T tetromino is the only piece to use this flag
