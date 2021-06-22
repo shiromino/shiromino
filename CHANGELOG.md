@@ -1,4 +1,16 @@
 # shiromino version history
+## 0.2.1
+### New features
+- Added `SAMPLE_SIZE` configuration option for the audio mixer.
+- Re-added `VIDEO_STRETCH` configuration option with updated functionality.
+### Updated features
+- Improved design of all tetrion graphics.
+- Pentomino C revision: `1.4` → `1.5`.
+- Changed floorkick rules for J5, L5, Ya, Yb, N, and G pentominoes.
+### Bug fixes
+- Section time display no longer renders behind the Multi-Editor menu while the game is stopped.
+- Fixed crash on program exit while a game is open.
+- Fixed erroneously busy-looping instead of delaying for frame timing.
 ## 0.2.0
 ### New features
 - Re-introduced Multi-Editor.
