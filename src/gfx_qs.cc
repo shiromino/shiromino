@@ -279,9 +279,7 @@ int gfx_drawqs(game_t *g)
         gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
     }
 
-    bool inMenu = cs->menu_input_override;
-
-    if((q->pracdata && !inMenu) || cs->displayMode == Shiro::DisplayMode::DETAILED)
+    if((q->pracdata && (q->pracdata->paused == 0)) || (!q->pracdata && cs->displayMode == Shiro::DisplayMode::DETAILED))
     {
         std::string secTimeStr;
         struct text_formatting secTimeFmt = {

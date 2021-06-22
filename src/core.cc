@@ -225,9 +225,6 @@ CoreState::~CoreState() {
     }
     //quit(this);
 
-    scoredb_terminate(&records);
-    // scoredb_terminate(&archive);
-
     if(assets)
     {
 
@@ -271,6 +268,9 @@ CoreState::~CoreState() {
         free(menu);
         menu = NULL;
     }
+
+    scoredb_terminate(&records);
+    // scoredb_terminate(&archive);
 
     delete screenManager;
 
