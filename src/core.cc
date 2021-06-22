@@ -548,16 +548,16 @@ void CoreState::run() {
     Uint64 timeFromFrames = 0u;
     const Uint64 fpsTimeFrameDuration = SDL_GetPerformanceFrequency();
     Uint64 fpsTimeFrameStart = 0u;
-	Uint64 startTime = SDL_GetPerformanceCounter();
+    Uint64 startTime = SDL_GetPerformanceCounter();
 #endif
 
     while(running)
     {
 
 #ifndef DEBUG_FRAME_TIMING
-		Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / fps;
+        Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / fps;
 #else
-		Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
+        Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
 #endif
         Uint64 newTime = SDL_GetPerformanceCounter();
         Uint64 renderFrameTime = newTime - currentTime;
@@ -568,7 +568,7 @@ void CoreState::run() {
         timeAccumulator += renderFrameTime;
 
         unsigned newFrames = 0u;
-		for (;
+        for (;
             running && (timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync));
             timeAccumulator -= gameFrameTime,
             newFrames++,
@@ -703,8 +703,8 @@ void CoreState::run() {
                 << "real FPS: " << ((realTime / static_cast<double>(timeFromFrames)) * (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
                     ? videoFPS
                     : fps
-				)) << std::endl
-				<< "game FPS: " << (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
+                )) << std::endl
+                << "game FPS: " << (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
                     ? videoFPS
                     : fps
                 ) << std::endl;
@@ -714,7 +714,7 @@ void CoreState::run() {
             }
 #endif
             if (settings.vsync && settings.vsyncTimestep) {
-				break;
+                break;
             }
         }
 
@@ -740,9 +740,9 @@ void CoreState::run() {
             SDL_RenderPresent(screen.renderer);
         }
         if (!settings.vsyncTimestep) {
-			while (SDL_GetPerformanceCounter() < timeAccumulator + gameFrameTime) {
-				SDL_Delay(1u);
-			}
+            while (SDL_GetPerformanceCounter() < currentTime + gameFrameTime) {
+                SDL_Delay(1u);
+            }
         }
     }
 }
