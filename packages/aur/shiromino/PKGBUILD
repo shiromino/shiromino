@@ -15,7 +15,7 @@ makedepends=(
 )
 pkgdesc="A fast-paced puzzle game with roots in the arcade"
 pkgname=shiromino
-pkgrel=1
+pkgrel=2
 pkgver='$VERSION'
 sha256sums=('$CHECKSUM')
 url=https://github.com/shiromino/shiromino
