@@ -56,6 +56,7 @@ void Shiro::Settings::setDefaults() {
     sfxVolume = 100;
     musicVolume = 90;
     samplingRate = 48000;
+    sampleSize = 1024;
     playerName = "ARK";
 }
 void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &executableDirectory, const fs::path &cwd) {
@@ -245,6 +246,10 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
     if (configuration.get("AUDIO", "SAMPLING_RATE", samplingRate)) {
         this->samplingRate = std::clamp(samplingRate, 0u, 48000u);
     }
+    unsigned int sampleSize;
+    if (configuration.get("AUDIO", "SAMPLE_SIZE", sampleSize)) {
+        this->sampleSize = std::clamp(sampleSize, 0u, 4096u);
+    }
     float videoScale;
     if (configuration.get("SCREEN", "VIDEO_SCALE", videoScale)) {
         const auto epsilon = std::numeric_limits<decltype(videoScale)>::epsilon();
@@ -281,6 +286,7 @@ void Shiro::Settings::write() const {
     configuration.set("AUDIO", "MASTER_VOLUME", masterVolume);
     configuration.set("AUDIO", "MUSIC_VOLUME", musicVolume);
     configuration.set("AUDIO", "SAMPLING_RATE", samplingRate);
+    configuration.set("AUDIO", "SAMPLE_SIZE", sampleSize);
     configuration.set("AUDIO", "SFX_VOLUME", sfxVolume);
     configuration.set("SCREEN", "FULL_SCREEN", fullscreen);
     configuration.set("SCREEN", "VIDEO_SCALE", videoScale);

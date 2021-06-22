@@ -1349,8 +1349,16 @@ bool CoreState::process_events() {
     }
 
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
-    f = std::min(windowW / screen.logicalW, windowH / screen.logicalH);
-    screen.render_scale = float(f);
+
+    if(settings.videoStretch)
+    {
+        screen.render_scale = std::min(float(windowW) / float(screen.logicalW), float(windowH) / float(screen.logicalH));
+    }
+    else
+    {
+        f = std::min(windowW / screen.logicalW, windowH / screen.logicalH);
+        screen.render_scale = float(f);
+    }
 
     screen.w = windowW;
     screen.h = windowH;

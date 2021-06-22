@@ -36,7 +36,7 @@ void initialize(const Shiro::Settings &settings) {
         std::cerr << "Mix_Init: Failed to initialize OGG support: " <<  Mix_GetError() << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    if (Mix_OpenAudio(settings.samplingRate, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
+    if (Mix_OpenAudio(settings.samplingRate, MIX_DEFAULT_FORMAT, 2, settings.sampleSize) == -1) {
         std::cerr <<  "Mix_OpenAudio: Error: " << Mix_GetError() << std::endl;
         std::exit(EXIT_FAILURE);
     }
