@@ -1,5 +1,6 @@
 # shiromino version history
 ## 0.2.1
+Originally released on 2021-06-22.
 ### New features
 - Added `SAMPLE_SIZE` configuration option for the audio mixer.
 - Re-added `VIDEO_STRETCH` configuration option with updated functionality.
@@ -12,6 +13,7 @@
 - Fixed crash on program exit while a game is open.
 - Fixed erroneously busy-looping instead of delaying for frame timing.
 ## 0.2.0
+Originally released on 2021-06-19.
 ### New features
 - Re-introduced Multi-Editor.
 - Added new background and music track to Multi-Editor.
@@ -47,6 +49,7 @@
 - Fixed combo value calculation.
 - Fixed all-clear (bravo) detection.
 ## 0.1.1
+Originally released on 2021-04-04.
 ### New features
 - The game now supports looking up the configuration file, the SQLite database, and the assets under various different paths.
 - The build system now supports installing the game into a specified directory, making it much simpler to package the game.
@@ -58,6 +61,7 @@
 ### Bug fixes
 - Garbage creation has been fixed in G3 Terror.
 ## 0.1.0
+Originally released on 2020-10-31.
 ### New features
 - Joystick input is now fully configurable; no joystick input is enabled by default.
 - Vertical sync option added; off by default.
