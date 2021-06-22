@@ -27,7 +27,6 @@ build() {
 	cmake\
 		-B build\
 		-DCMAKE_BUILD_TYPE=Release\
-		-DENABLE_OPENGL_INTERPOLATION=1\
 		-S .
 	cmake --build build
 }
