@@ -3,8 +3,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Fetch history for all tags
-      run: .github/workflows/fetch-tags
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -yq build-essential clang-7 cmake coreutils g++-8 gcc libc++-8-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libstdc++-7-dev libvorbis-dev libsqlite3-dev
     - name: Build targets
@@ -23,8 +21,6 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Fetch history for all tags
-      run: .github/workflows/fetch-tags
     - name: Install mac OS dependencies
       run: brew install bash cmake gcc libvorbis pkg-config sdl2 sdl2_image sdl2_mixer
     - name: Build targets
@@ -41,8 +37,6 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Fetch history for all tags
-      run: .github/workflows/fetch-tags
     - uses: msys2/setup-msys2@v2
     - name: Install dependencies
       run: pacman --needed --noconfirm -S cmake gcc git make mingw-w64-x86_64-{clang,dlfcn,glew,libvorbis,SDL2{,_image,_mixer},sqlite3}
