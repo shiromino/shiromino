@@ -83,7 +83,7 @@ jobs:
       run: .github/workflows/fetch-tags
     - run: echo "VERSION=$(git describe --tags | tr - +)" >> $GITHUB_ENV
     - name: Archive repository
-      run: git archive --prefix="${{ github.event.repository.name }}-$VERSION/" -o "${{ github.event.repository.name }}-$VERSION.tar.gz" origin/master
+      run: git archive --prefix="${{ github.event.repository.name }}-$VERSION/" -o "${{ github.event.repository.name }}-$VERSION.tar.gz" "$VERSION"
     - name: Set archive checksum
       run: echo "CHECKSUM=$(sha256sum "${{ github.event.repository.name }}-$VERSION".tar.gz | awk '{ print $1 }')" >> $GITHUB_ENV
     - run: sed "s/\$VERSION/${{ env.VERSION }}/g; s/\$CHECKSUM/${{ env.CHECKSUM }}/g" ./packages/aur/shiromino/PKGBUILD > PKGBUILD
