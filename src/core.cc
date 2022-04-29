@@ -740,9 +740,45 @@ void CoreState::run() {
             SDL_RenderPresent(screen.renderer);
         }
         if (!settings.vsyncTimestep) {
-            while (SDL_GetPerformanceCounter() < currentTime + gameFrameTime) {
-                SDL_Delay(1u);
+            /*
+             * Here, we insert a delay to produce accurate frame timing, using
+             * "hybrid wait" and "fixed timestep". The first stage is to loop
+             * over delays of 1 millisecond, where it's assumed that delays are
+             * roughly 1 millisecond, generally a bit above. But, during that
+             * first stage of delays, the max delay duration is kept track of,
+             * and that stage of the delay loop is broken out of when the time
+             * remaining to delay is less than or equal to the max of the
+             * 1-millisecond delays. Then, the same delay loop is done with
+             * 0-millisecond delay requests; requesting a delay of no time just
+             * yields the game's running process, allowing the system to run
+             * other tasks, without eating a bunch of CPU time. Once that loop
+             * stage is done, a final, as-small-as-possible pure busyloop is run
+             * to finish out the delay; it's critical to delay as much as
+             * possible via SDL_Delay first, so as to minimize wasted CPU time.
+             * This scheme appears to be "optimal", in that it produces correct
+             * timing, but with a minimum of wasted CPU time. Mufunyo
+             * ( https://github.com/mufunyo ) showed me the "hybrid wait"
+             * algorithm, where most of the delay is done via actual delays, and
+             * completed with a busyloop, but that algorithm has been adapted to
+             * fit into this game's "fixed timestep" variant
+             * ( https://www.gafferongames.com/post/fix_your_timestep/ ).
+             * -Brandon McGriff <nightmareci@gmail.com>
+             */
+            for (int milliseconds = 1; milliseconds >= 0; milliseconds--) {
+                Uint64 delayStartTime;
+                Uint64 maxDelay = 0u;
+                while (
+                    maxDelay < gameFrameTime &&
+                    (delayStartTime = SDL_GetPerformanceCounter()) - currentTime < gameFrameTime - maxDelay
+                ) {
+                    SDL_Delay(milliseconds);
+                    Uint64 lastDelay;
+                    if ((lastDelay = SDL_GetPerformanceCounter() - delayStartTime) > maxDelay) {
+                        maxDelay = lastDelay;
+                    }
+                }
             }
+            while (SDL_GetPerformanceCounter() - currentTime < gameFrameTime);
         }
     }
 }
