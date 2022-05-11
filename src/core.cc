@@ -23,6 +23,7 @@
 #include "gui/GUI.h"
 #include "ShiroPhysoMino.h"
 #include "SPM_Spec.h"
+#include "Delay.h"
 #include "Version.h"
 #include <array>
 #include <cinttypes>
@@ -44,95 +45,6 @@
 #include <functional>
 #include <utility>
 #define PENTOMINO_C_REVISION_STRING "rev 1.5"
-#define FRAMEDELAY_ERR 0
-
-#if(defined(_WIN64) || defined(_WIN32)) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__MINGW32__) && \
-    !defined(__MINGW64__)
-#define _WIN32_WINNT 0x0400
-#include <direct.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#if 0
-// TODO: Check Windows docs, and see if setting errno to EFAULT might make
-// sense somewhere here. The EINTR case might be wrong, too.
-// TODO: Add more granular waits for the seconds portion, then precise waiting
-// for the rest.
-int nanosleep(const struct timespec* req, struct timespec* rem) {
-    LARGE_INTEGER startTime;
-    if (req->tv_nsec < 0 || req->tv_nsec > 999999999ll || req->tv_sec < 0) {
-        errno = EINVAL;
-        return -1;
-    }
-    QueryPerformanceCounter(&startTime);
-    LARGE_INTEGER waitTime = { .QuadPart = -((LONGLONG)req->tv_sec * 10000000ll + (LONGLONG)req->tv_nsec / 100ll) };
-    const HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
-    if (timer) {
-        // Signal after waiting for the requested time, but if the signal took
-        // too long, use millisecond precision with WaitForSingleObject.
-        SetWaitableTimer(timer, &waitTime, 0, NULL, NULL, 0);
-        WaitForSingleObject(timer, waitTime.QuadPart / 10000);
-        CloseHandle(timer);
-        return 0;
-    }
-    else {
-        errno = EINTR;
-        LARGE_INTEGER endTime;
-        LARGE_INTEGER frequency;
-        // Microsoft's docs guarantee these don't fail on XP or newer, and
-        // that's all we're supporting. -nightmareci
-        QueryPerformanceCounter(&endTime);
-        QueryPerformanceFrequency(&frequency);
-        LONGLONG nsWait = ((endTime.QuadPart - startTime.QuadPart) * 1000000000ll) / frequency.QuadPart;
-        LONGLONG nsRem = ((LONGLONG)req->tv_sec * 1000000000ll + (LONGLONG)req->tv_nsec) - nsWait;
-        rem->tv_sec = nsRem / 1000000000ll;
-        rem->tv_nsec = nsRem % 1000000000ll;
-        return -1;
-    }
-}
-#endif
-#endif
-
-#if 0
-static long framedelay(Uint64 ticks_elap, double fps)
-{
-    const Uint64 freq = SDL_GetPerformanceFrequency();
-    const double start = (double)SDL_GetPerformanceCounter() / freq;
-    if(fps < 1 || fps > 240)
-        return FRAMEDELAY_ERR;
-
-    struct timespec t = {0, 0};
-    double sec_elap = (double)(ticks_elap) / freq;
-    double spf = (1 / fps);
-
-    if(sec_elap < spf)
-    {
-        t.tv_nsec = (long)((spf - sec_elap) * 1000000000ll);
-#ifndef BUSYLOOP_DELAY
-
-        struct timespec rem;
-        if(nanosleep(&t, &rem))
-        {
-            // this can happen when the user presses Ctrl+C
-            log_err("nanosleep() returned failure during frame length calculation");
-            return FRAMEDELAY_ERR;
-        }
-#else
-        const double end = start + spf - sec_elap;
-        for (double newTime = start; newTime < end; newTime = (double)SDL_GetPerformanceCounter() / freq);
-#endif
-    }
-    else
-    {
-        return (spf - sec_elap) * 1000000000.0;
-    }
-
-    if(t.tv_nsec)
-        return t.tv_nsec;
-    else
-        return 1;
-}
-#endif
 
 bool CoreState::is_left_input_repeat(unsigned delay) {
     return keys.left && hold_dir == Shiro::DASDirection::LEFT && hold_time >= delay;
@@ -752,16 +664,15 @@ void CoreState::run() {
              * 0-millisecond delay requests; requesting a delay of no time just
              * yields the game's running process, allowing the system to run
              * other tasks, without eating a bunch of CPU time. Once that loop
-             * stage is done, a final, as-small-as-possible pure busyloop is run
-             * to finish out the delay; it's critical to delay as much as
-             * possible via SDL_Delay first, so as to minimize wasted CPU time.
+             * stage is done, a final, as-small-as-possible pure busyloop is
+             * run to finish out the delay; it's critical to delay as much as
+             * possible via Delay first, so as to minimize wasted CPU time.
              * This scheme appears to be "optimal", in that it produces correct
-             * timing, but with a minimum of wasted CPU time. Mufunyo
-             * ( https://github.com/mufunyo ) showed me the "hybrid wait"
-             * algorithm, where most of the delay is done via actual delays, and
-             * completed with a busyloop, but that algorithm has been adapted to
-             * fit into this game's "fixed timestep" variant
-             * ( https://www.gafferongames.com/post/fix_your_timestep/ ).
+             * timing, but with a minimum of wasted CPU time. Mufunyo ( https://github.com/mufunyo )
+             * showed me the "hybrid wait" algorithm, where most of the delay
+             * is done via actual delays, and completed with a busyloop, but
+             * that algorithm has been adapted to fit into this game's "fixed
+             * timestep" variant ( https://www.gafferongames.com/post/fix_your_timestep/ ).
              * -Brandon McGriff <nightmareci@gmail.com>
              */
             for (int milliseconds = 1; milliseconds >= 0; milliseconds--) {
@@ -771,7 +682,7 @@ void CoreState::run() {
                     maxDelay < gameFrameTime &&
                     (delayStartTime = SDL_GetPerformanceCounter()) - currentTime < gameFrameTime - maxDelay
                 ) {
-                    SDL_Delay(milliseconds);
+                    Delay(milliseconds);
                     Uint64 lastDelay;
                     if ((lastDelay = SDL_GetPerformanceCounter() - delayStartTime) > maxDelay) {
                         maxDelay = lastDelay;

@@ -87,6 +87,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/menu/Option.h
 		src/menu/TextOption.h
 		src/menu/ToggleOption.h
+		src/Delay.cc
+		src/Delay.h
 		src/OS.cc
 		src/OS.h
 		src/PieceDefinition.cc
@@ -201,45 +203,49 @@ source_group("Third-party" FILES "${EXECUTABLE_THIRD_PARTY}")
 #
 # Dependency management
 #
-find_package(PkgConfig)
-if(NOT DEFINED MINIMUM_SDL2_VERSION)
-	set(MINIMUM_SDL2_VERSION 2.0.5)
-endif()
-set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
-set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
-set(MINIMUM_SQLITE3_VERSION 3.24.0)
-function(target_pkg_config_import TARGET DEPENDENCY)
-	string(TOUPPER ${DEPENDENCY} DEPENDENCY_VARIABLE)
-	set(MINIMUM_VERSION ${MINIMUM_${DEPENDENCY_VARIABLE}_VERSION})
-	pkg_check_modules(${DEPENDENCY_VARIABLE} REQUIRED ${DEPENDENCY}>=${MINIMUM_VERSION})
-	target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS}")
-	target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS_OTHER}")
-	target_include_directories(${TARGET} SYSTEM PRIVATE "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
-	target_link_directories(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARY_DIRS}")
-	target_link_libraries(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARIES}")
-	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
-	target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
-endfunction()
-if(PKG_CONFIG_FOUND)
-	#
-	# Link anything that `pkg-config` can't resolve on its own.
-	#
-	target_link_libraries(${GAME_EXECUTABLE} PRIVATE
-		m
-		${CMAKE_DL_LIBS}
-	)
-	#
-	# Let `pkg-config` do its magic.
-	#
-	set(DEPENDENCIES
-		sdl2
-		SDL2_image
-		SDL2_mixer
-		sqlite3
-	)
-	foreach(DEPENDENCY ${DEPENDENCIES})
-		target_pkg_config_import(${GAME_EXECUTABLE} ${DEPENDENCY})
-	endforeach()
+if(UNIX OR MINGW)
+	find_package(PkgConfig)
+	if(NOT DEFINED MINIMUM_SDL2_VERSION)
+		set(MINIMUM_SDL2_VERSION 2.0.5)
+	endif()
+	set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
+	set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
+	set(MINIMUM_SQLITE3_VERSION 3.24.0)
+	function(target_pkg_config_import TARGET DEPENDENCY)
+		string(TOUPPER ${DEPENDENCY} DEPENDENCY_VARIABLE)
+		set(MINIMUM_VERSION ${MINIMUM_${DEPENDENCY_VARIABLE}_VERSION})
+		pkg_check_modules(${DEPENDENCY_VARIABLE} REQUIRED ${DEPENDENCY}>=${MINIMUM_VERSION})
+		target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS}")
+		target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS_OTHER}")
+		target_include_directories(${TARGET} SYSTEM PRIVATE "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
+		target_link_directories(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARY_DIRS}")
+		target_link_libraries(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARIES}")
+		target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
+		target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
+	endfunction()
+	if(PKG_CONFIG_FOUND)
+		#
+		# Link anything that `pkg-config` can't resolve on its own.
+		#
+		target_link_libraries(${GAME_EXECUTABLE} PRIVATE
+			m
+			${CMAKE_DL_LIBS}
+		)
+		#
+		# Let `pkg-config` do its magic.
+		#
+		set(DEPENDENCIES
+			sdl2
+			SDL2_image
+			SDL2_mixer
+			sqlite3
+		)
+		foreach(DEPENDENCY ${DEPENDENCIES})
+			target_pkg_config_import(${GAME_EXECUTABLE} ${DEPENDENCY})
+		endforeach()
+	else()
+		message(FATAL_ERROR "On Unix platforms, pkg-config is required for getting dependencies.")
+	endif()
 else()
 	#
 	# We *could* check for minimum version requirements here, but vcpkg packages don't have any

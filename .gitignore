@@ -14,7 +14,9 @@ tags
 *.exe
 *.o
 *.so
+/out/*
 /.vs/*
+CMakeSettings.json
 /.vscode/*
 /build*
 CMakeLists.txt.user
