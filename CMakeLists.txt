@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 project(shiromino
 	DESCRIPTION "A fast-paced puzzle game with roots in the arcade."
 	HOMEPAGE_URL "https://github.com/shiromino/shiromino"
@@ -319,7 +319,29 @@ endif()
 #
 # Installation
 #
-install(DIRECTORY data DESTINATION usr/share/${PROJECT_NAME})
-install(FILES LICENSE.md DESTINATION usr/share/licenses/${PROJECT_NAME})
-install(FILES shiromino.ini TYPE SYSCONF)
-install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION usr/bin)
+option(PORTABLE_INSTALL "Selects whether the install should be \"portable\", where all files are bundled together in one distributable folder/package.")
+if(${PORTABLE_INSTALL})
+	install(DIRECTORY data DESTINATION .)
+	install(FILES LICENSE.md DESTINATION .)
+	install(FILES shiromino.ini.portable RENAME shiromino.ini DESTINATION .)
+	install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION .)
+	if(APPLE)
+		include(cmake/InstallRuntimeDependenciesMacOS.cmake)
+		set(APPLE_CERT_NAME - CACHE STRING "The name of the Apple supplied code signing certificate to use. Defaults to adhoc signing (\"-\")")
+		InstallRuntimeDependenciesMacOS(
+			${GAME_EXECUTABLE}
+			"${CMAKE_INSTALL_PREFIX}"
+			"${CMAKE_INSTALL_PREFIX}"
+			libs
+			"${APPLE_CERT_NAME}"
+			cmake/macos-entitlements-adhoc.xml
+			cmake/macos-entitlements-identity-required.xml
+		)
+	endif()
+elseif(UNIX OR MINGW)
+	include(GNUInstallDirs)
+	install(DIRECTORY data DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")
+	install(FILES LICENSE.md DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")
+	install(FILES shiromino.ini TYPE SYSCONF)
+	install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()

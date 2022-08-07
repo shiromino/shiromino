@@ -1,8 +1,13 @@
-# Source code
-Our source code, found in the `src` directory, is licensed under the following conditions:
+# Source files
+Our source files include the following:
+
+- The entire contents of the `.github`, `cmake`, `doc`, `include`, `packages`, and `src` directories.
+- The files in the top level directory `.clang-format`, `.editorconfig`, `.gitignore`, `CHANGELOG.md`, `CMakeLists.txt`, `LICENSE.md`, `README.md`, `shiromino.ini`, and `shiromino.ini.portable`.
+
+Our source files are licensed under the following conditions:
 
 ## The MIT License (MIT)
-Copyright © 2015–2021 [The shiromino team](https://github.com/shiromino/shiromino/graphs/contributors)
+Copyright © 2015–2022 [The shiromino team](https://github.com/shiromino/shiromino/graphs/contributors)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
