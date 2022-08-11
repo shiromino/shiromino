@@ -5,14 +5,17 @@
 #include "PDINI.h"
 #include <filesystem>
 #include <string>
+
 namespace Shiro {
     struct Settings {
         Settings();
+
         void setDefaults();
         bool init(const int argc, const char* const argv[]);
         PDINI::INI read(const std::string &filename);
         void resolvePaths(PDINI::INI configuration, const std::filesystem::path &executablePath, const std::filesystem::path &cwd);
         void write() const;
+
         KeyBindings keyBindings;
         ControllerBindings controllerBindings;
         float videoScale;

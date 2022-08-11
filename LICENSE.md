@@ -2,7 +2,7 @@
 Our source files include the following:
 
 - The entire contents of the `.github`, `cmake`, `doc`, `include`, `packages`, and `src` directories.
-- The files in the top level directory `.clang-format`, `.editorconfig`, `.gitignore`, `CHANGELOG.md`, `CMakeLists.txt`, `LICENSE.md`, `README.md`, `shiromino.ini`, and `shiromino.ini.portable`.
+- The files in the top level directory `.clang-format`, `.editorconfig`, `.gitignore`, `CHANGELOG.md`, `CMakeLists.txt`, `LICENSE.md`, `README.md`, and `shiromino.ini`.
 
 Our source files are licensed under the following conditions:
 

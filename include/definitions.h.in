@@ -1,2 +1,2 @@
 #pragma once
-#cmakedefine ENABLE_OPENGL_INTERPOLATION
+#cmakedefine PORTABLE

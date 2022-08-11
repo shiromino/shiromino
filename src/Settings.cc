@@ -3,6 +3,7 @@
 #include "OS.h"
 #include "PDINI.h"
 #include "Records.h"
+#include "definitions.h"
 #include "SDL.h"
 #include "SDL_mixer.h"
 #include <algorithm>
@@ -14,8 +15,12 @@
 #include <iostream>
 #include <optional>
 #include <sstream>
+
 namespace fs = std::filesystem;
+
 const auto applicationName = "shiromino";
+
+#ifndef PORTABLE
 std::string env(const char *string) {
     const auto value = std::getenv(string);
     return value
@@ -40,10 +45,14 @@ const auto xdgCacheHome = env("XDG_CACHE_HOME").empty()
 const auto xdgCacheHomeDefault = env("HOME").empty()
         ? std::nullopt
         : std::optional(fs::path(env("HOME")) / ".cache" / applicationName);
+#endif
+
 static void printHelp(const char* const executableName);
+
 Shiro::Settings::Settings() {
     setDefaults();
 }
+
 void Shiro::Settings::setDefaults() {
     keyBindings = KeyBindings();
     controllerBindings = ControllerBindings();
@@ -59,17 +68,21 @@ void Shiro::Settings::setDefaults() {
     sampleSize = 1024;
     playerName = "ARK";
 }
-void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &executableDirectory, const fs::path &cwd) {
+
+void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &basePath, const fs::path &cwd) {
     std::string configurationCachePath;
+
     if (!configuration.get("PATHS", "CACHE_PATH", configurationCachePath)) {
         const std::vector<std::optional<fs::path>> cachePrefixes = {
-            executableDirectory,
-            fs::weakly_canonical(executableDirectory / ".." / "var" / "cache" / applicationName),
+            basePath,
+            #ifndef PORTABLE
+            fs::weakly_canonical(basePath / ".." / "var" / "cache" / applicationName),
             cwd,
             xdgCacheHome,
             xdgCacheHomeDefault,
             fs::path("/usr/local/var/cache") / applicationName,
             fs::path("/var/cache") / applicationName
+            #endif
         };
         for (const auto &prefix : cachePrefixes) {
             if (!prefix) {
@@ -81,12 +94,15 @@ void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &exe
                 break;
             }
         }
+
         if (cachePath.empty()) {
             std::cerr << "Couldn't determine cache directory. Using default value." << std::endl;
             const std::vector<std::optional<fs::path>> paths = {
+                #ifndef PORTABLE
                 xdgCacheHome,
                 xdgCacheHomeDefault,
-                executableDirectory
+                #endif
+                basePath
             };
             for (const auto &path : paths) {
                 if (!path) {
@@ -101,13 +117,15 @@ void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &exe
     std::string configurationSharePath;
     if (!configuration.get("PATHS", "SHARE_PATH", configurationSharePath)) {
         const std::vector<std::optional<fs::path>> sharePrefixes = {
-            executableDirectory,
-            fs::weakly_canonical(executableDirectory / ".." / "share" / applicationName),
+            basePath,
+            #ifndef PORTABLE
+            fs::weakly_canonical(basePath / ".." / "share" / applicationName),
             cwd,
             xdgDataHome,
             xdgDataHomeDefault,
             fs::path("/usr/local/share") / applicationName,
             fs::path("/usr/share") / applicationName
+            #endif
         };
         for (const auto &prefix : sharePrefixes) {
             if (!prefix) {
@@ -119,25 +137,32 @@ void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &exe
                 break;
             }
         }
+
         if (sharePath.empty()) {
             throw std::logic_error("Unable to determine share path.");
         }
     }
 }
+
 bool Shiro::Settings::init(const int argc, const char *const argv[]) {
     const auto cwd = fs::current_path();
-    const auto executableDirectory = OS::getExecutablePath().remove_filename();
+    //const auto executableDirectory = OS::getExecutablePath().remove_filename();
+    const auto& basePath = OS::getBasePath();
     PDINI::INI configuration;
+
     if (argc == 1) {
         PDINI::INI configuration;
+
         const std::vector<std::optional<fs::path>> configurationPrefixes = {
-            executableDirectory,
-            fs::weakly_canonical(executableDirectory / ".." / "etc"),
+            basePath,
+            #ifndef PORTABLE
+            fs::weakly_canonical(basePath / ".." / "etc"),
             cwd,
             xdgConfigHome,
             xdgConfigHomeDefault,
             "/usr/local/etc/",
             "/etc"
+            #endif
         };
         for (const auto &prefix : configurationPrefixes) {
             if (!prefix) {
@@ -149,12 +174,15 @@ bool Shiro::Settings::init(const int argc, const char *const argv[]) {
                 break;
             }
         }
+
         if (configurationPath.empty()) {
             std::cerr << "Couldn't find configuration file. Creating new configuration file." << std::endl;
             const std::vector<std::optional<fs::path>> paths = {
+                #ifndef PORTABLE
                 xdgConfigHome,
                 xdgConfigHomeDefault,
-                executableDirectory
+                #endif
+                basePath
             };
             bool success = false;
             for (const auto &path : paths) {
@@ -162,7 +190,7 @@ bool Shiro::Settings::init(const int argc, const char *const argv[]) {
                     continue;
                 }
                 if (fs::exists(path.value())) {
-                    configurationPath = path.value();
+                    configurationPath = path.value() / "shiromino.ini";
                     setDefaults();
                     write();
                     success = true;
@@ -173,7 +201,8 @@ bool Shiro::Settings::init(const int argc, const char *const argv[]) {
                 throw std::logic_error("Unable to create new configuration file.");
             }
         }
-        resolvePaths(configuration, executableDirectory, cwd);
+
+        resolvePaths(configuration, basePath, cwd);
     }
     /* TODO: Use an argument handler library here */
     else if (argc == 3) {
@@ -181,7 +210,7 @@ bool Shiro::Settings::init(const int argc, const char *const argv[]) {
         const auto secondArgument = std::string(argv[2]);
         if (firstArgument == "--configuration-file" || firstArgument == "-c") {
             configurationPath = fs::path(secondArgument);
-            resolvePaths(read(configurationPath.string()), executableDirectory, cwd);
+            resolvePaths(read(configurationPath.string()), basePath, cwd);
         }
         else {
             printHelp(argv[0]);
@@ -194,12 +223,14 @@ bool Shiro::Settings::init(const int argc, const char *const argv[]) {
     }
     return true;
 }
+
 PDINI::INI Shiro::Settings::read(const std::string &filename) {
     if (!fs::exists(filename)) {
         std::stringstream ss;
         ss << "Couldn't find configuration file: `" << filename << "`";
         throw std::logic_error(ss.str());
     }
+
     PDINI::INI configuration;
     auto [wasReadSuccessful, lineNumber] = configuration.read(filename);
     if (lineNumber > 0) {
@@ -208,11 +239,13 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
     if (!wasReadSuccessful) {
         std::cerr << "Failed opening configuration `" << filename << "`." << std::endl;
     }
+
     this->keyBindings.read(configuration);
     this->controllerBindings.read(configuration);
-    fs::path specifiedCachePath;
     auto relativeTo = configurationPath;
     relativeTo.remove_filename();
+
+    fs::path specifiedCachePath;
     if (configuration.get("PATHS", "CACHE_PATH", specifiedCachePath)) {
         if (specifiedCachePath.is_relative()) {
             this->cachePath = fs::canonical(relativeTo / specifiedCachePath);
@@ -221,6 +254,7 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
             this->cachePath = specifiedCachePath;
         }
     }
+
     fs::path specifiedSharePath;
     if (configuration.get("PATHS", "SHARE_PATH", specifiedSharePath)) {
         if (specifiedSharePath.is_relative()) {
@@ -230,58 +264,74 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
             this->sharePath = specifiedSharePath;
         }
     }
+
     unsigned int masterVolume;
     if (configuration.get("AUDIO", "MASTER_VOLUME", masterVolume)) {
         this->masterVolume = std::clamp(masterVolume, 0u, 100u);
     }
+
     unsigned int sfxVolume;
     if (configuration.get("AUDIO", "SFX_VOLUME", sfxVolume)) {
         this->sfxVolume = std::clamp(sfxVolume, 0u, 100u);
     }
+
     unsigned int musicVolume;
     if (configuration.get("AUDIO", "MUSIC_VOLUME", musicVolume)) {
         this->musicVolume = std::clamp(musicVolume, 0u, 100u);
     }
+
     unsigned int samplingRate;
     if (configuration.get("AUDIO", "SAMPLING_RATE", samplingRate)) {
         this->samplingRate = std::clamp(samplingRate, 0u, 48000u);
     }
+
     unsigned int sampleSize;
     if (configuration.get("AUDIO", "SAMPLE_SIZE", sampleSize)) {
         this->sampleSize = std::clamp(sampleSize, 0u, 4096u);
     }
+
     float videoScale;
     if (configuration.get("SCREEN", "VIDEO_SCALE", videoScale)) {
         const auto epsilon = std::numeric_limits<decltype(videoScale)>::epsilon();
         this->videoScale = std::max(epsilon, videoScale);
     }
+
     int videoStretch;
     if (configuration.get("SCREEN", "VIDEO_STRETCH", videoStretch)) {
         this->videoStretch = videoStretch;
     }
+
     int fullscreen;
     if (configuration.get("SCREEN", "FULL_SCREEN", fullscreen)) {
         this->fullscreen = !!fullscreen;
     }
+
     int vsync;
     if (configuration.get("SCREEN", "V_SYNC", vsync)) {
         this->vsync = !!vsync;
     }
+
     int vsyncTimestep;
     if (configuration.get("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep)) {
         this->vsyncTimestep = !!vsyncTimestep;
     }
+
     std::string playerName;
     if (configuration.get("ACCOUNT", "PLAYER_NAME", playerName)) {
         this->playerName = playerName;
     }
+
     this->configurationPath = filename;
+
     return configuration;
 }
+
 void Shiro::Settings::write() const {
     PDINI::INI configuration;
+
     keyBindings.write(configuration);
     controllerBindings.write(configuration);
+
     configuration.set("ACCOUNT", "PLAYER_NAME", playerName);
     configuration.set("AUDIO", "MASTER_VOLUME", masterVolume);
     configuration.set("AUDIO", "MUSIC_VOLUME", musicVolume);
@@ -293,13 +343,10 @@ void Shiro::Settings::write() const {
     configuration.set("SCREEN", "VIDEO_STRETCH", videoStretch);
     configuration.set("SCREEN", "V_SYNC", vsync);
     configuration.set("SCREEN", "V_SYNC_TIME_STEP", vsyncTimestep);
-    // Unfortunately, Microsoft left operator std::string() out of
-    // fs::path. We can still get by with
-    // fs::path::string(), though.
-    // TODO: If operator std::string() gets added to MSVC, change this to use
-    // that operator.
+
     configuration.write(configurationPath.string());
 }
+
 static void printHelp(const char* executableName) {
     std::cerr << "Usage: " << executableName << " --configuration-file <configuration file>" << std::endl;
 }

@@ -1,60 +1,44 @@
-function(InstallRuntimeDependenciesMacOS
-        EXE
-        EXE_INSTALLDIR
-        LIBS_INSTALLDIR
-        LIBDIR
-        APPLE_CERT_NAME
-        ENTITLEMENTS_ADHOC
-        ENTITLEMENTS_IDENTITY_REQUIRED
+set_target_properties(${GAME_EXECUTABLE} PROPERTIES
+        INSTALL_RPATH @executable_path
 )
-        set_target_properties(${EXE} PROPERTIES
-                INSTALL_RPATH @executable_path
-        )
-        include(CMakeFindBinUtils)
-        install(CODE
-                "
-                set(POST_EXCLUDES
-                \"^/usr/lib\"
-                \"^/System/Library/Frameworks\"
-                )
+include(CMakeFindBinUtils)
+install(CODE "
 
-                file(GET_RUNTIME_DEPENDENCIES
-                        EXECUTABLES \$<TARGET_FILE:${EXE}>
-                        POST_EXCLUDE_REGEXES
-                                \${POST_EXCLUDES}
-                        RESOLVED_DEPENDENCIES_VAR RESOLVED_DEPENDENCIES
-                        UNRESOLVED_DEPENDENCIES_VAR UNRESOLVED_DEPENDENCIES
-                )
+set(POST_EXCLUDES
+\"^/usr/lib\"
+\"^/System/Library/Frameworks\"
+)
 
-                file(INSTALL
-                        DESTINATION \"${LIBS_INSTALLDIR}/${LIBDIR}\"
-                        TYPE SHARED_LIBRARY
-                        FOLLOW_SYMLINK_CHAIN
-                        FILES \${RESOLVED_DEPENDENCIES}
-                )
+file(GET_RUNTIME_DEPENDENCIES
+        EXECUTABLES \$<TARGET_FILE:${GAME_EXECUTABLE}>
+        POST_EXCLUDE_REGEXES
+                \${POST_EXCLUDES}
+        RESOLVED_DEPENDENCIES_VAR RESOLVED_DEPENDENCIES
+        UNRESOLVED_DEPENDENCIES_VAR UNRESOLVED_DEPENDENCIES
+)
 
-                set(CHANGES \"\")
-                set(LIBS \"\")
-                foreach(RESOLVED_DEPENDENCY \${RESOLVED_DEPENDENCIES})
-                        string(REGEX REPLACE \"^.*/([^/]+)\" \"\\\\1\" LIB \"\${RESOLVED_DEPENDENCY}\")
-                        list(APPEND CHANGES -change \"\${RESOLVED_DEPENDENCY}\" \"@rpath/${LIBDIR}/\${LIB}\")
-                        list(APPEND LIBS \"\${LIB}\")
-                endforeach()
+file(INSTALL
+        DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app/Contents/libs\"
+        TYPE SHARED_LIBRARY
+        FOLLOW_SYMLINK_CHAIN
+        FILES \${RESOLVED_DEPENDENCIES}
+)
 
-                if(\"${APPLE_CERT_NAME}\" STREQUAL -)
-                        set(ENTITLEMENTS \"${ENTITLEMENTS_ADHOC}\")
-                else()
-                        set(ENTITLEMENTS \"${ENTITLEMENTS_IDENTITY_REQUIRED}\")
-                endif()
+set(CHANGES \"\")
+set(LIBS \"\")
+foreach(RESOLVED_DEPENDENCY \${RESOLVED_DEPENDENCIES})
+        string(REGEX REPLACE \"^.*/([^/]+)\" \"\\\\1\" LIB \"\${RESOLVED_DEPENDENCY}\")
+        list(APPEND CHANGES -change \"\${RESOLVED_DEPENDENCY}\" \"@rpath/../libs/\${LIB}\")
+        list(APPEND LIBS \"\${LIB}\")
+endforeach()
 
-                foreach(LIB \${LIBS})
-                        execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} \${CHANGES} -id \"@rpath/${LIBDIR}/\${LIB}\" \"${LIBS_INSTALLDIR}/${LIBDIR}/\${LIB}\")
-                        execute_process(COMMAND xcrun codesign --remove-signature \"${LIBS_INSTALLDIR}/${LIBDIR}/\${LIB}\")
-                        execute_process(COMMAND xcrun codesign -f -o runtime --timestamp -s \"${APPLE_CERT_NAME}\" --entitlements \"\${ENTITLEMENTS}\" \"${LIBS_INSTALLDIR}/${LIBDIR}/\${LIB}\")
-                endforeach()
-                execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} \${CHANGES} \"${EXE_INSTALLDIR}/${EXE}\")
-                execute_process(COMMAND xcrun codesign --remove-signature \"${EXE_INSTALLDIR}/${EXE}\")
-                execute_process(COMMAND xcrun codesign -f -o runtime --timestamp -s \"${APPLE_CERT_NAME}\" --entitlements \"\${ENTITLEMENTS}\" \"${EXE_INSTALLDIR}/${EXE}\")
-                "
-        )
-endfunction()
+foreach(LIB \${LIBS})
+        execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} \${CHANGES} -id \"@rpath/../libs/\${LIB}\" \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app/Contents/libs/\${LIB}\")
+        execute_process(COMMAND xcrun codesign --remove-signature \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app/Contents/libs/\${LIB}\")
+        execute_process(COMMAND xcrun codesign -f -o runtime --timestamp -s \"${CPACK_APPLE_CERT_NAME}\" --entitlements \"${CPACK_ENTITLEMENTS_FILE}\" \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app/Contents/libs/\${LIB}\")
+endforeach()
+execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} \${CHANGES} \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app/Contents/MacOS/${GAME_EXECUTABLE}\")
+execute_process(COMMAND xcrun codesign --remove-signature \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app\")
+execute_process(COMMAND xcrun codesign -f -o runtime --timestamp -s \"${CPACK_APPLE_CERT_NAME}\" --entitlements \"${CPACK_ENTITLEMENTS_FILE}\" \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app\")
+
+")

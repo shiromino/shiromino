@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 project(shiromino
 	DESCRIPTION "A fast-paced puzzle game with roots in the arcade."
 	HOMEPAGE_URL "https://github.com/shiromino/shiromino"
@@ -9,10 +9,18 @@ set(GAME_EXECUTABLE ${PROJECT_NAME})
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(PORTABLE "Selects whether the build should be \"portable\", where all files are bundled together in one distributable folder/package.")
+
 #
 # Basic project layout
 #
-add_executable(${GAME_EXECUTABLE})
+if(PORTABLE AND APPLE)
+	add_executable(${GAME_EXECUTABLE} MACOSX_BUNDLE "${CMAKE_SOURCE_DIR}/icon.icns")
+	set_source_files_properties("${CMAKE_SOURCE_DIR}/icon.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+else()
+	add_executable(${GAME_EXECUTABLE})
+endif()
 target_include_directories(${GAME_EXECUTABLE} PRIVATE src)
 target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
 #
@@ -319,24 +327,49 @@ endif()
 #
 # Installation
 #
-option(PORTABLE_INSTALL "Selects whether the install should be \"portable\", where all files are bundled together in one distributable folder/package.")
-if(${PORTABLE_INSTALL})
-	install(DIRECTORY data DESTINATION .)
-	install(FILES LICENSE.md DESTINATION .)
-	install(FILES shiromino.ini.portable RENAME shiromino.ini DESTINATION .)
-	install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION .)
+if(PORTABLE)
+	install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})
+	install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE})
+	install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE})
+
 	if(APPLE)
-		include(cmake/InstallRuntimeDependenciesMacOS.cmake)
-		set(APPLE_CERT_NAME - CACHE STRING "The name of the Apple supplied code signing certificate to use. Defaults to adhoc signing (\"-\")")
-		InstallRuntimeDependenciesMacOS(
-			${GAME_EXECUTABLE}
-			"${CMAKE_INSTALL_PREFIX}"
-			"${CMAKE_INSTALL_PREFIX}"
-			libs
-			"${APPLE_CERT_NAME}"
-			cmake/macos-entitlements-adhoc.xml
-			cmake/macos-entitlements-identity-required.xml
+		#set_target_properties(${GAME_EXECUTABLE} PROPERTIES MACOSX_BUNDLE TRUE)
+		#target_sources(${GAME_EXECUTABLE} PRIVATE icon.icns)
+		install(TARGETS ${GAME_EXECUTABLE} BUNDLE DESTINATION ${GAME_EXECUTABLE})
+		set(MACOSX_BUNDLE_BUNDLE_NAME ${GAME_EXECUTABLE})
+		set(MACOSX_BUNDLE_GUI_IDENTIFIER io.github.shiromino.shiromino)
+		set(MACOSX_BUNDLE_ICON_FILE icon)
+		set(MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}")
+		set(MACOSX_BUNDLE_COPYRIGHT "Copyright © 2015–2022 The shiromino team")
+		set(SDL_FILESYSTEM_BASE_DIR_TYPE parent)
+		set_target_properties(${GAME_EXECUTABLE} PROPERTIES
+			BUNDLE True
+			MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in"
 		)
+
+		set(CPACK_APPLE_CERT_NAME - CACHE STRING "The name of the Apple supplied code signing certificate to use. Defaults to adhoc signing (\"-\")")
+
+                if(CPACK_APPLE_CERT_NAME STREQUAL -)
+                        set(CPACK_ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/cmake/macos-entitlements-adhoc.xml")
+                else()
+                        set(CPACK_ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/cmake/macos-entitlements-identity-required.xml")
+                endif()
+
+		set(CPACK_DMG_VOLUME_NAME ${GAME_EXECUTABLE})
+		set(CPACK_PACKAGE_VENDOR "The ${PROJECT_NAME} team")
+
+		set(CPACK_PACKAGE_FILE_NAME "${GAME_EXECUTABLE}-macos")
+		foreach(ARCH ${CMAKE_OSX_ARCHITECTURES})
+			string(APPEND CPACK_PACKAGE_FILE_NAME "-${ARCH}")
+		endforeach()
+		string(APPEND CPACK_PACKAGE_FILE_NAME "-${PROJECT_VERSION}")
+
+		set(CPACK_GENERATOR DragNDrop)
+		set(CPACK_POST_BUILD_SCRIPTS "${CMAKE_SOURCE_DIR}/cmake/CPackPostBuildMacOS.cmake")
+		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMacOS.cmake" REQUIRED)
+		include(CPack)
+	else()
+		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION ${GAME_EXECUTABLE})
 	endif()
 elseif(UNIX OR MINGW)
 	include(GNUInstallDirs)

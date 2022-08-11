@@ -1,4 +1,5 @@
 #include "OS.h"
+#include "SDL.h"
 #ifdef _WIN32
 #include <windows.h>
 #elif __APPLE__
@@ -6,18 +7,41 @@
 #include <sys/syslimits.h>
 #endif
 #include <filesystem>
+
 namespace fs = std::filesystem;
+
 fs::path Shiro::OS::getExecutablePath() {
 #ifdef _WIN32
+
     char path[MAX_PATH];
     GetModuleFileName(nullptr, path, MAX_PATH);
     return fs::canonical(std::string(path));
 #elif __APPLE__
+
     char path[PATH_MAX];
     uint32_t size = PATH_MAX;
     _NSGetExecutablePath(path, &size);
     return fs::canonical(std::string(path));
 #else
+
     return fs::canonical("/proc/self/exe");
 #endif
+}
+
+const fs::path& Shiro::OS::getBasePath() {
+    static char* basePathCStr = SDL_GetBasePath();
+    static fs::path basePath;
+
+    if (basePath.empty()) {
+        if (!basePathCStr) {
+            throw std::logic_error("Failed to get SDL base path.");
+        }
+        else {
+            basePath = fs::path(basePathCStr);
+            SDL_free(basePathCStr);
+            basePathCStr = NULL;
+        }
+    }
+
+    return basePath;
 }
