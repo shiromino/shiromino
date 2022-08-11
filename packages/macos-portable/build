@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ -z "$1" ] ; then
+        echo 'Usage: build (build directory) [Apple certificate name]'
+        exit 1
+fi
+
+if [ -z "$2" ] ; then
+        CPACK_APPLE_CERT_NAME=-
+else
+        CPACK_APPLE_CERT_NAME="$2"
+fi
+
+cmake -B "$1" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES='x86_64;arm64' -DPORTABLE=TRUE -DCPACK_APPLE_CERT_NAME="$CPACK_APPLE_CERT_NAME" || exit 1
+cmake --build "$1" -j "$(sysctl -n hw.ncpu)" --target package || exit 1
