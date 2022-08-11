@@ -264,14 +264,14 @@ else()
 	#
 	find_package(SDL2 REQUIRED)
 	find_package(sdl2-image REQUIRED)
-	find_package(sdl2-mixer REQUIRED)
+	find_package(SDL2_mixer REQUIRED)
 	find_package(SQLite3 REQUIRED)
 	target_link_libraries(${GAME_EXECUTABLE}
 		PUBLIC
 			SDL2::SDL2
 			SDL2::SDL2main
 			SDL2::SDL2_image
-			SDL2::SDL2_mixer
+			SDL2_mixer::SDL2_mixer
 			SQLite::SQLite3
 	)
 endif()
@@ -328,14 +328,12 @@ endif()
 # Installation
 #
 if(PORTABLE)
-	install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})
-	install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE})
-	install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE})
-
 	if(APPLE)
-		#set_target_properties(${GAME_EXECUTABLE} PROPERTIES MACOSX_BUNDLE TRUE)
-		#target_sources(${GAME_EXECUTABLE} PRIVATE icon.icns)
+		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})
+		install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE})
+		install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE})
 		install(TARGETS ${GAME_EXECUTABLE} BUNDLE DESTINATION ${GAME_EXECUTABLE})
+
 		set(MACOSX_BUNDLE_BUNDLE_NAME ${GAME_EXECUTABLE})
 		set(MACOSX_BUNDLE_GUI_IDENTIFIER io.github.shiromino.shiromino)
 		set(MACOSX_BUNDLE_ICON_FILE icon)
@@ -368,8 +366,20 @@ if(PORTABLE)
 		set(CPACK_POST_BUILD_SCRIPTS "${CMAKE_SOURCE_DIR}/cmake/CPackPostBuildMacOS.cmake")
 		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMacOS.cmake" REQUIRED)
 		include(CPack)
+	elseif(WIN32 AND MSVC)
+		install(DIRECTORY data DESTINATION .)
+		install(FILES LICENSE.md DESTINATION .)
+		install(FILES shiromino.ini DESTINATION .)
+		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION .)
+
+		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMSVC.cmake" REQUIRED)
+		set(CPACK_GENERATOR ZIP)
+		include(CPack)
 	else()
-		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION ${GAME_EXECUTABLE})
+		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})
+		install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE})
+		install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE})
+		install(TARGETS ${GAME_EXECUTABLE} BUNDLE DESTINATION ${GAME_EXECUTABLE})
 	endif()
 elseif(UNIX OR MINGW)
 	include(GNUInstallDirs)

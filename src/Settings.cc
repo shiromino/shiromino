@@ -146,7 +146,6 @@ void Shiro::Settings::resolvePaths(PDINI::INI configuration, const fs::path &bas
 
 bool Shiro::Settings::init(const int argc, const char *const argv[]) {
     const auto cwd = fs::current_path();
-    //const auto executableDirectory = OS::getExecutablePath().remove_filename();
     const auto& basePath = OS::getBasePath();
     PDINI::INI configuration;
 
@@ -292,7 +291,7 @@ PDINI::INI Shiro::Settings::read(const std::string &filename) {
 
     float videoScale;
     if (configuration.get("SCREEN", "VIDEO_SCALE", videoScale)) {
-        const auto epsilon = std::numeric_limits<decltype(videoScale)>::epsilon();
+        constexpr auto epsilon = std::numeric_limits<decltype(videoScale)>::epsilon();
         this->videoScale = std::max(epsilon, videoScale);
     }
 

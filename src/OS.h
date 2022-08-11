@@ -4,6 +4,5 @@
 namespace fs = std::filesystem;
 
 namespace Shiro::OS {
-    std::filesystem::path getExecutablePath();
     const std::filesystem::path& getBasePath();
 }
