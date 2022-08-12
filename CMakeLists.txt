@@ -18,6 +18,8 @@ option(PORTABLE "Selects whether the build should be \"portable\", where all fil
 if(PORTABLE AND APPLE)
 	add_executable(${GAME_EXECUTABLE} MACOSX_BUNDLE "${CMAKE_SOURCE_DIR}/icon.icns")
 	set_source_files_properties("${CMAKE_SOURCE_DIR}/icon.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+elseif(WIN32 AND MSVC)
+	add_executable(${GAME_EXECUTABLE} "${CMAKE_SOURCE_DIR}/cmake/icon.rc")
 else()
 	add_executable(${GAME_EXECUTABLE})
 endif()
