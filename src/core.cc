@@ -68,7 +68,6 @@ CoreState::CoreState(Shiro::Settings& settings) :
     bg(screen)
 {
     fps = Shiro::RefreshRates::menu;
-    // keyquit = SDLK_F11;
     text_editing = 0;
     text_insert = NULL;
     text_backspace = NULL;
@@ -838,6 +837,7 @@ bool CoreState::process_events() {
     check(c); \
     check(d); \
     check(escape);
+    //if (frames == 0) SDL_SetWindowFullscreen(screen.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     while (SDL_PollEvent(&event)) {
         const auto currentDeadZone = Shiro::ControllerBindings::MAXIMUM_DEAD_ZONE * controllerBindings.deadZone;
         switch (event.type) {
@@ -1061,7 +1061,6 @@ bool CoreState::process_events() {
                     if (settings.fullscreen) {
                         settings.fullscreen = false;
                         SDL_SetWindowFullscreen(screen.window, 0);
-                        //SDL_SetWindowSize(screen.window, static_cast<int>(float(screen.logicalW) * settings.videoScale), static_cast<int>(float(screen.logicalH) * settings.videoScale));
                         SDL_SetWindowSize(screen.window, screen.logicalW, screen.logicalH);
 
                         if(md != nullptr)
@@ -1071,7 +1070,7 @@ bool CoreState::process_events() {
                     }
                     else {
                         settings.fullscreen = true;
-                        SDL_SetWindowSize(screen.window, screen.logicalW, screen.logicalH);
+                        keyMod = SDL_GetModState();
                         SDL_WindowFlags flags = (keyMod & KMOD_SHIFT) ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_FULLSCREEN_DESKTOP;
                         if (SDL_SetWindowFullscreen(screen.window, flags) < 0) {
                             std::cout << "SDL_SetWindowFullscreen(): Error: " << SDL_GetError() << std::endl;
@@ -1275,7 +1274,7 @@ bool CoreState::process_events() {
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    if(md != nullptr)
+                  if(md != nullptr)
                     {
                         md->target_tex_update = true;
                     }
@@ -1296,6 +1295,23 @@ bool CoreState::process_events() {
     }
 
     SDL_GetWindowSize(screen.window, &windowW, &windowH);
+
+    // BUG: For some reason, switching to fullscreen desktop with F11 on Linux
+    // with SDL 2.0.22 doesn't reset the viewport size, but doing it here
+    // manually seems to get the expected behavior. Setting the viewport in the
+    // F11-handling code also doesn't work, it seems it must be done after all
+    // events have been polled. Starting up fullscreen desktop or even manually
+    // switching before entering the event loop also seems to work, which could
+    // help with debugging SDL. Additionally, in testing it seems the viewport
+    // size of a windowed window is carried over to fullscreen desktop, so
+    // resizing the window changes the fullscreen desktop viewport to the
+    // resized window viewport size.
+    if (settings.fullscreen && screen.w != windowW || screen.h != windowH) {
+        SDL_Rect viewport = {
+            0, 0, windowW, windowH
+        };
+        SDL_RenderSetViewport(screen.renderer, &viewport);
+    }
 
     if(settings.videoStretch)
     {
