@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <sstream>
+#include <exception>
 #include "SDL.h"
 #include "SDL_image.h"
 
@@ -27,6 +28,10 @@ Window::Window(CoreState *origin, std::string title, BitFont *titleFont, std::fu
 
     {
         void* pixels = malloc(640 * 480 * sizeof(uint32_t));
+        if(!pixels)
+        {
+            throw std::bad_alloc();
+        }
         memset(pixels, 0, 640 * 480 * sizeof(uint32_t));
         SDL_UpdateTexture(canvas, NULL, pixels, 640 * sizeof(uint32_t));
         free(pixels);

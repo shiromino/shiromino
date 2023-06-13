@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <exception>
 Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label)
 {
     Shiro::MenuOption m = Shiro::create_menu_option(Shiro::ElementType::MENU_GAME_MULTIOPT, NULL, label);
@@ -46,21 +47,26 @@ Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int
     }
 
     d6->args = (Shiro::GameArguments *)malloc(num_sections * sizeof(Shiro::GameArguments));
+    if(!d6->args)
+    {
+        throw std::bad_alloc();
+    }
     assert(d6->args != nullptr);
     for (int i = 0; i < num_sections; i++) {
         d6->args[i].num = 4;
         d6->args[i].ptrs = (void **)malloc(4 * sizeof(void *));
-        assert(d6->args[i].ptrs != nullptr);
-        d6->args[i].ptrs[0] = malloc(sizeof(CoreState *));
-        d6->args[i].ptrs[1] = malloc(sizeof(int));
-        d6->args[i].ptrs[2] = malloc(sizeof(unsigned int));
-        d6->args[i].ptrs[3] = malloc(sizeof(char *));
-        assert(
-            d6->args[i].ptrs[0] != nullptr &&
-            d6->args[i].ptrs[1] != nullptr &&
-            d6->args[i].ptrs[2] != nullptr &&
-            d6->args[i].ptrs[3] != nullptr
-        );
+        if(!d6->args[i].ptrs)
+        {
+            throw std::bad_alloc();
+        }
+        if (
+            !(d6->args[i].ptrs[0] = malloc(sizeof(CoreState*))) ||
+            !(d6->args[i].ptrs[1] = malloc(sizeof(int))) ||
+            !(d6->args[i].ptrs[2] = malloc(sizeof(unsigned int))) ||
+            !(d6->args[i].ptrs[3] = malloc(sizeof(char*))))
+        {
+            throw std::bad_alloc();
+        }
 
         *(CoreState **)(d6->args[i].ptrs[0]) = cs;
         *(int *)(d6->args[i].ptrs[1]) = 100 * i;
@@ -439,7 +445,10 @@ game_t *menu_create(CoreState *cs)
         return NULL;
 
     game_t *g = (game_t *)malloc(sizeof(game_t));
-    assert(g != nullptr);
+    if(!g)
+    {
+        throw std::bad_alloc();
+    }
 
     g->origin = cs;
     g->field = NULL;
@@ -1134,7 +1143,10 @@ int mload_main(game_t *g, int val)
     d6->labels.push_back("ACID RAIN");
     assert(d6->args != nullptr);
     void* argsTemp = realloc(d6->args, d6->num * sizeof(Shiro::GameArguments));
-    assert(argsTemp != nullptr);
+    if(!argsTemp)
+    {
+        throw std::bad_alloc();
+    }
     d6->args = (Shiro::GameArguments*)argsTemp;
 
     d6->args[d6->num - 1].num = 4;
@@ -1155,22 +1167,23 @@ int mload_main(game_t *g, int val)
 
     d6->num++;
     d6->labels.push_back("ULTIMATE ACID RAIN");
-    assert(d6->args != nullptr);
     void* argsTemp2 = realloc(d6->args, d6->num * sizeof(Shiro::GameArguments));
-    assert(argsTemp2 != nullptr);
+    if(!argsTemp2)
+    {
+        throw std::bad_alloc();
+    }
     d6->args = (Shiro::GameArguments*)argsTemp2;
 
     d6->args[d6->num - 1].num = 4;
-    d6->args[d6->num - 1].ptrs = (void **)malloc(4 * sizeof(void *));
-    assert(d6->args[d6->num - 1].ptrs != nullptr);
-    d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(CoreState *));
-    assert(d6->args[d6->num - 1].ptrs[0] != nullptr);
-    d6->args[d6->num - 1].ptrs[1] = malloc(sizeof(int));
-    assert(d6->args[d6->num - 1].ptrs[1] != nullptr);
-    d6->args[d6->num - 1].ptrs[2] = malloc(sizeof(unsigned int));
-    assert(d6->args[d6->num - 1].ptrs[2] != nullptr);
-    d6->args[d6->num - 1].ptrs[3] = malloc(sizeof(char *));
-    assert(d6->args[d6->num - 1].ptrs[3] != nullptr);
+    if (
+        !(d6->args[d6->num - 1].ptrs = (void**)malloc(4 * sizeof(void*))) ||
+        !(d6->args[d6->num - 1].ptrs[0] = malloc(sizeof(CoreState*))) ||
+        !(d6->args[d6->num - 1].ptrs[1] = malloc(sizeof(int))) ||
+        !(d6->args[d6->num - 1].ptrs[2] = malloc(sizeof(unsigned int))) ||
+        !(d6->args[d6->num - 1].ptrs[3] = malloc(sizeof(char*))))
+    {
+        throw std::bad_alloc();
+    }
     *(CoreState **)(d6->args[d6->num - 1].ptrs[0]) = cs;
     *(int *)(d6->args[d6->num - 1].ptrs[1]) = 1700;
     *(unsigned int *)(d6->args[d6->num - 1].ptrs[2]) = MODE_PENTOMINO;
@@ -1295,7 +1308,10 @@ int mload_main(game_t *g, int val)
     d2->num = 101;
     d2->param = &g->origin->settings.masterVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if(!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
@@ -1317,7 +1333,10 @@ int mload_main(game_t *g, int val)
     d2->num = 101;
     d2->param = &g->origin->settings.sfxVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
@@ -1339,6 +1358,10 @@ int mload_main(game_t *g, int val)
     d2->num = 101;
     d2->param = &g->origin->settings.musicVolume;
     d2->vals = (int *)malloc(101 * sizeof(int));
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.clear();
     for(i = 0; i < 101; i++)
     {
@@ -1738,7 +1761,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 101;
     d2->param = &q->pracdata->usr_timings->lock;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(101);
     d2->labels[0] = "OFF";
     d2->vals[0] = -1;
@@ -1781,7 +1807,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->are;
     d2->vals = (int *)malloc(100 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
@@ -1822,7 +1851,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineare;
     d2->vals = (int *)malloc(100 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
@@ -1863,7 +1895,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 100;
     d2->param = &q->pracdata->usr_timings->lineclear;
     d2->vals = (int *)malloc(100 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(100);
     for(i = 0; i < 100; i++)
     {
@@ -1904,7 +1939,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 99;
     d2->param = &q->pracdata->usr_timings->das;
     d2->vals = (int *)malloc(99 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(99);
     for(i = 0; i < 99; i++)
     {
@@ -1945,7 +1983,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 101;
     d2->param = &q->pracdata->garbage_delay;
     d2->vals = (int *)malloc(101 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(101);
 
     d2->vals[0] = -1;
@@ -1990,7 +2031,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 5;
     d2->param = &q->pracdata->field_w;
     d2->vals = (int *)malloc(5 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.resize(5);
     for(i = 0; i < 5; i++)
     {
@@ -2032,7 +2076,10 @@ int mload_practice(game_t *g, int val)
     d2->param = &q->pracdata->game_type_int;
 
     d2->vals = (int *)malloc(4 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if (!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.clear();
     d2->labels.resize(4);
     d2->labels.resize(4);
@@ -2150,7 +2197,10 @@ int mload_practice(game_t *g, int val)
     d2->num = 3;
     d2->param = &q->pracdata->lock_protect;
     d2->vals = (int *)malloc(3 * sizeof(int));
-    assert(d2->vals != nullptr);
+    if(!d2->vals)
+    {
+        throw std::bad_alloc();
+    }
     d2->labels.clear();
     d2->labels.resize(3);
     d2->labels[0] = "AUTO";
@@ -2381,18 +2431,15 @@ int mload_replay(game_t *g, int val)
             d4 = (Shiro::GameOptionData *)m->data;
             d4->mode = QUINTESSE;
             d4->args.num = 4;
-            d4->args.ptrs = (void **)malloc(4 * sizeof(void *));
-            assert(d4->args.ptrs != nullptr);
-            d4->args.ptrs[0] = malloc(sizeof(CoreState *));
-            d4->args.ptrs[1] = malloc(sizeof(int));
-            d4->args.ptrs[2] = malloc(sizeof(unsigned int));
-            d4->args.ptrs[3] = malloc(sizeof(int));
-            assert(
-                d4->args.ptrs[0] != nullptr &&
-                d4->args.ptrs[1] != nullptr &&
-                d4->args.ptrs[2] != nullptr &&
-                d4->args.ptrs[3] != nullptr
-            );
+            if (
+                !(d4->args.ptrs = (void **)malloc(4 * sizeof(void *))) ||
+                !(d4->args.ptrs[0] = malloc(sizeof(CoreState *))) ||
+                !(d4->args.ptrs[1] = malloc(sizeof(int))) ||
+                !(d4->args.ptrs[2] = malloc(sizeof(unsigned int))) ||
+                !(d4->args.ptrs[3] = malloc(sizeof(int))))
+            {
+                throw std::bad_alloc();
+            }
             *(CoreState **)(d4->args.ptrs[0]) = g->origin;
             *(int *)(d4->args.ptrs[1]) = 0;
             *(unsigned int *)(d4->args.ptrs[2]) = r->mode;

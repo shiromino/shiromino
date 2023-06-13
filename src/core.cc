@@ -37,6 +37,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
+#include "nanotime.h"
 #include "video/Render.h"
 #include <string>
 #include <vector>
@@ -438,195 +439,168 @@ bool CoreState::init() {
     return true;
 }
 
+// #define DEBUG_FRAME_TIMING
 void CoreState::run() {
     bool running = true;
-    Uint64 currentTime = SDL_GetPerformanceCounter();
-    Uint64 timeAccumulator = 0u;
-// #define DEBUG_FRAME_TIMING
+    nanotime_step_data stepper;
+    uint64_t startTime = nanotime_now();
+    uint64_t currentTime;
+    uint64_t lastTime = startTime;
+    uint64_t realFrameTime = 0u;
+
+    bool slept = true;
+    for (
+        nanotime_step_init(&stepper, NANOTIME_NSEC_PER_SEC / fps, nanotime_now, nanotime_sleep);
+        running;
+        stepper.sleep_duration = NANOTIME_NSEC_PER_SEC / fps,
+        !(settings.vsync && settings.vsyncTimestep) ?
+            (lastTime = stepper.sleep_point, (slept = nanotime_step(&stepper)), realFrameTime = stepper.sleep_point - lastTime) :
+            (realFrameTime = (currentTime = nanotime_now()) - lastTime, lastTime = currentTime)
+        ) {
 #ifdef DEBUG_FRAME_TIMING
-    // Due to limitations in SDL's display refresh rate reporting, FPS
-    // debugging can't be made to display the correct monitor FPS when vsync
-    // and vsyncTimestep are enabled. So use the VIDEO_FPS INI option to get
-    // correct FPS information.
-    double videoFPS;
-    {
-        PDINI::INI ini;
-        ini.read(std::filesystem::path(settings.configurationPath));
-        if (!ini.get("SCREEN", "VIDEO_FPS", videoFPS) || videoFPS <= 0.0) {
-            videoFPS = 0.0;
-        }
-    }
-    Uint64 timeFromFrames = 0u;
-    const Uint64 fpsTimeFrameDuration = SDL_GetPerformanceFrequency();
-    Uint64 fpsTimeFrameStart = 0u;
-    Uint64 startTime = SDL_GetPerformanceCounter();
-#endif
-
-    while(running)
-    {
-
-#ifndef DEBUG_FRAME_TIMING
-        Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / fps;
-#else
-        Uint64 gameFrameTime = SDL_GetPerformanceFrequency() / (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0 ? videoFPS : fps);
-#endif
-        Uint64 newTime = SDL_GetPerformanceCounter();
-        Uint64 renderFrameTime = newTime - currentTime;
-        if (renderFrameTime > SDL_GetPerformanceFrequency() / 4u) {
-            renderFrameTime = SDL_GetPerformanceFrequency() / 4u;
-        }
-        currentTime = newTime;
-        timeAccumulator += renderFrameTime;
-
-        unsigned newFrames = 0u;
-        for (;
-            running && (timeAccumulator >= gameFrameTime || (settings.vsyncTimestep && settings.vsync));
-            timeAccumulator -= gameFrameTime,
-            newFrames++,
-            frames++
-            ) {
-            prev_keys_raw = keys_raw;
-            prev_keys = keys;
-
-            running = process_events();
-
-            handle_replay_input();
-
-            update_input_repeat();
-            update_pressed();
-
-            gfx_buttons_input();
-
-            /*
-            SPMgame.input();
-            SPMgame.frame();
-            SPMgame.draw();
-            */
-
-            gfx.clearLayers();
-
-            if (p1game) {
-                if (!p1game->update(!button_emergency_override)) {
-                    p1game->quit(p1game);
-                    free(p1game);
-                    p1game = NULL;
-
-                    bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
-                    break;
-                }
-            }
-            if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
-                if (!menu->update(!button_emergency_override)) {
-                    menu->quit(menu);
-                    free(menu);
-
-                    menu = NULL;
-
-                    if (!p1game) {
-                        running = false;
-                    }
-                }
-            }
-
-            if (!menu && !p1game) {
-                running = false;
-            }
-            else if (p1game) {
-                p1game->frame_counter++;
-            }
-
-            if (menu && (!p1game || menu_input_override)) {
-                menu->frame_counter++;
-            }
-
-            bg.update();
-
-            // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
-            struct OldGfxGraphic : public Shiro::Graphic {
-                OldGfxGraphic() = delete;
-
-                OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
-
-                void draw() const {
-                    drawLambda();
-                }
-
-                const std::function<void()> drawLambda;
-            };
-
-            class OldGfxEntity : public Shiro::Entity {
-            public:
-                OldGfxEntity(
-                    const std::size_t layerNum,
-                    const std::function<void()> drawLambda
-                ) :
-                    layerNum(layerNum),
-                    drawLambda(drawLambda) {}
-
-                bool update(Shiro::Layers& layers) {
-                    layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
-                    return true;
-                }
-
-            private:
-                const std::size_t layerNum;
-                const std::function<void()> drawLambda;
-            };
-
-            // TODO: Create entities in the code for the game and menu, then remove this.
-            // Or perhaps have the game and menu code push entities, and no longer
-            // have explicit game and menu drawing functions.
-            gfx.push(std::make_unique<OldGfxEntity>(
-                Shiro::GfxLayer::base,
-                [this] {
-                    if (p1game) {
-                        p1game->draw(p1game);
-                    }
-                    if (menu && (!p1game || menu_input_override)) {
-                        g123_seeds_preupdate();
-                        menu->draw(menu);
-                        g123_seeds_update();
-                    }
-                }
-            ));
-
-            // TODO: Create entities in the code for buttons, then remove this.
-            gfx.push(std::make_unique<OldGfxEntity>(
-                Shiro::GfxLayer::buttons,
-                [this] { gfx_drawbuttons(this, 0); }
-            ));
-
-            // TODO: Create entities in the code for emergency buttons, then remove this.
-            gfx.push(std::make_unique<OldGfxEntity>(
-                Shiro::GfxLayer::emergencyButtons,
-                [this] { gfx_drawbuttons(this, EMERGENCY_OVERRIDE); }
-            ));
-
-            gfx.update();
-
-#ifdef DEBUG_FRAME_TIMING
-            timeFromFrames += gameFrameTime;
-            // TODO: From testing with this, the game apparently doesn't reset
-            // FPS to 60 when returning to the menu from a game, so fix that.
-            // Though each mode does use its correct FPS.
-            Uint64 realTime = SDL_GetPerformanceCounter() - startTime;
+        if (realFrameTime > 0u) {
             std::cerr
-                << "real FPS: " << ((realTime / static_cast<double>(timeFromFrames)) * (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
-                    ? videoFPS
-                    : fps
-                )) << std::endl
-                << "game FPS: " << (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
-                    ? videoFPS
-                    : fps
-                ) << std::endl;
-            if (realTime - fpsTimeFrameStart >= fpsTimeFrameDuration) {
-                timeFromFrames = realTime;
-                fpsTimeFrameStart = realTime;
-            }
+                << "real FPS: " << std::setprecision(10) << NANOTIME_NSEC_PER_SEC / static_cast<double>(realFrameTime)
+                << std::endl;
+        }
+        else {
+            std::cerr
+                << "real FPS: ???"
+                << std::endl;
+        }
+        std::cerr
+            << "game FPS: " << std::setprecision(10) << (settings.vsync && settings.vsyncTimestep && videoFPS > 0.0
+                ? videoFPS
+                : fps
+            ) << std::endl;
 #endif
-            if (settings.vsync && settings.vsyncTimestep) {
-                break;
+        prev_keys_raw = keys_raw;
+        prev_keys = keys;
+
+        running = process_events();
+
+        handle_replay_input();
+
+        update_input_repeat();
+        update_pressed();
+
+        gfx_buttons_input();
+
+        /*
+        SPMgame.input();
+        SPMgame.frame();
+        SPMgame.draw();
+        */
+
+        gfx.clearLayers();
+
+        if (p1game) {
+            if (!p1game->update(!button_emergency_override)) {
+                p1game->quit(p1game);
+                free(p1game);
+                p1game = NULL;
+
+                bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
+                fps = Shiro::RefreshRates::menu;
+                stepper.accumulator = 0u;
+                stepper.sleep_point = nanotime_now();
             }
+        }
+        if (menu && ((!p1game || menu_input_override) ? 1 : 0)) {
+            if (!menu->update(!button_emergency_override)) {
+                menu->quit(menu);
+                free(menu);
+
+                menu = NULL;
+
+                if (!p1game) {
+                    running = false;
+                }
+                else {
+                    stepper.accumulator = 0u;
+                    stepper.sleep_point = nanotime_now();
+                }
+            }
+        }
+
+        if (!menu && !p1game) {
+            running = false;
+        }
+        else if (p1game) {
+            p1game->frame_counter++;
+        }
+
+        if (menu && (!p1game || menu_input_override)) {
+            menu->frame_counter++;
+        }
+
+        bg.update();
+
+        // TODO: Remove these OldGfx* types once all the old gfx_push* functions are replaced with calls of Gfx::push.
+        struct OldGfxGraphic : public Shiro::Graphic {
+            OldGfxGraphic() = delete;
+
+            OldGfxGraphic(const std::function<void()> drawLambda) : drawLambda(drawLambda) {}
+
+            void draw() const {
+                drawLambda();
+            }
+
+            const std::function<void()> drawLambda;
+        };
+
+        class OldGfxEntity : public Shiro::Entity {
+        public:
+            OldGfxEntity(
+                const std::size_t layerNum,
+                const std::function<void()> drawLambda
+            ) :
+                layerNum(layerNum),
+                drawLambda(drawLambda) {}
+
+            bool update(Shiro::Layers& layers) {
+                layers.push(layerNum, std::make_shared<OldGfxGraphic>(drawLambda));
+                return true;
+            }
+
+        private:
+            const std::size_t layerNum;
+            const std::function<void()> drawLambda;
+        };
+
+        // TODO: Create entities in the code for the game and menu, then remove this.
+        // Or perhaps have the game and menu code push entities, and no longer
+        // have explicit game and menu drawing functions.
+        gfx.push(std::make_unique<OldGfxEntity>(
+            Shiro::GfxLayer::base,
+            [this] {
+                if (p1game) {
+                    p1game->draw(p1game);
+                }
+                if (menu && (!p1game || menu_input_override)) {
+                    g123_seeds_preupdate();
+                    menu->draw(menu);
+                    g123_seeds_update();
+                }
+            }
+        ));
+
+        // TODO: Create entities in the code for buttons, then remove this.
+        gfx.push(std::make_unique<OldGfxEntity>(
+            Shiro::GfxLayer::buttons,
+            [this] { gfx_drawbuttons(this, 0); }
+        ));
+
+        // TODO: Create entities in the code for emergency buttons, then remove this.
+        gfx.push(std::make_unique<OldGfxEntity>(
+            Shiro::GfxLayer::emergencyButtons,
+            [this] { gfx_drawbuttons(this, EMERGENCY_OVERRIDE); }
+        ));
+
+        gfx.update();
+
+        if (!(settings.vsync && settings.vsyncTimestep) && !slept) {
+            continue;
         }
 
         SDL_SetRenderTarget(screen.renderer, screen.target_tex);
@@ -636,8 +610,7 @@ void CoreState::run() {
         gfx.draw();
         SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
 
-        if(theRenderTarget != nullptr)
-        {
+        if (theRenderTarget != nullptr) {
             SDL_Rect dst_ = {0, 0, 640, 480};
             SDL_SetRenderTarget(screen.renderer, NULL);
             //Shiro::RenderCopy(screen, theRenderTarget, nullptr, &dst_);
@@ -646,49 +619,8 @@ void CoreState::run() {
 
             SDL_SetRenderTarget(screen.renderer, theRenderTarget);
         }
-        else
-        {
+        else {
             SDL_RenderPresent(screen.renderer);
-        }
-        if (!settings.vsyncTimestep) {
-            /*
-             * Here, we insert a delay to produce accurate frame timing, using
-             * "hybrid wait" and "fixed timestep". The first stage is to loop
-             * over delays of 1 millisecond, where it's assumed that delays are
-             * roughly 1 millisecond, generally a bit above. But, during that
-             * first stage of delays, the max delay duration is kept track of,
-             * and that stage of the delay loop is broken out of when the time
-             * remaining to delay is less than or equal to the max of the
-             * 1-millisecond delays. Then, the same delay loop is done with
-             * 0-millisecond delay requests; requesting a delay of no time just
-             * yields the game's running process, allowing the system to run
-             * other tasks, without eating a bunch of CPU time. Once that loop
-             * stage is done, a final, as-small-as-possible pure busyloop is
-             * run to finish out the delay; it's critical to delay as much as
-             * possible via Delay first, so as to minimize wasted CPU time.
-             * This scheme appears to be "optimal", in that it produces correct
-             * timing, but with a minimum of wasted CPU time. Mufunyo ( https://github.com/mufunyo )
-             * showed me the "hybrid wait" algorithm, where most of the delay
-             * is done via actual delays, and completed with a busyloop, but
-             * that algorithm has been adapted to fit into this game's "fixed
-             * timestep" variant ( https://www.gafferongames.com/post/fix_your_timestep/ ).
-             * -Brandon McGriff <nightmareci@gmail.com>
-             */
-            for (int milliseconds = 1; milliseconds >= 0; milliseconds--) {
-                Uint64 delayStartTime;
-                Uint64 maxDelay = 0u;
-                while (
-                    maxDelay < gameFrameTime &&
-                    (delayStartTime = SDL_GetPerformanceCounter()) - currentTime < gameFrameTime - maxDelay
-                ) {
-                    Delay(milliseconds);
-                    Uint64 lastDelay;
-                    if ((lastDelay = SDL_GetPerformanceCounter() - delayStartTime) > maxDelay) {
-                        maxDelay = lastDelay;
-                    }
-                }
-            }
-            while (SDL_GetPerformanceCounter() - currentTime < gameFrameTime);
         }
     }
 }

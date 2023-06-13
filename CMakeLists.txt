@@ -99,6 +99,7 @@ target_sources(${GAME_EXECUTABLE}
 		src/menu/ToggleOption.h
 		src/Delay.cc
 		src/Delay.h
+		src/Nanotime.cc
 		src/OS.cc
 		src/OS.h
 		src/PieceDefinition.cc
@@ -175,6 +176,7 @@ target_sources(${GAME_EXECUTABLE}
 include(FetchContent)
 FetchContent_Declare(pdbm_font
 	GIT_REPOSITORY https://github.com/nightmareci/PDBMFont.git
+	GIT_TAG f16abc76419f2df31c8c3f0642bedaad99201cda
 )
 # We don't use FetchContent_MakeAvailable here.
 # The reason for that is that the project's build pipeline doesn't cleanly export any targets that we can use.
@@ -194,6 +196,27 @@ target_sources(${GAME_EXECUTABLE}
 target_include_directories(${GAME_EXECUTABLE}
 	PRIVATE
 		"${PDBM_SOURCE_DIRECTORY}"
+)
+FetchContent_Declare(nanotime
+	GIT_REPOSITORY https://github.com/nightmareci/nanotime.git
+	GIT_TAG d8684b3f55795494fd4fd657ffff7d8380723dc0
+)
+# We don't use FetchContent_MakeAvailable here.
+# The reason for that is that the project's build pipeline doesn't cleanly export any targets that we can use.
+FetchContent_GetProperties(nanotime)
+if(NOT nanotime_POPULATED)
+	FetchContent_Populate(nanotime)
+endif()
+FetchContent_GetProperties(nanotime
+	SOURCE_DIR NANOTIME_SOURCE_DIRECTORY
+)
+target_sources(${GAME_EXECUTABLE}
+	PRIVATE
+		"${NANOTIME_SOURCE_DIRECTORY}/nanotime.h"
+)
+target_include_directories(${GAME_EXECUTABLE}
+	PRIVATE
+		"${NANOTIME_SOURCE_DIRECTORY}"
 )
 #
 # The "Headers" source group for IDEs
@@ -325,6 +348,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
 				-fsanitize-undefined-trap-on-error
 		)
 	endif()
+endif()
+#
+# Enable parallel compiling when using MSVC.
+#
+if(MSVC)
+	target_compile_options(${GAME_EXECUTABLE} PRIVATE "/MP")
 endif()
 #
 # Installation
