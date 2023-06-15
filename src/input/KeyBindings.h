@@ -3,6 +3,14 @@
 #include "SDL.h"
 #include <string>
 namespace Shiro {
+    struct KeyBinding {
+        union {
+            SDL_Keycode keycode;
+            SDL_Scancode scancode;
+        };
+        bool isKeycode;
+    };
+
     class KeyBindings {
     public:
         KeyBindings();
@@ -11,15 +19,15 @@ namespace Shiro {
         void read(PDINI::INI& ini);
         void write(PDINI::INI& ini) const;
 
-        SDL_Keycode left;
-        SDL_Keycode right;
-        SDL_Keycode up;
-        SDL_Keycode down;
-        SDL_Keycode start;
-        SDL_Keycode a;
-        SDL_Keycode b;
-        SDL_Keycode c;
-        SDL_Keycode d;
-        SDL_Keycode escape;
+        KeyBinding left;
+        KeyBinding right;
+        KeyBinding up;
+        KeyBinding down;
+        KeyBinding start;
+        KeyBinding a;
+        KeyBinding b;
+        KeyBinding c;
+        KeyBinding d;
+        KeyBinding escape;
     };
 }

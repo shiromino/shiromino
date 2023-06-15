@@ -718,7 +718,8 @@ void quit(CoreState *cs)
 bool CoreState::process_events() {
     Shiro::KeyFlags *k = NULL;
 
-    SDL_Keycode keyCode;
+    SDL_Keycode keycode;
+    SDL_Scancode scancode;
     SDL_Keymod keyMod;
     Shiro::KeyBindings& keyBindings = settings.keyBindings;
 
@@ -877,19 +878,27 @@ bool CoreState::process_events() {
                     break;
                 }
 
-                keyCode = event.key.keysym.sym;
+                keycode = event.key.keysym.sym;
+                scancode = event.key.keysym.scancode;
                 keyMod = SDL_GetModState();
 
                 k = &keys_raw;
 
 #define CHECK_KEYDOWN(name) \
-                if (keyCode == keyBindings.name) { \
-                    k->name = 1; \
+                if(keyBindings.name.isKeycode) { \
+                    if (keycode == keyBindings.name.keycode) { \
+                        k->name = 1; \
+                    } \
+                } \
+                else { \
+                    if (scancode == keyBindings.name.scancode) { \
+                        k->name = 1; \
+                    } \
                 }
                 CHECK_BINDINGS(CHECK_KEYDOWN);
 #undef CHECK_KEYDOWN
 
-                switch (keyCode) {
+                switch (keycode) {
                 case SDLK_v:
                     if ((keyMod & KMOD_CTRL) && text_editing && text_insert) {
                         text_insert(this, SDL_GetClipboardText());
@@ -1111,18 +1120,26 @@ bool CoreState::process_events() {
                 break;
 
             case SDL_KEYUP:
-                keyCode = event.key.keysym.sym;
+                keycode = event.key.keysym.sym;
+                scancode = event.key.keysym.scancode;
 
                 k = &keys_raw;
 
 #define CHECK_KEYUP(name) \
-                if (keyCode == keyBindings.name) { \
-                    k->name = 0; \
+                if(keyBindings.name.isKeycode) { \
+                    if (keycode == keyBindings.name.keycode) { \
+                        k->name = 0; \
+                    } \
+                } \
+                else { \
+                    if (scancode == keyBindings.name.scancode) { \
+                        k->name = 0; \
+                    } \
                 }
                 CHECK_BINDINGS(CHECK_KEYUP);
 #undef CHECK_KEYUP
 
-                switch (keyCode) {
+                switch (keycode) {
                 case SDLK_LEFT:
                     left_arrow_das = 0;
                     break;
@@ -1149,7 +1166,7 @@ bool CoreState::process_events() {
                 case SDLK_7:
                 case SDLK_8:
                 case SDLK_9:
-                    pressedDigits[keyCode - SDLK_0] = false;
+                    pressedDigits[keycode - SDLK_0] = false;
                     break;
 
                 default:
