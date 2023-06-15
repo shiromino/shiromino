@@ -90,8 +90,8 @@ void Shiro::KeyBindings::read(PDINI::INI& ini) {
             {
                 std::smatch match;
                 if(
-                    std::regex_match(keyName, match, std::regex("United States\\s+(.+)", std::regex_constants::syntax_option_type::icase)) &&
-                    (scancode = SDL_GetScancodeFromName(match[1].str().c_str())) != SDL_SCANCODE_UNKNOWN
+                    std::regex_search(keyName, match, std::regex("^(United States\\s+)", std::regex_constants::syntax_option_type::icase)) &&
+                    (scancode = SDL_GetScancodeFromName(keyName.c_str() + match[1].str().length())) != SDL_SCANCODE_UNKNOWN
                     )
                 {
                     (*keyBinding)->scancode = scancode;
