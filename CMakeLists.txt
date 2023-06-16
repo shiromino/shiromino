@@ -200,7 +200,7 @@ target_include_directories(${GAME_EXECUTABLE}
 )
 FetchContent_Declare(nanotime
 	GIT_REPOSITORY https://github.com/nightmareci/nanotime.git
-	GIT_TAG d8684b3f55795494fd4fd657ffff7d8380723dc0
+	GIT_TAG e8b6a59cdc139fa836c85d9ecbd469aabf828c02
 )
 FetchContent_GetProperties(nanotime)
 if(NOT nanotime_POPULATED)
