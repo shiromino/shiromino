@@ -3,7 +3,7 @@
 #pragma once
 #include <cerrno>
 #include <exception>
-#include <SDL_log.h>
+#include "SDL_log.h"
 #include <stdexcept>
 
 #ifdef NDEBUG

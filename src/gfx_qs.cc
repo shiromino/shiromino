@@ -14,7 +14,7 @@
 #include "Credits.h"
 #include <fstream>
 #include <sstream>
-#include <SDL.h>
+#include "SDL.h"
 #include <stdlib.h>
 #include <string>
 #include <vector>

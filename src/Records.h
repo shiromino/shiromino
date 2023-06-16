@@ -1,6 +1,6 @@
 #pragma once
 #include "Player.h"
-#include <sqlite3.h>
+#include "sqlite3.h"
 #include <string>
 namespace Shiro::Records {
     const std::string filename = "shiromino.sqlite";

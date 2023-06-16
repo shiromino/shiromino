@@ -1,0 +1,10 @@
+{
+  "name": "shiromino",
+  "builtin-baseline": "501db0f17ef6df184fcdbfbe0f87cde2313b6ab1",
+  "dependencies": [
+    "sdl2",
+    "sdl2-image",
+    "sdl2-mixer",
+    "sqlite3"
+  ]
+}

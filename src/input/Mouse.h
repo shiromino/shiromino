@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 #include "video/Screen.h"
-#include <SDL.h>
+#include "SDL.h"
 
 namespace Shiro {
     struct Mouse {

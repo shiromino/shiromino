@@ -178,8 +178,9 @@ FetchContent_Declare(pdbm_font
 	GIT_REPOSITORY https://github.com/nightmareci/PDBMFont.git
 	GIT_TAG f16abc76419f2df31c8c3f0642bedaad99201cda
 )
-# We don't use FetchContent_MakeAvailable here.
-# The reason for that is that the project's build pipeline doesn't cleanly export any targets that we can use.
+# We don't use FetchContent_MakeAvailable for PDBMFont nor nanotime. The reason
+# is that those projects' build pipelines don't cleanly export any targets that
+# we can use.
 FetchContent_GetProperties(pdbm_font)
 if(NOT pdbm_font_POPULATED)
 	FetchContent_Populate(pdbm_font)
@@ -201,8 +202,6 @@ FetchContent_Declare(nanotime
 	GIT_REPOSITORY https://github.com/nightmareci/nanotime.git
 	GIT_TAG d8684b3f55795494fd4fd657ffff7d8380723dc0
 )
-# We don't use FetchContent_MakeAvailable here.
-# The reason for that is that the project's build pipeline doesn't cleanly export any targets that we can use.
 FetchContent_GetProperties(nanotime)
 if(NOT nanotime_POPULATED)
 	FetchContent_Populate(nanotime)
@@ -236,14 +235,82 @@ source_group("Third-party" FILES "${EXECUTABLE_THIRD_PARTY}")
 #
 # Dependency management
 #
-if(UNIX OR MINGW)
-	find_package(PkgConfig)
-	if(NOT DEFINED MINIMUM_SDL2_VERSION)
-		set(MINIMUM_SDL2_VERSION 2.0.5)
+set(MINIMUM_SDL2_VERSION 2.0.5)
+set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
+set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
+set(MINIMUM_SQLITE3_VERSION 3.24.0)
+
+option(FETCH_DEPENDENCIES "Selects whether dependencies should be downloaded and built as part of the project build.")
+if(FETCH_DEPENDENCIES)
+	# We don't need to check package versions here, as the git tags are
+	# effectively version numbers already verified as working.
+
+	set(BUILD_SHARED_LIBS FALSE)
+
+	set(SDL_TEST FALSE)
+	FetchContent_Declare(
+		SDL2
+		GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+		GIT_TAG ac13ca9ab691e13e8eebe9684740ddcb0d716203
+		GIT_PROGRESS TRUE
+		OVERRIDE_FIND_PACKAGE
+	)
+
+	set(SDL2IMAGE_VENDORED TRUE)
+	set(SDL2IMAGE_SAMPLES FALSE)
+	set(SDL2IMAGE_INSTALL FALSE)
+	FetchContent_Declare(
+		SDL2_image
+		GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+		GIT_TAG d3c6d5963dbe438bcae0e2b6f3d7cfea23d02829
+		GIT_PROGRESS TRUE
+	)
+
+	set(SDL2MIXER_VENDORED TRUE)
+	set(SDL2MIXER_SAMPLES FALSE)
+	set(SDL2IMAGE_INSTALL FALSE)
+	FetchContent_Declare(
+		SDL2_mixer
+		GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+		GIT_TAG 6103316427a8479e5027e41ab9948bebfc1c3c19
+		GIT_PROGRESS TRUE
+	)
+
+	FetchContent_Declare(
+		sqlite3-cmake
+		GIT_REPOSITORY https://github.com/undisputed-seraphim/sqlite3-cmake.git
+		GIT_TAG 4464c04eb025cd5ff27a2952658da691bc18683e
+		GIT_PROGRESS TRUE
+	)
+
+	FetchContent_MakeAvailable(
+		SDL2
+		SDL2_image
+		SDL2_mixer
+		sqlite3-cmake
+	)
+
+	FetchContent_GetProperties(
+		sqlite3-cmake
+		SOURCE_DIR SQLITE3_SOURCE_DIR
+	)
+	target_include_directories(${GAME_EXECUTABLE} PRIVATE "${SQLITE3_SOURCE_DIR}/src")
+
+	target_link_libraries(${GAME_EXECUTABLE}
+		PRIVATE
+			SDL2::SDL2
+			SDL2_image
+			SDL2_mixer
+			sqlite3
+	)
+	if(TARGET SDL2::SDL2main)
+		target_link_libraries(${GAME_EXECUTABLE}
+			PRIVATE
+				SDL2::SDL2main
+		)
 	endif()
-	set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
-	set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
-	set(MINIMUM_SQLITE3_VERSION 3.24.0)
+elseif(UNIX OR MINGW)
+	find_package(PkgConfig)
 	function(target_pkg_config_import TARGET DEPENDENCY)
 		string(TOUPPER ${DEPENDENCY} DEPENDENCY_VARIABLE)
 		set(MINIMUM_VERSION ${MINIMUM_${DEPENDENCY_VARIABLE}_VERSION})
@@ -280,25 +347,39 @@ if(UNIX OR MINGW)
 		message(FATAL_ERROR "On Unix platforms, pkg-config is required for getting dependencies.")
 	endif()
 else()
-	#
-	# We *could* check for minimum version requirements here, but vcpkg packages don't have any
-	# version information attached that we could query for from CMake.
-	#
-	# According to https://github.com/Microsoft/vcpkg/issues/1681, package versioning in vcpkg hasn't been fully conceptualized yet.
-	# For now, we won't check the minimum version requirements here.
-	#
 	find_package(SDL2 REQUIRED)
+	if(SDL2_VERSION VERSION_LESS 2.0.5)
+		message(FATAL_ERROR "SDL2 version ${SDL2_VERSION} found but at least ${MINIMUM_SDL2_VERSION} is required.")
+	endif()
+
 	find_package(SDL2_image REQUIRED)
+	if(SDL2_image_VERSION VERSION_LESS ${MINIMUM_SDL2_IMAGE_VERSION})
+		message(FATAL_ERROR "SDL2_image version ${SDL2_image_VERSION} found but at least ${MINIMUM_SDL2_IMAGE_VERSION} is required.")
+	endif()
+
 	find_package(SDL2_mixer REQUIRED)
+	if(SDL2_mixer_VERSION VERSION_LESS ${MINIMUM_SDL2_MIXER_VERSION})
+		message(FATAL_ERROR "SDL2_mixer version ${SDL2_mixer_VERSION} found but at least ${MINIMUM_SDL2_MIXER_VERSION} is required.")
+	endif()
+
 	find_package(SQLite3 REQUIRED)
+	if(SQLite3_VERSION VERSION_LESS ${MINIMUM_SQLITE3_VERSION})
+		message(FATAL_ERROR "SQLite3 version ${SQLite3_VERSION} found but at least ${MINIMUM_SQLITE3_VERSION} is required.")
+	endif()
+
 	target_link_libraries(${GAME_EXECUTABLE}
 		PUBLIC
 			SDL2::SDL2
-			SDL2::SDL2main
 			SDL2_image::SDL2_image
 			SDL2_mixer::SDL2_mixer
 			SQLite::SQLite3
 	)
+	if(TARGET SDL2::SDL2main)
+		target_link_libraries(${GAME_EXECUTABLE}
+			PRIVATE
+				SDL2::SDL2main
+		)
+	endif()
 endif()
 #
 # On distributions with prehistoric packages, clang/gcc are unable to link these libraries themselves.

@@ -3,8 +3,15 @@ The following table displays a set of build definitions. To set them, you can sp
 ## Build definitions
 | Definition                    | Values                                               | Description                                            |
 | ----------------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
-| [`CMAKE_BUILD_TYPE`][]        | `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel`    | Controls the type of build that the build process will output.
-| [`CMAKE_INSTALL_PREFIX`][]    | any path                                              | When installing the project via `cmake --install`, this prefix will be prepended to all files that the installation process emits. In practice, this allows you to control the installation directory.
+| [`CMAKE_BUILD_TYPE`][]        | `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel`   | Controls the type of build that the build process will output.
+| [`CMAKE_INSTALL_PREFIX`][]    | any path                                             | When installing the project via `cmake --install`, this prefix will be prepended to all files that the installation process emits. In practice, this allows you to control the installation directory.
+## Compiling with automatic downloading and installing of dependencies
+This option is quite simple to use, though the first build takes longer than if you used already-installed dependencies. It requires that git be available:
+```shell
+$ cmake -B build -S . -DFETCH_DEPENDENCIES=1
+$ cmake --build build
+```
+A nice feature of building this way is there's no external library files required, as all dependencies are statically linked into the game's executable.
 ## Installing dependencies and compiling
 In the following, please follow the steps that match your build environment. All of the sections below assume that your current working directory is the repository's root directory.
 ### Linux (pacman-based)
@@ -37,7 +44,7 @@ $ cmake -B build -G "MSYS Makefiles" -S . && cmake --build build -j$(nproc)
 ```
 <a name="running"></a>
 # Running the game
-You can find your compiled game executable in `./build/shiromino`. Note that the executable may have a native file extension, so expect it to end with `.exe` on Windows.
+You can find your compiled game executable in `./build/shiromino` on UNIX-like platforms (Linux, macOS, MSYS2/Windows) or `.\build\${CMAKE_BUILD_TYPE}\shiromino.exe` (by default, `.\build\Debug\shiromino.exe`) when using Visual Studio on Windows.
 
 Note that if you're on Windows and you've built shiromino from source, double-clicking the executable won't work unless you've put all the dependent DLL files into the build directory. To remedy this, be advised to run shiromino through the command line. Alternatively, you could just grab one of our pre-built [Windows releases](https://github.com/shiromino/shiromino/releases) so that you don't have to compile the game from source.
 

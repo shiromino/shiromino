@@ -7,7 +7,7 @@
 #include "Timer.h"
 #include "types.h"
 #include <cstdlib>
-#include <SDL.h>
+#include "SDL.h"
 #include <string>
 
 #define QRS_FIELD_X 4

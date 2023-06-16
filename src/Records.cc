@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <cassert>
-#include <sqlite3.h>
+#include "sqlite3.h"
 #define check_bind(db, bind_call) check((bind_call) == SQLITE_OK, "Could not bind parameter value: %s", sqlite3_errmsg((db)))
 
 static const int MAX_PLAYER_NAME_LENGTH = 64;

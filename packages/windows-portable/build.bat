@@ -6,7 +6,7 @@
 @set ARCHITECTURE="%~2"
 
 
-@cmake -B "%BUILD_DIRECTORY%" -DPORTABLE=True -A "%ARCHITECTURE%"
+@cmake -B "%BUILD_DIRECTORY%" -DPORTABLE=1 -DFETCH_DEPENDENCIES=1 -A "%ARCHITECTURE%"
 @if %ERRORLEVEL% NEQ 0 goto error
 @cmake --build "%BUILD_DIRECTORY%" --config Release --target package
 @if %ERRORLEVEL% NEQ 0 goto error
