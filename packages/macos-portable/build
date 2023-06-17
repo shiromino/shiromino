@@ -1,15 +1,18 @@
 #!/bin/sh
 
-if [ -z "$1" ] ; then
-        echo 'Usage: build (build directory) [Apple certificate name]'
+if [ -z "$1" -o -z "$2" ] ; then
+        echo 'Usage: build (source directory) (build directory) [Apple certificate name]'
         exit 1
 fi
 
-if [ -z "$2" ] ; then
+SOURCE_DIR="$1"
+BUILD_DIR="$2"
+
+if [ -z "$3" ] ; then
         CPACK_APPLE_CERT_NAME=-
 else
-        CPACK_APPLE_CERT_NAME="$2"
+        CPACK_APPLE_CERT_NAME="$3"
 fi
 
-cmake -B "$1" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES='x86_64;arm64' -DPORTABLE=TRUE -DCPACK_APPLE_CERT_NAME="$CPACK_APPLE_CERT_NAME" || exit 1
-cmake --build "$1" -j "$(sysctl -n hw.ncpu)" --target package || exit 1
+cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES='x86_64;arm64' -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DFETCH_DEPENDENCIES=TRUE -DPORTABLE=TRUE -DCPACK_APPLE_CERT_NAME="$CPACK_APPLE_CERT_NAME" || exit 1
+cmake --build "$BUILD_DIR" -j "$(sysctl -n hw.ncpu)" --target package || exit 1

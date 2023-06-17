@@ -441,10 +441,17 @@ endif()
 #
 if(PORTABLE)
 	if(APPLE)
-		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})
-		install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE})
-		install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE})
-		install(TARGETS ${GAME_EXECUTABLE} BUNDLE DESTINATION ${GAME_EXECUTABLE})
+		#
+		# If the CPACK_COMPONENTS_ALL variable is left as its default value, then other
+		# junk gets installed into the CPack-generated package. So we specify the stuff
+		# being installed into the package belonging to a component ("Game") and also
+		# specify to only package the component we want ("Game").
+		#
+		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
+		install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
+		install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
+		install(TARGETS ${GAME_EXECUTABLE} BUNDLE DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
+		set(CPACK_COMPONENTS_ALL Game)
 
 		set(MACOSX_BUNDLE_BUNDLE_NAME ${GAME_EXECUTABLE})
 		set(MACOSX_BUNDLE_GUI_IDENTIFIER io.github.shiromino.shiromino)
@@ -466,7 +473,7 @@ if(PORTABLE)
                 endif()
 
 		set(CPACK_DMG_VOLUME_NAME ${GAME_EXECUTABLE})
-		set(CPACK_PACKAGE_VENDOR "The ${PROJECT_NAME} team")
+		set(CPACK_PACKAGE_VENDOR "The shiromino team")
 
 		set(CPACK_PACKAGE_FILE_NAME "${GAME_EXECUTABLE}-macos")
 		foreach(ARCH ${CMAKE_OSX_ARCHITECTURES})
@@ -484,8 +491,8 @@ if(PORTABLE)
 		install(FILES shiromino.ini DESTINATION .)
 		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION .)
 
-		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMSVC.cmake" REQUIRED)
 		set(CPACK_GENERATOR ZIP)
+		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMSVC.cmake" REQUIRED)
 		include(CPack)
 	else()
 		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})

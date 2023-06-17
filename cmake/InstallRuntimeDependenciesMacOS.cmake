@@ -41,4 +41,4 @@ execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} \${CHANGES} \"\${CMAKE_INSTAL
 execute_process(COMMAND xcrun codesign --remove-signature \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app\")
 execute_process(COMMAND xcrun codesign -f -o runtime --timestamp -s \"${CPACK_APPLE_CERT_NAME}\" --entitlements \"${CPACK_ENTITLEMENTS_FILE}\" \"\${CMAKE_INSTALL_PREFIX}/${GAME_EXECUTABLE}/${GAME_EXECUTABLE}.app\")
 
-")
+" COMPONENT Game)
