@@ -20,13 +20,14 @@ namespace fs = std::filesystem;
 
 const auto applicationName = "shiromino";
 
-#ifndef PORTABLE
 std::string env(const char *string) {
     const auto value = std::getenv(string);
     return value
         ? value
         : std::string();
 }
+
+#ifndef PORTABLE
 const auto xdgConfigHome = env("XDG_CONFIG_HOME").empty()
         ? std::nullopt
         : std::optional(env("XDG_CONFIG_HOME"));

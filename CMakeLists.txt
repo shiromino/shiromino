@@ -5,12 +5,14 @@ project(shiromino
 	LANGUAGES CXX
 	VERSION 0.2.1
 )
+set(GAME_VERSION "${PROJECT_VERSION}" CACHE STRING "The version of the game.")
 set(GAME_EXECUTABLE ${PROJECT_NAME})
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(PORTABLE "Selects whether the build should be \"portable\", where all files are bundled together in one distributable folder/package.")
+option(APPIMAGE_BASE_PATH "Selects whether an AppImage build should use the directory where the AppImage is located for the base path, instead of the the contents of the AppImage itself.")
 
 #
 # Basic project layout
@@ -494,6 +496,9 @@ if(PORTABLE)
 		set(CPACK_GENERATOR ZIP)
 		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMSVC.cmake" REQUIRED)
 		include(CPack)
+	elseif(APPIMAGE_BASE_PATH)
+		include(GNUInstallDirs)
+		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Game)
 	else()
 		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE})
 		install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE})

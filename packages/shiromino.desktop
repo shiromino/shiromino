@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Shiromino
+Icon=shiromino
+Exec=shiromino
+GenericName=Shiromino
+Categories=Game
+Terminal=false

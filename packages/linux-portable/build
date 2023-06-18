@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ -z "$1" -o -z "$2" ] ; then
+        echo 'Usage: build (source directory) (build directory)'
+        exit 1
+fi
+
+SOURCE_DIR=`readlink -f "$1"`
+BUILD_DIR=`readlink -f "$2"`
+
+mkdir -p "$BUILD_DIR" || exit 1
+cd "$BUILD_DIR" || exit 1
+
+cmake -S "$SOURCE_DIR" -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DFETCH_DEPENDENCIES=TRUE -DPORTABLE=TRUE -DAPPIMAGE_BASE_PATH=TRUE || exit 1
+
+cmake --build build -j `expr $(nproc) + 2` || exit 1
+DESTDIR=AppDir cmake --install build --component Game || exit 1
+
+ARCH=`uname -m`
+LINUXDEPLOY="linuxdeploy-$ARCH.AppImage"
+curl -L -O "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/$LINUXDEPLOY" || exit 1
+chmod +x "$LINUXDEPLOY" || exit 1
+
+cp "$SOURCE_DIR/icon.png" "$BUILD_DIR/shiromino.png" || exit 1
+"./$LINUXDEPLOY" --appdir AppDir --output appimage --icon-file "$BUILD_DIR/shiromino.png" --icon-filename "shiromino" --desktop-file "$SOURCE_DIR/packages/shiromino.desktop" || exit 1
+
+GAME_VERSION=`sed -ne 's/^GAME_VERSION:STRING=//p' build/CMakeCache.txt`
+PACKAGE_NAME="shiromino-linux-$ARCH-$GAME_VERSION"
+PACKAGE_DIR="$BUILD_DIR/$PACKAGE_NAME"
+mkdir -p "$PACKAGE_DIR" || exit 1
+cp -r "$SOURCE_DIR/data" "$PACKAGE_DIR" || exit 1
+cp "$SOURCE_DIR/LICENSE.md" "$PACKAGE_DIR" || exit 1
+cp "$SOURCE_DIR/shiromino.ini" "$PACKAGE_DIR" || exit 1
+cp "$BUILD_DIR/Shiromino-"*"-$ARCH.AppImage" "$PACKAGE_DIR/shiromino.AppImage" || exit 1
+cmake -DARCHIVE="$BUILD_DIR/$PACKAGE_NAME.zip" -DPATHS="$PACKAGE_NAME" -P "$SOURCE_DIR/cmake/CreateArchive.cmake" || exit 1
