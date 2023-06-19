@@ -200,6 +200,9 @@ target_include_directories(${GAME_EXECUTABLE}
 	PRIVATE
 		"${PDBM_SOURCE_DIRECTORY}"
 )
+if(UNIX OR MINGW)
+	target_compile_definitions(${GAME_EXECUTABLE} PRIVATE _POSIX_VERSION=200112L)
+endif()
 FetchContent_Declare(nanotime
 	GIT_REPOSITORY https://github.com/nightmareci/nanotime.git
 	GIT_TAG e8b6a59cdc139fa836c85d9ecbd469aabf828c02
