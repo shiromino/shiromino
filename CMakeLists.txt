@@ -442,18 +442,22 @@ endif()
 # Installation
 #
 if(PORTABLE)
+	#
+	# If the CPACK_COMPONENTS_ALL variable is left as its default value, then
+	# other junk gets installed into CPack-generated packages when using
+	# FETCH_DEPENDENCIES. So we specify the stuff we want installed as
+	# belonging to a component ("Game") and also specify to only package the
+	# component we want ("Game"). The "Game" component is also used when
+	# building for AppImage, though CPack isn't used when targeting AppImage;
+	# the external build script just specifies to only build the "Game"
+	# component instead.
+	#
 	if(APPLE)
-		#
-		# If the CPACK_COMPONENTS_ALL variable is left as its default value, then other
-		# junk gets installed into the CPack-generated package. So we specify the stuff
-		# being installed into the package belonging to a component ("Game") and also
-		# specify to only package the component we want ("Game").
-		#
+		set(CPACK_COMPONENTS_ALL Game)
 		install(DIRECTORY data DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
 		install(FILES LICENSE.md DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
 		install(FILES shiromino.ini DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
 		install(TARGETS ${GAME_EXECUTABLE} BUNDLE DESTINATION ${GAME_EXECUTABLE} COMPONENT Game)
-		set(CPACK_COMPONENTS_ALL Game)
 
 		set(MACOSX_BUNDLE_BUNDLE_NAME ${GAME_EXECUTABLE})
 		set(MACOSX_BUNDLE_GUI_IDENTIFIER io.github.shiromino.shiromino)
@@ -468,11 +472,11 @@ if(PORTABLE)
 
 		set(CPACK_APPLE_CERT_NAME - CACHE STRING "The name of the Apple supplied code signing certificate to use. Defaults to adhoc signing (\"-\")")
 
-                if(CPACK_APPLE_CERT_NAME STREQUAL -)
-                        set(CPACK_ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/cmake/macos-entitlements-adhoc.xml")
-                else()
-                        set(CPACK_ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/cmake/macos-entitlements-identity-required.xml")
-                endif()
+		if(CPACK_APPLE_CERT_NAME STREQUAL -)
+			set(CPACK_ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/cmake/macos-entitlements-adhoc.xml")
+		else()
+			set(CPACK_ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/cmake/macos-entitlements-identity-required.xml")
+		endif()
 
 		set(CPACK_DMG_VOLUME_NAME ${GAME_EXECUTABLE})
 		set(CPACK_PACKAGE_VENDOR "The shiromino team")
@@ -488,13 +492,27 @@ if(PORTABLE)
 		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMacOS.cmake" REQUIRED)
 		include(CPack)
 	elseif(WIN32 AND MSVC)
-		install(DIRECTORY data DESTINATION .)
-		install(FILES LICENSE.md DESTINATION .)
-		install(FILES shiromino.ini DESTINATION .)
-		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION .)
+		set(CPACK_ARCHIVE_COMPONENT_INSTALL TRUE)
+		set(CPACK_COMPONENTS_ALL Game)
+		# The CPack archive generator can be instructed to generate specific
+		# filenames for the archives of individual components as done here, but
+		# the component name part of the variable must be an all uppercase
+		# version of the component's name.
+		if (CMAKE_VS_PLATFORM_NAME STREQUAL Win32)
+			set(CPACK_ARCHIVE_GAME_FILE_NAME "${GAME_EXECUTABLE}-windows-x86-${PROJECT_VERSION}")
+		else()
+			set(CPACK_ARCHIVE_GAME_FILE_NAME "${GAME_EXECUTABLE}-windows-${CMAKE_VS_PLATFORM_NAME}-${PROJECT_VERSION}")
+		endif()
+
+		install(DIRECTORY data DESTINATION "${CPACK_ARCHIVE_GAME_FILE_NAME}" COMPONENT Game)
+		install(FILES LICENSE.md DESTINATION "${CPACK_ARCHIVE_GAME_FILE_NAME}" COMPONENT Game)
+		install(FILES shiromino.ini DESTINATION "${CPACK_ARCHIVE_GAME_FILE_NAME}" COMPONENT Game)
+		install(TARGETS ${GAME_EXECUTABLE} RUNTIME DESTINATION "${CPACK_ARCHIVE_GAME_FILE_NAME}" COMPONENT Game)
 
 		set(CPACK_GENERATOR ZIP)
-		include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMSVC.cmake" REQUIRED)
+		if(NOT FETCH_DEPENDENCIES)
+			include("${CMAKE_SOURCE_DIR}/cmake/InstallRuntimeDependenciesMSVC.cmake" REQUIRED)
+		endif()
 		include(CPack)
 	elseif(APPIMAGE_BASE_PATH)
 		include(GNUInstallDirs)

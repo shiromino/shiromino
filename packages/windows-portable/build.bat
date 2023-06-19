@@ -1,12 +1,14 @@
 @if "%~1"=="" goto usage
 @if "%~2"=="" goto usage
+@if "%~3"=="" goto usage
 
 
-@set BUILD_DIRECTORY="%~1"
-@set ARCHITECTURE="%~2"
+@set SOURCE_DIRECTORY="%~1"
+@set BUILD_DIRECTORY="%~2"
+@set ARCHITECTURE="%~3"
 
 
-@cmake -B "%BUILD_DIRECTORY%" -DPORTABLE=1 -DFETCH_DEPENDENCIES=1 -A "%ARCHITECTURE%"
+@cmake -S "%SOURCE_DIRECTORY%" -B "%BUILD_DIRECTORY%" -DPORTABLE=1 -DFETCH_DEPENDENCIES=1 -DVCPKG_MANIFEST_MODE=0 -A "%ARCHITECTURE%"
 @if %ERRORLEVEL% NEQ 0 goto error
 @cmake --build "%BUILD_DIRECTORY%" --config Release --target package
 @if %ERRORLEVEL% NEQ 0 goto error
@@ -16,7 +18,7 @@
 
 
 :usage
-@echo Usage: build.bat (build directory) (architecture to build)
+@echo Usage: build.bat (source directory) (build directory) (architecture to build)
 @echo Supported architectures to build:
 @echo Win32
 @echo x64
