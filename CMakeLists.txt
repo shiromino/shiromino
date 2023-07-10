@@ -256,7 +256,7 @@ if(FETCH_DEPENDENCIES)
 	FetchContent_Declare(
 		SDL2
 		GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-		GIT_TAG ac13ca9ab691e13e8eebe9684740ddcb0d716203
+		GIT_TAG 4761467b2e8cc7db3d6bc98747daca0051858f09
 		GIT_PROGRESS TRUE
 		OVERRIDE_FIND_PACKAGE
 	)
@@ -273,7 +273,7 @@ if(FETCH_DEPENDENCIES)
 
 	set(SDL2MIXER_VENDORED TRUE)
 	set(SDL2MIXER_SAMPLES FALSE)
-	set(SDL2IMAGE_INSTALL FALSE)
+	set(SDL2MIXER_INSTALL FALSE)
 	FetchContent_Declare(
 		SDL2_mixer
 		GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
