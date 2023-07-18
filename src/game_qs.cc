@@ -1492,6 +1492,7 @@ int qs_game_frame(game_t *g)
     }
     else
     {
+        /* handle this in graphics module */
         switch(cs->displayMode)
         {
             default:
@@ -1522,6 +1523,7 @@ int qs_game_frame(game_t *g)
 
     if(c->init < 120)
     {
+        /* handle this in graphics module */
         if(c->init == 0 || c->init == 60)
         {
             struct text_formatting fmt = text_fmt_create(0, 0x00FF00FF, 0);
@@ -2512,16 +2514,16 @@ int qs_process_fall(game_t *g, bool soft_drop) {
         if (q->p1->speeds->grav >= 256 || !soft_drop) {
             grav = 0;
         }
-	else {
+	    else {
             grav = 256;
         }
         qrs_fall(g, q->p1, grav);
 
-	if (YTOROW(q->p1->y) < row) {
+	    if (YTOROW(q->p1->y) < row) {
             c->lock = 0;
         }
 
-	if (soft_drop) {
+	    if (soft_drop) {
             q->p1->y &= ~0xFF;
             q->soft_drop_counter++;
             if (qrs_isonground(g, q->p1) && !should_lock_protect) {
@@ -2530,7 +2532,7 @@ int qs_process_fall(game_t *g, bool soft_drop) {
                 q->p1->state &= ~PSFALL;
                 q->p1->state |= PSLOCKPRESSED;
             }
-	}
+	    }
     }
     else if (soft_drop && (*s) & PSLOCK && !should_lock_protect) {
         q->lock_held = 1;
@@ -3772,6 +3774,7 @@ int qs_update_pracdata(CoreState *cs)
 
     q->hold = NULL;
 
+    /* handle this in... some kind of better way at least. possibly multi-editor game_t with built-in menu? not sure */
     if(menu_is_practice(cs->menu))
     {
         for(int menu_i = 0; i < md->numopts; menu_i++)
@@ -3806,6 +3809,7 @@ int qs_update_pracdata(CoreState *cs)
 
     // check to see if we need to update the usr_seq
 
+    /* handle this in... some kind of better way at least. possibly multi-editor game_t with built-in menu? not sure */
     if(menu_is_practice(cs->menu))
     {
         for(int menu_i = 0; i < md->numopts; menu_i++)

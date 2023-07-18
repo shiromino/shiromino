@@ -2,10 +2,12 @@
 #include "Game.h"
 #include "replay.h"
 #include "gui/GUI.h"
+#include "Timer.h"
 #include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
 #include <memory>
 #include <vector>
+
 class ShiroPhysoMino : public Game {
 public:
     ShiroPhysoMino(CoreState& cs) : Game(cs),
@@ -25,7 +27,7 @@ protected:
     Shiro::Grid *field;
     GUIPoint fieldPos;
 
-    Shiro::Timer* timer;
+    Shiro::Timer *timer;
 
     replay *rep;
     bool playback;

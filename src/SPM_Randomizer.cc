@@ -1,6 +1,5 @@
 #include "SPM_Randomizer.h"
-
-#include "SPM_Spec.h"
+#include "SPM_Structures.h"
 
 SPM_minoID arsToQrsID(SPM_minoID t)
 {
@@ -94,7 +93,7 @@ G3_Randomizer::G3_Randomizer()
 
     for(int i = 0; i < 35; i++)
     {
-        bag[i] = PIECE_ID_INVALID;
+        bag[i] = MINO_ID_INVALID;
     }
 
     for(int i = 0; i < 7; i++)

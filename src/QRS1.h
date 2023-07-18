@@ -1,5 +1,6 @@
 #pragma once
 #include "RotationTables.h"
+#include "SPM_Structures.h"
 #include "SPM_Spec.h"
 #include <cstdint>
 #include <vector>
