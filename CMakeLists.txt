@@ -58,6 +58,8 @@ target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEAD
 #
 target_sources(${GAME_EXECUTABLE}
 	PRIVATE
+		src/ARS.cc
+		src/ARS.h
 		src/asset/Asset.cc
 		src/asset/Asset.h
 		src/asset/Font.cc
@@ -119,9 +121,11 @@ target_sources(${GAME_EXECUTABLE}
 		src/SPM_Randomizer.h
 		src/SPM_Spec.cc
 		src/SPM_Spec.h
+		src/SPM_Structures.h
+		src/SPM_SType.cc
+		src/SPM_SType.h
 		src/Settings.cc
 		src/Settings.h
-		src/ShiroPhysoMino.cc
 		src/ShiroPhysoMino.h
 		src/TGM.h
 		src/Timer.cc

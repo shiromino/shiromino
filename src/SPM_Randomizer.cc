@@ -1,35 +1,29 @@
 #include "SPM_Randomizer.h"
 #include "SPM_Structures.h"
+#include "PieceIDMacros.h"
 
-SPM_minoID arsToQrsID(SPM_minoID t)
+SPM_minoID arsIDConversion(SPM_minoID t)
 {
     switch(t)
     {
-        case 0:
-            break;
-        case 1:
-            t = 6;
-            break;
-        case 2:
-            t = 5;
-            break;
-        case 3:
-            t = 2;
-            break;
-        case 4:
-            t = 3;
-            break;
-        case 5:
-            t = 4;
-            break;
-        case 6:
-            t = 1;
-            break;
-        default:
-            break;
-    }
+        case A_ARS_I:
+            return F_ARS_I;
+        case A_ARS_Z:
+            return F_ARS_Z;
+        case A_ARS_S:
+            return F_ARS_S;
+        case A_ARS_J:
+            return F_ARS_J;
+        case A_ARS_L:
+            return F_ARS_L;
+        case A_ARS_O:
+            return F_ARS_O;
+        case A_ARS_T:
+            return F_ARS_T;
 
-    return t;
+        default:
+            return t;
+    }
 }
 
 void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t)
@@ -111,17 +105,14 @@ void G3_Randomizer::init(SPM_randomSeed seed)
         bag[i] = i / 5;
     }
 
-    history[0] = ARS_S;
-    history[1] = ARS_S;
-    history[2] = ARS_Z;
+    history[0] = A_ARS_S;
+    history[1] = A_ARS_S;
+    history[2] = A_ARS_Z;
     history[3] = g123_getInitPiece(seed);
 
-    for(int i = 0; i < 3; i++)
-    {
-        // move init piece to history[0] (first preview/next piece) and fill in 3 pieces ahead
-        // the S,S,Z get pulled into the void
-        pull();
-    }
+    // move init piece to history[0] (first preview/next piece) and fill in 3 pieces ahead
+    // the S,S,Z get pulled into the void
+    pull(); pull(); pull();
 }
 
 SPM_minoID G3_Randomizer::pull()
@@ -131,7 +122,7 @@ SPM_minoID G3_Randomizer::pull()
 
     history_push(history, 4, t);
 
-    return arsToQrsID(result);
+    return arsIDConversion(result);
 }
 
 SPM_minoID G3_Randomizer::getNext()

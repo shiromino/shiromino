@@ -1,5 +1,6 @@
 #include "random.h"
 #include "QRS0.h"
+#include "PieceIDMacros.h"
 #include "SDL.h"
 #include <cmath>
 #include <cstdint>
@@ -349,9 +350,9 @@ int g1_randomizer_init(struct randomizer *r, uint32_t *seed)
         g1_seed = *seed;
     }
 
-    d->history[0] = ARS_Z;
-    d->history[1] = ARS_Z;
-    d->history[2] = ARS_Z;
+    d->history[0] = A_ARS_Z;
+    d->history[1] = A_ARS_Z;
+    d->history[2] = A_ARS_Z;
     d->history[3] = g123_get_init_piece(&g1_seed);
     num_generated = 1;
 
@@ -376,9 +377,9 @@ int g2_randomizer_init(struct randomizer *r, uint32_t *seed)
         g2_seed = *seed;
     }
 
-    d->history[0] = ARS_S;
-    d->history[1] = ARS_S;
-    d->history[2] = ARS_Z;
+    d->history[0] = A_ARS_S;
+    d->history[1] = A_ARS_S;
+    d->history[2] = A_ARS_Z;
     d->history[3] = g123_get_init_piece(&g2_seed);
     num_generated = 1;
 
@@ -408,9 +409,9 @@ int g3_randomizer_init(struct randomizer *r, uint32_t *seed)
     for(i = 0; i < 35; i++)
         d->bag[i] = i / 5;
 
-    d->history[0] = ARS_S;
-    d->history[1] = ARS_S;
-    d->history[2] = ARS_Z;
+    d->history[0] = A_ARS_S;
+    d->history[1] = A_ARS_S;
+    d->history[2] = A_ARS_Z;
     d->history[3] = g123_get_init_piece(r->seedp);
     num_generated = 1;
 

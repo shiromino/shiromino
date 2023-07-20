@@ -1,4 +1,4 @@
-#include "ShiroPhysoMino.h"
+#include "SPM_SType.h"
 #include "CoreState.h"
 #include "gui/GUI.h"
 #include "video/Render.h"
@@ -8,7 +8,25 @@
 #include <memory>
 #include <vector>
 
-int TestSPM::init()
+SPM_SType::SPM_SType(CoreState& cs, SPM_Spec *spec) : ShiroPhysoMino(cs)
+{
+    this->spec = spec;
+
+    if(spec == nullptr)
+    {
+        field = new Shiro::Grid(10, 23);
+    }
+    else
+    {
+        field = new Shiro::Grid(spec->fieldW, spec->fieldH);
+    }
+
+    fieldPos = {48, 60};
+    timer = new Shiro::Timer(60.0);
+    gamePhase = spm_paused;
+}
+
+int SPM_SType::init()
 {
     if(player.randomizer)
     {
@@ -26,18 +44,11 @@ int TestSPM::init()
     player.counters.spawnDelayExpirePoint = player.timings.are;
     player.counters.lockDelayExpirePoint = player.timings.lockDelay;
     player.counters.lineClearExpirePoint = player.timings.lineClear;
-    player.counters.dasIntervalExpirePoint = player.timings.dasInterval;
 
     return 0;
 }
 
-TestSPM::~TestSPM() {
-    delete field;
-    delete timer;
-    delete rep;
-}
-
-int TestSPM::input()
+int SPM_SType::input()
 {
     if(player.mino == NULL)
     {
@@ -113,7 +124,7 @@ int TestSPM::input()
     return 0;
 }
 
-int TestSPM::frame()
+int SPM_SType::frame()
 {
     if(player.playPhase == spm_player_control && player.mino->physicState == spm_physic_spawned)
     {
@@ -226,7 +237,7 @@ int TestSPM::frame()
     return 0;
 }
 
-int TestSPM::draw()
+int SPM_SType::draw()
 {
     int blockW = 16;
     int blockH = 16;
@@ -305,7 +316,7 @@ int TestSPM::draw()
     return 0;
 }
 
-bool TestSPM::spawnDelayExpired(SPM_Player& p)
+bool SPM_SType::spawnDelayExpired(SPM_SPlayer& p)
 {
     p.counters.lockDelay = 0;
 
@@ -351,7 +362,7 @@ bool TestSPM::spawnDelayExpired(SPM_Player& p)
     return true;
 }
 
-bool TestSPM::lockDelayExpired(SPM_Player& p)
+bool SPM_SType::lockDelayExpired(SPM_SPlayer& p)
 {
     spec->imprintMino(field, *p.mino);
     p.mino->physicState = spm_physic_locked;
@@ -372,7 +383,7 @@ bool TestSPM::lockDelayExpired(SPM_Player& p)
     return true;
 }
 
-bool TestSPM::lineClearExpired(SPM_Player& p)
+bool SPM_SType::lineClearExpired(SPM_SPlayer& p)
 {
     p.playPhase = spm_spawn_delay;
     p.counters.spawnDelayExpirePoint = p.timings.lineAre;
@@ -386,7 +397,7 @@ bool TestSPM::lineClearExpired(SPM_Player& p)
     return true;
 }
 
-bool TestSPM::initNextMino(SPM_Player& p)
+bool SPM_SType::initNextMino(SPM_SPlayer& p)
 {
     SPM_minoID t = MINO_ID_INVALID;
 
@@ -450,7 +461,7 @@ bool TestSPM::initNextMino(SPM_Player& p)
     return true;
 }
 
-ActivatedPolyomino *TestSPM::activateMino(SPM_minoID ID)
+ActivatedPolyomino *SPM_SType::activateMino(SPM_minoID ID)
 {
     if(ID >= spec->polyominoes.size())
     {

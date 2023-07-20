@@ -7,6 +7,7 @@
 #include "gfx_old.h"
 #include "gfx_qs.h"
 #include "QRS0.h"
+#include "PieceIDMacros.h"
 #include "stringtools.h"
 #include "random.h"
 #include "Timer.h"

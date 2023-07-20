@@ -8,27 +8,35 @@
 class SPM_Spec {
 public:
     SPM_Spec() :
-        fieldW(0),
-        fieldH(0),
-        visualFieldH(0),
+        randomizer(nullptr),
+        fieldW(10),
+        fieldH(23),
+        visualFieldH(20),
+        rotateA(spm_counter_clockwise),
+        rotateB(spm_clockwise),
+        rotateC(spm_counter_clockwise),
+        buttonDAction(spm_do_nothing),
+        useLockDelay(false),
+        initialRotate(false),
+        initialHold(false),
         numPreviews(0u),
-        allowHold(false),
         allowHardDrop(false),
         softDropLock(false),
         hardDropLock(false) {}
-    virtual ~SPM_Spec() {}
+    
+    virtual ~SPM_Spec() { delete randomizer; }
 
-    virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino);
-    virtual bool checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino, std::pair<int, int>& pos);
-    virtual bool isGrounded(Shiro::Grid *field, ActivatedPolyomino& mino);
+    virtual bool checkCollision(Shiro::Grid *, ActivatedPolyomino&);
+    virtual bool checkCollision(Shiro::Grid *, ActivatedPolyomino&, std::pair<int, int>&);
+    virtual bool isGrounded(Shiro::Grid *, ActivatedPolyomino&);
 
-    virtual bool checkedShift(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_offset offset);
-    virtual bool checkedRotate(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_orientation dir);
-    virtual int checkedFall(Shiro::Grid *field, ActivatedPolyomino& mino, int subY);
+    virtual bool checkedShift(Shiro::Grid *, ActivatedPolyomino&, SPM_offset);
+    virtual bool checkedRotate(Shiro::Grid *, ActivatedPolyomino&, SPM_orientation);
+    virtual int checkedFall(Shiro::Grid *, ActivatedPolyomino&, int);
 
-    virtual void imprintMino(Shiro::Grid *field, ActivatedPolyomino& mino);
-    virtual int checkAndClearLines(Shiro::Grid *field, int bound);
-    virtual void dropField(Shiro::Grid *field);
+    virtual void imprintMino(Shiro::Grid *, ActivatedPolyomino&);
+    virtual int checkAndClearLines(Shiro::Grid *, int);
+    virtual void dropField(Shiro::Grid *);
 
     SPM_Randomizer *randomizer;
 
@@ -41,32 +49,24 @@ public:
 
     // TODO: no reset vs. step reset vs. move reset, as well as possibility for other options?
 
-    unsigned int numPreviews;
-    bool allowHold;
-    bool allowHardDrop;
+    SPM_orientation rotateA;
+    SPM_orientation rotateB;
+    SPM_orientation rotateC;
+    SPM_buttonAction buttonDAction;
 
+    bool useLockDelay;
+    bool initialRotate;
+    bool initialHold;
+
+    unsigned int numPreviews;
+
+    bool allowHardDrop;
     bool softDropLock;
     bool hardDropLock;
 };
 
-class SPM_TestSpec : public SPM_Spec {
+class SPM_TestSpec : public SPM_Spec
+{
 public:
-    SPM_TestSpec() {
-        for (int i = 0; i < 7; i++) {
-            polyominoes.push_back(Shiro::TetroRotationTables[i]);
-
-            spawnPositions.push_back( {3, 2} );
-        }
-
-        fieldW = 10;
-        fieldH = 23;
-        visualFieldH = 20;
-
-        numPreviews = 1;
-        allowHold = false;
-        allowHardDrop = true;
-
-        softDropLock = true;
-        hardDropLock = false;
-    }
+    SPM_TestSpec();
 };

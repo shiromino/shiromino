@@ -9,6 +9,7 @@
 #include "gfx_old.h"
 #include "gfx_qs.h"
 #include "QRS0.h"
+#include "PieceIDMacros.h"
 #include "menu/ElementType.h"
 #include "menu/TextOption.h"
 #include "random.h"

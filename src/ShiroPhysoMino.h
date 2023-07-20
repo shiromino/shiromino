@@ -16,10 +16,15 @@ public:
         timer(nullptr),
         rep(nullptr),
         playback(false),
+        recording(false),
         playbackIndex(0),
         gamePhase(SPM_gamePhase::spm_paused) {}
 
-    ~ShiroPhysoMino() {}
+    virtual ~ShiroPhysoMino() {
+        delete field;
+        delete timer;
+        delete rep;
+    }
 
 protected:
     SPM_Spec *spec;
@@ -31,28 +36,29 @@ protected:
 
     replay *rep;
     bool playback;
+    bool recording;
     int playbackIndex;
 
     SPM_gamePhase gamePhase;
 };
 
 struct SPM_Player {
-    SPM_Player() {
-        randomizer = new G3_Randomizer;
-        mino = NULL;
-        hold = NULL;
-        playPhase = spm_player_control;
+    SPM_Player() :
+        randomizer(nullptr),
+        mino(nullptr),
+        hold(nullptr),
+        playPhase(spm_spawn_delay),
+        minoSeqIndex(0)
+    {
         timings.gravity = 20 * 256 * 256;
         timings.lockDelay = -1;
         timings.das = 8;
-        timings.dasInterval = 0;
         timings.are = 11;
         timings.lineAre = 6;
         timings.lineClear = 6;
-        minoSeqIndex = 0;
     }
 
-    ~SPM_Player() {
+    virtual ~SPM_Player() {
         delete randomizer;
         delete mino;
         for (const auto* mino : previews) {
@@ -76,6 +82,7 @@ struct SPM_Player {
     unsigned int minoSeqIndex;
 };
 
+/*
 class TestSPM : public ShiroPhysoMino {
 public:
     TestSPM(CoreState& cs, SPM_Spec *spec)
@@ -107,3 +114,4 @@ private:
 
     SPM_Player player;
 };
+*/

@@ -1,11 +1,16 @@
 #include "SPM_Spec.h"
+#include "SPM_Randomizer.h"
 #include <iostream>
 #include <vector>
-bool SPM_Spec::checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino) {
+
+bool SPM_Spec::checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino)
+{
     std::pair<int, int> pos;
     return checkCollision(field, mino, pos);
 }
-bool SPM_Spec::checkCollision(Shiro::Grid *field, ActivatedPolyomino& mino, std::pair<int, int>& pos) {
+
+bool SPM_Spec::checkCollision(Shiro::Grid *field, ActivatedPolyomino& mino, std::pair<int, int>& pos)
+{
     Shiro::Grid d = mino.currentRotationTable();
 
     int d_x = 0;
@@ -14,9 +19,12 @@ bool SPM_Spec::checkCollision(Shiro::Grid *field, ActivatedPolyomino& mino, std:
     int f_x = 0;
     int f_y = 0;
 
-    for (d_y = 0, f_y = mino.position.y; d_y < int(d.getHeight()); d_y++, f_y++) {
-        for (d_x = 0, f_x = mino.position.x; d_x < int(d.getWidth()); d_x++, f_x++) {
-            if (d.getCell(d_x, d_y) && field->getCell(f_x, f_y)) {
+    for (d_y = 0, f_y = mino.position.y; d_y < int(d.getHeight()); d_y++, f_y++)
+    {
+        for (d_x = 0, f_x = mino.position.x; d_x < int(d.getWidth()); d_x++, f_x++)
+        {
+            if (d.getCell(d_x, d_y) && field->getCell(f_x, f_y))
+            {
                 pos = std::pair<int, int>(d_x, d_y);
                 return true;
             }
@@ -97,9 +105,12 @@ void SPM_Spec::imprintMino(Shiro::Grid *field, ActivatedPolyomino& mino)
 {
     Shiro::Grid d = mino.currentRotationTable();
 
-    for (int from_y = 0, to_y = mino.position.y; from_y < int(d.getHeight()); from_y++, to_y++) {
-        for (int from_x = 0, to_x = mino.position.x; from_x < int(d.getWidth()); from_x++, to_x++) {
-            if (d.getCell(from_x, from_y)) {
+    for (int from_y = 0, to_y = mino.position.y; from_y < int(d.getHeight()); from_y++, to_y++)
+    {
+        for (int from_x = 0, to_x = mino.position.x; from_x < int(d.getWidth()); from_x++, to_x++)
+        {
+            if (d.getCell(from_x, from_y))
+            {
                 field->cell(to_x, to_y) = mino.codedCellValue();
             }
         }
@@ -161,4 +172,33 @@ void SPM_Spec::dropField(Shiro::Grid *field)
             }
         }
     }
+}
+
+SPM_TestSpec::SPM_TestSpec() : SPM_Spec()
+{
+    randomizer = new SPM_NonRandomizer(7u);
+
+    for (int i = 0; i < 7; i++) {
+        polyominoes.push_back(Shiro::TetroRotationTables[i]);
+        spawnPositions.push_back( {3, 2} );
+    }
+
+    fieldW = 10;
+    fieldH = 23;
+    visualFieldH = 20;
+
+    rotateA = spm_counter_clockwise;
+    rotateB = spm_clockwise;
+    rotateC = spm_counter_clockwise;
+    buttonDAction = spm_do_nothing;
+
+    useLockDelay = false;
+    initialRotate = false;
+    initialHold = false;
+
+    numPreviews = 1;
+
+    allowHardDrop = true;
+    softDropLock = true;
+    hardDropLock = false;
 }

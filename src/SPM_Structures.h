@@ -90,8 +90,10 @@ inline SPM_point operator - (SPM_point& a, SPM_offset& b)
 enum SPM_gamePhase
 {
     spm_paused = 0,
-    spm_gameplay,
     spm_transition,
+    spm_gameplay,
+    spm_gameplay_timed,
+    spm_gameplay_credits,
     spm_game_over
 };
 
@@ -168,12 +170,11 @@ inline SPM_orientation operator - (SPM_orientation& a, SPM_orientation& b)
 
 struct SPM_frameTimings
 {
-    SPM_frameTimings() : gravity(0), lockDelay(0), das(0), dasInterval(0), are(0), lineAre(0), lineClear(0) {}
+    SPM_frameTimings() : gravity(0), lockDelay(0), das(0), are(0), lineAre(0), lineClear(0) {}
 
     int gravity;
     int lockDelay;
     int das;
-    int dasInterval;
     int are;
     int lineAre;
     int lineClear;
@@ -186,20 +187,20 @@ struct SPM_gameCounters
         frameWait = 0;
         frameWaitExpirePoint = 0;
 
-        gamePhase = 0;
+        gamePhaseTime = 0;
         gamePhaseExpirePoint = 0;
 
-        transition = 0;
+        transitionTime = 0;
         transitionExpirePoint = 0;
     }
 
     int frameWait; // could be used for slow-down: if(frameWait != 0) {frameWait--; return;}
     int frameWaitExpirePoint;
 
-    int gamePhase; // counter for how long to stay in the current game phase
+    int gamePhaseTime; // counter for how long to stay in the current game phase
     int gamePhaseExpirePoint;
 
-    int transition;
+    int transitionTime;
     int transitionExpirePoint;
 };
 
@@ -216,9 +217,6 @@ struct SPM_frameCounters
 
         lineClear = 0;
         lineClearExpirePoint = 0;
-
-        dasInterval = 0;
-        dasIntervalExpirePoint = 0;
     }
 
     int lockDelay;
@@ -231,14 +229,20 @@ struct SPM_frameCounters
     int lineClear;
     int lineClearExpirePoint;
 
-    int dasInterval;
-    int dasIntervalExpirePoint;
-
     /* the below are not fundamental, can be implemented in a derived struct */
 
     // int postLock;
     // unsigned int floorkicks;
     // int holdFlash;
+};
+
+enum SPM_buttonAction
+{
+    spm_do_nothing = 0,
+    spm_hold,
+    spm_sequence_hold,
+    spm_initial_flip,
+    spm_use_item
 };
 
 // TODO: Templatize the 2D dimensions of the rotations.

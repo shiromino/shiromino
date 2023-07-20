@@ -10,6 +10,7 @@
 #include "Grid.h"
 #include "input/KeyFlags.h"
 #include "PieceDefinition.h"
+#include "PieceIDMacros.h"
 #include "QRS0.h"
 #include "random.h"
 #include "replay.h"
