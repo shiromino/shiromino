@@ -28,6 +28,13 @@ SPM_SType::SPM_SType(CoreState& cs, SPM_Spec *spec) : ShiroPhysoMino(cs)
 
 int SPM_SType::init()
 {
+    if(!spec)
+    {
+        return -1;
+    }
+    
+    player.randomizer = spec->randomizer;
+
     if(player.randomizer)
     {
         player.randomizer->init(0);
@@ -108,7 +115,7 @@ int SPM_SType::input()
             }
         }
 
-        if(cs.pressed.up)
+        if(cs.pressed.up && spec->allowHardDrop)
         {
             spec->checkedFall(field, *player.mino, 20 * SPM_SUBUNIT_SCALE);
         }
@@ -197,7 +204,7 @@ int SPM_SType::frame()
                 if(player.counters.lineClear == player.counters.lineClearExpirePoint)
                 {
                     player.counters.lineClear = 0;
-                    lineClearExpired(player);
+                    lineClearExpired();
 
                     player.playPhase = spm_spawn_delay;
                 }
@@ -383,13 +390,13 @@ bool SPM_SType::lockDelayExpired(SPM_SPlayer& p)
     return true;
 }
 
-bool SPM_SType::lineClearExpired(SPM_SPlayer& p)
+bool SPM_SType::lineClearExpired()
 {
-    p.playPhase = spm_spawn_delay;
-    p.counters.spawnDelayExpirePoint = p.timings.lineAre;
-    p.counters.usingLineSpawnDelay = true;
+    player.playPhase = spm_spawn_delay;
+    player.counters.spawnDelayExpirePoint = player.timings.lineAre;
+    player.counters.usingLineSpawnDelay = true;
 
-    p.counters.lineClear = 0;
+    player.counters.lineClear = 0;
     spec->dropField(field);
 
     // sfx_play(&cs->assets->dropfield);

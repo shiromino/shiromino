@@ -4,6 +4,7 @@
 #include "DASDirection.h"
 #include "DisplayMode.h"
 #include "Game.h"
+#include "ARS.h"
 #include "gui/ScreenManager.h"
 #include "video/Screen.h"
 #include "video/Background.h"
@@ -102,6 +103,9 @@ struct CoreState {
     game_t *menu;
     struct pracdata *pracdata_mirror;
     ScreenManager *screenManager;
+
+    ARS ars;
+    Game *SPMgame;
 
     Shiro::DisplayMode displayMode;
     bool motionBlur;

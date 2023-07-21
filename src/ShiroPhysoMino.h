@@ -50,7 +50,7 @@ struct SPM_Player {
         playPhase(spm_spawn_delay),
         minoSeqIndex(0)
     {
-        timings.gravity = 20 * 256 * 256;
+        timings.gravity = 32;
         timings.lockDelay = -1;
         timings.das = 8;
         timings.are = 11;

@@ -16,6 +16,7 @@
 #include "input/KeyFlags.h"
 #include "input/Mouse.h"
 #include "QRS1.h"
+#include "SPM_SType.h"
 #include "random.h"
 #include "Records.h"
 #include "RefreshRates.h"
@@ -448,6 +449,9 @@ void CoreState::run() {
     uint64_t lastTime = startTime;
     uint64_t realFrameTime = 0u;
 
+    //SPMgame = new SPM_SType(*this, &ars);
+    //if(SPMgame) SPMgame->init();
+
     bool slept = true;
     for (
         nanotime_step_init(&stepper, NANOTIME_NSEC_PER_SEC / fps, nanotime_now, nanotime_sleep);
@@ -486,11 +490,8 @@ void CoreState::run() {
 
         gfx_buttons_input();
 
-        /*
-        SPMgame.input();
-        SPMgame.frame();
-        SPMgame.draw();
-        */
+        //if(SPMgame) SPMgame->input();
+        //if(SPMgame) SPMgame->frame();
 
         gfx.clearLayers();
 
@@ -608,6 +609,7 @@ void CoreState::run() {
 
         bg.draw();
         gfx.draw();
+        //if(SPMgame) SPMgame->draw();
         SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
 
         if (theRenderTarget != nullptr) {
@@ -661,6 +663,8 @@ void quit(CoreState *cs)
 {
     scoredb_terminate(&cs->records);
     // scoredb_terminate(&cs->archive);
+
+    delete cs->SPMgame;
 
     if(cs->assets)
     {

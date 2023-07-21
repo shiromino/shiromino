@@ -149,7 +149,7 @@ inline SPM_orientation operator + (SPM_orientation& a, SPM_orientation& b)
 
     for(int i = 0; i < n; i++)
     {
-        ++a;
+        result = ++result;
     }
 
     return result;
@@ -162,7 +162,7 @@ inline SPM_orientation operator - (SPM_orientation& a, SPM_orientation& b)
 
     for(int i = 0; i < n; i++)
     {
-        --a;
+        result = --result;
     }
 
     return result;
@@ -171,6 +171,15 @@ inline SPM_orientation operator - (SPM_orientation& a, SPM_orientation& b)
 struct SPM_frameTimings
 {
     SPM_frameTimings() : gravity(0), lockDelay(0), das(0), are(0), lineAre(0), lineClear(0) {}
+    SPM_frameTimings(int gravity, int lockDelay, int das, int are, int lineAre, int lineClear)
+    {
+        gravity = gravity;
+        lockDelay = lockDelay;
+        das = das;
+        are = are;
+        lineAre = lineAre;
+        lineClear = lineClear;
+    }
 
     int gravity;
     int lockDelay;
@@ -258,8 +267,6 @@ public:
         }
     }
 
-    virtual void draw() {}
-
     std::array<Shiro::Grid, 4> rotationTables; // these grids technically don't have to be the same size
 };
 
@@ -282,9 +289,9 @@ public:
         return ID + 1;
     }
 
-    void freeRotateCW() { ++orientation; }
-    void freeRotateCCW() { --orientation; }
-    void freeRotateFlip() { ++orientation; ++orientation; }
+    void freeRotateCW() { orientation = ++orientation; }
+    void freeRotateCCW() { orientation = --orientation; }
+    void freeRotateFlip() { orientation = static_cast<SPM_orientation>(orientation + spm_flip); }
 
     void freeMoveLeft() { position.x--; }
     void freeMoveRight() { position.x++; }

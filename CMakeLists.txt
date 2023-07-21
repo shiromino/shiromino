@@ -101,6 +101,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/menu/Option.h
 		src/menu/TextOption.h
 		src/menu/ToggleOption.h
+		src/modes/G2_Death.cc
+		src/modes/G2_Death.h
 		src/Delay.cc
 		src/Delay.h
 		src/Nanotime.cc

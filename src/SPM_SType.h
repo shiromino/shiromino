@@ -84,11 +84,11 @@ public:
     int draw() override;
 
 protected:
-    bool spawnDelayExpired(SPM_SPlayer&);
-    bool lockDelayExpired(SPM_SPlayer&);
-    bool lineClearExpired(SPM_SPlayer&);
-    bool initNextMino(SPM_SPlayer&);
-    ActivatedPolyomino *activateMino(SPM_minoID ID);
+    virtual bool spawnDelayExpired(SPM_SPlayer&);
+    virtual bool lockDelayExpired(SPM_SPlayer&);
+    virtual bool lineClearExpired();
+    virtual bool initNextMino(SPM_SPlayer&);
+    virtual ActivatedPolyomino *activateMino(SPM_minoID);
 
     SPM_SPlayer player;
 
