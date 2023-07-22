@@ -39,7 +39,7 @@
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 #include "nanotime.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include <string>
 #include <vector>
 #include <deque>
@@ -413,7 +413,7 @@ bool CoreState::init() {
         check(gfx_init(this) == 0, "gfx_init returned failure\n");
         bg.transition(Shiro::ImageAsset::get(assetMgr, "bg_temp"));
         // blank = Shiro::ImageAsset::get(assetMgr, "blank").getTexture();
-        // check(Shiro::RenderCopy(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+        // check(Shiro::DrawTexture(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
         menu = menu_create(this);
         check(menu != NULL, "menu_create returned failure\n");
         menu->init(menu);
@@ -421,7 +421,7 @@ bool CoreState::init() {
         //SDL_Rect gameScreenRect = {0, 0, 640, 480};
         //screenManager->addScreen("game", new GUIScreen {this, "game", NULL, gameScreenRect});
         screenManager->loadScreen("main");
-        // check(Shiro::RenderCopy(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
+        // check(Shiro::DrawTexture(cs->screen, blank, NULL, NULL) > -1, "SDL_RenderCopy: Error: %s\n", SDL_GetError());
         const auto databasePath = settings.cachePath / Shiro::Records::filename;
         scoredb_init(&records, databasePath.string().c_str());
         scoredb_create_player(&records, &player, settings.playerName.c_str());
@@ -493,7 +493,7 @@ void CoreState::run() {
         //if(SPMgame) SPMgame->input();
         //if(SPMgame) SPMgame->frame();
 
-        gfx.clearLayers();
+        gfxRenderer.clearLayers();
 
         if (p1game) {
             if (!p1game->update(!button_emergency_override)) {
@@ -572,7 +572,7 @@ void CoreState::run() {
         // TODO: Create entities in the code for the game and menu, then remove this.
         // Or perhaps have the game and menu code push entities, and no longer
         // have explicit game and menu drawing functions.
-        gfx.push(std::make_unique<OldGfxEntity>(
+        gfxRenderer.push(std::make_unique<OldGfxEntity>(
             Shiro::GfxLayer::base,
             [this] {
                 if (p1game) {
@@ -587,18 +587,18 @@ void CoreState::run() {
         ));
 
         // TODO: Create entities in the code for buttons, then remove this.
-        gfx.push(std::make_unique<OldGfxEntity>(
+        gfxRenderer.push(std::make_unique<OldGfxEntity>(
             Shiro::GfxLayer::buttons,
             [this] { gfx_drawbuttons(this, 0); }
         ));
 
         // TODO: Create entities in the code for emergency buttons, then remove this.
-        gfx.push(std::make_unique<OldGfxEntity>(
+        gfxRenderer.push(std::make_unique<OldGfxEntity>(
             Shiro::GfxLayer::emergencyButtons,
             [this] { gfx_drawbuttons(this, EMERGENCY_OVERRIDE); }
         ));
 
-        gfx.update();
+        gfxRenderer.update();
 
         if (!(settings.vsync && settings.vsyncTimestep) && !slept) {
             continue;
@@ -608,15 +608,15 @@ void CoreState::run() {
         SDL_RenderClear(screen.renderer);
 
         bg.draw();
-        gfx.draw();
+        gfxRenderer.draw();
         //if(SPMgame) SPMgame->draw();
         SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
 
         if (theRenderTarget != nullptr) {
             SDL_Rect dst_ = {0, 0, 640, 480};
             SDL_SetRenderTarget(screen.renderer, NULL);
-            //Shiro::RenderCopy(screen, theRenderTarget, nullptr, &dst_);
-            Shiro::RenderCopy(screen, theRenderTarget, nullptr, nullptr);
+            //Shiro::DrawTexture(screen, theRenderTarget, nullptr, &dst_);
+            Shiro::DrawTexture(screen, theRenderTarget, nullptr, nullptr);
             SDL_RenderPresent(screen.renderer);
 
             SDL_SetRenderTarget(screen.renderer, theRenderTarget);

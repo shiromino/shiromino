@@ -136,12 +136,12 @@ target_sources(${GAME_EXECUTABLE}
 		src/video/Animation.h
 		src/video/Background.cc
 		src/video/Background.h
+		src/video/Draw.cc
+		src/video/Draw.h
 		src/video/Gfx.cc
 		src/video/Gfx.h
 		src/video/MessageEntity.cc
 		src/video/MessageEntity.h
-		src/video/Render.cc
-		src/video/Render.h
 		src/video/Screen.cc
 		src/video/Screen.h
 		src/video/TextGraphic.cc

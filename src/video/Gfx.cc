@@ -24,11 +24,11 @@ namespace Shiro {
 
 	Entity::~Entity() {}
 
-	void Gfx::push(std::unique_ptr<Entity> entity) {
+	void Renderer::push(std::unique_ptr<Entity> entity) {
 		entities.push_front(std::move(entity));
 	}
 
-	void Gfx::update() {
+	void Renderer::update() {
 		for (auto it = entities.before_begin(); next(it) != entities.end();) {
 			if ((*next(it))->update(layers)) {
 				entities.erase_after(it);
@@ -39,15 +39,15 @@ namespace Shiro {
 		}
 	}
 
-	void Gfx::draw() const {
+	void Renderer::draw() const {
 		layers.draw();
 	}
 
-	void Gfx::clearEntities() {
+	void Renderer::clearEntities() {
 		entities.clear();
 	}
 
-	void Gfx::clearLayers() {
+	void Renderer::clearLayers() {
 		layers.clear();
 	}
 }

@@ -21,11 +21,18 @@
  */
 #define DEFINE_ENTITY_PUSH(EntityType) \
 template<typename... Args> \
-static inline void push(Shiro::Gfx& gfx, Args&&... args) { \
-    gfx.push(std::make_unique<Shiro::EntityType>(args...)); \
+static inline void push(Shiro::Renderer& gfxRenderer, Args&&... args) { \
+    gfxRenderer.push(std::make_unique<Shiro::EntityType>(args...)); \
 }
 
 namespace Shiro {
+    namespace Gfx {
+        struct Point {
+            Point() : x(0), y(0) {}
+            Point(float x_, float y_) : x(x_), y(y_) {}
+            float x,y;
+        };
+    }
     // TODO: Consider moving this somewhere when there's more than just one basic screen type, where each screen type needs its own layout of layers.
     /**
      * This allows scoped enum constants just like `enum class GfxLayer`, but
@@ -56,9 +63,9 @@ namespace Shiro {
         virtual void draw() const = 0;
     };
 
-    class Gfx;
+    class Renderer;
     class Layers {
-        friend Gfx;
+        friend Renderer;
 
     public:
         /**
@@ -94,7 +101,7 @@ namespace Shiro {
         virtual bool update(Layers& layers) = 0;
     };
 
-    class Gfx {
+    class Renderer {
     public:
         /**
          * Pushes a new entity.

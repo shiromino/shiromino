@@ -1,10 +1,10 @@
-#include "video/Render.h"
+#include "video/Draw.h"
 #include "video/Screen.h"
 
 using namespace Shiro;
 
 namespace Shiro {
-    int RenderCopy(const Screen& screen, SDL_Texture *tex, const SDL_Rect *srcrect, SDL_Rect *dstrect)
+    int DrawTexture(const Screen& screen, SDL_Texture *tex, const SDL_Rect *srcrect, SDL_Rect *dstrect)
     {
         if(screen.window == nullptr || screen.renderer == nullptr || tex == nullptr)
         {
@@ -56,7 +56,7 @@ namespace Shiro {
         return SDL_RenderCopy(screen.renderer, tex, srcrect, &dst);
     }
 
-    int RenderCopyOuter(const Screen& screen, SDL_Texture *tex, const SDL_Rect *srcrect, SDL_Rect *dstrect, Render::Alignment alignment)
+    int DrawTextureOuter(const Screen& screen, SDL_Texture *tex, const SDL_Rect *srcrect, SDL_Rect *dstrect, Draw::Alignment alignment)
     {
         if(screen.window == nullptr || screen.renderer == nullptr || tex == nullptr)
         {
@@ -110,22 +110,22 @@ namespace Shiro {
 
             switch(alignment)
             {
-                case Render::Alignment::topLeft:
+                case Draw::Alignment::topLeft:
                     xDelta = screen.renderAreaX;
                     yDelta = screen.renderAreaY;
                     break;
 
-                case Render::Alignment::bottomLeft:
+                case Draw::Alignment::bottomLeft:
                     xDelta = screen.renderAreaX;
                     yDelta = screen.renderAreaY + screen.renderAreaH;
                     break;
 
-                case Render::Alignment::topRight:
+                case Draw::Alignment::topRight:
                     xDelta = screen.renderAreaX + screen.renderAreaW;
                     yDelta = screen.renderAreaY;
                     break;
 
-                case Render::Alignment::bottomRight:
+                case Draw::Alignment::bottomRight:
                     xDelta = screen.renderAreaX + screen.renderAreaW;
                     yDelta = screen.renderAreaY + screen.renderAreaH;
                     break;
@@ -144,7 +144,7 @@ namespace Shiro {
         }
     }
 
-    int RenderFillRect(const Screen& screen, SDL_Rect *rect)
+    int DrawRect(const Screen& screen, SDL_Rect *rect)
     {
         if(screen.window == nullptr || screen.renderer == nullptr)
         {
@@ -196,7 +196,7 @@ namespace Shiro {
         return SDL_RenderFillRect(screen.renderer, &dst);
     }
 
-    int RenderFillRectOuter(const Screen& screen, SDL_Rect *rect, Render::Alignment alignment)
+    int DrawRectOuter(const Screen& screen, SDL_Rect *rect, Draw::Alignment alignment)
     {
         if(screen.window == nullptr || screen.renderer == nullptr)
         {
@@ -250,22 +250,22 @@ namespace Shiro {
 
             switch(alignment)
             {
-                case Render::Alignment::topLeft:
+                case Draw::Alignment::topLeft:
                     xDelta = screen.renderAreaX;
                     yDelta = screen.renderAreaY;
                     break;
 
-                case Render::Alignment::bottomLeft:
+                case Draw::Alignment::bottomLeft:
                     xDelta = screen.renderAreaX;
                     yDelta = screen.renderAreaY + screen.renderAreaH;
                     break;
 
-                case Render::Alignment::topRight:
+                case Draw::Alignment::topRight:
                     xDelta = screen.renderAreaX + screen.renderAreaW;
                     yDelta = screen.renderAreaY;
                     break;
 
-                case Render::Alignment::bottomRight:
+                case Draw::Alignment::bottomRight:
                     xDelta = screen.renderAreaX + screen.renderAreaW;
                     yDelta = screen.renderAreaY + screen.renderAreaH;
                     break;

@@ -2,7 +2,7 @@
 #include "CoreState.h"
 #include "game_menu.h"
 #include "gfx_old.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include "menu/ElementType.h"
 #include "menu/GameMultiOption.h"
 #include "menu/MultiOption.h"
@@ -81,7 +81,7 @@ int gfx_drawmenu(game_t *g)
             //SDL_SetTextureAlphaMod(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), 150);
             SDL_SetTextureBlendMode(Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), SDL_BLENDMODE_BLEND);
             SDL_SetTextureBlendMode(Shiro::ImageAsset::get(cs->assetMgr, "bg_temp").getTexture(), SDL_BLENDMODE_BLEND);
-            Shiro::RenderCopy(cs->screen, Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), NULL, &titlePNGdest);
+            Shiro::DrawTexture(cs->screen, Shiro::ImageAsset::get(cs->assetMgr, "title_emboss").getTexture(), NULL, &titlePNGdest);
         }
         else
         {
@@ -162,7 +162,7 @@ int gfx_drawmenu(game_t *g)
                 baroutlinedest.x = bardest.x;
                 bardest.y = m->value_y + 1;
                 baroutlinedest.y = m->value_y;
-                Shiro::RenderCopy(cs->screen, font, &baroutlinesrc, &baroutlinedest);
+                Shiro::DrawTexture(cs->screen, font, &baroutlinesrc, &baroutlinedest);
 
                 if(d2->selection > 0)
                 {
@@ -183,7 +183,7 @@ int gfx_drawmenu(game_t *g)
                         else if((i % 3) == 0)
                             SDL_SetTextureColorMod(font, mod, mod, 255);
 
-                        Shiro::RenderCopy(cs->screen, font, &barsrc, &bardest);
+                        Shiro::DrawTexture(cs->screen, font, &barsrc, &bardest);
                         bardest.x += 1;
                     }
 
@@ -247,7 +247,7 @@ int gfx_drawmenu(game_t *g)
                     {
                         dest.x = m->value_x + (m->value_text_flags & DRAWTEXT_THIN_FONT ? 13 : 16) * (k)-1;
 
-                        if(Shiro::RenderCopy(cs->screen, font, &src, &dest)) {
+                        if(Shiro::DrawTexture(cs->screen, font, &src, &dest)) {
                             std::cerr << SDL_GetError() << std::endl;
                         }
                     }
@@ -289,7 +289,7 @@ int gfx_drawmenu(game_t *g)
                     }
                     dest.y = m->value_y + 1;
 
-                    Shiro::RenderCopy(cs->screen, font, &src, &dest);
+                    Shiro::DrawTexture(cs->screen, font, &src, &dest);
                 }
 
                 if(d7->leftmost_position < int(d7->text.size()) - d7->visible_chars)
@@ -307,7 +307,7 @@ int gfx_drawmenu(game_t *g)
                     }
                     dest.y = m->value_y + 1;
 
-                    Shiro::RenderCopy(cs->screen, font, &src, &dest);
+                    Shiro::DrawTexture(cs->screen, font, &src, &dest);
                 }
 
                 gfx_drawtext(cs, textinput_display, m->value_x, m->value_y + 1, monofont, &fmt);
@@ -338,7 +338,7 @@ int gfx_drawmenu(game_t *g)
 
                     SDL_GetRenderDrawColor(cs->screen.renderer, &r_, &g_, &b_, &a_);
                     SDL_SetRenderDrawColor(cs->screen.renderer, 255, 255, 255, 255);
-                    Shiro::RenderFillRect(cs->screen, &dest);
+                    Shiro::DrawRect(cs->screen, &dest);
                     SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
 
                     dest.w = 16;
@@ -435,7 +435,7 @@ int gfx_drawmenu(game_t *g)
                 SDL_SetTextureAlphaMod(font, A(b.text_rgba_mod));
             }
 
-            Shiro::RenderCopy(cs->screen, font, &src, &dest);
+            Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
             src.x += 6;
             dest.x += 6;
@@ -447,7 +447,7 @@ int gfx_drawmenu(game_t *g)
                 if(j)
                     dest.x += monofont_square->char_w;
 
-                Shiro::RenderCopy(cs->screen, font, &src, &dest);
+                Shiro::DrawTexture(cs->screen, font, &src, &dest);
             }
 
             src.x += 16;
@@ -455,7 +455,7 @@ int gfx_drawmenu(game_t *g)
             dest.w = 6;
             dest.x += monofont_square->char_w;
 
-            Shiro::RenderCopy(cs->screen, font, &src, &dest);
+            Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
             SDL_SetTextureColorMod(font, 255, 255, 255);
             SDL_SetTextureAlphaMod(font, 255);
@@ -489,7 +489,7 @@ int gfx_drawmenu(game_t *g)
 
         SDL_Rect dst_ = {0, 0, 640, 480};
 
-        Shiro::RenderCopy(cs->screen, d->target_tex, NULL, &dst_);
+        Shiro::DrawTexture(cs->screen, d->target_tex, NULL, &dst_);
     }
 
     return 0;

@@ -83,7 +83,7 @@ struct CoreState {
     Shiro::Background bg;
     std::vector<gfx_button> gfx_buttons;
     // TODO: Replace all gfx_* code with the new Gfx system.
-    Shiro::Gfx gfx;
+    Shiro::Renderer gfxRenderer;
 
     Shiro::KeyFlags prev_keys_raw;
     Shiro::KeyFlags keys_raw;

@@ -1,5 +1,5 @@
 #include "video/TextGraphic.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include <sstream>
 #include <cassert>
 
@@ -61,7 +61,7 @@ namespace Shiro {
 
             SDL_SetTextureColorMod(std::get<0>(charData), R(color), G(color), B(color));
             SDL_SetTextureAlphaMod(std::get<0>(charData), A(color));
-            Shiro::RenderCopy(screen, std::get<0>(charData), &std::get<1>(charData), &dstRect);
+            Shiro::DrawTexture(screen, std::get<0>(charData), &std::get<1>(charData), &dstRect);
 
             SDL_SetTextureColorMod(std::get<0>(charData), r, g, b);
             SDL_SetTextureAlphaMod(std::get<0>(charData), a);

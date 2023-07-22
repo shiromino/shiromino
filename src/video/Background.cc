@@ -1,5 +1,5 @@
 #include "video/Background.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include <memory>
 #include <queue>
 #include <cstdint>
@@ -149,7 +149,7 @@ void Background::draw() const {
         Uint8 oldDrawColor[4];
         SDL_GetRenderDrawColor(implPtr->screen.renderer, &oldDrawColor[0], &oldDrawColor[1], &oldDrawColor[2], &oldDrawColor[3]);
         SDL_SetRenderDrawColor(implPtr->screen.renderer, 0x00u, 0x00u, 0x00u, SDL_ALPHA_OPAQUE);
-        Shiro::RenderFillRect(implPtr->screen, nullptr);
+        Shiro::DrawRect(implPtr->screen, nullptr);
         SDL_SetRenderDrawColor(implPtr->screen.renderer, oldDrawColor[0], oldDrawColor[1], oldDrawColor[2], oldDrawColor[3]);
         break;
     }
@@ -161,7 +161,7 @@ void Background::draw() const {
 
         SDL_Texture *theRenderTarget = SDL_GetRenderTarget(implPtr->screen.renderer);
         SDL_SetRenderTarget(implPtr->screen.renderer, NULL);
-        Shiro::RenderCopy(implPtr->screen, implPtr->images.front()->getTexture(), nullptr, nullptr);
+        Shiro::DrawTexture(implPtr->screen, implPtr->images.front()->getTexture(), nullptr, nullptr);
         SDL_SetRenderTarget(implPtr->screen.renderer, theRenderTarget);
 
         SDL_SetTextureColorMod(implPtr->images.front()->getTexture(), oldColorMod[0], oldColorMod[1], oldColorMod[2]);

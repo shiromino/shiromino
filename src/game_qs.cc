@@ -1559,7 +1559,7 @@ int qs_game_frame(game_t *g)
                     }
                 }
 
-                MessageEntity::push(cs->gfx, cs->screen,
+                MessageEntity::push(cs->gfxRenderer, cs->screen,
                     FontAsset::get(cs->assetMgr, "fixedsys"),
                     "READY",
                     q->field_x + 4 * 16 + 8,
@@ -1577,7 +1577,7 @@ int qs_game_frame(game_t *g)
             else if(c->init == 60)
             {
                 fmt.rgba = 0xFF0000FF;
-                MessageEntity::push(cs->gfx, cs->screen,
+                MessageEntity::push(cs->gfxRenderer, cs->screen,
                     FontAsset::get(cs->assetMgr, "fixedsys"),
                     "GO",
                     q->field_x + 6 * 16,

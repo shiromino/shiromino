@@ -1,7 +1,7 @@
 #include "CoreState.h"
 #include "input/KeyFlags.h"
 #include "game_qs.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include "gfx_old.h"
 #include "gfx_structures.h"
 #include "Grid.h"
@@ -211,7 +211,7 @@ int gfx_drawbuttons(CoreState *cs, int type)
             SDL_SetTextureAlphaMod(font, A(b.text_rgba_mod));
         }
 
-        Shiro::RenderCopy(cs->screen, font, &src, &dest);
+        Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
         src.x += 6;
         dest.x += 6;
@@ -223,7 +223,7 @@ int gfx_drawbuttons(CoreState *cs, int type)
             if(j)
                 dest.x += 16;
 
-            Shiro::RenderCopy(cs->screen, font, &src, &dest);
+            Shiro::DrawTexture(cs->screen, font, &src, &dest);
         }
 
         src.x += 16;
@@ -231,7 +231,7 @@ int gfx_drawbuttons(CoreState *cs, int type)
         dest.w = 6;
         dest.x += 16;
 
-        Shiro::RenderCopy(cs->screen, font, &src, &dest);
+        Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
         SDL_SetTextureColorMod(font, 255, 255, 255);
         SDL_SetTextureAlphaMod(font, 255);
@@ -320,7 +320,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
         }
     }
 
-    Shiro::RenderCopy(cs->screen, tetrion_qs, NULL, &tdest);
+    Shiro::DrawTexture(cs->screen, tetrion_qs, NULL, &tdest);
 
     int logicalW = QRS_FIELD_W;
     int logicalH = QRS_FIELD_H;
@@ -349,7 +349,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                 gridDest.x = x + 16 + (i * 16);
                 gridDest.y = y + 32 + ((j - QRS_FIELD_H + 20) * 16);
 
-                Shiro::RenderCopy(cs->screen, blocks, &gridSrc, &gridDest);
+                Shiro::DrawTexture(cs->screen, blocks, &gridSrc, &gridDest);
             }
         }
     }
@@ -398,7 +398,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     titleViewport.h = (titleDest.h * 80) / 3;
                 }
 
-                Shiro::RenderCopy(cs->screen, titleKanji, &titleViewport, &titleDest);
+                Shiro::DrawTexture(cs->screen, titleKanji, &titleViewport, &titleDest);
 
                 SDL_SetTextureColorMod(titleKanji, 0xFF, 0xFF, 0xFF);
             }
@@ -406,7 +406,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
         if(creditsDest.h != 0)
         {
-            Shiro::RenderCopy(cs->screen, q->credits_tex, &creditsViewport, &creditsDest);
+            Shiro::DrawTexture(cs->screen, q->credits_tex, &creditsViewport, &creditsDest);
         }
     }
 
@@ -522,7 +522,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                         dest.x += 16;
                     }
 
-                    Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
+                    Shiro::DrawTexture(cs->screen, blocks, &src, &dest);
 
                     src.x = 5 * 256;
                     src.y = 6 * 256;
@@ -557,17 +557,17 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
                     {
                         if(GET_PIECE_FADE_COUNTER(c) > 10)
                         {
-                            Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
+                            Shiro::DrawTexture(cs->screen, blocks, &src, &dest);
                         }
                         else if(GET_PIECE_FADE_COUNTER(c) > 0)
                         {
                             SDL_SetTextureAlphaMod(blocks, GET_PIECE_FADE_COUNTER(c) * 25);
-                            Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
+                            Shiro::DrawTexture(cs->screen, blocks, &src, &dest);
                             SDL_SetTextureAlphaMod(blocks, 255);
                         }
                     }
                     else {
-                        Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
+                        Shiro::DrawTexture(cs->screen, blocks, &src, &dest);
                     }
 
                     if((!(c & QRS_PIECE_BRACKETS) || c < 0) && !(flags & DRAWFIELD_NO_OUTLINE))
@@ -591,7 +591,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
                             if(!use_deltas)
                             {
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
                         }
 
@@ -605,7 +605,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
                             if(!use_deltas)
                             {
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
                         }
 
@@ -619,7 +619,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
                             if(!use_deltas)
                             {
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
                         }
 
@@ -633,7 +633,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
 
                             if(!use_deltas)
                             {
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
                         }
 
@@ -649,7 +649,7 @@ int gfx_drawqrsfield(CoreState *cs, Shiro::Grid *field, unsigned int mode, unsig
     /*if(use_deltas) {
        SDL_SetRenderTarget(cs->screen.renderer, NULL);
        SDL_SetRenderDrawBlendMode(cs->screen.renderer, SDL_BLENDMODE_BLEND);
-       Shiro::RenderCopy(cs->screen, q->field_tex, NULL, &field_dest);
+       Shiro::DrawTexture(cs->screen, q->field_tex, NULL, &field_dest);
     }*/
 
     SDL_SetTextureColorMod(blocks, 255, 255, 255);
@@ -697,7 +697,7 @@ int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Shiro::u32 rgb
 
     src.x = 0;
     dest.x = x;
-    Shiro::RenderCopy(cs->screen, font, &src, &dest);
+    Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
     if(k->right)
     {
@@ -710,7 +710,7 @@ int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Shiro::u32 rgb
 
     src.x = 16;
     dest.x = x + 16;
-    Shiro::RenderCopy(cs->screen, font, &src, &dest);
+    Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
     if(k->up)
     {
@@ -723,7 +723,7 @@ int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Shiro::u32 rgb
 
     src.x = 32;
     dest.x = x + 32;
-    Shiro::RenderCopy(cs->screen, font, &src, &dest);
+    Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
     if(k->down)
     {
@@ -736,7 +736,7 @@ int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Shiro::u32 rgb
 
     src.x = 48;
     dest.x = x + 48;
-    Shiro::RenderCopy(cs->screen, font, &src, &dest);
+    Shiro::DrawTexture(cs->screen, font, &src, &dest);
 
     SDL_SetTextureColorMod(font, 255, 255, 255);
 
@@ -911,12 +911,12 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
             if(using_target_tex)
             {
                 SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0);
-                Shiro::RenderFillRect(cs->screen, &dest);
-                Shiro::RenderCopy(cs->screen, font->sheet, &src, &dest);
+                Shiro::DrawRect(cs->screen, &dest);
+                Shiro::DrawTexture(cs->screen, font->sheet, &src, &dest);
             }
             else
             {
-                Shiro::RenderCopy(cs->screen, font->sheet, &src, &dest);
+                Shiro::DrawTexture(cs->screen, font->sheet, &src, &dest);
             }
 
             SDL_SetTextureColorMod(font->sheet, R(fmt->rgba), G(fmt->rgba), B(fmt->rgba));
@@ -940,11 +940,11 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
             if(font->outline_sheet)
                 SDL_SetTextureAlphaMod(font->outline_sheet, A(fmt->rgba) / 4);
 
-            Shiro::RenderCopy(cs->screen, font->sheet, &src, &dest);
+            Shiro::DrawTexture(cs->screen, font->sheet, &src, &dest);
 
             if(fmt->outlined && font->outline_sheet)
             {
-                Shiro::RenderCopy(cs->screen, font->outline_sheet, &src, &dest);
+                Shiro::DrawTexture(cs->screen, font->outline_sheet, &src, &dest);
             }
 
             dest.x += static_cast<int>(2.0f * fmt->size_multiplier);
@@ -958,18 +958,18 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
         if(using_target_tex)
         {
             SDL_SetRenderDrawColor(cs->screen.renderer, 0, 0, 0, 0);
-            Shiro::RenderFillRect(cs->screen, &dest);
-            Shiro::RenderCopy(cs->screen, font->sheet, &src, &dest);
+            Shiro::DrawRect(cs->screen, &dest);
+            Shiro::DrawTexture(cs->screen, font->sheet, &src, &dest);
 
             if(fmt->outlined && font->outline_sheet)
-                Shiro::RenderCopy(cs->screen, font->outline_sheet, &src, &dest);
+                Shiro::DrawTexture(cs->screen, font->outline_sheet, &src, &dest);
         }
         else
         {
-            Shiro::RenderCopy(cs->screen, font->sheet, &src, &dest);
+            Shiro::DrawTexture(cs->screen, font->sheet, &src, &dest);
 
             if(fmt->outlined && font->outline_sheet)
-                Shiro::RenderCopy(cs->screen, font->outline_sheet, &src, &dest);
+                Shiro::DrawTexture(cs->screen, font->outline_sheet, &src, &dest);
         }
 
         dest.x += static_cast<int>(fmt->size_multiplier * (float)font->char_w);
@@ -1081,7 +1081,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
 
                     if(field->getCell(cell_x, cell_y) > 0 || flags & DRAWPIECE_PREVIEW)
                     {
-                        Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
+                        Shiro::DrawTexture(cs->screen, blocks, &src, &dest);
 
                         if(!(flags & DRAWPIECE_PREVIEW))
                         {
@@ -1102,7 +1102,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 outlineRect.w = size;
                                 outlineRect.h = 2;
 
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
 
                             c = field->getCell(static_cast<std::size_t>(i) - 1, j); // left
@@ -1113,7 +1113,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 outlineRect.w = 2;
                                 outlineRect.h = size;
 
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
 
                             c = field->getCell(static_cast<std::size_t>(i) + 1, j); // right
@@ -1124,7 +1124,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 outlineRect.w = 2;
                                 outlineRect.h = size;
 
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
 
                             c = field->getCell(i, static_cast<std::size_t>(j) + 1); // below
@@ -1135,7 +1135,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                                 outlineRect.w = size;
                                 outlineRect.h = 2;
 
-                                Shiro::RenderFillRect(cs->screen, &outlineRect);
+                                Shiro::DrawRect(cs->screen, &outlineRect);
                             }
 
                             SDL_SetRenderDrawColor(cs->screen.renderer, r_, g_, b_, a_);
@@ -1143,7 +1143,7 @@ int gfx_drawpiece(CoreState *cs, Shiro::Grid *field, int field_x, int field_y, S
                     }
                 }
                 else {
-                    Shiro::RenderCopy(cs->screen, blocks, &src, &dest);
+                    Shiro::DrawTexture(cs->screen, blocks, &src, &dest);
                 }
             }
         }
@@ -1185,13 +1185,13 @@ int gfx_drawtimer(CoreState *cs, Shiro::Timer *t, int x, Shiro::u32 rgba)
     for(i = 0; i < 6; i++)
     {
         src.x = digits[i] * 20;
-        Shiro::RenderCopy(cs->screen, font, &src, &dest);
+        Shiro::DrawTexture(cs->screen, font, &src, &dest);
         dest.x += 20;
 
         if(i == 1 || i == 3)
         {
             src.x = 200; // colon character offset
-            Shiro::RenderCopy(cs->screen, font, &src, &dest);
+            Shiro::DrawTexture(cs->screen, font, &src, &dest);
             dest.x += 20;
         }
     }

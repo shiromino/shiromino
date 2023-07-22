@@ -1,7 +1,7 @@
 #include "SPM_SType.h"
 #include "CoreState.h"
 #include "gui/GUI.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
 #include <iostream>
@@ -264,7 +264,7 @@ int SPM_SType::draw()
             dest.y = fieldPos.y + (j * blockH);
 
             if (field->getCell(i, gridY) > 0) {
-                Shiro::RenderFillRect(cs.screen, &dest);
+                Shiro::DrawRect(cs.screen, &dest);
             }
         }
     }
@@ -285,7 +285,7 @@ int SPM_SType::draw()
                     dest.x = fieldPos.x + (gridX * blockW);
                     dest.y = fieldPos.y - ((static_cast<int>(field->getHeight()) - spec->visualFieldH) * blockH) + (gridY * blockH);
                     dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
-                    Shiro::RenderFillRect(cs.screen, &dest);
+                    Shiro::DrawRect(cs.screen, &dest);
                 }
             }
         }
@@ -309,7 +309,7 @@ int SPM_SType::draw()
                     if (m.getCell(i, j)) {
                         dest.x = fieldPos.x + (3 * 16) + (n * 5 * 16) + (i * 16);
                         dest.y = fieldPos.y - 54 + (j * 16);
-                        Shiro::RenderFillRect(cs.screen, &dest);
+                        Shiro::DrawRect(cs.screen, &dest);
                     }
                 }
             }

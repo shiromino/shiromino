@@ -1,7 +1,7 @@
 #include "G2_Death.h"
 #include "CoreState.h"
 #include "gui/GUI.h"
-#include "video/Render.h"
+#include "video/Draw.h"
 #include "SPM_SType.h"
 #include "SPM_Spec.h"
 #include "SPM_Structures.h"
