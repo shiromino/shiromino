@@ -6,21 +6,21 @@
 
 #define SPM_SUBUNIT_SCALE 65536
 
-#define MINO_ID_INVALID 0xFFFFFFFF
 #define SPM_FALL_LANDED -1
-
 #define SPM_CELL_CLEARED -2
 
-typedef unsigned int SPM_minoID;
+using namespace std;
+
+typedef int32_t SPM_minoID;
 
 struct SPM_point
 {
     SPM_point() : x(0), y(0), subX(0), subY(0) {}
-    SPM_point(int x, int y) : x(x), y(y), subX(0), subY(0) {}
-    SPM_point(int x, int y, int32_t subX, int32_t subY) : x(x), y(y), subX(subX), subY(subY) {}
+    SPM_point(int32_t x, int32_t y) : x(x), y(y), subX(0), subY(0) {}
+    SPM_point(int32_t x, int32_t y, int32_t subX, int32_t subY) : x(x), y(y), subX(subX), subY(subY) {}
 
-    int x;
-    int y;
+    int32_t x;
+    int32_t y;
 
     int32_t subX;
     int32_t subY;
@@ -260,14 +260,14 @@ public:
     Polyomino() {}
     virtual ~Polyomino() {}
 
-    template<const std::size_t rotationWidth, const std::size_t rotationHeight>
-    Polyomino(const std::array<std::array<std::array<bool, rotationWidth>, rotationHeight>, 4>& rotationTables) {
+    template<const size_t rotationWidth, const size_t rotationHeight>
+    Polyomino(const array<array<array<bool, rotationWidth>, rotationHeight>, 4>& rotationTables) {
         for (int i = 0; i < 4; i++) {
             this->rotationTables[i] = rotationTables[i];
         }
     }
 
-    std::array<Shiro::Grid, 4> rotationTables; // these grids technically don't have to be the same size
+    array<Shiro::Grid, 4> rotationTables; // these grids technically don't have to be the same size
 };
 
 class ActivatedPolyomino : public Polyomino {
@@ -281,7 +281,7 @@ public:
 
     const Shiro::Grid& currentRotationTable()
     {
-        return rotationTables[static_cast<std::size_t>(orientation)];
+        return rotationTables[static_cast<size_t>(orientation)];
     }
 
     virtual int codedCellValue()

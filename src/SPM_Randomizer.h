@@ -1,13 +1,14 @@
 #pragma once
 #include "SPM_Structures.h"
-#include "PieceIDMacros.h"
+#include "MinoCanonicalID.h"
 #include <cstdint>
 
 typedef uint64_t SPM_randomSeed;
 SPM_minoID arsIDConversion(SPM_minoID t);
-void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t);
+
+void history_push(SPM_minoID *history, std::size_t histLen, SPM_minoID t);
 SPM_minoID history_pop(SPM_minoID *history);
-bool in_history(SPM_minoID *history, unsigned int histLen, SPM_minoID t);
+bool in_history(SPM_minoID *history, std::size_t histLen, SPM_minoID t);
 
 SPM_randomSeed g123_readRand(SPM_randomSeed& seed);
 SPM_minoID g123_getInitPiece(SPM_randomSeed& seed);
@@ -15,33 +16,43 @@ SPM_minoID g123_getInitPiece(SPM_randomSeed& seed);
 class SPM_Randomizer
 {
 public:
-    SPM_Randomizer(unsigned int numMinoes) : numMinoes(numMinoes) {}
+    SPM_Randomizer(std::size_t numMinoes) : numMinoes(numMinoes) {}
     virtual ~SPM_Randomizer() {}
 
     virtual void init(SPM_randomSeed) {}
 
     virtual SPM_minoID pull() = 0;
-    virtual SPM_minoID lookahead(unsigned int) = 0;
+    virtual SPM_minoID lookahead(std::size_t) = 0;
 
 protected:
-    unsigned int numMinoes;
+    virtual SPM_minoID toCanonicalID(SPM_minoID val) { return val; }
+
+    std::size_t numMinoes;
 };
 
 class SPM_NonRandomizer : public SPM_Randomizer
 {
 public:
-    SPM_NonRandomizer(unsigned int num) : SPM_Randomizer(num) { index = 0; }
+    SPM_NonRandomizer(std::size_t num) : SPM_Randomizer(num) { index = 0; }
 
-    SPM_minoID pull()
+    SPM_minoID pull() override
     {
         SPM_minoID val = index;
         index = (index + 1) % numMinoes;
-        return val;
+        return toCanonicalID(val);
     }
 
-    SPM_minoID lookahead(unsigned int distance) { return (index + distance) % numMinoes; }
+    SPM_minoID lookahead(std::size_t distance) override
+    {
+        return (index + distance) % numMinoes;
+    }
 
 protected:
+    SPM_minoID toCanonicalID(SPM_minoID val) override
+    {
+        return val + Shiro::Mino::I4;
+    }
+
     SPM_minoID index;
 };
 
@@ -53,7 +64,7 @@ public:
         seed = 0;
         for(int i = 0; i < 4; i++)
         {
-            history[i] = MINO_ID_INVALID;
+            history[i] = Shiro::Mino::Err;
         }
 
         rolls = 4;
@@ -63,10 +74,10 @@ public:
     {
         this->seed = seed & 0xFFFFFFFF;
 
-        history[0] = A_ARS_Z;
-        history[1] = A_ARS_Z;
-        history[2] = A_ARS_Z;
-        history[3] = g123_getInitPiece(seed);
+        history[0] = Shiro::Mino::Z4;
+        history[1] = Shiro::Mino::Z4;
+        history[2] = Shiro::Mino::Z4;
+        history[3] = toCanonicalID(g123_getInitPiece(seed));
 
         pull(); pull(); pull();
     }
@@ -81,11 +92,11 @@ public:
         return arsIDConversion(result);
     }
 
-    SPM_minoID lookahead(unsigned int distance) override
+    SPM_minoID lookahead(std::size_t distance) override
     {
         if(distance > 4 || distance < 1)
         {
-            return MINO_ID_INVALID;
+            return Shiro::Mino::Err;
         }
 
         return arsIDConversion(history[distance - 1]);
@@ -93,7 +104,7 @@ public:
 
     SPM_minoID getNext()
     {
-        SPM_minoID t = MINO_ID_INVALID;
+        SPM_minoID t = Shiro::Mino::Err;
 
         for(int i = 0; i < rolls; i++)
         {
@@ -120,6 +131,11 @@ public:
     }
 
 protected:
+    SPM_minoID toCanonicalID(SPM_minoID val) override
+    {
+        return arsIDConversion(val);
+    }
+
     SPM_randomSeed seed;
     SPM_minoID history[4];
     int rolls;
@@ -137,10 +153,10 @@ public:
     {
         this->seed = seed & 0xFFFFFFFF;
 
-        history[0] = A_ARS_S;
-        history[1] = A_ARS_S;
-        history[2] = A_ARS_Z;
-        history[3] = g123_getInitPiece(seed);
+        history[0] = Shiro::Mino::S4;
+        history[1] = Shiro::Mino::S4;
+        history[2] = Shiro::Mino::Z4;
+        history[3] = toCanonicalID(g123_getInitPiece(seed));
 
         pull(); pull(); pull();
     }
@@ -157,11 +173,11 @@ public:
 
     SPM_minoID getNext();
 
-    SPM_minoID lookahead(unsigned int distance) override
+    SPM_minoID lookahead(std::size_t distance) override
     {
         if(distance > 4 || distance < 1)
         {
-            return MINO_ID_INVALID;
+            return Shiro::Mino::Err;
         }
 
         return arsIDConversion(history[distance - 1]);
@@ -186,6 +202,11 @@ public:
     }
 
 protected:
+    SPM_minoID toCanonicalID(SPM_minoID val) override
+    {
+        return arsIDConversion(val);
+    }
+
     SPM_randomSeed seed;
 
     SPM_minoID history[4];

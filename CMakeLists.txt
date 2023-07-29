@@ -81,6 +81,7 @@ target_sources(${GAME_EXECUTABLE}
 		src/GameType.h
 		src/Grid.cc
 		src/Grid.h
+		src/MinoCanonicalID.h
 		src/input/ControllerBindings.cc
 		src/input/ControllerBindings.h
 		src/input/KeyBindings.cc
@@ -101,8 +102,9 @@ target_sources(${GAME_EXECUTABLE}
 		src/menu/Option.h
 		src/menu/TextOption.h
 		src/menu/ToggleOption.h
-		src/modes/G2_Death.cc
-		src/modes/G2_Death.h
+		src/modes/collection_G2/Collection_G2.h
+		src/modes/collection_G2/G2_Death.cc
+		src/modes/collection_G2/G2_Death.h
 		src/Delay.cc
 		src/Delay.h
 		src/Nanotime.cc
@@ -119,6 +121,8 @@ target_sources(${GAME_EXECUTABLE}
 		src/RefreshRates.h
 		src/RotationTables.cc
 		src/RotationTables.h
+		src/SPM_Graphics.cc
+		src/SPM_Graphics.h
 		src/SPM_Randomizer.cc
 		src/SPM_Randomizer.h
 		src/SPM_Spec.cc

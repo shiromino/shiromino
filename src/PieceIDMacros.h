@@ -1,6 +1,7 @@
 #pragma once
 
 // IJLXSZNGUTFaFbPQWYaYbV I4T4J4L4OS4Z4 - felicity's arbitrary pentomino+tetromino ordering
+// NOTE: These IDs are deprecated. See src/MinoCanonicalID.h instead for permanent IDs.
 #define QRS_I 0
 #define QRS_J 1
 #define QRS_L 2
@@ -28,6 +29,7 @@
 #define QRS_Z4 24
 
 // ITJLOSZ - felicity's arbitrary tetromino ordering
+// NOTE: These IDs are deprecated. See src/MinoCanonicalID.h instead for permanent IDs.
 #define F_ARS_I 0
 #define F_ARS_T 1
 #define F_ARS_J 2
@@ -37,6 +39,7 @@
 #define F_ARS_Z 6
 
 // IZSJLOT - Arika's arbitrary tetromino ordering
+// Currently only used by SPM_Randomizer.*
 #define A_ARS_I 0
 #define A_ARS_Z 1
 #define A_ARS_S 2

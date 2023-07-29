@@ -1,6 +1,7 @@
 #pragma once
 #include "video/Screen.h"
 #include "gfx_structures.h"
+#include "types.h"
 #include <vector>
 #include <forward_list>
 #include <memory>
@@ -32,6 +33,18 @@ namespace Shiro {
             Point(float x_, float y_) : x(x_), y(y_) {}
             float x,y;
         };
+
+        struct Rect {
+            Rect() : x(0), y(0), w(0), h(0) {}
+            Rect(u32 x_, u32 y_, u32 w_, u32 h_) : x(x_), y(y_), w(w_), h(h_) {}
+            u32 x, y, w, h;
+        };
+
+        struct FRect {
+            FRect() : x(0), y(0), w(0), h(0) {}
+            FRect(float x_, float y_, float w_, float h_) : x(x_), y(y_), w(w_), h(h_) {}
+            float x, y, w, h;
+        };
     }
     // TODO: Consider moving this somewhere when there's more than just one basic screen type, where each screen type needs its own layout of layers.
     /**
@@ -61,6 +74,17 @@ namespace Shiro {
         virtual ~Graphic();
 
         virtual void draw() const = 0;
+    };
+
+    // Abstract class extending the Graphic class. Has positional data so it knows where to draw itself.
+    struct Sprite : public Graphic {
+    public:
+        Sprite(Gfx::Point pos) : position(pos) {}
+
+        virtual void setPos(Gfx::Point pos) { position = pos; }
+        
+    protected:
+        Gfx::Point position;
     };
 
     class Renderer;

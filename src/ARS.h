@@ -6,14 +6,6 @@
 #include <cstdint>
 #include <vector>
 
-#define ARS_I 0
-#define ARS_T 1
-#define ARS_J 2
-#define ARS_L 3
-#define ARS_O 4
-#define ARS_S 5
-#define ARS_Z 6
-
 class ARS : public SPM_Spec
 {
 public:

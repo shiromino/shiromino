@@ -1,5 +1,6 @@
 #include "SPM_Randomizer.h"
 #include "SPM_Structures.h"
+#include "MinoCanonicalID.h"
 #include "PieceIDMacros.h"
 
 SPM_minoID arsIDConversion(SPM_minoID t)
@@ -7,26 +8,28 @@ SPM_minoID arsIDConversion(SPM_minoID t)
     switch(t)
     {
         case A_ARS_I:
-            return F_ARS_I;
+            return Shiro::Mino::I4;
         case A_ARS_Z:
-            return F_ARS_Z;
+            return Shiro::Mino::Z4;
         case A_ARS_S:
-            return F_ARS_S;
+            return Shiro::Mino::S4;
         case A_ARS_J:
-            return F_ARS_J;
+            return Shiro::Mino::J4;
         case A_ARS_L:
-            return F_ARS_L;
+            return Shiro::Mino::L4;
         case A_ARS_O:
-            return F_ARS_O;
+            return Shiro::Mino::O4;
         case A_ARS_T:
-            return F_ARS_T;
+            return Shiro::Mino::T4;
 
         default:
-            return t;
+            break;
     }
+
+    return Shiro::Mino::Err;
 }
 
-void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t)
+void history_push(SPM_minoID *history, std::size_t histLen, SPM_minoID t)
 {
     for(unsigned int i = 0; i < histLen - 1; i++)
     {
@@ -39,12 +42,12 @@ void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t)
 SPM_minoID history_pop(SPM_minoID *history)
 {
     SPM_minoID t = history[0];
-    history[0] = MINO_ID_INVALID;
+    history[0] = Shiro::Mino::Err;
 
     return t;
 }
 
-bool in_history(SPM_minoID *history, unsigned int histLen, SPM_minoID t)
+bool in_history(SPM_minoID *history, std::size_t histLen, SPM_minoID t)
 {
     for(unsigned i = 0; i < histLen; i++)
     {
@@ -82,12 +85,12 @@ G3_Randomizer::G3_Randomizer()
 
     for(int i = 0; i < 4; i++)
     {
-        history[i] = MINO_ID_INVALID;
+        history[i] = Shiro::Mino::Err;
     }
 
     for(int i = 0; i < 35; i++)
     {
-        bag[i] = MINO_ID_INVALID;
+        bag[i] = Shiro::Mino::Err;
     }
 
     for(int i = 0; i < 7; i++)
@@ -127,7 +130,7 @@ SPM_minoID G3_Randomizer::pull()
 
 SPM_minoID G3_Randomizer::getNext()
 {
-    SPM_minoID piece = MINO_ID_INVALID;
+    SPM_minoID piece = Shiro::Mino::Err;
     unsigned int bagpos = 0;
     int i = 0;
 

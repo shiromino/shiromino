@@ -2,6 +2,7 @@
 #include "RotationTables.h"
 #include "SPM_Structures.h"
 #include "SPM_Spec.h"
+#include "PieceIDMacros.h"
 #include <cstdint>
 #include <vector>
 

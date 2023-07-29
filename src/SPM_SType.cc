@@ -4,6 +4,7 @@
 #include "video/Draw.h"
 #include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
+#include "MinoCanonicalID.h"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -249,10 +250,10 @@ int SPM_SType::draw()
     int blockW = 16;
     int blockH = 16;
 
-    SDL_Rect dest = {fieldPos.x, fieldPos.y, blockW, blockH};
+    SDL_Rect dest = {static_cast<int>(fieldPos.x), static_cast<int>(fieldPos.y), blockW, blockH};
     SDL_SetRenderDrawColor(cs.screen.renderer, 255, 255, 255, 180);
 
-    SDL_Rect fieldRect = {fieldPos.x, fieldPos.y, blockW * static_cast<int>(field->getWidth()), blockH * spec->visualFieldH};
+    SDL_Rect fieldRect = {static_cast<int>(fieldPos.x), static_cast<int>(fieldPos.y), blockW * static_cast<int>(field->getWidth()), blockH * spec->visualFieldH};
     GUIDrawBorder(fieldRect, 1, Shiro::GUI::RGBA_DEFAULT);
 
     for(std::size_t i = 0; i < field->getWidth(); i++)
@@ -260,8 +261,8 @@ int SPM_SType::draw()
         for(std::size_t j = 0; j < std::size_t(spec->visualFieldH); j++)
         {
             std::size_t gridY = j + field->getHeight() - spec->visualFieldH;
-            dest.x = fieldPos.x + (i * blockW);
-            dest.y = fieldPos.y + (j * blockH);
+            dest.x = static_cast<int>(fieldPos.x) + (i * blockW);
+            dest.y = static_cast<int>(fieldPos.y) + (j * blockH);
 
             if (field->getCell(i, gridY) > 0) {
                 Shiro::DrawRect(cs.screen, &dest);
@@ -282,8 +283,8 @@ int SPM_SType::draw()
                 int gridY = j + player.mino->position.y;
 
                 if (gridY >= (int(field->getHeight()) - spec->visualFieldH) && m.getCell(i, j)) {
-                    dest.x = fieldPos.x + (gridX * blockW);
-                    dest.y = fieldPos.y - ((static_cast<int>(field->getHeight()) - spec->visualFieldH) * blockH) + (gridY * blockH);
+                    dest.x = static_cast<int>(fieldPos.x) + (gridX * blockW);
+                    dest.y = static_cast<int>(fieldPos.y) - ((static_cast<int>(field->getHeight()) - spec->visualFieldH) * blockH) + (gridY * blockH);
                     dest.y += (blockH * player.mino->position.subY) / SPM_SUBUNIT_SCALE;
                     Shiro::DrawRect(cs.screen, &dest);
                 }
@@ -307,8 +308,8 @@ int SPM_SType::draw()
                 for(std::size_t j = 0; j < m.getHeight(); j++)
                 {
                     if (m.getCell(i, j)) {
-                        dest.x = fieldPos.x + (3 * 16) + (n * 5 * 16) + (i * 16);
-                        dest.y = fieldPos.y - 54 + (j * 16);
+                        dest.x = static_cast<int>(fieldPos.x) + (3 * 16) + (n * 5 * 16) + (i * 16);
+                        dest.y = static_cast<int>(fieldPos.y) - 54 + (j * 16);
                         Shiro::DrawRect(cs.screen, &dest);
                     }
                 }
@@ -406,7 +407,7 @@ bool SPM_SType::lineClearExpired()
 
 bool SPM_SType::initNextMino(SPM_SPlayer& p)
 {
-    SPM_minoID t = MINO_ID_INVALID;
+    SPM_minoID t = Shiro::Mino::Err;
 
     if(!p.minoSequence.empty())
     {

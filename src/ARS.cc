@@ -1,5 +1,6 @@
 #include "SPM_Structures.h"
 #include "SPM_Spec.h"
+#include "MinoCanonicalID.h"
 #include "Grid.h"
 #include "ARS.h"
 #include <cstdint>
@@ -73,7 +74,7 @@ ARS3::ARS3() : SPM_Spec()
 
 bool ARS::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 {
-    if(mino.ID == ARS_I)
+    if(mino.ID == Shiro::Mino::I4)
     {
         return false;
     }
@@ -84,9 +85,9 @@ bool ARS::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 
     switch(mino.ID)
     {
-        case ARS_L:
-        case ARS_J:
-        case ARS_T:
+        case Shiro::Mino::L4:
+        case Shiro::Mino::J4:
+        case Shiro::Mino::T4:
             // rule for 3-wide pieces: don't allow a kick if collision is on piece's center column
             if(x == 1 && (mino.orientation == spm_clockwise || mino.orientation == spm_counter_clockwise))
             {
@@ -135,7 +136,7 @@ bool ARS3::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 
     switch(mino.ID)
     {
-        case ARS_I:
+        case Shiro::Mino::I4:
             if(mino.orientation == spm_clockwise || mino.orientation == spm_counter_clockwise)
             {
                 return false;
@@ -143,9 +144,9 @@ bool ARS3::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 
             break;
 
-        case ARS_L:
-        case ARS_J:
-        case ARS_T:
+        case Shiro::Mino::L4:
+        case Shiro::Mino::J4:
+        case Shiro::Mino::T4:
             // rule for 3-wide pieces: don't allow a kick if collision is on piece's center column
             if(x == 1 && (mino.orientation == spm_clockwise || mino.orientation == spm_counter_clockwise))
             {
@@ -154,7 +155,7 @@ bool ARS3::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 
             break;
         
-        case ARS_O:
+        case Shiro::Mino::O4:
             return false;
 
         default:
@@ -165,7 +166,7 @@ bool ARS3::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
     {
         if(checkedShift(field, mino, {-1, 0}) == false)
         {
-            if(mino.ID != ARS_I)
+            if(mino.ID != Shiro::Mino::I4)
             {
                 return false;
             }
@@ -182,17 +183,17 @@ bool ARS3::wallkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 
 bool ARS3::floorkick(Shiro::Grid *field, ActivatedPolyomino& mino)
 {
-    if(mino.ID != ARS_T && mino.ID != ARS_I)
+    if(mino.ID != Shiro::Mino::T4 && mino.ID != Shiro::Mino::I4)
     {
         return false;
     }
 
-    if(mino.ID == ARS_T && mino.orientation != spm_flip)
+    if(mino.ID == Shiro::Mino::T4 && mino.orientation != spm_flip)
     {
         return false;
     }
 
-    if(mino.ID == ARS_I && (mino.orientation == spm_flat || mino.orientation == spm_flip || mino.physicState != spm_physic_grounded))
+    if(mino.ID == Shiro::Mino::I4 && (mino.orientation == spm_flat || mino.orientation == spm_flip || mino.physicState != spm_physic_grounded))
     {
         return false;
     }
@@ -202,7 +203,7 @@ bool ARS3::floorkick(Shiro::Grid *field, ActivatedPolyomino& mino)
         return true;
     }
 
-    if(mino.ID == ARS_T)
+    if(mino.ID == Shiro::Mino::T4)
     {
         return false;
     }
@@ -217,7 +218,7 @@ bool ARS3::checkedRotate(Shiro::Grid *field, ActivatedPolyomino& mino, SPM_orien
 
     if(checkCollision(field, mino))
     {
-        if(mino.ID == ARS_T)
+        if(mino.ID == Shiro::Mino::T4)
         // T tetromino prefers a wallkick; everything else prefers a floorkick
         {
             if(wallkick(field, mino) == false)

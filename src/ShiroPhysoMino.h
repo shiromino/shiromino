@@ -2,16 +2,13 @@
 #include "Game.h"
 #include "replay.h"
 #include "gui/GUI.h"
+#include "video/Gfx.h"
 #include "Timer.h"
-#include "SPM_Spec.h"
 #include "SPM_Randomizer.h"
-#include <memory>
-#include <vector>
 
 class ShiroPhysoMino : public Game {
 public:
     ShiroPhysoMino(CoreState& cs) : Game(cs),
-        spec(nullptr),
         field(nullptr),
         timer(nullptr),
         rep(nullptr),
@@ -27,10 +24,8 @@ public:
     }
 
 protected:
-    SPM_Spec *spec;
-
     Shiro::Grid *field;
-    GUIPoint fieldPos;
+    Shiro::Gfx::Point fieldPos;
 
     Shiro::Timer *timer;
 
@@ -81,37 +76,3 @@ struct SPM_Player {
     std::vector<SPM_minoID> minoSequence;
     unsigned int minoSeqIndex;
 };
-
-/*
-class TestSPM : public ShiroPhysoMino {
-public:
-    TestSPM(CoreState& cs, SPM_Spec *spec)
-        : ShiroPhysoMino(cs) {
-        this->spec = spec;
-
-        field = new Shiro::Grid(spec->fieldW, spec->fieldH);
-        fieldPos = {48, 60};
-        timer = new Shiro::Timer(60.0);
-        rep = NULL;
-        playback = false;
-        playbackIndex = 0;
-        gamePhase = spm_gameplay;
-    }
-
-    ~TestSPM();
-
-    int init();
-    int input();
-    int frame();
-    int draw();
-
-private:
-    bool spawnDelayExpired(SPM_Player&);
-    bool lockDelayExpired(SPM_Player&);
-    bool lineClearExpired(SPM_Player&);
-    bool initNextMino(SPM_Player&);
-    ActivatedPolyomino *activateMino(SPM_minoID ID);
-
-    SPM_Player player;
-};
-*/
