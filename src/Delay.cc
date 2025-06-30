@@ -19,7 +19,7 @@ void Delay(const std::uint32_t milliseconds) {
 		}
 	}
 
-	LARGE_INTEGER duration = {{ 0 }};
+	LARGE_INTEGER duration = { .QuadPart = 0 };
 	duration.QuadPart = milliseconds * INT64_C(-10000);
 	SetWaitableTimer(timer, &duration, 0, NULL, NULL, 0);
 	WaitForSingleObject(timer, INFINITE);
