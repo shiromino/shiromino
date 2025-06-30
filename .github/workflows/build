@@ -2,14 +2,12 @@
 set -eE
 BUILD_TYPE="$1"
 CXX_COMPILER="$2"
-
 declare -a CMAKE_ARGUMENTS
 append_argument() {
 	local NAME="$1"
 	local VALUE="$2"
-	[ -n "$NAME" ] && CMAKE_ARGUMENTS+=(-D"$NAME=$VALUE")
+	[ -n "$NAME" ] && CMAKE_ARGUMENTS+=(-D"$NAME=\"$VALUE\"")
 }
-
 get_cores() {
 	if command -v nproc &> /dev/null; then
 		nproc
@@ -17,10 +15,9 @@ get_cores() {
 		sysctl -n hw.ncpu
 	fi
 }
-
 append_argument CMAKE_BUILD_TYPE "$BUILD_TYPE"
 append_argument CMAKE_CXX_COMPILER "$CXX_COMPILER"
-
-echo "Running: cmake -B build -S . ${CMAKE_ARGUMENTS[*]} $ADDITIONAL_PARAMETERS"
-cmake -B build -S . "${CMAKE_ARGUMENTS[@]}" $ADDITIONAL_PARAMETERS
-cmake --build build -j "$(get_cores)"
+# shellcheck disable=2086
+echo eval cmake -B build -S . "${CMAKE_ARGUMENTS[@]}" $ADDITIONAL_PARAMETERS
+eval cmake -B build -S . "${CMAKE_ARGUMENTS[@]}" $ADDITIONAL_PARAMETERS
+eval cmake --build build -j "$(get_cores)"
