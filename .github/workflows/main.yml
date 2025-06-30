@@ -11,9 +11,7 @@ jobs:
       matrix:
         compiler:
           - clang++
-          - clang++-7
           - g++
-          - g++-8
         build-type:
           - Debug
           - Release

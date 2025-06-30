@@ -435,10 +435,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
           -Wpedantic
           -Werror
 		  $<$<NOT:$<CXX_COMPILER_ID:GNU>>:-fsanitize=address> # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-		  -fsanitize=undefined
-		  -fsanitize=leak
-		  -fsanitize-address-use-after-scope
-		  -fsanitize-undefined-trap-on-error
+          -fsanitize=undefined
+          -fsanitize=leak
+          -fsanitize-address-use-after-scope
+          -fsanitize-undefined-trap-on-error
           -fno-omit-frame-pointer
 		)
 endif()
