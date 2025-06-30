@@ -15,7 +15,7 @@ void Shiro::ControllerBindings::read(PDINI::INI& ini) {
     }
     // A controller was selected; controller axes and hat settings have defaults,
     // but buttons don't.
-    unsigned buttonGets = 0u;
+    [[maybe_unused]] unsigned buttonGets = 0u;
     buttonGets += ini.get(sectionName, "BUTTON_LEFT", buttons.left) && buttons.left >= 0;
     buttonGets += ini.get(sectionName, "BUTTON_RIGHT", buttons.right) && buttons.right >= 0;
     buttonGets += ini.get(sectionName, "BUTTON_UP", buttons.up) && buttons.up >= 0;

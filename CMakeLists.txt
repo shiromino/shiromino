@@ -441,6 +441,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
           -fsanitize-undefined-trap-on-error
           -fno-omit-frame-pointer
 		)
+
+	target_link_libraries(${GAME_EXECUTABLE}
+		PRIVATE
+		  -fsanitize=address,leak,undefined
+		  -fsanitize-address-use-after-scope
+		  -fsanitize-undefined-trap-on-error
+	    )
 endif()
 #
 # Enable parallel compiling when using MSVC.
