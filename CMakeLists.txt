@@ -435,21 +435,21 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
           -Wpedantic
           -Werror
 		  $<$<NOT:$<CXX_COMPILER_ID:GNU>>:-fsanitize=address> # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-		  $<$<NOT:$<PLATFORM_ID:MinGW>>:-fsanitize=leak>
-          -fsanitize=undefined
-          -fsanitize-address-use-after-scope
-          -fsanitize-undefined-trap-on-error
-          -fno-omit-frame-pointer
+		  $<$<AND:$<NOT:$<PLATFORM_ID:MinGW>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-fsanitize=leak>
+		  -fsanitize=undefined
+		  -fsanitize-address-use-after-scope
+		  -fsanitize-undefined-trap-on-error
+		  -fno-omit-frame-pointer
 		)
 
 	target_link_libraries(${GAME_EXECUTABLE}
 		PRIVATE
 		  $<$<NOT:$<CXX_COMPILER_ID:GNU>>:-fsanitize=address> # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-		  $<$<NOT:$<PLATFORM_ID:MinGW>>:-fsanitize=leak>
-          -fsanitize=undefined
-          -fsanitize-address-use-after-scope
-          -fsanitize-undefined-trap-on-error
-	    )
+		  $<$<AND:$<NOT:$<PLATFORM_ID:MinGW>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-fsanitize=leak>
+		  -fsanitize=undefined
+		  -fsanitize-address-use-after-scope
+		  -fsanitize-undefined-trap-on-error
+		)
 endif()
 #
 # Enable parallel compiling when using MSVC.
