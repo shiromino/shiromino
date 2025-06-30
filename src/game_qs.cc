@@ -873,36 +873,30 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
         q->hold_enabled = 1;
     }
 
-    uint32_t randomizer_flags = 0;
-
     switch(q->randomizer_type)
     {
         case RANDOMIZER_NORMAL:
-            if(q->pentomino_only)
-                randomizer_flags |= PENTO_RAND_NOTETS;
-
-            q->randomizer = pento_randomizer_create(randomizer_flags);
+            q->randomizer = pento_randomizer_create();
             break;
 
         case RANDOMIZER_NIGHTMARE:
-            randomizer_flags |= PENTO_RAND_NIGHTMARE;
-            q->randomizer = pento_randomizer_create(randomizer_flags);
+            q->randomizer = pento_randomizer_create();
             break;
 
         case RANDOMIZER_G1:
-            q->randomizer = g1_randomizer_create(randomizer_flags);
+            q->randomizer = g1_randomizer_create();
             break;
 
         case RANDOMIZER_G2:
-            q->randomizer = g2_randomizer_create(randomizer_flags);
+            q->randomizer = g2_randomizer_create();
             break;
 
         case RANDOMIZER_G3:
-            q->randomizer = g2_randomizer_create(randomizer_flags);
+            q->randomizer = g2_randomizer_create();
             break;
 
         default:
-            q->randomizer = pento_randomizer_create(randomizer_flags);
+            q->randomizer = pento_randomizer_create();
             break;
     }
 
@@ -1073,7 +1067,7 @@ game_t *qs_game_create(CoreState *cs, int level, unsigned int flags, int replay_
     {
         for(int i = 0; i < MAX_SECTIONS; i++)
         {
-            q->best_section_times[i] = scoredb_get_sectiontime(&g->origin->records, &g->origin->player, q->mode_type, i * 100);
+            q->best_section_times[i] = scoredb_get_sectiontime(&g->origin->records, q->mode_type, i * 100);
         }
     }
 
@@ -1207,7 +1201,7 @@ int qs_game_init(game_t *g)
     return 0;
 }
 
-int qs_game_pracinit(game_t *g, int val)
+int qs_game_pracinit(game_t *g, int)
 {
     CoreState *cs = g->origin;
     g = cs->p1game;
@@ -1470,7 +1464,7 @@ int qs_game_quit(game_t *g)
     return 0;
 }
 
-int qs_game_preframe(game_t *g) { return 0; }
+int qs_game_preframe(game_t *) { return 0; }
 
 int qs_game_frame(game_t *g)
 {
@@ -2025,9 +2019,9 @@ int qs_game_frame(game_t *g)
 
     int cellsFilled = 0;
 
-    for(int i = 0; i < g->field->getWidth(); i++)
+    for(size_t i = 0; i < g->field->getWidth(); i++)
     {
-        for(int j = 0; j < g->field->getHeight(); j++)
+        for(size_t j = 0; j < g->field->getHeight(); j++)
         {
             int c = g->field->cell(i, j);
             if(c != 0 && c != -2 && c != QRS_FIELD_W_LIMITER)
@@ -2112,7 +2106,7 @@ int qs_game_frame(game_t *g)
         {
             if(q->pracdata->goal_level != 0)
             {
-                if(q->level >= q->pracdata->goal_level)
+                if(static_cast<int>(q->level) >= q->pracdata->goal_level)
                 {
                     q->level = q->pracdata->goal_level;
 
@@ -2611,9 +2605,9 @@ int qs_process_lockflash(game_t *g)
 
             int cells = 0;
 
-            for(int i = 0; i < g->field->getWidth(); i++)
+            for(size_t i = 0; i < g->field->getWidth(); i++)
             {
-                for(int j = 0; j < g->field->getHeight(); j++)
+                for(size_t j = 0; j < g->field->getHeight(); j++)
                 {
                     int c = g->field->cell(i, j);
                     if(c != 0 && c != -2 && c != QRS_FIELD_W_LIMITER)
@@ -3550,9 +3544,9 @@ int qs_process_lockflash(game_t *g)
             {
                 int cellsFilled = 0;
 
-                for(int i = 0; i < g->field->getWidth(); i++)
+                for(size_t i = 0; i < g->field->getWidth(); i++)
                 {
-                    for(int j = 0; j < g->field->getHeight(); j++)
+                    for(size_t j = 0; j < g->field->getHeight(); j++)
                     {
                         int c = g->field->cell(i, j);
                         if(c != 0 && c != -2 && c != QRS_FIELD_W_LIMITER)
@@ -3711,7 +3705,7 @@ int qs_update_pracdata(CoreState *cs)
             q->randomizer_type = RANDOMIZER_NORMAL;
             if(q->randomizer)
                 randomizer_destroy(q->randomizer);
-            q->randomizer = pento_randomizer_create(0);
+            q->randomizer = pento_randomizer_create();
 
             q->hold_enabled = 0;
             q->max_floorkicks = 2;
@@ -3726,7 +3720,7 @@ int qs_update_pracdata(CoreState *cs)
             q->randomizer_type = RANDOMIZER_G1;
             if(q->randomizer)
                 randomizer_destroy(q->randomizer);
-            q->randomizer = g1_randomizer_create(0);
+            q->randomizer = g1_randomizer_create();
 
             q->hold_enabled = 0;
             q->max_floorkicks = 0;
@@ -3741,7 +3735,7 @@ int qs_update_pracdata(CoreState *cs)
             q->randomizer_type = RANDOMIZER_G2;
             if(q->randomizer)
                 randomizer_destroy(q->randomizer);
-            q->randomizer = g2_randomizer_create(0);
+            q->randomizer = g2_randomizer_create();
 
             q->hold_enabled = 0;
             q->max_floorkicks = 0;
@@ -3756,7 +3750,7 @@ int qs_update_pracdata(CoreState *cs)
             q->randomizer_type = RANDOMIZER_G3;
             if(q->randomizer)
                 randomizer_destroy(q->randomizer);
-            q->randomizer = g3_randomizer_create(0);
+            q->randomizer = g3_randomizer_create();
 
             q->hold_enabled = 1;
             q->max_floorkicks = 1;
@@ -3774,7 +3768,7 @@ int qs_update_pracdata(CoreState *cs)
 
     if(menu_is_practice(cs->menu))
     {
-        for(int menu_i = 0; i < md->numopts; menu_i++)
+        for(int menu_i = 0; menu_i < md->numopts; menu_i++)
         {
             Shiro::MenuOption *menu_opt = &md->menu[menu_i];
             if(menu_opt->type == Shiro::ElementType::MENU_TEXTINPUT && menu_opt->label == "RANDOMIZER SEED")
@@ -3783,7 +3777,7 @@ int qs_update_pracdata(CoreState *cs)
 
                 if(text.length() > 0)
                 {
-                    int rc = std::sscanf(text.c_str(), "%d", &q->pracdata->randomizer_seed);
+                    int rc = std::sscanf(text.c_str(), "%u", &q->pracdata->randomizer_seed);
 
                     if(rc == 1)
                     {
@@ -3808,7 +3802,7 @@ int qs_update_pracdata(CoreState *cs)
 
     if(menu_is_practice(cs->menu))
     {
-        for(int menu_i = 0; i < md->numopts; menu_i++)
+        for(int menu_i = 0; menu_i < md->numopts; menu_i++)
         {
             Shiro::MenuOption *menu_opt = &md->menu[menu_i];
             if(menu_opt->type == Shiro::ElementType::MENU_TEXTINPUT && menu_opt->label == "PIECE SEQUENCE")
@@ -4497,11 +4491,8 @@ int qs_initnext(game_t *g, qrs_player *p, unsigned int flags)
     qrsdata *q = (qrsdata *)(g->data);
     struct randomizer *qrand = q->randomizer;
 
-    int i = 0;
-    int j = 0;
     piece_id t = 0;
     int rc = 0;
-    int cell = 0;
 
     q->lock_on_rotate = 0;
     q->p1counters->floorkicks = 0;

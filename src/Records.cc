@@ -248,7 +248,7 @@ void scoredb_clear_live_sectiontimes(Shiro::Records::List *records)
     sqlite3_finalize(sql);
 }
 
-int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel)
+int scoredb_get_sectiontime(Shiro::Records::List *records, int mode, int startlevel)
 {
     sqlite3_stmt *sql;
     const char *getSectionTimeSql = R"(
@@ -498,10 +498,9 @@ void scoredb_get_full_replay(Shiro::Records::List *records, struct replay *out_r
     const int returnValue = sqlite3_step(sql);
     check(returnValue == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
-    const int replayBufferLength = sqlite3_column_bytes(sql, 0);
     const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
 
-    read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
+    read_replay_from_memory(out_replay, replayBuffer);
     sqlite3_finalize(sql);
 }
 
@@ -529,9 +528,8 @@ void scoredb_get_full_replay_by_condition(Shiro::Records::List *records, struct 
     int returnValue = sqlite3_step(sql);
     check(returnValue == SQLITE_ROW, "Could not get replay: %s", sqlite3_errmsg(records->db));
 
-    int replayBufferLength = sqlite3_column_bytes(sql, 0);
     const uint8_t *replayBuffer = (const uint8_t *)sqlite3_column_blob(sql, 0);
 
-    read_replay_from_memory(out_replay, replayBuffer, replayBufferLength);
+    read_replay_from_memory(out_replay, replayBuffer);
     sqlite3_finalize(sql);
 }

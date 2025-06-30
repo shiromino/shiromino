@@ -64,7 +64,7 @@ namespace Shiro {
         std::size_t preload(
             const std::initializer_list<std::pair<AssetType, std::filesystem::path>>& names,
             std::function<void(const std::pair<AssetType, std::filesystem::path>& name, const bool loaded)> onLoad =
-                 [](const std::pair<AssetType, std::filesystem::path>& name, const bool loaded) {}
+                 [](const std::pair<AssetType, std::filesystem::path>&, const bool) {}
         );
 
         /**

@@ -34,7 +34,7 @@ struct replay {
 
 std::string get_replay_descriptor(struct replay *r);
 
-void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, size_t bufferLength);
+void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer);
 
 uint8_t* generate_raw_replay(struct replay *r, size_t *out_replayLength);
 void dispose_raw_replay(uint8_t* buffer);

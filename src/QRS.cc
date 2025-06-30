@@ -279,7 +279,7 @@ int qrsfield_set_w(Shiro::Grid *field, int w)
     return 0;
 }
 
-int qrsfield_clear(Shiro::Grid *field) { return 0; }
+int qrsfield_clear() { return 0; }
 
 int undo_clear_button_should_activate(CoreState *cs)
 {
@@ -374,7 +374,7 @@ int usr_field_redo_history_not_exists(CoreState *cs)
     return usr_field_redo_history_exists(cs) == 0;
 }
 
-int lock_usr_field(CoreState *cs, void *data)
+int lock_usr_field(CoreState *cs, void *)
 {
     if(!cs || !cs->p1game)
         return -1;
@@ -389,7 +389,7 @@ int lock_usr_field(CoreState *cs, void *data)
     return 0;
 }
 
-int unlock_usr_field(CoreState *cs, void *data)
+int unlock_usr_field(CoreState *cs, void *)
 {
     if(!cs || !cs->p1game)
         return -1;
@@ -440,7 +440,7 @@ int usr_field_is_unlocked(CoreState *cs)
     return 0;
 }
 
-int usr_field_bkp(CoreState *cs, pracdata *d) {
+int usr_field_bkp(CoreState *, pracdata *d) {
     if (!d) {
         return 1;
     }
@@ -456,7 +456,7 @@ int usr_field_bkp(CoreState *cs, pracdata *d) {
     return 0;
 }
 
-int usr_field_undo(CoreState *cs, pracdata *d)
+int usr_field_undo(CoreState *, pracdata *d)
 {
     if (!d) {
         return 1;
@@ -474,7 +474,7 @@ int usr_field_undo(CoreState *cs, pracdata *d)
     return 0;
 }
 
-int usr_field_redo(CoreState *cs, pracdata *d)
+int usr_field_redo(CoreState *, pracdata *d)
 {
     if(!d)
     {
@@ -493,7 +493,7 @@ int usr_field_redo(CoreState *cs, pracdata *d)
     return 0;
 }
 
-int push_undo_clear_confirm(CoreState *cs, void *data)
+int push_undo_clear_confirm(CoreState *cs, void *)
 {
     cs->button_emergency_override = true;
 
@@ -533,14 +533,14 @@ int undo_clear_confirm_yes(CoreState *cs, void *data)
     return 0;
 }
 
-int undo_clear_confirm_no(CoreState *cs, void *data)
+int undo_clear_confirm_no(CoreState *cs, void *)
 {
     cs->button_emergency_override = false;
     cs->mouse.leftButton = Shiro::Mouse::Button::notPressed;
     return 0;
 }
 
-int usr_field_undo_clear(CoreState *cs, void *data)
+int usr_field_undo_clear(CoreState *cs, void *)
 {
     qrsdata *q = (qrsdata *)cs->p1game->data;
 
@@ -550,14 +550,14 @@ int usr_field_undo_clear(CoreState *cs, void *data)
     return 0;
 }
 
-int usr_field_undo_button_action(CoreState *cs, void *data)
+int usr_field_undo_button_action(CoreState *cs, void *)
 {
     qrsdata *q = (qrsdata *)cs->p1game->data;
 
     return usr_field_undo(cs, q->pracdata);
 }
 
-int usr_field_redo_button_action(CoreState *cs, void *data)
+int usr_field_redo_button_action(CoreState *cs, void *)
 {
     qrsdata *q = (qrsdata *)cs->p1game->data;
 
@@ -590,10 +590,6 @@ int qrs_input(game_t *g)
     int greater_y = 0;
 
     int edit_action_occurred = 0;
-
-    int scale = 1;
-
-    scale = static_cast<int>(cs->settings.videoScale);
 
     init = q->p1counters->init;
 
@@ -1633,7 +1629,6 @@ int qrs_floorkick(game_t *g, qrs_player *p)
 
 int qrs_ceilingkick(game_t *g, qrs_player *p)
 {
-    qrsdata *q = (qrsdata *)g->data;
     int bkp_y = p->y;
 
     if(p->def->flags & Shiro::PDNOCEILKICKS)
@@ -1894,7 +1889,6 @@ int qrs_dropfield(game_t *g)
 
 int qrs_spawn_garbage(game_t *g, unsigned int flags)
 {
-    qrsdata *q = (qrsdata *)g->data;
     std::size_t i = 0u;
 
     if(flags & GARBAGE_COPY_BOTTOM_ROW)

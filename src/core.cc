@@ -416,7 +416,7 @@ bool CoreState::init() {
         menu = menu_create(this);
         check(menu != NULL, "menu_create returned failure\n");
         menu->init(menu);
-        screenManager->addScreen("main", mainMenu_create(this, screenManager, assets->fixedsys));
+        screenManager->addScreen("main", mainMenu_create(this, assets->fixedsys));
         //SDL_Rect gameScreenRect = {0, 0, 640, 480};
         //screenManager->addScreen("game", new GUIScreen {this, "game", NULL, gameScreenRect});
         screenManager->loadScreen("main");
@@ -611,7 +611,7 @@ void CoreState::run() {
         SDL_Texture *theRenderTarget = SDL_GetRenderTarget(screen.renderer);
 
         if (theRenderTarget != nullptr) {
-            SDL_Rect dst_ = {0, 0, 640, 480};
+            //SDL_Rect dst_ = {0, 0, 640, 480};
             SDL_SetRenderTarget(screen.renderer, NULL);
             //Shiro::RenderCopy(screen, theRenderTarget, nullptr, &dst_);
             Shiro::RenderCopy(screen, theRenderTarget, nullptr, nullptr);
@@ -756,7 +756,6 @@ bool CoreState::process_events() {
     float prevRenderScale = screen.render_scale;
 
     int f = 0;
-    float ff = 0;
 
     SDL_Event event;
 #define CHECK_BINDINGS(check) \
@@ -1255,7 +1254,7 @@ bool CoreState::process_events() {
     // size of a windowed window is carried over to fullscreen desktop, so
     // resizing the window changes the fullscreen desktop viewport to the
     // resized window viewport size.
-    if (settings.fullscreen && screen.w != windowW || screen.h != windowH) {
+    if (settings.fullscreen && (screen.w != static_cast<unsigned int>(windowW) || screen.h != static_cast<unsigned int>(windowH))) {
         SDL_Rect viewport = {
             0, 0, windowW, windowH
         };
@@ -1291,10 +1290,8 @@ bool CoreState::process_events() {
 
         if(screen.target_tex != nullptr)
         {
-            bool usingTarget = false;
             if(SDL_GetRenderTarget(screen.renderer) == screen.target_tex)
             {
-                usingTarget = true;
                 SDL_SetRenderTarget(screen.renderer, NULL);
             }
 
@@ -1602,8 +1599,8 @@ void CoreState::gfx_buttons_input() {
             continue;
         }
 
-        if(mouse.logicalX < b.x + b.w && mouse.logicalX >= b.x && mouse.logicalY < b.y + b.h &&
-           mouse.logicalY >= b.y)
+        if(mouse.logicalX < static_cast<int>(b.x + b.w) && mouse.logicalX >= static_cast<int>(b.x) &&
+           mouse.logicalY < static_cast<int>(b.y + b.h) && mouse.logicalY >= static_cast<int>(b.y))
             b.highlighted = 1;
         else
             b.highlighted = 0;

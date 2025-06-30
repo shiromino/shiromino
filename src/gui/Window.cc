@@ -101,11 +101,11 @@ void Window::draw()
 
         if(updateTitlePositionalValues)
         {
-            generateGUITextPositionalValues(title, &fmt, titleFont, titleRect, titlePositionalValues, false, false);
+            generateGUITextPositionalValues(title, &fmt, titleFont, titleRect, titlePositionalValues);
             updateTitlePositionalValues = false;
         }
 
-        drawGUITextPV(title, &fmt, titleFont, titlePositionalValues, 0, 0);
+        drawGUITextPV(title, &fmt, titleFont, titlePositionalValues);
     }
 
     SDL_SetRenderDrawColor(guiSDLRenderer, r, g, b, a);
@@ -410,12 +410,12 @@ GUIInteractable *Window::getControlElementAt(int x, int y)
     return NULL;
 }
 
-void Window::mouseMoved(int x, int y)
+void Window::mouseMoved(int, int)
 {
 
 }
 
-void Window::mouseClicked(int x, int y, Uint8 button)
+void Window::mouseClicked(int x, int y, Uint8)
 {
     if(showTitleBar && moveable)
     {
@@ -430,7 +430,7 @@ void Window::mouseClicked(int x, int y, Uint8 button)
     }
 }
 
-void Window::mouseDragged(int x, int y, Uint8 button)
+void Window::mouseDragged(int x, int y, Uint8)
 {
     if(moving)
     {
@@ -439,17 +439,17 @@ void Window::mouseDragged(int x, int y, Uint8 button)
     }
 }
 
-void Window::mouseReleased(int x, int y, Uint8 button)
+void Window::mouseReleased(int, int, Uint8)
 {
     moving = false;
 }
 
-void Window::keyPressed(SDL_Keycode kc)
+void Window::keyPressed(SDL_Keycode)
 {
 
 }
 
-void Window::textInput(std::string s)
+void Window::textInput(std::string)
 {
 
 }

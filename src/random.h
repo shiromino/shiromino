@@ -142,10 +142,10 @@ void g123_seeds_update();
 // TODO NULL-proof the functions which take struct randomizer * parameters
 
 // _create functions fill in all fields; piece_id arrays are filled with PIECE_ID_INVALID
-struct randomizer *g1_randomizer_create(uint32_t flags);
-struct randomizer *g2_randomizer_create(uint32_t flags);
-struct randomizer *g3_randomizer_create(uint32_t flags);
-struct randomizer *pento_randomizer_create(uint32_t flags);
+struct randomizer *g1_randomizer_create();
+struct randomizer *g2_randomizer_create();
+struct randomizer *g3_randomizer_create();
+struct randomizer *pento_randomizer_create();
 void randomizer_destroy(struct randomizer *r);
 
 /* _init functions prepare a randomizer for the beginning of a new game

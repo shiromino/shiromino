@@ -166,15 +166,15 @@ GUIText::GUIText(std::string text, BitFont& font, SDL_Rect& relativeDestRect)
 
 void GUIText::draw()
 {
-    this->prepareRenderTarget(false);
+    this->prepareRenderTarget();
 
     if(updatePositionalValues)
     {
-        generateGUITextPositionalValues(text, &fmt, font, relativeDestRect, textPositionalValues, false, false);
+        generateGUITextPositionalValues(text, &fmt, font, relativeDestRect, textPositionalValues);
         updatePositionalValues = false;
     }
 
-    drawGUITextPV(text, &fmt, font, textPositionalValues, 0, 0);
+    drawGUITextPV(text, &fmt, font, textPositionalValues);
 }
 
 bool GUIInteractable::canInteractAt(int x, int y)
@@ -270,13 +270,13 @@ void GUIDrawBorder(SDL_Rect& rect, int width, Shiro::GUI::rgba_t rgba)
 }
 
 void generateGUITextPositionalValues(std::string& text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox,
-    std::vector<std::pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
+    std::vector<std::pair<int, int>>& values)
 {
-    generateGUITextPositionalValuesPartial(text, 0, (unsigned)text.size(), fmt, font, destBox, values, horizontalScroll, verticalScroll);
+    generateGUITextPositionalValuesPartial(text, 0, (unsigned)text.size(), fmt, font, destBox, values);
 }
 
 void generateGUITextPositionalValuesPartial(std::string& text, unsigned int pos, unsigned int len, TextFormat *fmt,
-    BitFont& font, SDL_Rect& destBox, std::vector<std::pair<int, int>>& values, bool horizontalScroll, bool verticalScroll)
+    BitFont& font, SDL_Rect& destBox, std::vector<std::pair<int, int>>& values)
 {
     TextFormat fmtDefault {};
 
@@ -384,14 +384,13 @@ void generateGUITextPositionalValuesPartial(std::string& text, unsigned int pos,
     }
 }
 
-void drawGUITextPV(std::string text, TextFormat *fmt, BitFont& font, std::vector<std::pair<int, int>>& positionalValues,
-    unsigned int scrollPosX, unsigned int scrollPosY)
+void drawGUITextPV(std::string text, TextFormat *fmt, BitFont& font, std::vector<std::pair<int, int>>& positionalValues)
 {
-    drawGUITextPartialPV(text, 0, (unsigned)text.size(), fmt, font, positionalValues, scrollPosX, scrollPosY);
+    drawGUITextPartialPV(text, 0, (unsigned)text.size(), fmt, font, positionalValues);
 }
 
 void drawGUITextPartialPV(std::string text, unsigned int pos, unsigned int len, TextFormat *fmt,
-    BitFont& font, std::vector<std::pair<int, int>>& positionalValues, unsigned int scrollPosX, unsigned int scrollPosY)
+    BitFont& font, std::vector<std::pair<int, int>>& positionalValues)
 {
     if(positionalValues.size() == 0)
     {
@@ -414,13 +413,6 @@ void drawGUITextPartialPV(std::string text, unsigned int pos, unsigned int len, 
 
     SDL_Rect src = { 0, 0, (int) font.charW, (int) font.charH };
     SDL_Rect dest = { 0, 0, (int) (fmt->sizeMult * (float) font.charW), (int) (fmt->sizeMult * (float) font.charH) };
-
-    bool using_target_tex = false;
-
-    if(SDL_GetRenderTarget(guiSDLRenderer) != NULL)
-    {
-        using_target_tex = true;
-    }
 
     for(unsigned int i = pos; i < positionalValues.size() && i < pos + len; i++)
     {
@@ -492,14 +484,14 @@ void drawGUITextPartialPV(std::string text, unsigned int pos, unsigned int len, 
 void drawGUIText(std::string text, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
 {
     std::vector<std::pair<int, int>> textPositionalValues;
-    generateGUITextPositionalValues(text, fmt, font, destBox, textPositionalValues, false, false);
-    drawGUITextPV(text, fmt, font, textPositionalValues, 0, 0);
+    generateGUITextPositionalValues(text, fmt, font, destBox, textPositionalValues);
+    drawGUITextPV(text, fmt, font, textPositionalValues);
 }
 
 void drawGUITextPartial(std::string text, unsigned int pos, unsigned int len, TextFormat *fmt, BitFont& font, SDL_Rect& destBox)
 // destBox's w and h fields can be 0, which results in the text being rendered without strict positional bounds
 {
     std::vector<std::pair<int, int>> textPositionalValues;
-    generateGUITextPositionalValuesPartial(text, pos, len, fmt, font, destBox, textPositionalValues, false, false);
-    drawGUITextPartialPV(text, pos, len, fmt, font, textPositionalValues, 0, 0);
+    generateGUITextPositionalValuesPartial(text, pos, len, fmt, font, destBox, textPositionalValues);
+    drawGUITextPartialPV(text, pos, len, fmt, font, textPositionalValues);
 }

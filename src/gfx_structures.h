@@ -53,13 +53,7 @@ struct text_formatting {
 
 struct gfx_button {
     gfx_button() :
-        x(0),
-        y(0),
-        w(0u),
-        h(0u),
-        flags(0u),
-        highlighted(0),
-        clicked(0),
+        text(""),
         toggleOffText(""),
         toggleOnText(""),
         toggleValue(false),
@@ -67,6 +61,13 @@ struct gfx_button {
         type(BUTTON_TYPE_ACTION),
         visible(true),
         active(false),
+        x(0),
+        y(0),
+        w(0u),
+        h(0u),
+        flags(0u),
+        highlighted(0),
+        clicked(0),
         action(nullptr),
         activate_check(nullptr),
         deactivate_check(nullptr),

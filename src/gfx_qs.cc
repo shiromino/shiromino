@@ -95,7 +95,7 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
 
     std::vector<std::string> lines = strtools::split(Shiro::Credits::creditsString, '\n');
 
-    for(int i = 0; i < lines.size(); i++)
+    for(size_t i = 0; i < lines.size(); i++)
     {
         if(lines[i].size() == 0)
         {
@@ -104,7 +104,7 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
 
         if(lines[i][0] == '#')
         {
-            if(colorIndex < colors.size())
+            if(colorIndex < static_cast<int>(colors.size()))
             {
                 fmt.rgba = colors[colorIndex];
                 colorIndex++;
