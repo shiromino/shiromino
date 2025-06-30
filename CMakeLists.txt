@@ -439,10 +439,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
           -Wextra
           -Wpedantic
           -Werror
-          $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
-              -fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-          >
           $<$<AND:$<CONFIG:Debug>,$<BOOL:${UNIX}>>:
+              $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
+                -fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
+              >
               -fsanitize=leak
               -fsanitize=undefined
               -fsanitize-address-use-after-scope
@@ -453,16 +453,16 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
 
 	target_link_libraries(${GAME_EXECUTABLE}
 		PRIVATE
-		  $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
-		  	-fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-		  >
           $<$<AND:$<CONFIG:Debug>,$<BOOL:${UNIX}>>:
-            -fsanitize=leak
-			-fsanitize=undefined
-            -fsanitize-address-use-after-scope
-            -fsanitize-undefined-trap-on-error
+              $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
+                -fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
+              >
+              -fsanitize=leak
+              -fsanitize=undefined
+              -fsanitize-address-use-after-scope
+              -fsanitize-undefined-trap-on-error
           >
-		  -fno-omit-frame-pointer
+          -fno-omit-frame-pointer
 		)
 endif()
 #
