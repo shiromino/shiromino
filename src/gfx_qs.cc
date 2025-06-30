@@ -1258,7 +1258,7 @@ int gfx_qs_lineclear(game_t *g, int row)
     }
 
     int i = 0;
-    int mod = 0;
+    size_t mod = 0;
     int c = 0;
 
     for(i = (QRS_FIELD_W - q->field_w) / 2; i < (QRS_FIELD_W + q->field_w) / 2; i += 2)
@@ -1271,11 +1271,11 @@ int gfx_qs_lineclear(game_t *g, int row)
 
         if(c > 0 && c <= 26)
         {
-            mod = piece_colors[c - 1] * 0x100 + 0xFF;
+            mod = static_cast<size_t>(piece_colors[c - 1]) * 0x100 + 0xFF;
         }
         else
         {
-            mod = piece_colors[25] * 0x100 + 0xFF;
+            mod = static_cast<size_t>(piece_colors[25]) * 0x100 + 0xFF;
         }
 
         if(row % 2)
