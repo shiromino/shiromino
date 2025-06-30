@@ -12,12 +12,14 @@ project(shiromino
 )
 set(GAME_VERSION "${PROJECT_VERSION}" CACHE STRING "The version of the game.")
 set(GAME_EXECUTABLE ${PROJECT_NAME})
+set(GAME_LIB ${PROJECT_NAME}_lib)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(PORTABLE "Selects whether the build should be \"portable\", where all files are bundled together in one distributable folder/package.")
 option(APPIMAGE_BASE_PATH "Selects whether an AppImage build should use the directory where the AppImage is located for the base path, instead of the the contents of the AppImage itself.")
+
 
 #
 # Basic project layout
@@ -30,8 +32,14 @@ elseif(WIN32 AND MSVC)
 else()
 	add_executable(${GAME_EXECUTABLE})
 endif()
-target_include_directories(${GAME_EXECUTABLE} PRIVATE src)
+target_include_directories(${GAME_EXECUTABLE}
+	PRIVATE
+	  src
+	  include
+)
 target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
+
+
 #
 # Put the git hash into the game if possible
 #
@@ -46,6 +54,8 @@ if(GIT_FOUND)
 		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
 endif()
+
+
 #
 # Dynamic headers
 #
@@ -58,6 +68,8 @@ target_sources(${GAME_EXECUTABLE}
 		"${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h"
 )
 target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}")
+
+
 #
 # Sources needed to build the game
 #
@@ -112,7 +124,6 @@ target_sources(${GAME_EXECUTABLE}
 		src/PieceDefinition.cc
 		src/PieceDefinition.h
 		src/Player.h
-		src/QRS.cc
 		src/QRS0.h
 		src/QRS1.h
 		src/Records.cc
@@ -177,6 +188,17 @@ target_sources(${GAME_EXECUTABLE}
 		src/stringtools.h
 		third-party/PDINI.h
 )
+
+add_library(${GAME_LIB}
+	STATIC
+		src/QRS.cc
+)
+target_link_libraries(shiromino PRIVATE shiromino_lib)
+target_include_directories(${GAME_LIB}
+	PRIVATE
+	  include
+)
+
 #
 # External git project management
 #
@@ -251,8 +273,15 @@ set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
 set(MINIMUM_SQLITE3_VERSION 3.24.0)
 set(MINIMUM_GOOGLETEST_VERSION 1.17.0)
 
+# Catch2 is a header library, so we fetch it regardless to build it alongside the game.
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v3.8.1
+)
+FetchContent_MakeAvailable(Catch2)
+
 option(FETCH_DEPENDENCIES "Selects whether dependencies should be downloaded and built as part of the project build.")
-set(FETCH_DEPENDENCIES TRUE)
 if(FETCH_DEPENDENCIES)
 	# We don't need to check package versions here, as the git tags are
 	# effectively version numbers already verified as working.
@@ -295,19 +324,11 @@ if(FETCH_DEPENDENCIES)
 		GIT_PROGRESS TRUE
 	)
 
-	FetchContent_Declare(
-		googletest
-		GIT_REPOSITORY https://github.com/google/googletest.git
-		GIT_TAG 52eb8108c5bdec04579160ae17225d66034bd723
-		GIT_PROGRESS TRUE
-	)
-
 	FetchContent_MakeAvailable(
 		SDL2
 		SDL2_image
 		SDL2_mixer
 		sqlite3-cmake
-		googletest
 	)
 
 	FetchContent_GetProperties(
@@ -485,20 +506,20 @@ endif()
 #
 # Testing
 #
-enable_testing()
-
-add_executable(
-  shiromino_test
-  tests/hello_test.cc
+add_executable(tests
+	tests/QRS_test.cc
 )
-target_link_libraries(
-  shiromino_test
-  GTest::gtest_main
+target_link_libraries(tests
+	PRIVATE
+	  Catch2::Catch2WithMain
+	  ${GAME_LIB}
 )
+target_include_directories(tests PRIVATE include)
 
-include(GoogleTest)
-gtest_discover_tests(shiromino_test)
-
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(CTest)
+include(Catch)
+catch_discover_tests(tests)
 
 #
 # Installation
