@@ -249,8 +249,10 @@ set(MINIMUM_SDL2_VERSION 2.0.5)
 set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
 set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
 set(MINIMUM_SQLITE3_VERSION 3.24.0)
+set(MINIMUM_GOOGLETEST_VERSION 1.17.0)
 
 option(FETCH_DEPENDENCIES "Selects whether dependencies should be downloaded and built as part of the project build.")
+set(FETCH_DEPENDENCIES TRUE)
 if(FETCH_DEPENDENCIES)
 	# We don't need to check package versions here, as the git tags are
 	# effectively version numbers already verified as working.
@@ -293,11 +295,19 @@ if(FETCH_DEPENDENCIES)
 		GIT_PROGRESS TRUE
 	)
 
+	FetchContent_Declare(
+		googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG 52eb8108c5bdec04579160ae17225d66034bd723
+		GIT_PROGRESS TRUE
+	)
+
 	FetchContent_MakeAvailable(
 		SDL2
 		SDL2_image
 		SDL2_mixer
 		sqlite3-cmake
+		googletest
 	)
 
 	FetchContent_GetProperties(
@@ -471,6 +481,25 @@ endif()
 if(MSVC)
 	target_compile_options(${GAME_EXECUTABLE} PRIVATE "/MP")
 endif()
+
+#
+# Testing
+#
+enable_testing()
+
+add_executable(
+  shiromino_test
+  tests/hello_test.cc
+)
+target_link_libraries(
+  shiromino_test
+  GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(shiromino_test)
+
+
 #
 # Installation
 #
