@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.28)
+
+# disable due to clang-scan-deps messing up includes
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
+
 project(shiromino
 	DESCRIPTION "A fast-paced puzzle game with roots in the arcade."
 	HOMEPAGE_URL "https://github.com/shiromino/shiromino"
