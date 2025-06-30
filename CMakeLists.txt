@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.19)
+
+# disable due to clang-scan-deps messing up includes
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
+
 project(shiromino
 	DESCRIPTION "A fast-paced puzzle game with roots in the arcade."
 	HOMEPAGE_URL "https://github.com/shiromino/shiromino"
@@ -8,7 +13,7 @@ project(shiromino
 set(GAME_VERSION "${PROJECT_VERSION}" CACHE STRING "The version of the game.")
 set(GAME_EXECUTABLE ${PROJECT_NAME})
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(PORTABLE "Selects whether the build should be \"portable\", where all files are bundled together in one distributable folder/package.")
@@ -196,7 +201,7 @@ target_sources(${GAME_EXECUTABLE}
 		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.cpp"
 		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.h"
 )
-target_include_directories(${GAME_EXECUTABLE}
+target_include_directories(${GAME_EXECUTABLE} SYSTEM
 	PRIVATE
 		"${PDBM_SOURCE_DIRECTORY}"
 )
@@ -218,7 +223,7 @@ target_sources(${GAME_EXECUTABLE}
 	PRIVATE
 		"${NANOTIME_SOURCE_DIRECTORY}/nanotime.h"
 )
-target_include_directories(${GAME_EXECUTABLE}
+target_include_directories(${GAME_EXECUTABLE} SYSTEM
 	PRIVATE
 		"${NANOTIME_SOURCE_DIRECTORY}"
 )
@@ -426,14 +431,39 @@ endif()
 # Support for this is currently only partially available on MSYS2, so we disable it for WIN32.
 #
 if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-	if(CMAKE_BUILD_TYPE STREQUAL Debug AND NOT MINGW)
-		target_link_libraries(${GAME_EXECUTABLE}
-			PRIVATE
-				-fsanitize=address,leak,undefined
-				-fsanitize-address-use-after-scope
-				-fsanitize-undefined-trap-on-error
+    target_compile_options(${GAME_EXECUTABLE}
+        PRIVATE
+          $<$<CONFIG:Debug>:-g>
+          -O1
+          -Wall
+          -Wextra
+          -Wpedantic
+          -Werror
+          $<$<AND:$<CONFIG:Debug>,$<BOOL:${UNIX}>>:
+              $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
+                -fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
+              >
+              -fsanitize=leak
+              -fsanitize=undefined
+              -fsanitize-address-use-after-scope
+              -fsanitize-undefined-trap-on-error
+          >
+          -fno-omit-frame-pointer
+)
+
+	target_link_libraries(${GAME_EXECUTABLE}
+		PRIVATE
+          $<$<AND:$<CONFIG:Debug>,$<BOOL:${UNIX}>>:
+              $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
+                -fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
+              >
+              -fsanitize=leak
+              -fsanitize=undefined
+              -fsanitize-address-use-after-scope
+              -fsanitize-undefined-trap-on-error
+          >
+          -fno-omit-frame-pointer
 		)
-	endif()
 endif()
 #
 # Enable parallel compiling when using MSVC.

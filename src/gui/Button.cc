@@ -43,30 +43,30 @@ void Button::draw()
 
     if(updateDisplayStringPVs)
     {
-        generateGUITextPositionalValues(displayString, &fmt, font, textRect, displayStringPositionalValues, false, false);
+        generateGUITextPositionalValues(displayString, &fmt, font, textRect, displayStringPositionalValues);
         updateDisplayStringPVs = false;
     }
 
     GUIDrawBorder(relativeDestRect, 2, rgbaBorder);
-    drawGUITextPV(displayString, &fmt, font, displayStringPositionalValues, 0, 0);
+    drawGUITextPV(displayString, &fmt, font, displayStringPositionalValues);
 }
 
-void Button::mouseClicked(int x, int y, Uint8 button)
+void Button::mouseClicked(int, int, Uint8)
 {
 
 }
 
-void Button::mouseDragged(int x, int y, Uint8 button)
+void Button::mouseDragged(int, int, Uint8)
 {
 
 }
 
-void Button::mouseReleased(int x, int y, Uint8 button)
+void Button::mouseReleased(int, int, Uint8)
 {
 
 }
 
-void Button::keyPressed(SDL_Keycode kc)
+void Button::keyPressed(SDL_Keycode)
 {
 
 }

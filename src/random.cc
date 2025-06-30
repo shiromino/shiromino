@@ -146,7 +146,7 @@ void g123_seeds_update() {
     pento_seed = (pento_seed * 1119304217u) + seed_increment;
 }
 
-struct randomizer *g1_randomizer_create(uint32_t flags)
+struct randomizer *g1_randomizer_create()
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     assert(r != nullptr);
@@ -182,7 +182,7 @@ struct randomizer *g1_randomizer_create(uint32_t flags)
     return r;
 }
 
-struct randomizer *g2_randomizer_create(uint32_t flags)
+struct randomizer *g2_randomizer_create()
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     assert(r != nullptr);
@@ -218,7 +218,7 @@ struct randomizer *g2_randomizer_create(uint32_t flags)
     return r;
 }
 
-struct randomizer *g3_randomizer_create(uint32_t flags)
+struct randomizer *g3_randomizer_create()
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     assert(r != nullptr);
@@ -249,7 +249,7 @@ struct randomizer *g3_randomizer_create(uint32_t flags)
     return r;
 }
 
-struct randomizer *pento_randomizer_create(uint32_t flags)
+struct randomizer *pento_randomizer_create()
 {
     struct randomizer *r = (struct randomizer *)malloc(sizeof(struct randomizer));
     assert(r != nullptr);

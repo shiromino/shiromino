@@ -115,7 +115,7 @@ std::string get_replay_descriptor(struct replay *r)
 // endian. The majority of players play on x86/x64 in older versions, so it'd
 // maintain compatibilty with old replays at first.
 
-void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer, size_t bufferLength)
+void read_replay_from_memory(struct replay *out_replay, const uint8_t *buffer)
 {
     // Keep the same existing format
     const uint8_t *scanner = buffer;

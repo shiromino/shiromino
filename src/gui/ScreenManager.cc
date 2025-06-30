@@ -2,7 +2,7 @@
 #include "CoreState.h"
 #include "game_qs.h"
 
-GUIScreen *mainMenu_create(CoreState *cs, ScreenManager *mngr, BitFont& font)
+GUIScreen *mainMenu_create(CoreState *cs, BitFont& font)
 {
     SDL_Rect destRect = {0, 0, 640, 480};
     GUIScreen *mainMenu = new GUIScreen {cs, "Main Menu", mainMenuInteractionCallback, destRect};

@@ -95,7 +95,7 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
 
     std::vector<std::string> lines = strtools::split(Shiro::Credits::creditsString, '\n');
 
-    for(int i = 0; i < lines.size(); i++)
+    for(size_t i = 0; i < lines.size(); i++)
     {
         if(lines[i].size() == 0)
         {
@@ -104,7 +104,7 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
 
         if(lines[i][0] == '#')
         {
-            if(colorIndex < colors.size())
+            if(colorIndex < static_cast<int>(colors.size()))
             {
                 fmt.rgba = colors[colorIndex];
                 colorIndex++;
@@ -1258,7 +1258,7 @@ int gfx_qs_lineclear(game_t *g, int row)
     }
 
     int i = 0;
-    int mod = 0;
+    size_t mod = 0;
     int c = 0;
 
     for(i = (QRS_FIELD_W - q->field_w) / 2; i < (QRS_FIELD_W + q->field_w) / 2; i += 2)
@@ -1271,11 +1271,11 @@ int gfx_qs_lineclear(game_t *g, int row)
 
         if(c > 0 && c <= 26)
         {
-            mod = piece_colors[c - 1] * 0x100 + 0xFF;
+            mod = static_cast<size_t>(piece_colors[c - 1]) * 0x100 + 0xFF;
         }
         else
         {
-            mod = piece_colors[25] * 0x100 + 0xFF;
+            mod = static_cast<size_t>(piece_colors[25]) * 0x100 + 0xFF;
         }
 
         if(row % 2)

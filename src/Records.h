@@ -24,7 +24,7 @@ void scoredb_update_player(Shiro::Records::List *records, Shiro::Player *p);
 void scoredb_add_live_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel, int endlevel, int time);
 void scoredb_clear_live_sectiontimes(Shiro::Records::List *records);
 
-int scoredb_get_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int startlevel);
+int scoredb_get_sectiontime(Shiro::Records::List *records, int mode, int startlevel);
 void scoredb_add_sectiontime(Shiro::Records::List *records, Shiro::Player* p, int mode, int grade, int startlevel, int endlevel, int time);
 
 void scoredb_add_replay(Shiro::Records::List *records, Shiro::Player* p, struct replay *r);

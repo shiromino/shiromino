@@ -829,7 +829,7 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
 
     for(i = pos; i < text.size() && i < len; i++)
     {
-        int thisLineLength = lines[linefeeds].size() - (linefeeds != lines.size() - 1 ? 1 : 0);
+        size_t thisLineLength = lines[linefeeds].size() - (linefeeds != lines.size() - 1 ? 1 : 0);
 
         if(thisLineLength > fmt->wrap_length)
         {
