@@ -1,9 +1,11 @@
 #pragma once
+#include <array>
+#include <cstddef>
 #include <cstdint>
+#include <tuple>
+#include <utility>
 #include <vector>
-#include "gui/GUI.h"
 #include "Grid.h"
-#include "random.h"
 #include "RotationTables.h"
 
 #define SPM_SUBUNIT_SCALE 65536

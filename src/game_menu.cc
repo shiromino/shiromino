@@ -6,31 +6,46 @@
 
 // TODO: Change malloc/free of structs containing std::string to new/delete.
 
-#include "CoreState.h"
-#include "asset/Sfx.h"
-#include "asset/Music.h"
 #include "game_menu.h"
+#include <SDL_blendmode.h>
+#include <SDL_clipboard.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_pixels.h>
+#include <assert.h>
+#include <string.h>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <new>
+#include <sstream>
+#include "CoreState.h"
 #include "GameType.h"
-#include "game_qs.h"
-#include "gfx_old.h"
-#include "gfx_menu.h"
 #include "QRS0.h"
+#include "Records.h"
+#include "RefreshRates.h"
+#include "Settings.h"
+#include "asset/Image.h"
+#include "asset/Music.h"
+#include "asset/Sfx.h"
+#include "game_qs.h"
+#include "gfx_menu.h"
+#include "gfx_old.h"
+#include "input/KeyFlags.h"
+#include "input/Mouse.h"
 #include "menu/ActionOption.h"
 #include "menu/ElementType.h"
 #include "menu/GameArguments.h"
 #include "menu/GameMultiOption.h"
 #include "menu/GameOption.h"
-#include "menu/MetaGameOption.h"
 #include "menu/MultiOption.h"
 #include "menu/Option.h"
 #include "menu/TextOption.h"
 #include "menu/ToggleOption.h"
-#include "RefreshRates.h"
 #include "replay.h"
-#include <cstdlib>
-#include <ctime>
-#include <iostream>
-#include <exception>
+#include "video/Background.h"
+#include "video/Screen.h"
+
 Shiro::MenuOption std_game_multiopt_create(CoreState *cs, unsigned int mode, int num_sections, std::string label)
 {
     Shiro::MenuOption m = Shiro::create_menu_option(Shiro::ElementType::MENU_GAME_MULTIOPT, NULL, label);

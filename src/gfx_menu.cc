@@ -1,18 +1,30 @@
 #include "gfx_menu.h"
+#include <SDL_blendmode.h>
+#include <SDL_error.h>
+#include <SDL_rect.h>
+#include <SDL_render.h>
+#include <SDL_stdinc.h>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "CoreState.h"
+#include "asset/Image.h"
 #include "game_menu.h"
 #include "gfx_old.h"
-#include "video/Render.h"
+#include "gfx_structures.h"
 #include "menu/ElementType.h"
 #include "menu/GameMultiOption.h"
 #include "menu/MultiOption.h"
 #include "menu/Option.h"
-#include "menu/GameOption.h"
 #include "menu/TextOption.h"
 #include "menu/ToggleOption.h"
-#include <cstdlib>
-#include <iostream>
-#include "SDL.h"
+#include "video/Gfx.h"
+#include "video/Render.h"
+#include "video/Screen.h"
+
 int gfx_drawmenu(game_t *g)
 {
     if(!g)

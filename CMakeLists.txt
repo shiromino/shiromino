@@ -32,6 +32,7 @@ else()
 endif()
 target_include_directories(${GAME_EXECUTABLE} PRIVATE src)
 target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
+
 #
 # Put the git hash into the game if possible
 #

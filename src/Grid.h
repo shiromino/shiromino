@@ -1,6 +1,7 @@
 #pragma once
-
 #include <array>
+#include <cstddef>
+#include <tuple>
 #include <vector>
 
 #define GRID_OOB 8128

@@ -1,14 +1,16 @@
 #pragma once
-#include "CoreState.h"
-#include "gfx_structures.h"
-#include "Grid.h"
-#include "input/KeyFlags.h"
-#include "PieceDefinition.h"
-#include "Timer.h"
-#include "types.h"
 #include <cstdlib>
-#include "SDL.h"
+#include <filesystem>
 #include <string>
+#include "gfx_structures.h"
+#include "types.h"
+
+namespace Shiro { 
+    class Grid; 
+    class PieceDefinition; 
+    struct KeyFlags; 
+    struct Timer; 
+}
 
 #define QRS_FIELD_X 4
 #define QRS_FIELD_Y 50

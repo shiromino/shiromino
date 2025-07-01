@@ -1,9 +1,8 @@
 #pragma once
-#include "video/Screen.h"
-#include "gfx_structures.h"
-#include <vector>
+#include <cstddef>
 #include <forward_list>
 #include <memory>
+#include <vector>
 
 // TODO: Create a struct type for portable colors and convert to backend format in each backend's Graphic subclass.
 #define R(C) (((C) & 0xFF000000) >> 24)

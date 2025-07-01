@@ -1,15 +1,21 @@
+#include "Option.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <vector>
+#include "QRS0.h"
+#include "gfx_old.h"
 #include "menu/ActionOption.h"
 #include "menu/ElementType.h"
+#include "menu/GameArguments.h"
 #include "menu/GameMultiOption.h"
 #include "menu/GameOption.h"
 #include "menu/MetaGameOption.h"
 #include "menu/MultiOption.h"
 #include "menu/TextOption.h"
 #include "menu/ToggleOption.h"
-#include "Option.h"
-#include "CoreState.h"
-#include "gfx_old.h"
-#include "QRS0.h"
+
+struct CoreState;
+
 namespace Shiro {
     ActionOptionData::ActionOptionData() :
         action(nullptr),

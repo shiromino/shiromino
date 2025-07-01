@@ -1,7 +1,5 @@
 #pragma once
-
 #include "Grid.h"
-#include <bitset>
 #include <array>
 #include <cstdint>
 

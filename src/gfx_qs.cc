@@ -1,23 +1,32 @@
-#include "CoreState.h"
-#include "DisplayMode.h"
-#include "game_qs.h"
-#include "GameType.h"
-#include "video/Render.h"
-#include "video/Animation.h"
-#include "gfx_old.h"
 #include "gfx_qs.h"
-#include "QRS0.h"
-#include "stringtools.h"
-#include "random.h"
-#include "Timer.h"
-#include "types.h"
-#include "Credits.h"
-#include <fstream>
-#include <sstream>
-#include "SDL.h"
-#include <stdlib.h>
+#include <SDL_blendmode.h>
+#include <SDL_pixels.h>
+#include <SDL_rect.h>
+#include <SDL_stdinc.h>
+#include <stdint.h>
+#include <cstddef>
+#include <filesystem>
 #include <string>
 #include <vector>
+#include "CoreState.h"
+#include "Credits.h"
+#include "DisplayMode.h"
+#include "GameType.h"
+#include "Grid.h"
+#include "PieceDefinition.h"
+#include "QRS0.h"
+#include "asset/Image.h"
+#include "game_qs.h"
+#include "gfx_old.h"
+#include "gfx_structures.h"
+#include "random.h"
+#include "stringtools.h"
+#include "types.h"
+#include "video/Animation.h"
+#include "video/Gfx.h"
+#include "video/Render.h"
+#include "video/Screen.h"
+
 // clang-format off
 int piece_colors[26] =
 {

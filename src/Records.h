@@ -1,14 +1,17 @@
 #pragma once
-#include "Player.h"
-#include "sqlite3.h"
 #include <string>
-namespace Shiro::Records {
-    const std::string filename = "shiromino.sqlite";
-    struct List {
-        sqlite3 *db;
-    };
+#include "sqlite3.h"
+
+namespace Shiro {
+    struct Player;
+
+    namespace Records {
+        const std::string filename = "shiromino.sqlite";
+        struct List {
+            sqlite3 *db;
+        };
+    }
 }
-struct replay;
 
 //void scoredb_checkfill_default_sectiontimes(Shiro::Records::List *records);
 

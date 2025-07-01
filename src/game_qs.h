@@ -1,6 +1,9 @@
 #pragma once
+#include <cstddef>
 #include "Game.h"
-#include "QRS0.h"
+
+struct CoreState;
+struct qrs_player;
 
 #define QS_CURVE_MAX 20
 #define G1_MASTER_CURVE_MAX 30

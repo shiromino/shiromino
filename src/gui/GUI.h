@@ -1,16 +1,20 @@
 #pragma once
-#include "types.h"
+#include <SDL_events.h>
+#include <SDL_keycode.h>
+#include <SDL_rect.h>
+#include <SDL_render.h>
+#include <SDL_stdinc.h>
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <list>
 #include <memory>
-#include "SDL.h"
 #include <string>
 #include <utility>
 #include <vector>
+#include "types.h"
+
 namespace Shiro::GUI {
     using rgba_t = Shiro::u32;
     constexpr uint8_t TEXT_ALIGN_CENTER = 0x0002;

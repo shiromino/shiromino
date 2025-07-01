@@ -1,10 +1,13 @@
 #include "replay.h"
-#include "game_qs.h"
-#include "input/KeyFlags.h"
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
+#include "Timer.h"
+#include "game_qs.h"
+#include "input/KeyFlags.h"
+
+struct tm;
 
 // clang-format off
 enum packed_input_mask {
