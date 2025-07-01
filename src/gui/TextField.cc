@@ -7,8 +7,7 @@
 #include <SDL_rect.h>
 #include <SDL_render.h>
 #include <SDL_stdinc.h>
-#include <bits/chrono.h>
-#include <math.h>
+#include <chrono>
 #include <stdlib.h>
 #include <cstddef>
 #include <cstdint>
