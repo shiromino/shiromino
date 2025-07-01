@@ -1,13 +1,11 @@
 #include "Records.h"
-#include "Debug.h"
-#include "replay.h"
-#include "Player.h"
-#include "game_qs.h"
+#include <cassert>
 #include <cinttypes>
-#include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <cassert>
+#include "Debug.h"
+#include "Player.h"
+#include "replay.h"
 #include "sqlite3.h"
 #define check_bind(db, bind_call) check((bind_call) == SQLITE_OK, "Could not bind parameter value: %s", sqlite3_errmsg((db)))
 

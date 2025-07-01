@@ -1,14 +1,17 @@
 #pragma once
-#include "CoreState.h"
-#include "gfx_structures.h"
-#include "Grid.h"
-#include "input/KeyFlags.h"
-#include "PieceDefinition.h"
-#include "Timer.h"
-#include "types.h"
-#include <cstdlib>
-#include "SDL.h"
+#include <cstddef>
+#include <filesystem>
 #include <string>
+#include "gfx_old.h"
+#include "gfx_structures.h"
+#include "types.h"
+
+namespace Shiro { 
+    class Grid; 
+    class PieceDefinition; 
+    struct KeyFlags; 
+    struct Timer; 
+}
 
 #define QRS_FIELD_X 4
 #define QRS_FIELD_Y 50
@@ -50,8 +53,8 @@
 #define DRAWTEXT_SMALL_FONT     0x0400
 #define DRAWTEXT_FIXEDSYS_FONT  0x0800
 
-#define RGBA_DEFAULT 0xFFFFFFFF
-#define RGBA_OUTLINE_DEFAULT 0x000000FF
+#define RGBA_DEFAULT_MACRO 0xFFFFFFFF
+#define RGBA_OUTLINE_DEFAULT_MACRO 0x000000FF
 
 #define RGBA_NEGATIVE(N) (~((N) & 0xFFFFFF00))
 

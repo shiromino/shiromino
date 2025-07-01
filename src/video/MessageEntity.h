@@ -1,17 +1,16 @@
 #pragma once
-#include "video/Screen.h"
-#include "video/Gfx.h"
-#include "asset/Font.h"
-#include "video/TextGraphic.h"
-#include "SDL.h"
-#include <string>
-#include <memory>
-#include <functional>
-#include <utility>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <memory>
+#include <string>
+#include "asset/Font.h"
+#include "video/Gfx.h"
 
 namespace Shiro {
+    struct Screen;
+    struct TextGraphic;
+
     class MessageEntity : public Entity {
     public:
         DEFINE_ENTITY_PUSH(MessageEntity)

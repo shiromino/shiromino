@@ -1,7 +1,9 @@
 #pragma once
+#include <stddef.h>
+#include <cstdint>
 #include "QRS1.h"
 #include "SPM_Spec.h"
-#include <cstdint>
+
 typedef uint64_t SPM_randomSeed;
 SPM_minoID arsToQrsID(SPM_minoID t);
 void history_push(SPM_minoID *history, unsigned int histLen, SPM_minoID t);

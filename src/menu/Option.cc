@@ -1,15 +1,21 @@
+#include "Option.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <vector>
+#include "QRS0.h"
+#include "gfx_old.h"
 #include "menu/ActionOption.h"
 #include "menu/ElementType.h"
+#include "menu/GameArguments.h"
 #include "menu/GameMultiOption.h"
 #include "menu/GameOption.h"
 #include "menu/MetaGameOption.h"
 #include "menu/MultiOption.h"
 #include "menu/TextOption.h"
 #include "menu/ToggleOption.h"
-#include "Option.h"
-#include "CoreState.h"
-#include "gfx_old.h"
-#include "QRS0.h"
+
+struct CoreState;
+
 namespace Shiro {
     ActionOptionData::ActionOptionData() :
         action(nullptr),
@@ -80,8 +86,8 @@ namespace Shiro {
 
         m.label_text_flags = 0;
         m.value_text_flags = 0;
-        m.label_text_rgba = RGBA_DEFAULT;
-        m.value_text_rgba = RGBA_DEFAULT;
+        m.label_text_rgba = RGBA_DEFAULT_MACRO;
+        m.value_text_rgba = RGBA_DEFAULT_MACRO;
 
         ActionOptionData *d1 = NULL;
         MultiOptionData *d2 = NULL;

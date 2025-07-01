@@ -1,7 +1,11 @@
 #pragma once
-#include "CoreState.h"
-#include "menu/ElementType.h"
+#include <string>
+
+struct CoreState;
+
 namespace Shiro {
+    enum class ElementType;
+
     // Temporary hack until menu_opt is fully C++'d.
     template<typename opt_data>
     void delete_opt_data(void* data) {

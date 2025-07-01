@@ -1,6 +1,9 @@
 #include "video/MessageEntity.h"
+#include "video/TextGraphic.h"
 
 namespace Shiro {
+	struct Screen;
+	
 	MessageEntity::MessageEntity(
 		const Screen& screen,
 		const FontAsset& font,

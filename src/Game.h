@@ -1,6 +1,8 @@
 #pragma once
-#include "Grid.h"
-#include "gfx_structures.h"
+
+namespace Shiro { class Grid; }
+struct CoreState;
+
 typedef struct game game_t;
 struct game {
     int (*init)(game_t *);
