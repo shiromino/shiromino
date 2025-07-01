@@ -441,7 +441,7 @@ void MultiEditor::handleInput()
     }*/
 }
 
-void MultiEditor::handleGUIInteraction(GUIInteractable& interactable, GUIEvent& event)
+void MultiEditor::handleGUIInteraction(GUIInteractable&, GUIEvent&)
 {/*
     if(event.type != mouse_clicked)
     {
@@ -465,7 +465,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
 
     int num = 0;
 
-    int i = 0;
+    size_t i = 0;
     int j = 0;
     int k = 0;
     int t = 0;
@@ -864,11 +864,6 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
     rpt_end = 0;
     int rpt_len = 0;
     rpt_count = 0;
-    rpt = 0;
-    int inf_rpt_len = 0;
-    int inf_start = 0;
-
-    int inf = 0;
 
     i = 0;
     j = 0;
@@ -877,7 +872,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
 
     for(i = 0;; i++)
     {
-        if(i >= usr_seq_len || expand_count >= USRSEQ_EXPAND_MAX)
+        if(i >= static_cast<size_t>(usr_seq_len) || expand_count >= USRSEQ_EXPAND_MAX)
         {
             break;
         }
@@ -887,19 +882,16 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
         {
             /* rpt = 1 implies we encountered the beginning of a grouped subsequence, where groups are assumed
             to have a rep count specified at the end */
-            if(val & SEQUENCE_REPEAT_END || i == usr_seq_len - 1)
+            if(val & SEQUENCE_REPEAT_END || i == static_cast<size_t>(usr_seq_len - 1))
             {
                 rpt = 0;
                 rpt_end = i;
                 rpt_len = rpt_end - rpt_start + 1; // length of grouped subsequence
                 i++;                               // next element of the sequence is either a repetition count or beyond the end of the sequence
 
-                if(i != usr_seq_len && usr_sequence[i] == SEQUENCE_REPEAT_INF)
+                if(i != static_cast<size_t>(usr_seq_len) && usr_sequence[i] == SEQUENCE_REPEAT_INF)
                 {
                     // ^^ bound check must come first to prevent usr_sequence[i] from creating UB
-                    inf = 1;
-                    inf_rpt_len = rpt_len;
-                    inf_start = rpt_start;
                     expand_count += rpt_len;
                     for(k = 0; k < rpt_len; k++)
                     {
@@ -916,7 +908,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
                 {
                     // dealing with finite repetition or open-ended grouped subsequence
 
-                    if(i == usr_seq_len)
+                    if(i == static_cast<size_t>(usr_seq_len))
                     {
                         rpt_count = 1;
                     }
@@ -948,7 +940,7 @@ void MultiEditor::updateUsrseq(BindableVariable *seqvar)
             {
                 rpt_start = i;
                 rpt = 1;
-                if(val & SEQUENCE_REPEAT_END || i == usr_seq_len - 1)
+                if(val & SEQUENCE_REPEAT_END || i == static_cast<size_t>(usr_seq_len - 1))
                 {
                     i--;      // hacky way for the loop to go into the if(rpt) branch and handle these edge cases
                     continue; // the i-- ensures the loop reads the additional flags on this element/doesn't go OOB

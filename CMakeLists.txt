@@ -12,7 +12,6 @@ project(shiromino
 )
 set(GAME_VERSION "${PROJECT_VERSION}" CACHE STRING "The version of the game.")
 set(GAME_EXECUTABLE ${PROJECT_NAME})
-set(GAME_LIB ${PROJECT_NAME}_lib)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,20 +23,28 @@ option(APPIMAGE_BASE_PATH "Selects whether an AppImage build should use the dire
 #
 # Basic project layout
 #
+file(GLOB_RECURSE GAME_SOURCES src/*.cc src/*.h)
+# Remove main.c/main.cpp from the list to avoid multiple main() functions
+list(REMOVE_ITEM GAME_SOURCES "src/main.cc")
+
+add_library(shiromino_lib STATIC ${GAME_SOURCES} third-party/PDINI.h)
+target_include_directories(shiromino_lib PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_include_directories(shiromino_lib SYSTEM PUBLIC
+	${CMAKE_CURRENT_SOURCE_DIR}/third-party
+)
+
+add_executable(shiromino "src/main.cc")
 if(PORTABLE AND APPLE)
-	add_executable(${GAME_EXECUTABLE} MACOSX_BUNDLE "${CMAKE_SOURCE_DIR}/icon.icns")
+	set_target_properties(shiromino PROPERTIES MACOSX_BUNDLE TRUE)
+	target_sources(shiromino PRIVATE "${CMAKE_SOURCE_DIR}/icon.icns")
 	set_source_files_properties("${CMAKE_SOURCE_DIR}/icon.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 elseif(WIN32 AND MSVC)
-	add_executable(${GAME_EXECUTABLE} "${CMAKE_SOURCE_DIR}/cmake/icon.rc")
-else()
-	add_executable(${GAME_EXECUTABLE})
+	target_sources(shiromino PRIVATE "${CMAKE_SOURCE_DIR}/cmake/icon.rc")
 endif()
-target_include_directories(${GAME_EXECUTABLE}
-	PRIVATE
-	  src
-	  include
-)
-target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
+target_link_libraries(shiromino PRIVATE shiromino_lib)
 
 
 #
@@ -62,142 +69,13 @@ endif()
 set(EXECUTABLE_DYNAMIC_HEADER_DIRECTORY "${CMAKE_BINARY_DIR}/${GAME_EXECUTABLE}-dynamic/include")
 configure_file(include/definitions.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h" @ONLY)
 configure_file(include/Version.h.in "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h" @ONLY)
-target_sources(${GAME_EXECUTABLE}
+target_sources(shiromino_lib
 	PRIVATE
 		"${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/definitions.h"
 		"${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}/Version.h"
 )
-target_include_directories(${GAME_EXECUTABLE} PRIVATE "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}")
+target_include_directories(shiromino_lib PRIVATE "${EXECUTABLE_DYNAMIC_HEADER_DIRECTORY}")
 
-
-#
-# Sources needed to build the game
-#
-target_sources(${GAME_EXECUTABLE}
-	PRIVATE
-		src/asset/Asset.cc
-		src/asset/Asset.h
-		src/asset/Font.cc
-		src/asset/Font.h
-		src/asset/Image.cc
-		src/asset/Image.h
-		src/asset/Music.cc
-		src/asset/Music.h
-		src/asset/Sfx.cc
-		src/asset/Sfx.h
-		src/AssetStore.h
-		src/CoreState.h
-		src/Credits.cc
-		src/Credits.h
-		src/Debug.h
-		src/DisplayMode.h
-		src/Game.cc
-		src/Game.h
-		src/GameType.h
-		src/Grid.cc
-		src/Grid.h
-		src/input/ControllerBindings.cc
-		src/input/ControllerBindings.h
-		src/input/KeyBindings.cc
-		src/input/KeyBindings.h
-		src/input/KeyFlags.cc
-		src/input/KeyFlags.h
-		src/input/Mouse.cc
-		src/input/Mouse.h
-		src/main.cc
-		src/menu/ActionOption.h
-		src/menu/ElementType.h
-		src/menu/GameArguments.h
-		src/menu/GameMultiOption.h
-		src/menu/GameOption.h
-		src/menu/MetaGameOption.h
-		src/menu/MultiOption.h
-		src/menu/Option.cc
-		src/menu/Option.h
-		src/menu/TextOption.h
-		src/menu/ToggleOption.h
-		src/Delay.cc
-		src/Delay.h
-		src/Nanotime.cc
-		src/OS.cc
-		src/OS.h
-		src/PieceDefinition.cc
-		src/PieceDefinition.h
-		src/Player.h
-		src/QRS0.h
-		src/QRS1.h
-		src/Records.cc
-		src/Records.h
-		src/RefreshRates.h
-		src/RotationTables.cc
-		src/RotationTables.h
-		src/SPM_Randomizer.cc
-		src/SPM_Randomizer.h
-		src/SPM_Spec.cc
-		src/SPM_Spec.h
-		src/Settings.cc
-		src/Settings.h
-		src/ShiroPhysoMino.cc
-		src/ShiroPhysoMino.h
-		src/TGM.h
-		src/Timer.cc
-		src/Timer.h
-		src/video/Animation.cc
-		src/video/Animation.h
-		src/video/Background.cc
-		src/video/Background.h
-		src/video/Gfx.cc
-		src/video/Gfx.h
-		src/video/MessageEntity.cc
-		src/video/MessageEntity.h
-		src/video/Render.cc
-		src/video/Render.h
-		src/video/Screen.cc
-		src/video/Screen.h
-		src/video/TextGraphic.cc
-		src/video/TextGraphic.h
-		src/core.cc
-		src/fonts.h
-		src/game_menu.cc
-		src/game_menu.h
-		src/game_qs.cc
-		src/game_qs.h
-		src/gfx_helpers.cc
-		src/gfx_helpers.h
-		src/gfx_menu.cc
-		src/gfx_menu.h
-		src/gfx_old.cc
-		src/gfx_old.h
-		src/gfx_qs.cc
-		src/gfx_qs.h
-		src/gfx_structures.h
-		src/gui/Button.cc
-		src/gui/GUI.cc
-		src/gui/GUI.h
-		src/gui/GridCanvas.cc
-		src/gui/GridCanvas.h
-		src/gui/ScreenManager.cc
-		src/gui/ScreenManager.h
-		src/gui/TextField.cc
-		src/gui/Window.cc
-		src/images.h
-		src/random.cc
-		src/random.h
-		src/replay.cc
-		src/replay.h
-		src/stringtools.h
-		third-party/PDINI.h
-)
-
-add_library(${GAME_LIB}
-	STATIC
-		src/QRS.cc
-)
-target_link_libraries(shiromino PRIVATE shiromino_lib)
-target_include_directories(${GAME_LIB}
-	PRIVATE
-	  include
-)
 
 #
 # External git project management
@@ -217,16 +95,7 @@ endif()
 FetchContent_GetProperties(pdbm_font
 	SOURCE_DIR PDBM_SOURCE_DIRECTORY
 )
-target_sources(${GAME_EXECUTABLE}
-	PRIVATE
-		"${PDBM_SOURCE_DIRECTORY}/PDBMFont.hpp"
-		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.cpp"
-		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.h"
-)
-target_include_directories(${GAME_EXECUTABLE} SYSTEM
-	PRIVATE
-		"${PDBM_SOURCE_DIRECTORY}"
-)
+
 if(UNIX OR MINGW)
 	target_compile_definitions(${GAME_EXECUTABLE} PRIVATE _POSIX_VERSION=200112L)
 endif()
@@ -241,14 +110,20 @@ endif()
 FetchContent_GetProperties(nanotime
 	SOURCE_DIR NANOTIME_SOURCE_DIRECTORY
 )
-target_sources(${GAME_EXECUTABLE}
+
+target_sources(shiromino_lib
 	PRIVATE
+		"${PDBM_SOURCE_DIRECTORY}/PDBMFont.hpp"
+		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.cpp"
+		"${PDBM_SOURCE_DIRECTORY}/tinyxml2.h"
 		"${NANOTIME_SOURCE_DIRECTORY}/nanotime.h"
 )
-target_include_directories(${GAME_EXECUTABLE} SYSTEM
+target_include_directories(shiromino_lib SYSTEM
 	PRIVATE
+		"${PDBM_SOURCE_DIRECTORY}"
 		"${NANOTIME_SOURCE_DIRECTORY}"
 )
+
 #
 # The "Headers" source group for IDEs
 #
@@ -264,6 +139,8 @@ set(EXECUTABLE_THIRD_PARTY "${EXECUTABLE_SOURCES}")
 list(FILTER EXECUTABLE_THIRD_PARTY INCLUDE REGEX third-party)
 list(JOIN EXECUTABLE_THIRD_PARTY " " EXECUTABLE_THIRD_PARTY)
 source_group("Third-party" FILES "${EXECUTABLE_THIRD_PARTY}")
+
+
 #
 # Dependency management
 #
@@ -335,9 +212,9 @@ if(FETCH_DEPENDENCIES)
 		sqlite3-cmake
 		SOURCE_DIR SQLITE3_SOURCE_DIR
 	)
-	target_include_directories(${GAME_EXECUTABLE} PRIVATE "${SQLITE3_SOURCE_DIR}/src")
+	target_include_directories(shiromino_lib PRIVATE "${SQLITE3_SOURCE_DIR}/src")
 
-	target_link_libraries(${GAME_EXECUTABLE}
+	target_link_libraries(shiromino_lib
 		PRIVATE
 			SDL2::SDL2
 			SDL2_image
@@ -345,7 +222,7 @@ if(FETCH_DEPENDENCIES)
 			sqlite3
 	)
 	if(TARGET SDL2::SDL2main)
-		target_link_libraries(${GAME_EXECUTABLE}
+		target_link_libraries(shiromino_lib
 			PRIVATE
 				SDL2::SDL2main
 		)
@@ -358,7 +235,7 @@ elseif(UNIX OR MINGW)
 		pkg_check_modules(${DEPENDENCY_VARIABLE} REQUIRED ${DEPENDENCY}>=${MINIMUM_VERSION})
 		target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS}")
 		target_compile_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_CFLAGS_OTHER}")
-		target_include_directories(${TARGET} SYSTEM PRIVATE "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
+		target_include_directories(${TARGET} SYSTEM PUBLIC "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
 		target_link_directories(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARY_DIRS}")
 		target_link_libraries(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LIBRARIES}")
 		target_link_options(${TARGET} PRIVATE "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
@@ -368,8 +245,7 @@ elseif(UNIX OR MINGW)
 		#
 		# Link anything that `pkg-config` can't resolve on its own.
 		#
-		target_link_libraries(${GAME_EXECUTABLE} PRIVATE
-			m
+		target_link_libraries(shiromino_lib PRIVATE
 			${CMAKE_DL_LIBS}
 		)
 		#
@@ -382,7 +258,7 @@ elseif(UNIX OR MINGW)
 			sqlite3
 		)
 		foreach(DEPENDENCY ${DEPENDENCIES})
-			target_pkg_config_import(${GAME_EXECUTABLE} ${DEPENDENCY})
+			target_pkg_config_import(shiromino_lib ${DEPENDENCY})
 		endforeach()
 	else()
 		message(FATAL_ERROR "On Unix platforms, pkg-config is required for getting dependencies.")
@@ -408,7 +284,7 @@ else()
 		message(FATAL_ERROR "SQLite3 version ${SQLite3_VERSION} found but at least ${MINIMUM_SQLITE3_VERSION} is required.")
 	endif()
 
-	target_link_libraries(${GAME_EXECUTABLE}
+	target_link_libraries(shiromino_lib
 		PUBLIC
 			SDL2::SDL2
 			SDL2_image::SDL2_image
@@ -416,54 +292,21 @@ else()
 			SQLite::SQLite3
 	)
 	if(TARGET SDL2::SDL2main)
-		target_link_libraries(${GAME_EXECUTABLE}
+		target_link_libraries(shiromino_lib
 			PRIVATE
 				SDL2::SDL2main
 		)
 	endif()
 endif()
-#
-# On distributions with prehistoric packages, clang/gcc are unable to link these libraries themselves.
-# NOTE: We should remove this section as soon as debian-stable adds `{clang,g++}-9`.
-#
-# See https://en.cppreference.com/w/cpp/filesystem
-#
-if(
-	CMAKE_CXX_COMPILER_ID STREQUAL GNU AND
-	CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 5.0 AND
-	CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1
-)
-	set(FILE_SYSTEM_LIBRARY_NAME stdc++fs)
-elseif(
-	CMAKE_CXX_COMPILER_ID STREQUAL Clang AND
-	CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 5.0 AND
-	CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0
-)
-	set(FILE_SYSTEM_LIBRARY_NAME c++fs)
-endif()
-if(DEFINED FILE_SYSTEM_LIBRARY_NAME)
-	find_library(FILE_SYSTEM ${FILE_SYSTEM_LIBRARY_NAME}
-		PATHS
-			/usr/lib/llvm-5/lib
-			/usr/lib/llvm-6/lib
-			/usr/lib/llvm-7/lib
-			/usr/lib/llvm-8/lib
-			/usr/lib/gcc/x86_64-linux-gnu/5
-			/usr/lib/gcc/x86_64-linux-gnu/6
-			/usr/lib/gcc/x86_64-linux-gnu/7
-			/usr/lib/gcc/x86_64-linux-gnu/8
-			/usr/lib/gcc/x86_64-linux-gnu/9
-		REQUIRED
-	)
-	target_link_libraries(${GAME_EXECUTABLE} PRIVATE ${FILE_SYSTEM})
-endif()
+
+
 #
 # On clang and gcc, add a few sanitizers in the `Debug` configuration.
 # Support for this is currently only partially available on MSYS2, so we disable it for WIN32.
 #
 if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    target_compile_options(${GAME_EXECUTABLE}
-        PRIVATE
+    target_compile_options(shiromino_lib
+        PUBLIC
           $<$<CONFIG:Debug>:-g>
           -O1
           -Wall
@@ -480,10 +323,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
               -fsanitize-undefined-trap-on-error
           >
           -fno-omit-frame-pointer
-)
+	)
 
-	target_link_libraries(${GAME_EXECUTABLE}
-		PRIVATE
+	target_link_libraries(shiromino_lib
+		PUBLIC
           $<$<AND:$<CONFIG:Debug>,$<BOOL:${UNIX}>>:
               $<$<NOT:$<CXX_COMPILER_ID:GNU>>:
                 -fsanitize=address # bug in gcc standard-library: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
@@ -496,25 +339,27 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
           -fno-omit-frame-pointer
 		)
 endif()
-#
-# Enable parallel compiling when using MSVC.
-#
 if(MSVC)
-	target_compile_options(${GAME_EXECUTABLE} PRIVATE "/MP")
+	# Enable parallel compiling when using MSVC.
+	target_compile_options(shiromino_lib PRIVATE "/MP")
 endif()
+if(UNIX OR MINGW)
+	target_compile_definitions(shiromino_lib PRIVATE _POSIX_VERSION=200112L)
+endif()
+
 
 #
 # Testing
 #
 add_executable(tests
-	tests/QRS_test.cc
+	tests/Grid_test.cc
 )
 target_link_libraries(tests
 	PRIVATE
 	  Catch2::Catch2WithMain
-	  ${GAME_LIB}
+	  shiromino_lib
 )
-target_include_directories(tests PRIVATE include)
+# target_include_directories(tests PRIVATE include src)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
