@@ -86,8 +86,8 @@ namespace Shiro {
 
         m.label_text_flags = 0;
         m.value_text_flags = 0;
-        m.label_text_rgba = RGBA_DEFAULT;
-        m.value_text_rgba = RGBA_DEFAULT;
+        m.label_text_rgba = RGBA_DEFAULT_MACRO;
+        m.value_text_rgba = RGBA_DEFAULT_MACRO;
 
         ActionOptionData *d1 = NULL;
         MultiOptionData *d2 = NULL;

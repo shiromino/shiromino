@@ -22,8 +22,8 @@ namespace Shiro::GUI {
     constexpr uint8_t TEXT_SHADOW = 0x0008;
     constexpr uint8_t TEXT_HIGHLIGHT = 0x0010;
     constexpr uint8_t TEXT_ALIGN_RIGHT = 0x0020;
-    constexpr rgba_t RGBA_DEFAULT = 0xFFFFFFFF;
-    constexpr rgba_t RGBA_OUTLINE_DEFAULT = 0x000000FF;
+    constexpr Shiro::u32 RGBA_DEFAULT = 0xFFFFFFFF;
+    constexpr Shiro::u32 RGBA_OUTLINE_DEFAULT = 0x000000FF;
 }
 extern SDL_Renderer *guiSDLRenderer;
 extern SDL_Texture *guiThemeTexture;

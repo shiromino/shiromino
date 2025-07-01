@@ -39,22 +39,15 @@
 #include "asset/Image.h"
 #include "asset/Music.h"
 #include "asset/Sfx.h"
-#include "fonts.h"
-#include "fonts.h"
-#include "fonts.h"
 #include "game_menu.h"
 #include "gfx_old.h"
 #include "gfx_structures.h"
 #include "gui/GUI.h"
 #include "gui/ScreenManager.h"
-#include "images.h"
-#include "images.h"
-#include "images.h"
 #include "input/ControllerBindings.h"
 #include "input/KeyBindings.h"
 #include "input/KeyFlags.h"
 #include "input/Mouse.h"
-#include "nanotime.h"
 #include "random.h"
 #include "replay.h"
 #include "video/Background.h"
@@ -650,7 +643,7 @@ static void load_image(CoreState *cs, gfx_image *img, const char *filename)
     }
 }
 
-static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineSheetImg, unsigned int charW, unsigned int charH)
+void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineSheetImg, unsigned int charW, unsigned int charH)
 {
     font->sheet = sheetImg->tex;
     font->outlineSheet = outlineSheetImg->tex;

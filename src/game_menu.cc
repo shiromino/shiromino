@@ -161,7 +161,7 @@ void menu_update_replay_pagination(menudata *d, int from_selection)
     for(size_t i = from_selection; i < d->menu.size(); i++)
     {
         d->menu[i].y = 60 + (i % 20) * 20;
-        d->menu[i].label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT;
+        d->menu[i].label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT_MACRO;
     }
 
     for(int i = 0; i < d->numopts; i++)
@@ -2462,7 +2462,7 @@ int mload_replay(game_t *g, int)
             m->x = 20 - 13;
             m->y = 60 + (i % 20) * 20;
             m->label_text_flags = DRAWTEXT_THIN_FONT;
-            m->label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT;
+            m->label_text_rgba = (i % 2) ? 0xA0A0FFFF : RGBA_DEFAULT_MACRO;
         }
     }
 

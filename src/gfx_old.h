@@ -1,7 +1,8 @@
 #pragma once
-#include <cstdlib>
+#include <cstddef>
 #include <filesystem>
 #include <string>
+#include "gfx_old.h"
 #include "gfx_structures.h"
 #include "types.h"
 
@@ -52,8 +53,8 @@ namespace Shiro {
 #define DRAWTEXT_SMALL_FONT     0x0400
 #define DRAWTEXT_FIXEDSYS_FONT  0x0800
 
-#define RGBA_DEFAULT 0xFFFFFFFF
-#define RGBA_OUTLINE_DEFAULT 0x000000FF
+#define RGBA_DEFAULT_MACRO 0xFFFFFFFF
+#define RGBA_OUTLINE_DEFAULT_MACRO 0x000000FF
 
 #define RGBA_NEGATIVE(N) (~((N) & 0xFFFFFF00))
 

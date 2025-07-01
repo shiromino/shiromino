@@ -1,3 +1,4 @@
+#pragma once
 // name, name of gfx_image with sheet, name of gfx_image with outlineSheet, charW, charH
 
 FONT(fixedsys, font_fixedsys_excelsior, ASSET_IMG_NONE, 8, 16)
