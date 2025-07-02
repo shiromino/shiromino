@@ -7,6 +7,8 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -yq build-essential cmake coreutils gcc libc++-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libvorbis-dev libsqlite3-dev
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
+    - name: Run Catch2 tests
+      run: ./build/tests --reporter compact
     strategy:
       matrix:
         compiler:
@@ -23,6 +25,8 @@ jobs:
       run: brew install bash cmake gcc libvorbis pkg-config sdl2 sdl2_image sdl2_mixer
     - name: Build targets
       run: .github/workflows/build ${{ matrix.build-type }} ${{ matrix.compiler }}
+    - name: Run Catch2 tests
+      run: ./build/tests --reporter compact
     strategy:
       matrix:
         compiler:
@@ -60,6 +64,9 @@ jobs:
         mkdir artifacts
         for DLL in $(ldd build/shiromino.exe | grep -v '/c/' | cut -d " " -f 3); do cp $DLL artifacts; done
         mv build/shiromino.exe data LICENSE.md README.md shiromino.ini artifacts
+      shell: msys2 {0}
+    - name: Run Catch2 tests
+      run: ./build/tests --reporter compact
       shell: msys2 {0}
     - if: matrix.build-type == 'Release' && matrix.compiler == 'clang++'
       name: Upload artifacts
