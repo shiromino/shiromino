@@ -145,7 +145,6 @@ set(MINIMUM_SDL2_VERSION 2.0.5)
 set(MINIMUM_SDL2_IMAGE_VERSION 2.0.5)
 set(MINIMUM_SDL2_MIXER_VERSION 2.0.3)
 set(MINIMUM_SQLITE3_VERSION 3.24.0)
-set(MINIMUM_GOOGLETEST_VERSION 1.17.0)
 
 # Catch2 is a header library, so we fetch it regardless to build it alongside the game.
 FetchContent_Declare(
@@ -220,24 +219,17 @@ if(FETCH_DEPENDENCIES)
 	)
 elseif(UNIX OR MINGW)
 	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(SDL2 REQUIRED "sdl2")
-	pkg_check_modules(SDL2_IMAGE REQUIRED "SDL2_image")
-	pkg_check_modules(SDL2_MIXER REQUIRED "SDL2_mixer")
-	pkg_check_modules(SQLITE3 REQUIRED "sqlite3")
+	pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET "sdl2")
+	pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET "SDL2_image")
+	pkg_check_modules(SDL2_MIXER REQUIRED IMPORTED_TARGET "SDL2_mixer")
+	pkg_check_modules(SQLITE3 REQUIRED IMPORTED_TARGET "sqlite3")
 
-	target_include_directories(shiromino_lib
-		PUBLIC
-			${SDL2_INCLUDE_DIRS}
-			${SDL2_IMAGE_INCLUDE_DIRS}
-			${SDL2_MIXER_INCLUDE_DIRS}
-			${SQLITE3_INCLUDE_DIRS}
-	)
 	target_link_libraries(shiromino_lib
 		PUBLIC
-			${SDL2_LIBRARIES}
-			${SDL2_IMAGE_LIBRARIES}
-			${SDL2_MIXER_LIBRARIES}
-			${SQLITE3_LIBRARIES}
+			PkgConfig::SDL2
+			PkgConfig::SDL2_IMAGE
+			PkgConfig::SDL2_MIXER
+			PkgConfig::SQLITE3
 	)
 else()
 	find_package(SDL2 REQUIRED)
