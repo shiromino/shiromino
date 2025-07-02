@@ -218,48 +218,27 @@ if(FETCH_DEPENDENCIES)
 			SDL2_mixer
 			sqlite3
 	)
-	if(TARGET SDL2::SDL2main)
-		target_link_libraries(shiromino
-			PRIVATE
-				SDL2::SDL2main
-		)
-	endif()
 elseif(UNIX OR MINGW)
-	find_package(PkgConfig)
-	function(target_pkg_config_import TARGET DEPENDENCY)
-		string(TOUPPER ${DEPENDENCY} DEPENDENCY_VARIABLE)
-		set(MINIMUM_VERSION ${MINIMUM_${DEPENDENCY_VARIABLE}_VERSION})
-		pkg_check_modules(${DEPENDENCY_VARIABLE} REQUIRED ${DEPENDENCY}>=${MINIMUM_VERSION})
-		target_compile_options(${TARGET} PUBLIC "${${DEPENDENCY_VARIABLE}_CFLAGS}")
-		target_compile_options(${TARGET} PUBLIC "${${DEPENDENCY_VARIABLE}_CFLAGS_OTHER}")
-		target_include_directories(${TARGET} SYSTEM PUBLIC "${${DEPENDENCY_VARIABLE}_INCLUDE_DIRS}")
-		target_link_directories(${TARGET} PUBLIC "${${DEPENDENCY_VARIABLE}_LIBRARY_DIRS}")
-		target_link_libraries(${TARGET} PUBLIC "${${DEPENDENCY_VARIABLE}_LIBRARIES}")
-		target_link_options(${TARGET} PUBLIC "${${DEPENDENCY_VARIABLE}_LDFLAGS}")
-		target_link_options(${TARGET} PUBLIC "${${DEPENDENCY_VARIABLE}_LDFLAGS_OTHER}")
-	endfunction()
-	if(PKG_CONFIG_FOUND)
-		#
-		# Link anything that `pkg-config` can't resolve on its own.
-		#
-		target_link_libraries(shiromino_lib PRIVATE
-			${CMAKE_DL_LIBS}
-		)
-		#
-		# Let `pkg-config` do its magic.
-		#
-		set(DEPENDENCIES
-			sdl2
-			SDL2_image
-			SDL2_mixer
-			sqlite3
-		)
-		foreach(DEPENDENCY ${DEPENDENCIES})
-			target_pkg_config_import(shiromino_lib ${DEPENDENCY})
-		endforeach()
-	else()
-		message(FATAL_ERROR "On Unix platforms, pkg-config is required for getting dependencies.")
-	endif()
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(SDL2 REQUIRED "sdl2")
+	pkg_check_modules(SDL2_IMAGE REQUIRED "SDL2_image")
+	pkg_check_modules(SDL2_MIXER REQUIRED "SDL2_mixer")
+	pkg_check_modules(SQLITE3 REQUIRED "sqlite3")
+
+	target_include_directories(shiromino_lib
+		PUBLIC
+			${SDL2_INCLUDE_DIRS}
+			${SDL2_IMAGE_INCLUDE_DIRS}
+			${SDL2_MIXER_INCLUDE_DIRS}
+			${SQLITE3_INCLUDE_DIRS}
+	)
+	target_link_libraries(shiromino_lib
+		PUBLIC
+			${SDL2_LIBRARIES}
+			${SDL2_IMAGE_LIBRARIES}
+			${SDL2_MIXER_LIBRARIES}
+			${SQLITE3_LIBRARIES}
+	)
 else()
 	find_package(SDL2 REQUIRED)
 	if(SDL2_VERSION VERSION_LESS 2.0.5)
@@ -288,12 +267,6 @@ else()
 			SDL2_mixer::SDL2_mixer
 			SQLite::SQLite3
 	)
-	if(TARGET SDL2::SDL2main)
-		target_link_libraries(shiromino
-			PRIVATE
-				SDL2::SDL2main
-		)
-	endif()
 endif()
 
 
