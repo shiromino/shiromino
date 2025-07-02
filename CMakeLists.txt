@@ -289,7 +289,7 @@ else()
 			SQLite::SQLite3
 	)
 	if(TARGET SDL2::SDL2main)
-		target_link_libraries(shiromino_lib
+		target_link_libraries(shiromino
 			PRIVATE
 				SDL2::SDL2main
 		)
