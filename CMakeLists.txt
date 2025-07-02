@@ -25,7 +25,7 @@ option(APPIMAGE_BASE_PATH "Selects whether an AppImage build should use the dire
 #
 file(GLOB_RECURSE GAME_SOURCES src/*.cc src/*.h)
 # Remove main.c/main.cpp from the list to avoid multiple main() functions
-list(REMOVE_ITEM GAME_SOURCES "src/main.cc")
+list(FILTER GAME_SOURCES EXCLUDE REGEX "src/main\\.cc$")
 
 add_library(shiromino_lib STATIC ${GAME_SOURCES} third-party/PDINI.h)
 target_include_directories(shiromino_lib PUBLIC 
