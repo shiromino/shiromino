@@ -362,6 +362,14 @@ include(CTest)
 include(Catch)
 catch_discover_tests(tests)
 
+get_target_property(TESTS_SOURCES tests SOURCES)
+list(FIND TESTS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc" MAIN_CC_INDEX)
+if(MAIN_CC_INDEX GREATER -1)
+    message(STATUS "src/main.cc is part of the 'tests' target.")
+else()
+    message(STATUS "src/main.cc is NOT part of the 'tests' target.")
+endif()
+
 #
 # Installation
 #
