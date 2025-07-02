@@ -96,9 +96,6 @@ FetchContent_GetProperties(pdbm_font
 	SOURCE_DIR PDBM_SOURCE_DIRECTORY
 )
 
-if(UNIX OR MINGW)
-	target_compile_definitions(${GAME_EXECUTABLE} PRIVATE _POSIX_VERSION=200112L)
-endif()
 FetchContent_Declare(nanotime
 	GIT_REPOSITORY https://github.com/nightmareci/nanotime.git
 	GIT_TAG e8b6a59cdc139fa836c85d9ecbd469aabf828c02
@@ -222,7 +219,7 @@ if(FETCH_DEPENDENCIES)
 			sqlite3
 	)
 	if(TARGET SDL2::SDL2main)
-		target_link_libraries(shiromino_lib
+		target_link_libraries(shiromino
 			PRIVATE
 				SDL2::SDL2main
 		)
@@ -359,7 +356,6 @@ target_link_libraries(tests
 	  Catch2::Catch2WithMain
 	  shiromino_lib
 )
-# target_include_directories(tests PRIVATE include src)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
