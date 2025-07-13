@@ -29,11 +29,11 @@ list(FILTER GAME_SOURCES EXCLUDE REGEX "src/main\\.cc$")
 
 add_library(shiromino_lib STATIC ${GAME_SOURCES} third-party/PDINI.h)
 target_include_directories(shiromino_lib PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 target_include_directories(shiromino_lib SYSTEM PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR}/third-party
+	"${CMAKE_CURRENT_SOURCE_DIR}/third-party"
 )
 
 add_executable(shiromino "src/main.cc")
@@ -150,7 +150,7 @@ set(MINIMUM_SQLITE3_VERSION 3.24.0)
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.8.1
+  GIT_TAG        2b60af89e23d28eefc081bc930831ee9d45ea58b
 )
 FetchContent_MakeAvailable(Catch2)
 
@@ -322,7 +322,7 @@ target_link_libraries(tests
 	  shiromino_lib
 )
 
-list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+list(APPEND CMAKE_MODULE_PATH "${catch2_SOURCE_DIR}/extras")
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
