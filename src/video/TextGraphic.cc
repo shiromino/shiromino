@@ -1,5 +1,5 @@
 #include "video/TextGraphic.h"
-#include <SDL_stdinc.h>
+#include "SDL_stdinc.h"
 #include <cassert>
 #include <cstddef>
 #include <sstream>

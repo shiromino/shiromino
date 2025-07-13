@@ -1,6 +1,6 @@
-#include <SDL_keycode.h>
-#include <SDL_rect.h>
-#include <SDL_stdinc.h>
+#include "SDL_keycode.h"
+#include "SDL_rect.h"
+#include "SDL_stdinc.h"
 #include <string>
 #include "GUI.h"
 

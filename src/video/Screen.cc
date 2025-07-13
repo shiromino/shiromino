@@ -1,6 +1,6 @@
 #include "video/Screen.h"
-#include <SDL_blendmode.h>
-#include <SDL_error.h>
+#include "SDL_blendmode.h"
+#include "SDL_error.h"
 #include "Debug.h"
 #include "Settings.h"
 #include "types.h"

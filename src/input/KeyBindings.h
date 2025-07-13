@@ -1,6 +1,6 @@
 #pragma once
-#include <SDL_keycode.h>
-#include <SDL_scancode.h>
+#include "SDL_keycode.h"
+#include "SDL_scancode.h"
 
 namespace PDINI { class INI; }
 

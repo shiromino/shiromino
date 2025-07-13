@@ -1,7 +1,7 @@
 #pragma once
-#include <SDL_events.h>
-#include <SDL_rect.h>
-#include <SDL_stdinc.h>
+#include "SDL_events.h"
+#include "SDL_rect.h"
+#include "SDL_stdinc.h"
 #include <stddef.h>
 #include <map>
 #include <string>

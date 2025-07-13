@@ -7,11 +7,11 @@
 // TODO: Change malloc/free of structs containing std::string to new/delete.
 
 #include "game_menu.h"
-#include <SDL_blendmode.h>
-#include <SDL_clipboard.h>
-#include <SDL_keyboard.h>
-#include <SDL_keycode.h>
-#include <SDL_pixels.h>
+#include "SDL_blendmode.h"
+#include "SDL_clipboard.h"
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
+#include "SDL_pixels.h"
 #include <assert.h>
 #include <string.h>
 #include <cstdlib>

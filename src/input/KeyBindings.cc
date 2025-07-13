@@ -1,6 +1,6 @@
 #include "KeyBindings.h"
-#include <PDINI.h>
-#include <SDL_keyboard.h>
+#include "PDINI.h"
+#include "SDL_keyboard.h"
 #include <initializer_list>
 #include <iostream>
 #include <regex>

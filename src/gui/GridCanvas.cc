@@ -1,7 +1,7 @@
 #include "GridCanvas.h"
-#include <SDL_keyboard.h>
-#include <SDL_mouse.h>
-#include <SDL_pixels.h>
+#include "SDL_keyboard.h"
+#include "SDL_mouse.h"
+#include "SDL_pixels.h"
 #include <stdint.h>
 #include <cstddef>
 #include <functional>

@@ -1,6 +1,6 @@
 #pragma once
-#include <SDL_rect.h>
-#include <SDL_render.h>
+#include "SDL_rect.h"
+#include "SDL_render.h"
 
 namespace Shiro {
     struct Screen;

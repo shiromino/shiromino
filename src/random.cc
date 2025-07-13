@@ -1,6 +1,6 @@
 #include "random.h"
-#include <SDL_stdinc.h>
-#include <SDL_timer.h>
+#include "SDL_stdinc.h"
+#include "SDL_timer.h"
 #include <cassert>
 #include <cmath>
 #include <cstdlib>

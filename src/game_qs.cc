@@ -1,5 +1,5 @@
 #include "game_qs.h"
-#include <SDL_mixer.h>
+#include "SDL_mixer.h"
 #include <string.h>
 #include <algorithm>
 #include <cmath>

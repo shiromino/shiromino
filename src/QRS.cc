@@ -1,6 +1,6 @@
-#include <SDL_keyboard.h>
-#include <SDL_keycode.h>
-#include <SDL_mixer.h>
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
+#include "SDL_mixer.h"
 #include <assert.h>
 #include <string.h>
 #include <array>

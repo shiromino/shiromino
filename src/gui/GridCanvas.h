@@ -1,8 +1,8 @@
 #pragma once
-#include <SDL_keycode.h>
-#include <SDL_rect.h>
-#include <SDL_render.h>
-#include <SDL_stdinc.h>
+#include "SDL_keycode.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <iostream>
 #include <string>
 #include <vector>

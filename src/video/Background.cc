@@ -1,7 +1,7 @@
 #include "video/Background.h"
-#include <SDL_pixels.h>
-#include <SDL_render.h>
-#include <SDL_stdinc.h>
+#include "SDL_pixels.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <cstdint>
 #include <cstdlib>
 #include <memory>

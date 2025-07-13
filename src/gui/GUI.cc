@@ -1,6 +1,6 @@
 #include "GUI.h"
-#include <SDL_error.h>
-#include <SDL_surface.h>
+#include "SDL_error.h"
+#include "SDL_surface.h"
 #include <cstddef>
 #include <iostream>
 #include <sstream>

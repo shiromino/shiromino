@@ -1,6 +1,6 @@
 #include "OS.h"
-#include <SDL_filesystem.h>
-#include <SDL_stdinc.h>
+#include "SDL_filesystem.h"
+#include "SDL_stdinc.h"
 #include <stddef.h>
 #include <filesystem>
 #include <stdexcept>

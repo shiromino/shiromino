@@ -1,6 +1,6 @@
 #include "ShiroPhysoMino.h"
-#include <SDL_rect.h>
-#include <SDL_render.h>
+#include "SDL_rect.h"
+#include "SDL_render.h"
 #include <cstddef>
 #include <vector>
 #include "CoreState.h"

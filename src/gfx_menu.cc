@@ -1,9 +1,9 @@
 #include "gfx_menu.h"
-#include <SDL_blendmode.h>
-#include <SDL_error.h>
-#include <SDL_rect.h>
-#include <SDL_render.h>
-#include <SDL_stdinc.h>
+#include "SDL_blendmode.h"
+#include "SDL_error.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>

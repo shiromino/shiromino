@@ -1,5 +1,5 @@
 #include "ControllerBindings.h"
-#include <PDINI.h>
+#include "PDINI.h"
 #include <algorithm>
 
 Shiro::ControllerBindings::ControllerBindings() :

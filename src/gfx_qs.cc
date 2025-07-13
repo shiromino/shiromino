@@ -1,8 +1,8 @@
 #include "gfx_qs.h"
-#include <SDL_blendmode.h>
-#include <SDL_pixels.h>
-#include <SDL_rect.h>
-#include <SDL_stdinc.h>
+#include "SDL_blendmode.h"
+#include "SDL_pixels.h"
+#include "SDL_rect.h"
+#include "SDL_stdinc.h"
 #include <stdint.h>
 #include <cstddef>
 #include <filesystem>

@@ -1,10 +1,10 @@
 #include "asset/Font.h"
-#include <SDL_surface.h>
+#include "SDL_surface.h"
 #include <cassert>
 #include <cstddef>
 #include <iostream>
 #include <string>
-#include <SDL_image.h>
+#include "SDL_image.h"
 #include "video/Screen.h"
 #define PDBMFONT_DEFINE
 #define PDBMFONT_TEXT

@@ -1,8 +1,8 @@
 #include "gfx_old.h"
-#include <SDL_rect.h>
-#include <SDL_render.h>
-#include <SDL_stdinc.h>
-#include <SDL_surface.h>
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
+#include "SDL_surface.h"
 #include <assert.h>
 #include <stdint.h>
 #include <array>
