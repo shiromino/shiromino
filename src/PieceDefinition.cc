@@ -1,4 +1,5 @@
 #include "PieceDefinition.h"
+#include "Grid.h"
 
 Shiro::PieceDefinition::PieceDefinition() :
     qrsID(0),

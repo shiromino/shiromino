@@ -1,11 +1,13 @@
 #pragma once
-
+#include "SDL_keycode.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <iostream>
 #include <string>
-#include "SDL.h"
-#include "gui/GUI.h"
-
+#include <vector>
 #include "Grid.h"
+#include "gui/GUI.h"
 
 struct paletteMapEntry
 {

@@ -1,7 +1,9 @@
 #include "OS.h"
-#include "SDL.h"
-#include "definitions.h"
+#include "SDL_filesystem.h"
+#include "SDL_stdinc.h"
+#include <stddef.h>
 #include <filesystem>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 

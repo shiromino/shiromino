@@ -1,10 +1,12 @@
 #pragma once
-#include "asset/Asset.h"
-#include "Settings.h"
-#include "SDL_mixer.h"
 #include <filesystem>
 #include <memory>
+#include "SDL_mixer.h"
+#include "asset/Asset.h"
+
 namespace Shiro {
+    struct Settings;
+
     // TODO: Allow selecting playback channel?
     class MusicAssetLoader : public AssetLoader {
     public:

@@ -1,50 +1,59 @@
+#include "PDINI.h"
+#include "SDL_clipboard.h"
+#include "SDL_error.h"
+#include "SDL_events.h"
+#include "SDL_joystick.h"
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
+#include "SDL_mouse.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_scancode.h"
+#include "SDL_timer.h"
+#include "SDL_video.h"
+#include <algorithm>
+#include <cinttypes>
+#include <cstdlib>
+#include <filesystem>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+#include "nanotime.h"
+#include "AssetStore.h"
 #include "CoreState.h"
-#include "Game.h"
-#include "asset/Image.h"
-#include "asset/Font.h"
-#include "asset/Music.h"
-#include "asset/Sfx.h"
+#include "DASDirection.h"
 #include "Debug.h"
-#include "definitions.h"
 #include "DisplayMode.h"
-#include "gfx_old.h"
-#include "gfx_structures.h"
-#include "game_menu.h"
-#include "game_qs.h"
-#include "gui/GridCanvas.h"
-#include "gui/ScreenManager.h"
-#include "input/KeyFlags.h"
-#include "input/Mouse.h"
-#include "QRS1.h"
-#include "random.h"
+#include "Game.h"
+#include "QRS0.h"
 #include "Records.h"
 #include "RefreshRates.h"
-#include "replay.h"
-#include "gui/GUI.h"
-#include "ShiroPhysoMino.h"
-#include "SPM_Spec.h"
-#include "Delay.h"
+#include "Settings.h"
 #include "Version.h"
-#include <array>
-#include <cinttypes>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <filesystem>
-#include <iostream>
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_mixer.h"
-#include "nanotime.h"
+#include "asset/Asset.h"
+#include "asset/Font.h"
+#include "asset/Image.h"
+#include "asset/Music.h"
+#include "asset/Sfx.h"
+#include "game_menu.h"
+#include "gfx_old.h"
+#include "gfx_structures.h"
+#include "gui/GUI.h"
+#include "gui/ScreenManager.h"
+#include "input/ControllerBindings.h"
+#include "input/KeyBindings.h"
+#include "input/KeyFlags.h"
+#include "input/Mouse.h"
+#include "random.h"
+#include "replay.h"
+#include "video/Background.h"
+#include "video/Gfx.h"
 #include "video/Render.h"
-#include <string>
-#include <vector>
-#include <deque>
-#include <algorithm>
-#include <functional>
-#include <utility>
+#include "video/Screen.h"
 #define PENTOMINO_C_REVISION_STRING "rev 1.5"
 
 bool CoreState::is_left_input_repeat(unsigned delay) {
@@ -634,7 +643,7 @@ static void load_image(CoreState *cs, gfx_image *img, const char *filename)
     }
 }
 
-static void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineSheetImg, unsigned int charW, unsigned int charH)
+void load_bitfont(BitFont *font, gfx_image *sheetImg, gfx_image *outlineSheetImg, unsigned int charW, unsigned int charH)
 {
     font->sheet = sheetImg->tex;
     font->outlineSheet = outlineSheetImg->tex;

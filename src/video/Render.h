@@ -1,10 +1,10 @@
 #pragma once
-#include "SDL.h"
-#include "video/Screen.h"
-
-using namespace Shiro;
+#include "SDL_rect.h"
+#include "SDL_render.h"
 
 namespace Shiro {
+    struct Screen;
+    
     namespace Render {
         enum class Alignment {
             topLeft,

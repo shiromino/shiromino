@@ -1,15 +1,16 @@
 #pragma once
-#include "Game.h"
-#include "GameType.h"
-#include "Grid.h"
-#include "PieceDefinition.h"
-#include "Timer.h"
+#include "SDL_render.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
 #include <vector>
 #include <utility>
 #include <memory>
+#include "Game.h"
+#include "GameType.h"
+#include "Grid.h"
+#include "PieceDefinition.h"
+#include "Timer.h"
 
 #define MAX_SECTIONS 30
 

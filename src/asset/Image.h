@@ -1,9 +1,12 @@
 #pragma once
-#include "asset/Asset.h"
-#include "video/Screen.h"
+#include "SDL_render.h"
 #include <filesystem>
 #include <memory>
+#include "asset/Asset.h"
+
 namespace Shiro {
+    struct Screen;
+
     class ImageAssetLoader : public AssetLoader {
     public:
         ImageAssetLoader() = delete;

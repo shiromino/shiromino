@@ -1,11 +1,16 @@
 #pragma once
+#include <stddef.h>
+#include <vector> 
 #include "Game.h"
-#include "replay.h"
-#include "gui/GUI.h"
-#include "SPM_Spec.h"
+#include "Grid.h"
 #include "SPM_Randomizer.h"
-#include <memory>
-#include <vector>
+#include "SPM_Spec.h"
+#include "Timer.h"
+#include "gui/GUI.h"
+
+struct CoreState;
+struct replay;
+
 class ShiroPhysoMino : public Game {
 public:
     ShiroPhysoMino(CoreState& cs) : Game(cs),

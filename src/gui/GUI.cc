@@ -1,12 +1,11 @@
 #include "GUI.h"
+#include "SDL_error.h"
+#include "SDL_surface.h"
 #include <cstddef>
-#include <cstdint>
-#include <fstream>
 #include <iostream>
-#include <map>
-#include "SDL.h"
-#include "SDL_image.h"
 #include <sstream>
+#include "SDL_image.h"
+
 SDL_Renderer *guiSDLRenderer = NULL;
 SDL_Texture *guiThemeTexture = NULL;
 bool initializeGUI(SDL_Renderer *theRenderer, const char *themePath)

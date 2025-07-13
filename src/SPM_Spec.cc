@@ -1,6 +1,5 @@
 #include "SPM_Spec.h"
-#include <iostream>
-#include <vector>
+
 bool SPM_Spec::checkCollision(Shiro::Grid* field, ActivatedPolyomino& mino) {
     std::pair<int, int> pos;
     return checkCollision(field, mino, pos);

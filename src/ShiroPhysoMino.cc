@@ -1,12 +1,16 @@
 #include "ShiroPhysoMino.h"
-#include "CoreState.h"
-#include "gui/GUI.h"
-#include "video/Render.h"
-#include "SPM_Spec.h"
-#include "SPM_Randomizer.h"
-#include <iostream>
-#include <memory>
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include <cstddef>
 #include <vector>
+#include "CoreState.h"
+#include "SPM_Randomizer.h"
+#include "SPM_Spec.h"
+#include "gui/GUI.h"
+#include "input/KeyFlags.h"
+#include "replay.h"
+#include "video/Render.h"
+#include "video/Screen.h"
 
 int TestSPM::init()
 {

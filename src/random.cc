@@ -1,11 +1,11 @@
 #include "random.h"
-#include "QRS0.h"
-#include "SDL.h"
+#include "SDL_stdinc.h"
+#include "SDL_timer.h"
+#include <cassert>
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 #include <ctime>
-#include <cassert>
+#include "QRS0.h"
 
 // clang-format off
 static long double pento_piece_weights[25] =

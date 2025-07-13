@@ -1,9 +1,13 @@
 #include "video/Background.h"
-#include "video/Render.h"
-#include <memory>
-#include <queue>
+#include "SDL_pixels.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <cstdint>
 #include <cstdlib>
+#include <memory>
+#include <queue>
+#include "video/Render.h"
+#include "video/Screen.h"
 
 using namespace Shiro;
 using namespace std;

@@ -1,13 +1,15 @@
 #pragma once
-#include "asset/Asset.h"
-#include "types.h"
-#include "video/Gfx.h"
-#include "video/Screen.h"
+#include "SDL_render.h"
+#include <cstddef>
 #include <filesystem>
 #include <memory>
-#include "SDL.h"
+#include "types.h"
+#include "video/Gfx.h"
 
 namespace Shiro {
+    class AssetManager;
+    struct Screen;
+    
     struct AnimationGraphic : public Graphic {
         AnimationGraphic() = delete;
 

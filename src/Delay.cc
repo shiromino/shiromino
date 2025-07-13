@@ -1,4 +1,5 @@
 #include "Delay.h"
+#include "SDL_timer.h"
 
 #ifdef _WIN32
 // By fully containing Windows-specific code in here, it doesn't pollute the
@@ -25,7 +26,6 @@ void Delay(const std::uint32_t milliseconds) {
 	WaitForSingleObject(timer, INFINITE);
 }
 #else
-#include "SDL.h"
 
 void Delay(const std::uint32_t milliseconds) {
     SDL_Delay(milliseconds);

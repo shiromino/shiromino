@@ -1,9 +1,15 @@
 #include "video/TextGraphic.h"
-#include "video/Render.h"
-#include <sstream>
+#include "SDL_stdinc.h"
 #include <cassert>
+#include <cstddef>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
+#include "video/Render.h"
 
 namespace Shiro {
+    struct Screen;
+
     TextGraphic::TextGraphic(
         const Screen& screen,
         const FontAsset& font,

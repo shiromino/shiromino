@@ -1,5 +1,5 @@
 #include "SPM_Randomizer.h"
-
+#include "QRS0.h"
 #include "SPM_Spec.h"
 
 SPM_minoID arsToQrsID(SPM_minoID t)

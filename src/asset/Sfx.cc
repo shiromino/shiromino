@@ -1,7 +1,11 @@
 #include "asset/Sfx.h"
+#include "SDL_mixer.h"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <string>
+#include "Settings.h"
+
 Shiro::SfxAssetLoader::SfxAssetLoader(const std::filesystem::path &assetDirectory) :
     assetDirectory(assetDirectory) {}
 std::unique_ptr<Shiro::Asset> Shiro::SfxAssetLoader::create(const std::filesystem::path &location) const {

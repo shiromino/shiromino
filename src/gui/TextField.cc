@@ -1,14 +1,20 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cstdint>
-#include <cstddef>
+#include "SDL_clipboard.h"
+#include "SDL_error.h"
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
+#include "SDL_mouse.h"
+#include "SDL_pixels.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <chrono>
+#include <stdlib.h>
+#include <cstddef>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <utility>
 #include <vector>
-#include <map>
-#include "SDL.h"
-#include "SDL_image.h"
-
 #include "GUI.h"
 
 #define TEXT_POSITION_NONE 0xFFFFFFFFu

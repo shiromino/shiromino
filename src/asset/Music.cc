@@ -1,7 +1,11 @@
 #include "asset/Music.h"
+#include "SDL_mixer.h"
+#include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <algorithm>
+#include <string>
+#include "Settings.h"
+
 namespace Shiro {
     MusicAssetLoader::MusicAssetLoader(const std::filesystem::path &assetDirectory) :
         assetDirectory(assetDirectory) {}

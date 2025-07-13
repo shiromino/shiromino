@@ -1,4 +1,5 @@
 #include "input/Mouse.h"
+#include "SDL_timer.h"
 #include "video/Screen.h"
 
 namespace Shiro {

@@ -1,7 +1,7 @@
 #pragma once
 #include "QRS0.h"
-#include <stdbool.h>
 #include <stdint.h>
+
 #define RNGSTATE(STR, SEED) ((uint64_t)(STR[0]) << 56
 #define RNGSTATE_STRLEN 14
 

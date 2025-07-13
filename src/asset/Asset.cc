@@ -1,8 +1,6 @@
 #include "asset/Asset.h"
 #include <cassert>
 #include <cstdint>
-#include <vector>
-#include <cstdlib>
 
 Shiro::AssetLoader::~AssetLoader() {}
 

@@ -1,13 +1,16 @@
 #pragma once
+#include "SDL_render.h"
 #include <string>
 #include <vector>
-#include "CoreState.h"
 #include "Game.h"
+#include "gfx_structures.h"
 #include "menu/Option.h"
 
 #define MENU_ID_MAIN 0
 #define MENU_ID_PRACTICE 1
 #define MENU_ID_REPLAY 2
+
+struct CoreState;
 
 struct menudata
 {

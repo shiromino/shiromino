@@ -1,10 +1,11 @@
 #pragma once
-#include "video/Screen.h"
-#include "asset/Image.h"
-#include <memory>
 #include <cstdint>
+#include <memory>
+#include "asset/Image.h"
 
 namespace Shiro {
+    struct Screen;
+    
     // TODO: Consider adding functionality to query current background state; if none of the code needs such a feature, don't add it.
     class Background {
     public:

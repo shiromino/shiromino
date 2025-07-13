@@ -1,7 +1,9 @@
 #include "video/Screen.h"
+#include "SDL_blendmode.h"
+#include "SDL_error.h"
 #include "Debug.h"
+#include "Settings.h"
 #include "types.h"
-#include <iostream>
 
 Shiro::Screen::Screen(const std::string& name, const unsigned w, const unsigned h, const unsigned logicalW, const unsigned logicalH, const float render_scale) :
     name(name),

@@ -1,4 +1,7 @@
 #include "ControllerBindings.h"
+#include "PDINI.h"
+#include <algorithm>
+
 Shiro::ControllerBindings::ControllerBindings() :
     name(""),
     controllerIndex(-1),

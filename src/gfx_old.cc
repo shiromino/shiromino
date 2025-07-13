@@ -1,22 +1,31 @@
-#include "CoreState.h"
-#include "input/KeyFlags.h"
-#include "game_qs.h"
-#include "video/Render.h"
 #include "gfx_old.h"
-#include "gfx_structures.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
+#include "SDL_surface.h"
+#include <assert.h>
+#include <stdint.h>
+#include <array>
+#include <cstdlib>
+#include <filesystem>
+#include <string>
+#include <vector>
+#include "AssetStore.h"
+#include "CoreState.h"
 #include "Grid.h"
 #include "PieceDefinition.h"
 #include "QRS0.h"
-#include "stringtools.h"
-#include "Timer.h"
-#include "types.h"
-#include <cmath>
-#include <filesystem>
-#include <iostream>
-#include "SDL.h"
 #include "SDL_image.h"
-#include <string>
-#include <vector>
+#include "Timer.h"
+#include "asset/Image.h"
+#include "game_qs.h"
+#include "gfx_structures.h"
+#include "input/KeyFlags.h"
+#include "stringtools.h"
+#include "types.h"
+#include "video/Gfx.h"
+#include "video/Render.h"
+#include "video/Screen.h"
 
 bool img_load(gfx_image *img, std::filesystem::path&& pathWithoutExtension, CoreState *cs) {
     img->tex = NULL;
@@ -165,8 +174,8 @@ int gfx_drawbuttons(CoreState *cs, int type)
     SDL_Rect dest = { 0, 0, 6, 28 };
 
     struct text_formatting fmt = {
-        RGBA_DEFAULT,
-        RGBA_OUTLINE_DEFAULT,
+        RGBA_DEFAULT_MACRO,
+        RGBA_OUTLINE_DEFAULT_MACRO,
         true,
         false,
         1.0,
@@ -676,8 +685,8 @@ int gfx_drawkeys(CoreState *cs, Shiro::KeyFlags *k, int x, int y, Shiro::u32 rgb
     std::string text_d = "D";
 
     struct text_formatting fmt = {
-        RGBA_DEFAULT,
-        RGBA_OUTLINE_DEFAULT,
+        RGBA_DEFAULT_MACRO,
+        RGBA_OUTLINE_DEFAULT_MACRO,
         true,
         false,
         1.0,
@@ -788,8 +797,8 @@ int gfx_drawtext_partial(CoreState *cs, std::string text, int pos, std::size_t l
         font = monofont_fixedsys;
 
     struct text_formatting fmt_ = {
-        RGBA_DEFAULT,
-        RGBA_OUTLINE_DEFAULT,
+        RGBA_DEFAULT_MACRO,
+        RGBA_OUTLINE_DEFAULT_MACRO,
         true,
         false,
         1.0,

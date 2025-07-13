@@ -1,27 +1,37 @@
-#include "CoreState.h"
-#include "asset/Sfx.h"
-#include "game_menu.h" // questionable dependency - TODO look into these
-#include "game_qs.h"   // questionable dependency
-#include "GameType.h"
-#include "video/MessageEntity.h"
-#include "gfx_old.h"   // questionable dependency
-#include "gfx_qs.h"    // very questionable dependency
-#include "gfx_structures.h"
-#include "Grid.h"
-#include "input/KeyFlags.h"
-#include "PieceDefinition.h"
-#include "QRS0.h"
-#include "random.h"
-#include "replay.h"
-#include "Timer.h"
-#include "RotationTables.h"
-#include "SDL.h"
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
+#include "SDL_mixer.h"
+#include <assert.h>
+#include <string.h>
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
 #include <string>
 #include <utility>
-#include <memory>
+#include <vector>
+#include "CoreState.h"
+#include "Game.h"
+#include "GameType.h"
+#include "Grid.h"
+#include "PieceDefinition.h"
+#include "Player.h"
+#include "QRS0.h"
+#include "Records.h"
+#include "RotationTables.h"
+#include "Timer.h"
+#include "asset/Sfx.h"
+#include "game_menu.h" // questionable dependency - TODO look into these
+#include "game_qs.h"   // questionable dependency
+#include "gfx_old.h"   // questionable dependency
+#include "gfx_qs.h"    // very questionable dependency
+#include "gfx_structures.h"
+#include "input/KeyFlags.h"
+#include "input/Mouse.h"
+#include "random.h"
+#include "replay.h"
+
 const char *qrspiece_names[25] = {"I5", "J5", "L5",  "X",  "S5", "Z5",       "N",  "G",  "U",  "T5", "Fa", "Fb", "P",
                                   "Q", "W", "Ya", "Yb", "V", /**/ "I", "T", "J", "L", "O", "S", "Z"};
 

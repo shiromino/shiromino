@@ -1,15 +1,16 @@
 #pragma once
-#include "asset/Font.h"
-#include "video/Screen.h"
-#include "video/Gfx.h"
-#include "SDL.h"
-#include <cstddef>
+#include "SDL_rect.h"
+#include "SDL_render.h"
 #include <cstdint>
 #include <string>
-#include <utility>
+#include <tuple>
 #include <vector>
+#include "asset/Font.h"
+#include "video/Gfx.h"
 
 namespace Shiro {
+    struct Screen;
+    
     // TODO: Investigate whether more features should be added, after considering whether previous output features should be changed to more premade fonts, but certainly alignment should be added.
     struct TextGraphic : public Graphic {
     public:

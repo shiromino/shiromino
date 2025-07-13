@@ -1,9 +1,14 @@
 #include "GridCanvas.h"
-#include "gui/GUI.h"
+#include "SDL_keyboard.h"
+#include "SDL_mouse.h"
+#include "SDL_pixels.h"
+#include <stdint.h>
+#include <cstddef>
 #include <functional>
 #include <memory>
-#include "SDL.h"
 #include <utility>
+#include "gui/GUI.h"
+
 GridCanvas::GridCanvas(int ID, Shiro::Grid *cells, BindableInt& paletteVar, SDL_Texture *paletteTex, unsigned int cellW, unsigned int cellH, SDL_Rect relativeDestRect)
     : cells(cells), paletteTex(paletteTex), cellW(cellW), cellH(cellH), paletteVar(paletteVar)
 {

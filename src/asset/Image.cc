@@ -1,7 +1,10 @@
 #include "asset/Image.h"
-#include "SDL_image.h"
+#include "SDL_surface.h"
 #include <cassert>
 #include <iostream>
+#include <string>
+#include "SDL_image.h"
+#include "video/Screen.h"
 
 namespace Shiro {
     ImageAssetLoader::ImageAssetLoader(const std::filesystem::path &assetDirectory, const Screen &screen) :

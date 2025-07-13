@@ -1,10 +1,17 @@
-#include "CoreState.h"
-#include "random.h"
-#include <iostream>
+#include "SDL_error.h"
+#include "SDL_thread.h"
 #include <cstdlib>
+#include <ctime>
+#include <filesystem>
+#include <iostream>
+#include <string>
+#include "CoreState.h"
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
+#include "Settings.h"
+#include "random.h"
+
 /*
 * Frees several SDL-related resources.
 */

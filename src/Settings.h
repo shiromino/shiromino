@@ -1,9 +1,9 @@
 #pragma once
-#include "input/ControllerBindings.h"
-#include "input/KeyBindings.h"
-#include "PDINI.h"
 #include <filesystem>
 #include <string>
+#include "PDINI.h"
+#include "input/ControllerBindings.h"
+#include "input/KeyBindings.h"
 
 namespace Shiro {
     struct Settings {

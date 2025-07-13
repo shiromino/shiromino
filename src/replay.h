@@ -1,10 +1,11 @@
 #pragma once
 #define NO_REPLAY -1
 #define MAX_KEYFLAGS 72000 // 20 minutes of inputs (@ 60 fps)
-#include "input/KeyFlags.h"
-#include <string>
-#include <ctime>
 #include <cstdint>
+#include <ctime>
+#include <string>
+
+namespace Shiro { struct KeyFlags; }
 
 struct packed_input {
     uint8_t data;

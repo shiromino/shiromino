@@ -1,7 +1,9 @@
 #pragma once
-#include "PDINI.h"
-#include "SDL.h"
-#include <string>
+#include "SDL_keycode.h"
+#include "SDL_scancode.h"
+
+namespace PDINI { class INI; }
+
 namespace Shiro {
     struct KeyBinding {
         union {

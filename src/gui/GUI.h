@@ -1,16 +1,20 @@
 #pragma once
-#include "types.h"
+#include "SDL_events.h"
+#include "SDL_keycode.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <list>
 #include <memory>
-#include "SDL.h"
 #include <string>
 #include <utility>
 #include <vector>
+#include "types.h"
+
 namespace Shiro::GUI {
     using rgba_t = Shiro::u32;
     constexpr uint8_t TEXT_ALIGN_CENTER = 0x0002;
@@ -18,8 +22,8 @@ namespace Shiro::GUI {
     constexpr uint8_t TEXT_SHADOW = 0x0008;
     constexpr uint8_t TEXT_HIGHLIGHT = 0x0010;
     constexpr uint8_t TEXT_ALIGN_RIGHT = 0x0020;
-    constexpr rgba_t RGBA_DEFAULT = 0xFFFFFFFF;
-    constexpr rgba_t RGBA_OUTLINE_DEFAULT = 0x000000FF;
+    constexpr Shiro::u32 RGBA_DEFAULT = 0xFFFFFFFF;
+    constexpr Shiro::u32 RGBA_OUTLINE_DEFAULT = 0x000000FF;
 }
 extern SDL_Renderer *guiSDLRenderer;
 extern SDL_Texture *guiThemeTexture;

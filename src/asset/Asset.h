@@ -1,11 +1,12 @@
 #pragma once
+#include <cstddef>
 #include <filesystem>
-#include <utility>
-#include <unordered_map>
-#include <memory>
-#include <initializer_list>
 #include <functional>
+#include <initializer_list>
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace Shiro {
     enum class AssetType {

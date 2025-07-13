@@ -1,18 +1,30 @@
 #include "gfx_menu.h"
+#include "SDL_blendmode.h"
+#include "SDL_error.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "CoreState.h"
+#include "asset/Image.h"
 #include "game_menu.h"
 #include "gfx_old.h"
-#include "video/Render.h"
+#include "gfx_structures.h"
 #include "menu/ElementType.h"
 #include "menu/GameMultiOption.h"
 #include "menu/MultiOption.h"
 #include "menu/Option.h"
-#include "menu/GameOption.h"
 #include "menu/TextOption.h"
 #include "menu/ToggleOption.h"
-#include <cstdlib>
-#include <iostream>
-#include "SDL.h"
+#include "video/Gfx.h"
+#include "video/Render.h"
+#include "video/Screen.h"
+
 int gfx_drawmenu(game_t *g)
 {
     if(!g)
@@ -56,7 +68,7 @@ int gfx_drawmenu(game_t *g)
         std::stringstream ss;
         ss << "PAGE " << d->page + 1 << "/" << ((d->numopts - 1) / d->page_length) + 1;
         page_str = ss.str();
-        fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT, RGBA_OUTLINE_DEFAULT);
+        fmt = text_fmt_create(DRAWTEXT_ALIGN_RIGHT, RGBA_DEFAULT_MACRO, RGBA_OUTLINE_DEFAULT_MACRO);
 
         gfx_drawtext(cs, page_str, d->page_text_x, d->page_text_y, monofont_square, &fmt);
 
@@ -105,7 +117,7 @@ int gfx_drawmenu(game_t *g)
             SDL_RenderClear(g->origin->screen.renderer);
         }
 
-        fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT);
+        fmt = text_fmt_create(m->label_text_flags, m->label_text_rgba, RGBA_OUTLINE_DEFAULT_MACRO);
         monofont = monofont_square;
 
         if(m->label_text_flags & DRAWTEXT_THIN_FONT)
@@ -133,7 +145,7 @@ int gfx_drawmenu(game_t *g)
         if(m->type == Shiro::ElementType::MENU_MULTIOPT)
         {
             d2 = (Shiro::MultiOptionData *)m->data;
-            fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+            fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT_MACRO);
             monofont = monofont_square;
 
             if(menu_is_practice(g))
@@ -196,7 +208,7 @@ int gfx_drawmenu(game_t *g)
             {
                 if(d3->labels[d3->selection] != "")
                 {
-                    fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+                    fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT_MACRO);
                     monofont = monofont_square;
 
                     if(menu_is_practice(g))
@@ -255,7 +267,7 @@ int gfx_drawmenu(game_t *g)
                     dest.h = 16;
                 }
 
-                fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+                fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT_MACRO);
                 monofont = monofont_square;
 
                 if(menu_is_practice(g))
@@ -348,7 +360,7 @@ int gfx_drawmenu(game_t *g)
         {
             d8 = (Shiro::ToggleOptionData *)m->data;
 
-            fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT);
+            fmt = text_fmt_create(m->value_text_flags, m->value_text_rgba, RGBA_OUTLINE_DEFAULT_MACRO);
             monofont = monofont_square;
 
             if(menu_is_practice(g))
@@ -384,8 +396,8 @@ int gfx_drawmenu(game_t *g)
             }
 
             fmt = {
-                RGBA_DEFAULT,
-                RGBA_OUTLINE_DEFAULT,
+                RGBA_DEFAULT_MACRO,
+                RGBA_OUTLINE_DEFAULT_MACRO,
                 true,
                 false,
                 1.0,

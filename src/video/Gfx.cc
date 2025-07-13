@@ -1,4 +1,6 @@
 #include "video/Gfx.h"
+#include <iterator>
+#include <utility>
 
 namespace Shiro {
 	Graphic::~Graphic() {}

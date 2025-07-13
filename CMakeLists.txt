@@ -44,8 +44,10 @@ if(PORTABLE AND APPLE)
 elseif(WIN32 AND MSVC)
 	target_sources(shiromino PRIVATE "${CMAKE_SOURCE_DIR}/cmake/icon.rc")
 endif()
-target_link_libraries(shiromino PRIVATE shiromino_lib)
+target_include_directories(${GAME_EXECUTABLE} PRIVATE src)
+target_include_directories(${GAME_EXECUTABLE} SYSTEM PRIVATE third-party)
 
+target_link_libraries(shiromino PRIVATE shiromino_lib)
 
 #
 # Put the git hash into the game if possible

@@ -1,23 +1,32 @@
-#include "CoreState.h"
-#include "DisplayMode.h"
-#include "game_qs.h"
-#include "GameType.h"
-#include "video/Render.h"
-#include "video/Animation.h"
-#include "gfx_old.h"
 #include "gfx_qs.h"
-#include "QRS0.h"
-#include "stringtools.h"
-#include "random.h"
-#include "Timer.h"
-#include "types.h"
-#include "Credits.h"
-#include <fstream>
-#include <sstream>
-#include "SDL.h"
-#include <stdlib.h>
+#include "SDL_blendmode.h"
+#include "SDL_pixels.h"
+#include "SDL_rect.h"
+#include "SDL_stdinc.h"
+#include <stdint.h>
+#include <cstddef>
+#include <filesystem>
 #include <string>
 #include <vector>
+#include "CoreState.h"
+#include "Credits.h"
+#include "DisplayMode.h"
+#include "GameType.h"
+#include "Grid.h"
+#include "PieceDefinition.h"
+#include "QRS0.h"
+#include "asset/Image.h"
+#include "game_qs.h"
+#include "gfx_old.h"
+#include "gfx_structures.h"
+#include "random.h"
+#include "stringtools.h"
+#include "types.h"
+#include "video/Animation.h"
+#include "video/Gfx.h"
+#include "video/Render.h"
+#include "video/Screen.h"
+
 // clang-format off
 int piece_colors[26] =
 {
@@ -70,8 +79,8 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
     SDL_RenderFillRect(cs->screen.renderer, nullptr);
 
     struct text_formatting fmt = {
-        RGBA_DEFAULT,
-        RGBA_OUTLINE_DEFAULT,
+        RGBA_DEFAULT_MACRO,
+        RGBA_OUTLINE_DEFAULT_MACRO,
         false,
         false,
         1.0,
@@ -111,14 +120,14 @@ SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines)
             }
             else
             {
-                fmt.rgba = RGBA_DEFAULT;
+                fmt.rgba = RGBA_DEFAULT_MACRO;
             }
 
             gfx_drawtext(cs, lines[i].substr(1), 80, i * 16, monofont_fixedsys, &fmt);
         }
         else
         {
-            fmt.rgba = RGBA_DEFAULT;
+            fmt.rgba = RGBA_DEFAULT_MACRO;
             gfx_drawtext(cs, lines[i], 80, i * 16, monofont_fixedsys, &fmt);
         }
     }
@@ -174,7 +183,7 @@ int gfx_drawqs(game_t *g)
 
     if(YTOROW(q->p1->y) != q->locking_row)
     {
-        rgba = RGBA_DEFAULT;
+        rgba = RGBA_DEFAULT_MACRO;
     }
 
     int i = 0;
@@ -255,8 +264,8 @@ int gfx_drawqs(game_t *g)
     std::string redo_len;
 
     struct text_formatting fmt = {
-        RGBA_DEFAULT,
-        RGBA_OUTLINE_DEFAULT,
+        RGBA_DEFAULT_MACRO,
+        RGBA_OUTLINE_DEFAULT_MACRO,
         true,
         false,
         1.0,
@@ -276,14 +285,14 @@ int gfx_drawqs(game_t *g)
 
     if(!q->pracdata && cs->displayMode == Shiro::DisplayMode::DETAILED)
     {
-        gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT);
+        gfx_drawkeys(cs, &cs->keys, q->field_x + (14 * 16), 27 * 16, RGBA_DEFAULT_MACRO);
     }
 
     if((q->pracdata && (q->pracdata->paused == 0)) || (!q->pracdata && cs->displayMode == Shiro::DisplayMode::DETAILED))
     {
         std::string secTimeStr;
         struct text_formatting secTimeFmt = {
-            RGBA_DEFAULT,
+            RGBA_DEFAULT_MACRO,
             0x000000A0,
             false,
             false,
@@ -389,7 +398,7 @@ int gfx_drawqs(game_t *g)
                 secTimeStr = strtools::format("%d:%02d:%02d", cuMinutes, cuSeconds, cuCentiseconds);
                 secTimeFmt.rgba = 0x00B000FF;
                 gfx_drawtext(cs, secTimeStr, textX, secY, monofont_fixedsys, &secTimeFmt);
-                secTimeFmt.rgba = RGBA_DEFAULT;
+                secTimeFmt.rgba = RGBA_DEFAULT_MACRO;
                 textX -= 9*8;
 
                 if(!q->pracdata && ((q->best_section_times[sec] < 0) || (q->section_times[sec] < q->best_section_times[sec])))
@@ -556,8 +565,8 @@ int gfx_drawqs(game_t *g)
                 redo_len = strtools::format("%d", q->pracdata->usr_field_redo.size());
 
                 struct text_formatting redoFmt = {
-                    RGBA_DEFAULT,
-                    RGBA_OUTLINE_DEFAULT,
+                    RGBA_DEFAULT_MACRO,
+                    RGBA_OUTLINE_DEFAULT_MACRO,
                     true,
                     false,
                     1.0,
@@ -587,13 +596,13 @@ int gfx_drawqs(game_t *g)
                 // gfx_drawtext(cs, next, 48 - 32 + QRS_FIELD_X, 26, 0, 0xFFFFFF8C, 0x0000008C);
 
                 if(q->num_previews > 0 && q->previews.size() > 0)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT_MACRO);
                 if(q->num_previews > 1 && q->previews.size() > 1)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT_MACRO);
                 if(q->num_previews > 2 && q->previews.size() > 2)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT_MACRO);
                 if(q->num_previews > 3 && q->previews.size() > 3)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT_MACRO);
             }
             else if(q->pracdata->using_seed)
             {
@@ -605,13 +614,13 @@ int gfx_drawqs(game_t *g)
                 // gfx_drawtext(cs, next, 48 - 32 + QRS_FIELD_X, 26, 0, 0xFFFFFF8C, 0x0000008C);
 
                 if(q->num_previews > 0 && q->previews.size() > 0)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT_MACRO);
                 if(q->num_previews > 1 && q->previews.size() > 1)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[1], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT_MACRO);
                 if(q->num_previews > 2 && q->previews.size() > 2)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[2], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT_MACRO);
                 if(q->num_previews > 3 && q->previews.size() > 3)
-                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
+                    gfx_drawpiece(cs, g->field, x, y, q->previews[3], DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT_MACRO);
             }
 
             for(i = 0; i < 18; i++)
@@ -687,8 +696,8 @@ int gfx_drawqs(game_t *g)
         else
         {
             gfx_drawqrsfield(cs, g->field, MODE_PENTOMINO, drawqrsfield_flags, x, y);
-            gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
-            gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT);
+            gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT_MACRO);
+            gfx_drawkeys(cs, &cs->keys, q->field_x + (18 * 16), 27 * 16, RGBA_DEFAULT_MACRO);
 
             gfx_drawtext(cs, text_level, x + 14 * 16 + 4, y + 17 * 16, monofont_square, NULL);
             //fmt.rgba = 0xFF7070FF;
@@ -729,12 +738,12 @@ int gfx_drawqs(game_t *g)
         if(q->p1->speeds->grav >= 20 * 256)
         {
             if(cs->frames % 4 == 3)
-                gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
+                gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT_MACRO);
             else
                 gfx_drawtimer(cs, &q->timer, x + 32, 0xE0E030FF);
         }
         else
-            gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT);
+            gfx_drawtimer(cs, &q->timer, x + 32, RGBA_DEFAULT_MACRO);
 
         // uncomment this for DDR-esque input display :3
         /*if(q->playback) {
@@ -997,7 +1006,7 @@ int gfx_drawqs(game_t *g)
                     fmt.rgba = 0xE0E030FF;
                 }
                 else
-                    fmt.rgba = RGBA_DEFAULT;
+                    fmt.rgba = RGBA_DEFAULT_MACRO;
 
                 gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
                 fmt.rgba = 0x6060FFFF;
@@ -1005,7 +1014,7 @@ int gfx_drawqs(game_t *g)
             }
             else
             {
-                fmt.rgba = RGBA_DEFAULT;
+                fmt.rgba = RGBA_DEFAULT_MACRO;
                 gfx_drawtext(cs, "SCORE", x + 14 * 16 + 4, y + 13 * 16, monofont_square, &fmt);
                 fmt.rgba = 0x20FF20FF;
                 gfx_drawtext(cs, score_text, x + 14 * 16 + 4, y + 15 * 16, monofont_square, &fmt);
@@ -1015,7 +1024,7 @@ int gfx_drawqs(game_t *g)
     active_game_drawing:
         if(q->mode_type == MODE_PENTOMINO || (q->pracdata && q->game_type == Shiro::GameType::SIMULATE_QRS))
         {
-            fmt.rgba = RGBA_DEFAULT;
+            fmt.rgba = RGBA_DEFAULT_MACRO;
             fmt.outlined = false;
 
             gfx_drawtext(cs, next, q->field_x + 12, 13, monofont_small, &fmt);
@@ -1058,16 +1067,16 @@ int gfx_drawqs(game_t *g)
         }
 
         if(q->num_previews > 0 && q->previews.size() > 0)
-            gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_flags | drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT);
+            gfx_drawpiece(cs, g->field, x, y, q->previews[0], drawpiece_flags | drawpiece_next1_flags, Shiro::Orientation::FLAT, preview1_x, preview1_y, RGBA_DEFAULT_MACRO);
         if(q->num_previews > 1 && q->previews.size() > 1)
             gfx_drawpiece(
-                cs, g->field, x, y, q->previews[1], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT);
+                cs, g->field, x, y, q->previews[1], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview2_x, preview2_y, RGBA_DEFAULT_MACRO);
         if(q->num_previews > 2 && q->previews.size() > 2)
             gfx_drawpiece(
-                cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT);
+                cs, g->field, x, y, q->previews[2], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview3_x, preview3_y, RGBA_DEFAULT_MACRO);
         if(q->num_previews > 3 && q->previews.size() > 3)
             gfx_drawpiece(
-                cs, g->field, x, y, q->previews[3], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT);
+                cs, g->field, x, y, q->previews[3], drawpiece_flags | DRAWPIECE_PREVIEW | DRAWPIECE_SMALL, Shiro::Orientation::FLAT, preview4_x, preview4_y, RGBA_DEFAULT_MACRO);
 
         if(q->hold)
         {
@@ -1080,7 +1089,7 @@ int gfx_drawqs(game_t *g)
                           Shiro::Orientation::FLAT,
                           hold_x,
                           hold_y,
-                          RGBA_DEFAULT);
+                          RGBA_DEFAULT_MACRO);
         }
 
         if((q->p1->state & (PSFALL | PSLOCK)) && !(q->p1->state & PSPRELOCKED) && pd_current)
@@ -1114,7 +1123,7 @@ int gfx_drawqs(game_t *g)
 
             if(pd_current->flags & Shiro::PDBRACKETS)
             {
-                rgba = RGBA_DEFAULT;
+                rgba = RGBA_DEFAULT_MACRO;
             }
 
             if(cs->motionBlur)
@@ -1131,12 +1140,12 @@ int gfx_drawqs(game_t *g)
             gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, rgba);
         }
         else if (q->p1->state & (PSLOCKFLASH1 | PSLOCKFLASH2) && !(q->state_flags & GAMESTATE_BRACKETS) && pd_current) {
-            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags | DRAWPIECE_LOCKFLASH, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
+            gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags | DRAWPIECE_LOCKFLASH, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT_MACRO);
         }
         else if(q->p1->state & PSPRELOCKED && pd_current)
         {
             if (q->state_flags & GAMESTATE_BRACKETS) {
-                gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT);
+                gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, RGBA_DEFAULT_MACRO);
             }
             else {
                 gfx_drawpiece(cs, g->field, x, y, *pd_current, drawpiece_flags, q->p1->orient, piece_x, piece_y, 0x404040FF);
@@ -1181,7 +1190,7 @@ int gfx_drawqs(game_t *g)
     {
         struct text_formatting messageFmt = {
             0x00FF00FF,
-            RGBA_OUTLINE_DEFAULT,
+            RGBA_OUTLINE_DEFAULT_MACRO,
             false,
             false,
             2.0,

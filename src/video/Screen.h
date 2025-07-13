@@ -1,9 +1,11 @@
 #pragma once
-#include "Settings.h"
-#include "SDL.h"
+#include "SDL_render.h"
+#include "SDL_video.h"
 #include <string>
 
 namespace Shiro {
+    struct Settings;
+    
     struct Screen {
         Screen() = delete;
 

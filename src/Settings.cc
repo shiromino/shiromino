@@ -1,20 +1,16 @@
 #include "Settings.h"
-#include "Debug.h"
+#include <algorithm>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <limits>
+#include <optional>
+#include <sstream>
+#include <stdexcept>
+#include <vector>
 #include "OS.h"
 #include "PDINI.h"
 #include "Records.h"
-#include "definitions.h"
-#include "SDL.h"
-#include "SDL_mixer.h"
-#include <algorithm>
-#include <array>
-#include <cstdint>
-#include <cstdlib>
-#include <cinttypes>
-#include <filesystem>
-#include <iostream>
-#include <optional>
-#include <sstream>
 
 namespace fs = std::filesystem;
 

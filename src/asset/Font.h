@@ -1,13 +1,17 @@
 #pragma once
+#include "SDL_render.h"
+#include <filesystem>
+#include <memory>
+#include <vector>
 #include "asset/Asset.h"
-#include "video/Screen.h"
 #define PDBMFONT_TEXT
 #define PDBMFONT_BINARY
 #define PDBMFONT_XML
 #include "PDBMFont.hpp"
-#include "SDL.h"
-#include <vector>
+
 namespace Shiro {
+    struct Screen;
+    
     class FontAssetLoader : public AssetLoader {
     public:
         FontAssetLoader() = delete;

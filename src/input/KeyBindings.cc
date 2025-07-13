@@ -1,7 +1,11 @@
 #include "KeyBindings.h"
+#include "PDINI.h"
+#include "SDL_keyboard.h"
+#include <initializer_list>
 #include <iostream>
 #include <regex>
 #include <string>
+#include <utility>
 
 static constexpr auto keyBindingNames = {
     "LEFT",

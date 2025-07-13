@@ -1,14 +1,23 @@
-#include "GUI.h"
-#include <cstdint>
+#include "SDL_blendmode.h"
+#include "SDL_events.h"
+#include "SDL_keycode.h"
+#include "SDL_mouse.h"
+#include "SDL_pixels.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
+#include <stdlib.h>
+#include <string.h>
 #include <cstddef>
-#include <fstream>
-#include <iostream>
+#include <cstdint>
 #include <functional>
-#include <map>
-#include <sstream>
-#include <exception>
-#include "SDL.h"
-#include "SDL_image.h"
+#include <new>
+#include <string>
+#include <utility>
+#include <vector>
+#include "GUI.h"
+
+struct CoreState;
 
 Window::Window(CoreState *origin, std::string title, BitFont *titleFont, std::function<void(GUIInteractable&, GUIEvent&)> interactionEventCallback, SDL_Rect& destRect)
     : title(title)

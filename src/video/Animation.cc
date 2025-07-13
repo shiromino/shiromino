@@ -1,10 +1,14 @@
 // TODO: Refactor the asset system to be more portable and implement Gfx code to have the ability to change the back end of graphic subclasses.
-#include "video/Animation.h"
-#include "video/Render.h"
+#include "Animation.h"
+#include "SDL_rect.h"
 #include "asset/Image.h"
 #include "types.h"
+#include "video/Render.h"
 
 namespace Shiro {
+	class AssetManager;
+	struct Screen;
+
 	AnimationGraphic::AnimationGraphic(
 		const Screen& screen,
 		SDL_Texture* const frame,

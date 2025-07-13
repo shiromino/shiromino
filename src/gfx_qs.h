@@ -1,7 +1,8 @@
 #pragma once
+#include "SDL_render.h"
 #include "Game.h"
-#include "CoreState.h"
-#include <fstream>
+
+struct CoreState;
 
 SDL_Texture *gfx_create_credits_tex(CoreState *cs, int num_lines);
 int gfx_drawqs(game_t *g);

@@ -1,10 +1,15 @@
 #pragma once
-#include "gui/GUI.h"
-#include <functional>
+#include "SDL_events.h"
+#include "SDL_rect.h"
+#include "SDL_stdinc.h"
+#include <stddef.h>
 #include <map>
-#include "SDL.h"
 #include <string>
 #include <utility>
+#include "gui/GUI.h"
+
+struct CoreState;
+
 class ScreenManager {
 public:
     ScreenManager()

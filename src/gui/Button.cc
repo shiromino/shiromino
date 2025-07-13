@@ -1,12 +1,7 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cstdint>
-#include <cstddef>
-#include <functional>
-#include <map>
-#include "SDL.h"
-#include "SDL_image.h"
+#include "SDL_keycode.h"
+#include "SDL_rect.h"
+#include "SDL_stdinc.h"
+#include <string>
 #include "GUI.h"
 
 Button::Button(int ID, SDL_Rect relativeDestRect, std::string displayString, BitFont& font)

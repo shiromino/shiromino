@@ -1,4 +1,5 @@
 #include "ScreenManager.h"
+#include <functional>
 #include "CoreState.h"
 #include "game_qs.h"
 
